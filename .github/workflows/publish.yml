@@ -2,6 +2,11 @@ name: Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref (branch, tag, or commit SHA) to deploy'
+        required: false
+        default: ''
   push:
 
 permissions:
@@ -32,6 +37,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Get git tag(short)
         id: git-tag
@@ -75,6 +82,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v6 # publish actions require git
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: copy
         run: |
