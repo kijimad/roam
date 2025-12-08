@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-08T21:58:14Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 497: 複合インデックスの使用条件を試す</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 497: 複合インデックスの使用条件を試す</h1>
+<div id="outline-container-org92366e3" class="outline-2">
+<h2 id="org92366e3"><a href="#org92366e3">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org92366e3">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+
+<ul class="org-ul">
+<li>レビュー
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgce486f6" class="outline-2">
+<h2 id="orgce486f6"><a href="#orgce486f6">概要</a></h2>
+<div class="outline-text-2" id="text-orgce486f6">
+<p>
+条件を変えて、どのように使われるか試す。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>複合インデックスを使う</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
+    id serial <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
+    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255),
+    tel <span class="org-type">integer</span>,
+    nonidx <span class="org-type">varchar</span>(255)
+);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>, tel);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#12364;&#31354;&#12384;&#12392;&#12289;&#12377;&#12409;&#12390;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#20351;&#29992;&#12395;&#12394;&#12387;&#12383;&#12383;&#12417;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>, tel)
+<span class="org-keyword">SELECT</span>
+    <span class="org-string">'Name'</span> || (i % 1000),
+    (i % 10000)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#20001;&#26041;&#12398;&#35201;&#32032;&#12434;&#20351;&#12358;&#12392;&#12289;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
+</span>explain
+<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span> <span class="org-keyword">and</span> tel = 1;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#26368;&#21021;&#12398;&#35201;&#32032;&#12434;&#20351;&#12358;&#12392;&#12289;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
+</span>explain
+<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#38918;&#30058;&#12418;&#20837;&#12428;&#26367;&#12360;&#12390;&#12418;&#12289;&#35201;&#32032;&#12364;&#12354;&#12387;&#12390;&#12356;&#12428;&#12400;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
+</span>explain
+<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> tel = 1 <span class="org-keyword">and</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#26368;&#21021;&#12398;&#35201;&#32032; + &#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#22806;&#12384;&#12392;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
+</span>explain
+<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span> <span class="org-keyword">and</span> nonidx = <span class="org-string">'a'</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;2&#30058;&#12417;&#12398;&#35201;&#32032;&#12434;&#20351;&#12358;&#12392;&#12289;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12394;&#12356;
+</span>explain
+<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> tel = 1;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                            |   |             |
+|----------------------------------------------------------------------------+---+-------------|
+| &gt; CREATE TABLE users (                                                     |   |             |
+| &gt;     id serial PRIMARY KEY,                                               |   |             |
+| &gt;     name varchar(255),                                                   |   |             |
+| &gt;     tel integer,                                                         |   |             |
+| &gt;     nonidx varchar(255)                                                  |   |             |
+| &gt; );                                                                       |   |             |
+| CREATE TABLE                                                               |   |             |
+|                                                                            |   |             |
+| &gt; CREATE INDEX idx_users_name ON users(name, tel);                         |   |             |
+| CREATE INDEX                                                               |   |             |
+|                                                                            |   |             |
+| &gt; INSERT INTO users (name, tel)                                            |   |             |
+| &gt; SELECT                                                                   |   |             |
+| &gt;     'Name'                                                               |   | (i % 1000), |
+| &gt;     (i % 10000)                                                          |   |             |
+| &gt; FROM generate_series(1, 100000) i;                                       |   |             |
+| INSERT 0 100000                                                            |   |             |
+|                                                                            |   |             |
+| &gt; explain                                                                  |   |             |
+| &gt; select id from users where name = 'a' and tel = 1;                       |   |             |
+| QUERY PLAN                                                                 |   |             |
+| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4) |   |             |
+| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                     |   |             |
+|                                                                            |   |             |
+| &gt; explain                                                                  |   |             |
+| &gt; select id from users where name = 'a';                                   |   |             |
+| QUERY PLAN                                                                 |   |             |
+| Bitmap Heap Scan on users  (cost=4.43..69.98 rows=19 width=4)              |   |             |
+| Recheck Cond: ((name)::text = 'a'::text)                                   |   |             |
+| -&gt;  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0) |   |             |
+| Index Cond: ((name)::text = 'a'::text)                                     |   |             |
+|                                                                            |   |             |
+| &gt; explain                                                                  |   |             |
+| &gt; select id from users where tel = 1 and name = 'a';                       |   |             |
+| QUERY PLAN                                                                 |   |             |
+| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4) |   |             |
+| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                     |   |             |
+|                                                                            |   |             |
+| &gt; explain                                                                  |   |             |
+| &gt; select id from users where name = 'a' and nonidx = 'a';                  |   |             |
+| QUERY PLAN                                                                 |   |             |
+| Bitmap Heap Scan on users  (cost=4.42..70.03 rows=1 width=4)               |   |             |
+| Recheck Cond: ((name)::text = 'a'::text)                                   |   |             |
+| Filter: ((nonidx)::text = 'a'::text)                                       |   |             |
+| -&gt;  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0) |   |             |
+| Index Cond: ((name)::text = 'a'::text)                                     |   |             |
+|                                                                            |   |             |
+| &gt; explain                                                                  |   |             |
+| &gt; select id from users where tel = 1;                                      |   |             |
+| QUERY PLAN                                                                 |   |             |
+| Seq Scan on users  (cost=0.00..588.34 rows=19 width=4)                     |   |             |
+| Filter: (tel = 1)                                                          |   |             |
+</pre>
+</div>
+
+<p>
+見知らぬキーワードがある。
+</p>
+
+<ul class="org-ul">
+<li>Bitmap Index Scan</li>
+<li>Bitmap Heap Scan</li>
+<li>Recheck Cond</li>
+<li>Filter</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgc891426" class="outline-2">
+<h2 id="orgc891426"><a href="#orgc891426">関連</a></h2>
+<div class="outline-text-2" id="text-orgc891426">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
