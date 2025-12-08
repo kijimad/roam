@@ -1,10 +1,10 @@
 :properties:
-:ID: 20251120T225113
+:ID: 20251128T092223
 :end:
-#+title:      KDOC 487: cookieは自動で送られる
-#+date:       [2025-11-20 Thu 22:51]
-#+filetags:   :draft:permanent:
-#+identifier: 20251120T225113
+#+title:      KDOC 490: 301と302/307のキャッシュ動作の違い
+#+date:       [2025-11-28 Fri 09:22]
+#+filetags:   :draft:wiki:
+#+identifier: 20251128T092223
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -48,7 +48,7 @@
 
 * この文書のステータス
 - 作成
-  - [X] 2025-11-22 貴島
+  - [X] 2025-12-06 貴島
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -65,14 +65,16 @@
 * 概要
 # 本文(見出しも設定する)
 
-恥ずべきことに、Cookieの仕組みをわかっていなかった。
+HTTPステータスコードの301と302/307は、どれもリダイレクトということで似ているのだが、ブラウザでキャッシュの扱いに違いがある。
 
-[[https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/Cookies][HTTP Cookie の使用 - HTTP | MDN]]。
+301は恒久的リダイレクトで、キャッシュできる、とHTTPの仕様で言及されている。
 
-- HTTPサーバにHTTPリクエストする
-- HTTPレスポンスでSetCookieヘッダを受け取る
-- ブラウザが保存する
-- 過去Cookie保存したドメインの場合、次のリクエスト時にCookieヘッダーにCookieを含めて送る
+#+begin_quote
+A 301 response is heuristically cacheable; i.e., unless otherwise indicated by the method definition or explicit cache controls (see Section 4.2.2 of [CACHING]).
+[[https://www.rfc-editor.org/rfc/rfc9110#status.301][RFC 9110: HTTP Semantics]]
+#+end_quote
+
+302/307は一時的リダイレクトなので、キャッシュについては言及していないように見える。じっさいの動作から考えて、毎回リダイレクト判断するのだろう。
 
 * 関連
 # 関連するエントリ。なぜ関連させたか理由を書く。意味のあるつながりを意識的につくる。
