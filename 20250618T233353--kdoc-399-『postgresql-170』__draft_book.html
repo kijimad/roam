@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-09T23:18:41Z -->
+<!-- 2025-12-10T00:45:38Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 399: 『PostgreSQL 17.0』</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 399: 『PostgreSQL 17.0』</h1>
-<div id="outline-container-orgcc8bd48" class="outline-2">
-<h2 id="orgcc8bd48"><a href="#orgcc8bd48">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgcc8bd48">
+<div id="outline-container-orgcb5efe3" class="outline-2">
+<h2 id="orgcb5efe3"><a href="#orgcb5efe3">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgcb5efe3">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,17 +33,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org05717fc" class="outline-2">
-<h2 id="org05717fc"><a href="#org05717fc">概要</a></h2>
-<div class="outline-text-2" id="text-org05717fc">
+<div id="outline-container-orgb03431b" class="outline-2">
+<h2 id="orgb03431b"><a href="#orgb03431b">概要</a></h2>
+<div class="outline-text-2" id="text-orgb03431b">
 <p>
 <a href="https://pgsql-jp.github.io/jpug-doc/17.0/postgresql-17.0-A4.pdf">PostgreSQL 17.0文書</a>は、PostgreSQLのマニュアル。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbf36a27" class="outline-2">
-<h2 id="orgbf36a27"><a href="#orgbf36a27">メモ</a></h2>
-<div class="outline-text-2" id="text-orgbf36a27">
+<div id="outline-container-org4455178" class="outline-2">
+<h2 id="org4455178"><a href="#org4455178">メモ</a></h2>
+<div class="outline-text-2" id="text-org4455178">
 <ul class="org-ul">
 <li>PostgreSQLはクライアント/サーバモデルを採用している。クライアントとサーバのホストが異なる場合、TCP/IPネットワーク経由で通信する(p4)
 <ul class="org-ul">
@@ -55,7 +55,7 @@
 <li>複数のトランザクションが同時に動作しているとき、それぞれのトランザクションは別のトランザクションが行っている未完了の変更を見ることができてはならない。作業中のトランザクションによる更新は、ほかのトランザクションからはトランザクションが完結するまで不可視である。そのトランザクションが完結した時点でトランザクションで行った更新のすべてが見えるようになる(p21)</li>
 <li>PostgreSQLはすべてのSQL文をトランザクション内で実行するようになっている。BEGINを発行しない場合、それぞれの文は暗黙的にBEGINが付いているとみなし、成功すればCOMMITで囲われているものとする(p21)</li>
 <li>セーブポイントはトランザクションを構成するある部分を選択的に破棄するいっぽう、破棄されない残りの部分をコミットする(p22)</li>
-<li>システムは <code>NAMEDATALEN</code> - 1より長い識別子を使わない。より長い名前を書くと短く切られる。デフォルトでは <code>NAMEDATALEN</code> は64バイトなので、識別子は最長で63バイト。定数は変えて増やせる(p40)</li>
+<li>システムは (<code>NAMEDATALEN</code> - 1)より長い識別子を使わない。より長い名前を書くと短く切られる。デフォルトでは <code>NAMEDATALEN</code> は64バイトなので、識別子は最長で63バイト。定数は変えて増やせる(p40)</li>
 <li>任意の文字の連なりをダブルクォートで囲ったものを区切り識別子 or 引用符付き識別子という(p40)
 <ul class="org-ul">
 <li>(感想)なぜプログラミング言語のように文字列リテラルといわないのか</li>
@@ -68,7 +68,7 @@
 </ul></li>
 <li>対象の文字列内に単一引用符が多くあると、それらをすべて二重にしなければならないので理解しづらくなる。そのような場合は単一引用符をエスケープすることなく使用できるドル引用符付けが便利。ただし標準SQLで定義されていない(p44)</li>
 <li>定数は文脈に基づいて自動的にもっとも適切な型に変換される(p46)</li>
-<li>(感想)集約とか関数とかはあまり使ったことがないしあまり使うケースもないように見えるので、細かい話があまり頭に入ってこない</li>
+<li>(感想)集約とか関数とかはベーシックなものしか使ったことがないし、あまり使うケースもないように見えるので、細かい話があまり頭に入ってこない</li>
 <li>SQLではテーブル内の行の順序は保証されない。テーブルを読み込むと、明示的に並び替えを要求しない限り行は不特定な順番で並び替えられる(p69)</li>
 <li>リレーショナルデータベース理論では、すべてのテーブルに主キーが1つ必要とされている。PostgrSQLは強制しないが、これに従うことが推奨される(p80)</li>
 <li>関連削除のデフォルト設定はNO ACTIONである。NO ACTIONでは検査をトランザクション中で後回しにできる。RESTRICTは後回しにできない(p83)</li>
@@ -81,9 +81,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org5ac7275" class="outline-2">
-<h2 id="org5ac7275"><a href="#org5ac7275">関連</a></h2>
-<div class="outline-text-2" id="text-org5ac7275">
+<div id="outline-container-org14b8f63" class="outline-2">
+<h2 id="org14b8f63"><a href="#org14b8f63">関連</a></h2>
+<div class="outline-text-2" id="text-org14b8f63">
 <p>
 なし。
 </p>
