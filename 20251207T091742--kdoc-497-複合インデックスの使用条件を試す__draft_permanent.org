@@ -73,7 +73,7 @@
   :header-args+: :engine postgresql
 :END:
 
-条件を変えて、どのように使われるか試す。
+複合インデックスによるスキャン方法の変化を実験した。
 
 #+caption: 複合インデックスを使う
 #+begin_src sql
@@ -96,6 +96,10 @@
   explain
   select id from users where name = 'a' and tel = 1;
 
+  -- 複合インデックスの両方の要素を使ってインデックス要素だけだと、Index Only Scanになる
+  explain
+  select name from users where name = 'a' and tel = 1;
+
   -- 複合インデックスの最初の要素を使うと、インデックスが使われる
   explain
   select id from users where name = 'a';
@@ -115,68 +119,74 @@
 
 #+RESULTS:
 #+begin_src
-|                                                                            |   |             |
-|----------------------------------------------------------------------------+---+-------------|
-| > CREATE TABLE users (                                                     |   |             |
-| >     id serial PRIMARY KEY,                                               |   |             |
-| >     name varchar(255),                                                   |   |             |
-| >     tel integer,                                                         |   |             |
-| >     nonidx varchar(255)                                                  |   |             |
-| > );                                                                       |   |             |
-| CREATE TABLE                                                               |   |             |
-|                                                                            |   |             |
-| > CREATE INDEX idx_users_name ON users(name, tel);                         |   |             |
-| CREATE INDEX                                                               |   |             |
-|                                                                            |   |             |
-| > INSERT INTO users (name, tel)                                            |   |             |
-| > SELECT                                                                   |   |             |
-| >     'Name'                                                               |   | (i % 1000), |
-| >     (i % 10000)                                                          |   |             |
-| > FROM generate_series(1, 100000) i;                                       |   |             |
-| INSERT 0 100000                                                            |   |             |
-|                                                                            |   |             |
-| > explain                                                                  |   |             |
-| > select id from users where name = 'a' and tel = 1;                       |   |             |
-| QUERY PLAN                                                                 |   |             |
-| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4) |   |             |
-| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                     |   |             |
-|                                                                            |   |             |
-| > explain                                                                  |   |             |
-| > select id from users where name = 'a';                                   |   |             |
-| QUERY PLAN                                                                 |   |             |
-| Bitmap Heap Scan on users  (cost=4.43..69.98 rows=19 width=4)              |   |             |
-| Recheck Cond: ((name)::text = 'a'::text)                                   |   |             |
-| ->  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0) |   |             |
-| Index Cond: ((name)::text = 'a'::text)                                     |   |             |
-|                                                                            |   |             |
-| > explain                                                                  |   |             |
-| > select id from users where tel = 1 and name = 'a';                       |   |             |
-| QUERY PLAN                                                                 |   |             |
-| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4) |   |             |
-| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                     |   |             |
-|                                                                            |   |             |
-| > explain                                                                  |   |             |
-| > select id from users where name = 'a' and nonidx = 'a';                  |   |             |
-| QUERY PLAN                                                                 |   |             |
-| Bitmap Heap Scan on users  (cost=4.42..70.03 rows=1 width=4)               |   |             |
-| Recheck Cond: ((name)::text = 'a'::text)                                   |   |             |
-| Filter: ((nonidx)::text = 'a'::text)                                       |   |             |
-| ->  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0) |   |             |
-| Index Cond: ((name)::text = 'a'::text)                                     |   |             |
-|                                                                            |   |             |
-| > explain                                                                  |   |             |
-| > select id from users where tel = 1;                                      |   |             |
-| QUERY PLAN                                                                 |   |             |
-| Seq Scan on users  (cost=0.00..588.34 rows=19 width=4)                     |   |             |
-| Filter: (tel = 1)                                                          |   |             |
+|                                                                                   |   |             |
+|-----------------------------------------------------------------------------------+---+-------------|
+| > CREATE TABLE users (                                                            |   |             |
+| >     id serial PRIMARY KEY,                                                      |   |             |
+| >     name varchar(255),                                                          |   |             |
+| >     tel integer,                                                                |   |             |
+| >     nonidx varchar(255)                                                         |   |             |
+| > );                                                                              |   |             |
+| CREATE TABLE                                                                      |   |             |
+|                                                                                   |   |             |
+| > CREATE INDEX idx_users_name ON users(name, tel);                                |   |             |
+| CREATE INDEX                                                                      |   |             |
+|                                                                                   |   |             |
+| > INSERT INTO users (name, tel)                                                   |   |             |
+| > SELECT                                                                          |   |             |
+| >     'Name'                                                                      |   | (i % 1000), |
+| >     (i % 10000)                                                                 |   |             |
+| > FROM generate_series(1, 100000) i;                                              |   |             |
+| INSERT 0 100000                                                                   |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where name = 'a' and tel = 1;                              |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4)        |   |             |
+| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select name from users where name = 'a' and tel = 1;                            |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Index Only Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=516) |   |             |
+| Index Cond: ((name = 'a'::text) AND (tel = 1))                                    |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where name = 'a';                                          |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Bitmap Heap Scan on users  (cost=4.43..69.98 rows=19 width=4)                     |   |             |
+| Recheck Cond: ((name)::text = 'a'::text)                                          |   |             |
+| ->  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0)        |   |             |
+| Index Cond: ((name)::text = 'a'::text)                                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where tel = 1 and name = 'a';                              |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4)        |   |             |
+| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where name = 'a' and nonidx = 'a';                         |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Bitmap Heap Scan on users  (cost=4.42..70.03 rows=1 width=4)                      |   |             |
+| Recheck Cond: ((name)::text = 'a'::text)                                          |   |             |
+| Filter: ((nonidx)::text = 'a'::text)                                              |   |             |
+| ->  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0)        |   |             |
+| Index Cond: ((name)::text = 'a'::text)                                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where tel = 1;                                             |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Seq Scan on users  (cost=0.00..588.34 rows=19 width=4)                            |   |             |
+| Filter: (tel = 1)                                                                 |   |             |
 #+end_src
 
-見知らぬキーワードがある。
+さまざまなスキャン方法があるのを知るのだった。
 
+- Seq Scan
 - Bitmap Index Scan
 - Bitmap Heap Scan
-- Recheck Cond
-- Filter
+- Index Only Scan
 
 * 関連
 # 関連するエントリ。なぜ関連させたか理由を書く。意味のあるつながりを意識的につくる。
@@ -191,4 +201,5 @@
 # - 付け加えるもの
 # - アイデア同士を組み合わせて新しいものを生み出せないか
 # - どんな疑問が浮かんだか
-なし。
+
+- [[id:20251206T213844][KDOC 496: Index (Only) Scanの様子を見る]]。インデックスつながり
