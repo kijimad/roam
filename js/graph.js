@@ -343,7 +343,7 @@ d3.json("js/graph.json").then(function(data) {
     };
 
     // Graph data
-    const links = data.links.map(d => Object.create(d));
+    const links = data.edges.map(d => Object.create(d));
     const nodes = data.nodes.map(d => Object.create(d));
 
     // Force simulation for the graph
