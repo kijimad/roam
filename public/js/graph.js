@@ -3,6 +3,19 @@ d3.json("js/graph.json").then(function(data) {
     height = 1000;
     width = 2000;
     scale = 1.0;
+
+    // Create custom tooltip
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "graph-tooltip")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background-color", "rgba(0, 0, 0, 0.8)")
+        .style("color", "white")
+        .style("padding", "8px 12px")
+        .style("border-radius", "4px")
+        .style("font-size", "14px")
+        .style("pointer-events", "none")
+        .style("z-index", "1000");
     // Radius function for nodes. Node radius are function of centrality
     radius = d => {
         if (!d.radius) {
@@ -310,36 +323,47 @@ d3.json("js/graph.json").then(function(data) {
                  .on("drag", dragged)
                  .on("end", dragended);
     };
+    // Track highlighted links for efficient cleanup
+    let highlightedLinks = [];
+
     // Make nodes interactive to hovering
-    handleMouseOver = (d, i) => {
-        nde = d3.select(d.currentTarget);
+    handleMouseOver = (event, i) => {
+        nde = d3.select(event.currentTarget);
         nde.attr("fill", "#999")
            .attr("r", nde.attr("r") * 1.4);
 
-        d3.selectAll("text")
-          .filter('#' + CSS.escape(d.currentTarget.id))
-          .style("font-size", "2em");
-
-        d3.selectAll("line")
-          .attr("stroke-width", 1);
-
-        d3.selectAll("line")
+        // Highlight only connected links
+        highlightedLinks = d3.selectAll("line")
           .filter((l, _) => {
               return l && l.source && l.source.index == i.index || l && l.target && l.target.index == i.index
           })
-          .attr("stroke-width", 8);
+          .attr("stroke-width", 8)
+          .nodes();
+
+        // Show tooltip immediately
+        tooltip.html(i.label.replace(/"/g, ''))
+            .style("visibility", "visible")
+            .style("top", (event.pageY - 10) + "px")
+            .style("left", (event.pageX + 10) + "px");
     };
-    handleMouseOut = (d, _) => {
-        nde = d3.select(d.currentTarget);
+    handleMouseOut = (event, _) => {
+        nde = d3.select(event.currentTarget);
         nde.attr("fill", nodeColor)
            .attr("r", nde.attr("r") / 1.4);
 
-        d3.selectAll("text")
-          .filter('#' + CSS.escape(d.currentTarget.id))
-          .style("font-size", "1em");
+        // Reset only previously highlighted links
+        highlightedLinks.forEach(link => {
+            d3.select(link).attr("stroke-width", 1);
+        });
+        highlightedLinks = [];
 
-        d3.selectAll("line")
-          .attr("stroke-width", 1);
+        // Hide tooltip
+        tooltip.style("visibility", "hidden");
+    };
+    handleMouseMove = (event, i) => {
+        // Update tooltip position as mouse moves
+        tooltip.style("top", (event.pageY - 10) + "px")
+            .style("left", (event.pageX + 10) + "px");
     };
 
     // Graph data
@@ -390,35 +414,9 @@ d3.json("js/graph.json").then(function(data) {
                     .attr("r", radius)
                     .attr("fill", nodeColor)
                     .on("mouseover", handleMouseOver)
+                    .on("mousemove", handleMouseMove)
                     .on("mouseout", handleMouseOut)
                     .call(drag(simulation));
-
-    node.append("title")
-        .text(d => d.label.replace(/"/g, ''));
-
-    // Nodes have a label that is visible on hover
-    // They have two layers a rectangle "background" and the text on top
-    const label = svg.append("g")
-                     .selectAll("text")
-                     .data(nodes)
-                     .join("g");
-    const label_background = label.append("text")
-                                  .style("font-size", "45px")
-                                  .text(function (d) { return "  "+ d.label.replace(/"/g, '') + "  "; })
-                                  .attr("dy", -30)
-                                  .attr("id", d => d.id.toLowerCase())
-                                  .attr("class", "node_label")
-                                  .style("display", "none")
-                                  .style("pointer-events", "none")
-                                  .style("alignment-baseline", "middle")
-    // .attr("filter", "url(#solid)");
-    const label_text = label.append("text")
-                            .style("fill", "#222")
-                            .style("font-size", "15px")
-                            .text(function (d) { return "  "+ d.label.replace(/"/g, '') + "  "; })
-                            .attr("dy", -12)
-                            .attr("id", d => d.id.toLowerCase())
-                            .attr("class", "node_label")
 
     // Run the simulation
     simulation.on("tick", () => {
@@ -429,11 +427,5 @@ d3.json("js/graph.json").then(function(data) {
 
         node.attr("cx", d => d.x)
             .attr("cy", d => d.y);
-
-        label_text.attr("x", d => d.x)
-                  .attr("y", d => d.y);
-
-        label_background.attr("x", d => d.x)
-                        .attr("y", d => d.y);
     });
 });
