@@ -5,15 +5,15 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2025-12-10T09:08:47+09:00</updated>
+<updated>2025-12-10T22:19:25+09:00</updated>
 <entry>
   <title>KDOC 500: Covering Indexを試す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgd35c533" class="outline-2">
- <h2 id="orgd35c533"> <a href="#orgd35c533">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd35c533">
+ <div id="outline-container-org8834469" class="outline-2">
+ <h2 id="org8834469"> <a href="#org8834469">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8834469">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -22,9 +22,9 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgccdd8e0" class="outline-2">
- <h2 id="orgccdd8e0"> <a href="#orgccdd8e0">概要</a></h2>
- <div class="outline-text-2" id="text-orgccdd8e0">
+ <div id="outline-container-orga12432d" class="outline-2">
+ <h2 id="orga12432d"> <a href="#orga12432d">概要</a></h2>
+ <div class="outline-text-2" id="text-orga12432d">
  <p>
  <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？</a>で、Covering Indexという見慣れない単語を見た。調べて、試す。
 </p>
@@ -90,25 +90,25 @@
 </div>
 </div>
 </div>
- <div id="outline-container-orgf8ce8d0" class="outline-2">
- <h2 id="orgf8ce8d0"> <a href="#orgf8ce8d0">関連</a></h2>
- <div class="outline-text-2" id="text-orgf8ce8d0">
+ <div id="outline-container-orgfa0c890" class="outline-2">
+ <h2 id="orgfa0c890"> <a href="#orgfa0c890">関連</a></h2>
+ <div class="outline-text-2" id="text-orgfa0c890">
  <ul class="org-ul"> <li> <a href="20251207T091742--kdoc-497-複合インデックスの使用条件を試す__draft_permanent.html#ID-20251207T091742">KDOC 497: 複合インデックスの使用条件を試す</a>。インデックスつながり</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251208T083954--kdoc-500-covering-indexを試す__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20251208T083954--kdoc-500-covering-indexを試す__draft_permanent.html</id>
-  <updated>2025-12-10T18:08:43+09:00</updated>
+  <updated>2025-12-11T07:19:21+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 491: 『マイクロサービスアーキテクチャ』</title>
+  <title>KDOC 501: インデックスのオーバーヘッドを検証する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgdc8fe4f" class="outline-2">
- <h2 id="orgdc8fe4f"> <a href="#orgdc8fe4f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgdc8fe4f">
+ <div id="outline-container-orga8843fd" class="outline-2">
+ <h2 id="orga8843fd"> <a href="#orga8843fd">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orga8843fd">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -117,14 +117,61 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgdab6104" class="outline-2">
- <h2 id="orgdab6104"> <a href="#orgdab6104">概要</a></h2>
- <div class="outline-text-2" id="text-orgdab6104">
+ <div id="outline-container-orgb43fc64" class="outline-2">
+ <h2 id="orgb43fc64"> <a href="#orgb43fc64">概要</a></h2>
+ <div class="outline-text-2" id="text-orgb43fc64">
+ <p>
+ <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>のOver-Indexingを読んで、インデックスの具体的なオーバヘッドを知った。
+</p>
+
+ <blockquote>
+ <ul class="org-ul"> <li>作成時にディスク容量を消費する</li>
+ <li>更新時にメンテナンスコストがかかる</li>
+ <li>計画時（Planning Time）にオプション評価のコストがかかる</li>
+</ul></blockquote>
+
+ <p>
+これらをじっさいに試す。
+</p>
 </div>
 </div>
- <div id="outline-container-org22e9d55" class="outline-2">
- <h2 id="org22e9d55"> <a href="#org22e9d55">メモ</a></h2>
- <div class="outline-text-2" id="text-org22e9d55">
+ <div id="outline-container-orgcaa0aad" class="outline-2">
+ <h2 id="orgcaa0aad"> <a href="#orgcaa0aad">関連</a></h2>
+ <div class="outline-text-2" id="text-orgcaa0aad">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251210T084437--kdoc-501-インデックスのオーバーヘッドを検証する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251210T084437--kdoc-501-インデックスのオーバーヘッドを検証する__draft_permanent.html</id>
+  <updated>2025-12-11T07:19:19+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 491: 『マイクロサービスアーキテクチャ』</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgf4d4a47" class="outline-2">
+ <h2 id="orgf4d4a47"> <a href="#orgf4d4a47">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgf4d4a47">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org237b203" class="outline-2">
+ <h2 id="org237b203"> <a href="#org237b203">概要</a></h2>
+ <div class="outline-text-2" id="text-org237b203">
+</div>
+</div>
+ <div id="outline-container-orgfb569ba" class="outline-2">
+ <h2 id="orgfb569ba"> <a href="#orgfb569ba">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgfb569ba">
  <ul class="org-ul"> <li>マイクロサービスはサービス指向アーキテクチャ(SOA)の一種である。サービス境界の引き方については意見が分かれるところですが、独立してデプロイできるのが重要である(p3)</li>
  <li>独立デプロイ可能性を実現したい場合、データベースの共有は最悪なことの1つである(p9)</li>
  <li>システムのすべての機能をまとめてデプロイしなければならない場合、モノリス、だという(p15)</li>
@@ -139,9 +186,9 @@
  <li>凝集を説明する簡潔な定義: 一緒に変更され、一緒に存在するコード(p40)</li>
 </ul></div>
 </div>
- <div id="outline-container-orgbef5ea8" class="outline-2">
- <h2 id="orgbef5ea8"> <a href="#orgbef5ea8">関連</a></h2>
- <div class="outline-text-2" id="text-orgbef5ea8">
+ <div id="outline-container-org21c6dec" class="outline-2">
+ <h2 id="org21c6dec"> <a href="#org21c6dec">関連</a></h2>
+ <div class="outline-text-2" id="text-org21c6dec">
  <p>
 なし。
 </p>
@@ -150,16 +197,16 @@
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251129T082342--kdoc-491-『マイクロサービスアーキテクチャ』__draft_book.html"/>
   <id>https://kijimad.github.io/roam/20251129T082342--kdoc-491-『マイクロサービスアーキテクチャ』__draft_book.html</id>
-  <updated>2025-12-10T18:08:41+09:00</updated>
+  <updated>2025-12-11T07:19:18+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 498: 絶滅メディア博物館を観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org0d0fc0b" class="outline-2">
- <h2 id="org0d0fc0b"> <a href="#org0d0fc0b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0d0fc0b">
+ <div id="outline-container-org6afe06f" class="outline-2">
+ <h2 id="org6afe06f"> <a href="#org6afe06f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6afe06f">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -168,9 +215,9 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org92f9f94" class="outline-2">
- <h2 id="org92f9f94"> <a href="#org92f9f94">概要</a></h2>
- <div class="outline-text-2" id="text-org92f9f94">
+ <div id="outline-container-orge1368f2" class="outline-2">
+ <h2 id="orge1368f2"> <a href="#orge1368f2">概要</a></h2>
+ <div class="outline-text-2" id="text-orge1368f2">
  <p>
 絶滅メディア博物館は、東京都千代田区にある博物館である。
 </p>
@@ -178,40 +225,40 @@
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d895.7287805120283!2d139.76786299441568!3d35.68951879196432!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188d7f2e9513d1%3A0x22e77b7e3001a812!2sExtinct%20Media%20Museum!5e1!3m2!1sen!2sjp!4v1765195098606!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 </div>
 </div>
- <div id="outline-container-org7ffc07c" class="outline-2">
- <h2 id="org7ffc07c"> <a href="#org7ffc07c">メモ</a></h2>
- <div class="outline-text-2" id="text-org7ffc07c">
+ <div id="outline-container-org2689be8" class="outline-2">
+ <h2 id="org2689be8"> <a href="#org2689be8">メモ</a></h2>
+ <div class="outline-text-2" id="text-org2689be8">
  <ul class="org-ul"> <li>たくさんの種類のガラケーがあって、当時はそうだった、と思い出した。いろいろな個性ある機種があって、携帯ショップを見るのは楽しかった。今は携帯端末は基本的にすべて同じ形状で、ささやかな違いがあるにすぎない。面白くはない。このパターンは、多くの博物館で見てきたものに見える。ある時期に、過剰ともいえるようなさまざまな種別が生まれるが、ある時期で収束して違いはなくなっていく。自動車/自転車/カメラ…</li>
- <li>興味がある人むけに、ほかの博物館へのリンクも随所にあった。たとえば <a href="20250831T135810--kdoc-433-カメラ博物館を観察する__essay.html#ID-20250831T135810">KDOC 433: カメラ博物館を観察する</a>のカメラ博物館など。次のアクションを示してくれるのはよいと感じた</li>
+ <li>さらに興味がある人むけに、ほかの専門的な博物館へのリンクも随所にあった。たとえば <a href="20250831T135810--kdoc-433-カメラ博物館を観察する__essay.html#ID-20250831T135810">KDOC 433: カメラ博物館を観察する</a>のカメラ博物館など。次のアクションを示してくれるのはよいと感じた</li>
 </ul></div>
 </div>
- <div id="outline-container-orgf4311af" class="outline-2">
- <h2 id="orgf4311af"> <a href="#orgf4311af">関連</a></h2>
- <div class="outline-text-2" id="text-orgf4311af">
+ <div id="outline-container-org2401ec0" class="outline-2">
+ <h2 id="org2401ec0"> <a href="#org2401ec0">関連</a></h2>
+ <div class="outline-text-2" id="text-org2401ec0">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org4709f02" class="outline-2">
- <h2 id="org4709f02"> <a href="#org4709f02">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org4709f02">
+ <div id="outline-container-orgbe26770" class="outline-2">
+ <h2 id="orgbe26770"> <a href="#orgbe26770">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgbe26770">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251207T143600--kdoc-498-絶滅メディア博物館を観察する__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20251207T143600--kdoc-498-絶滅メディア博物館を観察する__draft_essay.html</id>
-  <updated>2025-12-10T18:08:35+09:00</updated>
+  <updated>2025-12-11T07:19:13+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 488: CookieはHTTPの仕様に含まれる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org3eef405" class="outline-2">
- <h2 id="org3eef405"> <a href="#org3eef405">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org3eef405">
+ <div id="outline-container-orgec18d3d" class="outline-2">
+ <h2 id="orgec18d3d"> <a href="#orgec18d3d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgec18d3d">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-06 貴島</li>
 </ul></li>
@@ -220,9 +267,9 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org77e5c5b" class="outline-2">
- <h2 id="org77e5c5b"> <a href="#org77e5c5b">概要</a></h2>
- <div class="outline-text-2" id="text-org77e5c5b">
+ <div id="outline-container-orga4dc6d9" class="outline-2">
+ <h2 id="orga4dc6d9"> <a href="#orga4dc6d9">概要</a></h2>
+ <div class="outline-text-2" id="text-orga4dc6d9">
  <p>
 HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポンスにステートフルなセッション提供するため提案されたという。
 </p>
@@ -232,25 +279,25 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <li> <a href="https://www.rfc-editor.org/rfc/rfc6265">RFC 6265: HTTP State Management Mechanism</a></li>
 </ul></div>
 </div>
- <div id="outline-container-org13f201c" class="outline-2">
- <h2 id="org13f201c"> <a href="#org13f201c">関連</a></h2>
- <div class="outline-text-2" id="text-org13f201c">
- <ul class="org-ul"> <li> <a href="20251120T225113--kdoc-487-cookieは自動で送る__permanent.html#ID-20251120T225113">KDOC 487: cookieは自動で送られる</a>。調べたきっかけ</li>
+ <div id="outline-container-org4857a4f" class="outline-2">
+ <h2 id="org4857a4f"> <a href="#org4857a4f">関連</a></h2>
+ <div class="outline-text-2" id="text-org4857a4f">
+ <ul class="org-ul"> <li> <a href="20251120T225113--kdoc-487-cookieは自動で送る__permanent.html#ID-20251120T225113">KDOC 487: Cookieは自動で送る</a>。調べたきっかけ</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251120T225617--kdoc-488-cookieはhttpの仕様に含まれる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20251120T225617--kdoc-488-cookieはhttpの仕様に含まれる__permanent.html</id>
-  <updated>2025-12-10T18:08:33+09:00</updated>
+  <updated>2025-12-11T07:19:10+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 497: 複合インデックスの使用条件を試す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orga9aeebb" class="outline-2">
- <h2 id="orga9aeebb"> <a href="#orga9aeebb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga9aeebb">
+ <div id="outline-container-org7bb301e" class="outline-2">
+ <h2 id="org7bb301e"> <a href="#org7bb301e">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7bb301e">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -259,9 +306,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org8899448" class="outline-2">
- <h2 id="org8899448"> <a href="#org8899448">概要</a></h2>
- <div class="outline-text-2" id="text-org8899448">
+ <div id="outline-container-org09679e7" class="outline-2">
+ <h2 id="org09679e7"> <a href="#org09679e7">概要</a></h2>
+ <div class="outline-text-2" id="text-org09679e7">
  <p>
 複合インデックスによるスキャン方法の変化を実験した。
 </p>
@@ -382,31 +429,31 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <li>Index Only Scan</li>
 </ul></div>
 </div>
- <div id="outline-container-org2b807b3" class="outline-2">
- <h2 id="org2b807b3"> <a href="#org2b807b3">関連</a></h2>
- <div class="outline-text-2" id="text-org2b807b3">
+ <div id="outline-container-org29d3d68" class="outline-2">
+ <h2 id="org29d3d68"> <a href="#org29d3d68">関連</a></h2>
+ <div class="outline-text-2" id="text-org29d3d68">
  <ul class="org-ul"> <li> <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__draft_permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。インデックスつながり</li>
 </ul></div>
 </div>
- <div id="outline-container-orgebe962e" class="outline-2">
- <h2 id="orgebe962e"> <a href="#orgebe962e">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgebe962e">
+ <div id="outline-container-org1b2a750" class="outline-2">
+ <h2 id="org1b2a750"> <a href="#org1b2a750">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org1b2a750">
  <ul class="org-ul"> <li> <a href="./20251208T083954--kdoc-500-covering-indexを試す__draft_permanent.html">KDOC 500: Covering Indexを試す</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251207T091742--kdoc-497-複合インデックスの使用条件を試す__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20251207T091742--kdoc-497-複合インデックスの使用条件を試す__draft_permanent.html</id>
-  <updated>2025-12-10T18:08:31+09:00</updated>
+  <updated>2025-12-11T07:19:08+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 487: Cookieは自動で送る</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org67595b0" class="outline-2">
- <h2 id="org67595b0"> <a href="#org67595b0">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org67595b0">
+ <div id="outline-container-org8c70c46" class="outline-2">
+ <h2 id="org8c70c46"> <a href="#org8c70c46">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8c70c46">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-11-22 貴島</li>
 </ul></li>
@@ -415,9 +462,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org4f48af8" class="outline-2">
- <h2 id="org4f48af8"> <a href="#org4f48af8">概要</a></h2>
- <div class="outline-text-2" id="text-org4f48af8">
+ <div id="outline-container-org9be983f" class="outline-2">
+ <h2 id="org9be983f"> <a href="#org9be983f">概要</a></h2>
+ <div class="outline-text-2" id="text-org9be983f">
  <p>
 恥ずべきことに、Cookieの流れをよくわかっていなかった。
 </p>
@@ -432,31 +479,31 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <li>過去Cookie保存したドメインの場合、次のリクエスト時に  <b>ブラウザが</b> CookieヘッダーにCookieを含めて送る</li>
 </ol></div>
 </div>
- <div id="outline-container-orgcbafb3e" class="outline-2">
- <h2 id="orgcbafb3e"> <a href="#orgcbafb3e">関連</a></h2>
- <div class="outline-text-2" id="text-orgcbafb3e">
+ <div id="outline-container-org51746b7" class="outline-2">
+ <h2 id="org51746b7"> <a href="#org51746b7">関連</a></h2>
+ <div class="outline-text-2" id="text-org51746b7">
  <ul class="org-ul"> <li>追加調査: Cookieを観察する</li>
 </ul></div>
 </div>
- <div id="outline-container-orgdd4d552" class="outline-2">
- <h2 id="orgdd4d552"> <a href="#orgdd4d552">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgdd4d552">
+ <div id="outline-container-org1273919" class="outline-2">
+ <h2 id="org1273919"> <a href="#org1273919">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org1273919">
  <ul class="org-ul"> <li> <a href="./20251120T225617--kdoc-488-cookieはhttpの仕様に含まれる__permanent.html">KDOC 488: CookieはHTTPの仕様に含まれる</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251120T225113--kdoc-487-cookieは自動で送る__permanent.html"/>
   <id>https://kijimad.github.io/roam/20251120T225113--kdoc-487-cookieは自動で送る__permanent.html</id>
-  <updated>2025-12-10T18:08:30+09:00</updated>
+  <updated>2025-12-11T07:19:07+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 495: 文芸的にDB動作を検証できるようにする</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org38b1f09" class="outline-2">
- <h2 id="org38b1f09"> <a href="#org38b1f09">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org38b1f09">
+ <div id="outline-container-org9bace26" class="outline-2">
+ <h2 id="org9bace26"> <a href="#org9bace26">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9bace26">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -465,17 +512,17 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org52fc35b" class="outline-2">
- <h2 id="org52fc35b"> <a href="#org52fc35b">概要</a></h2>
- <div class="outline-text-2" id="text-org52fc35b">
+ <div id="outline-container-org11fbfab" class="outline-2">
+ <h2 id="org11fbfab"> <a href="#org11fbfab">概要</a></h2>
+ <div class="outline-text-2" id="text-org11fbfab">
  <p>
 文芸的にDB動作を検証できるようにした。
 </p>
 </div>
 </div>
- <div id="outline-container-org4123c16" class="outline-2">
- <h2 id="org4123c16"> <a href="#org4123c16">背景</a></h2>
- <div class="outline-text-2" id="text-org4123c16">
+ <div id="outline-container-orgf83120f" class="outline-2">
+ <h2 id="orgf83120f"> <a href="#orgf83120f">背景</a></h2>
+ <div class="outline-text-2" id="text-orgf83120f">
  <p>
  <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？</a>を読んで、データベースの機能について知らないことが多いのを知った。
 </p>
@@ -489,9 +536,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </p>
 </div>
 </div>
- <div id="outline-container-org4c187b6" class="outline-2">
- <h2 id="org4c187b6"> <a href="#org4c187b6">要件</a></h2>
- <div class="outline-text-2" id="text-org4c187b6">
+ <div id="outline-container-org225affd" class="outline-2">
+ <h2 id="org225affd"> <a href="#org225affd">要件</a></h2>
+ <div class="outline-text-2" id="text-org225affd">
  <ul class="org-ul"> <li>少ない準備で気軽にデータベースを実行できる</li>
  <li>文芸的プログラミングができる。入力と標準出力をテキストに残し、そのままドキュメント化できる
  <ul class="org-ul"> <li>入力クエリを出力にエコー表示できる</li>
@@ -501,9 +548,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <li>完全に同等の機能が使える。インデックス、EXPLAIN、トランザクション…が使える</li>
 </ul></div>
 </div>
- <div id="outline-container-orga824a67" class="outline-2">
- <h2 id="orga824a67"> <a href="#orga824a67">使用例</a></h2>
- <div class="outline-text-2" id="text-orga824a67">
+ <div id="outline-container-org991e32b" class="outline-2">
+ <h2 id="org991e32b"> <a href="#org991e32b">使用例</a></h2>
+ <div class="outline-text-2" id="text-org991e32b">
  <p>
 リポジトリは <a href="https://github.com/kijimad/pgpg">kijimad/pgpg</a>にある。
 </p>
@@ -580,27 +627,25 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </div>
 </div>
 </div>
- <div id="outline-container-org12de20b" class="outline-2">
- <h2 id="org12de20b"> <a href="#org12de20b">関連</a></h2>
- <div class="outline-text-2" id="text-org12de20b">
- <p>
-なし。
-</p>
-</div>
+ <div id="outline-container-org7222b42" class="outline-2">
+ <h2 id="org7222b42"> <a href="#org7222b42">関連</a></h2>
+ <div class="outline-text-2" id="text-org7222b42">
+ <ul class="org-ul"> <li>動機:  <a href="20240207T092747--kdoc-77-検証する方法があると理解が進む__essay.html#ID-20240207T092747">KDOC 77: 検証する方法があると理解が進む</a>。に基づいて作った</li>
+</ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__draft_project.html"/>
   <id>https://kijimad.github.io/roam/20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__draft_project.html</id>
-  <updated>2025-12-10T18:07:57+09:00</updated>
+  <updated>2025-12-11T07:18:29+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 486: 『ソフトウェアアーキテクチャの基礎』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org1d345f3" class="outline-2">
- <h2 id="org1d345f3"> <a href="#org1d345f3">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org1d345f3">
+ <div id="outline-container-org9ea7b11" class="outline-2">
+ <h2 id="org9ea7b11"> <a href="#org9ea7b11">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9ea7b11">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -609,17 +654,17 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org8aba57c" class="outline-2">
- <h2 id="org8aba57c"> <a href="#org8aba57c">概要</a></h2>
- <div class="outline-text-2" id="text-org8aba57c">
+ <div id="outline-container-org80c0e7a" class="outline-2">
+ <h2 id="org80c0e7a"> <a href="#org80c0e7a">概要</a></h2>
+ <div class="outline-text-2" id="text-org80c0e7a">
  <p>
 『ソフトウェアアーキテクチャの基礎』は、アーキテクチャについて解説する本。
 </p>
 </div>
 </div>
- <div id="outline-container-orgc97c262" class="outline-2">
- <h2 id="orgc97c262"> <a href="#orgc97c262">メモ</a></h2>
- <div class="outline-text-2" id="text-orgc97c262">
+ <div id="outline-container-orge9354c4" class="outline-2">
+ <h2 id="orge9354c4"> <a href="#orge9354c4">メモ</a></h2>
+ <div class="outline-text-2" id="text-orge9354c4">
  <ul class="org-ul"> <li>アーキテクトは技術的な選択を指定するのではなく、ガイドしなければならない(p9)
  <ul class="org-ul"> <li>「Reactを使う」ではなく、「フロントエンドのWeb開発にリアクティブベースのフレームワークを使う」</li>
 </ul></li>
@@ -632,9 +677,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb00a2a1" class="outline-2">
- <h2 id="orgb00a2a1"> <a href="#orgb00a2a1">関連</a></h2>
- <div class="outline-text-2" id="text-orgb00a2a1">
+ <div id="outline-container-org7a15e99" class="outline-2">
+ <h2 id="org7a15e99"> <a href="#org7a15e99">関連</a></h2>
+ <div class="outline-text-2" id="text-org7a15e99">
  <p>
 なし。
 </p>
@@ -643,16 +688,16 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251118T190900--kdoc-486-『ソフトウェアアーキテクチャの基礎』__draft_book.html"/>
   <id>https://kijimad.github.io/roam/20251118T190900--kdoc-486-『ソフトウェアアーキテクチャの基礎』__draft_book.html</id>
-  <updated>2025-12-10T18:07:57+09:00</updated>
+  <updated>2025-12-11T07:18:29+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 493: 明治神宮ミュージアムを観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgfa8fdaa" class="outline-2">
- <h2 id="orgfa8fdaa"> <a href="#orgfa8fdaa">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgfa8fdaa">
+ <div id="outline-container-org94089eb" class="outline-2">
+ <h2 id="org94089eb"> <a href="#org94089eb">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org94089eb">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -661,9 +706,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org435da18" class="outline-2">
- <h2 id="org435da18"> <a href="#org435da18">概要</a></h2>
- <div class="outline-text-2" id="text-org435da18">
+ <div id="outline-container-orge88cbb0" class="outline-2">
+ <h2 id="orge88cbb0"> <a href="#orge88cbb0">概要</a></h2>
+ <div class="outline-text-2" id="text-orge88cbb0">
  <p>
 明治神宮ミュージアムは、明治神宮を解説する博物館である。
 </p>
@@ -671,9 +716,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7815.993728924776!2d139.6995454119855!3d35.67233027247567!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188d3793afecc3%3A0xa43c8d324731658c!2sMeiji%20Jingu%20Museum!5e1!3m2!1sen!2sjp!4v1764547132110!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 </div>
 </div>
- <div id="outline-container-org377cdb8" class="outline-2">
- <h2 id="org377cdb8"> <a href="#org377cdb8">メモ</a></h2>
- <div class="outline-text-2" id="text-org377cdb8">
+ <div id="outline-container-org232f17e" class="outline-2">
+ <h2 id="org232f17e"> <a href="#org232f17e">メモ</a></h2>
+ <div class="outline-text-2" id="text-org232f17e">
  <ul class="org-ul"> <li>神社の建築時に使用したという大きな木の模型がある。これがガラスなどで覆われていなくて、かつ台の空間に余裕があるので、台に手をついてさまざまな角度から眺めやすい。個人的には、模型は上から見てもよくわからない。同じ目線で見て、その縮尺の空間に自分が立っていることを想像しながら見るとおもしろい</li>
  <li>豪華絢爛な明治天皇ゆかりのグッズが展示されている。本質的に王様であることを認識するのであった</li>
  <li>もともと荒れ地で、人工的な森であることに驚いた</li>
@@ -681,33 +726,33 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <li>明治神宮があまりに巨大で森なので全貌がわからなかったのだが、社の全体像を把握すると神聖を感じた</li>
 </ul></div>
 </div>
- <div id="outline-container-org439d6d3" class="outline-2">
- <h2 id="org439d6d3"> <a href="#org439d6d3">関連</a></h2>
- <div class="outline-text-2" id="text-org439d6d3">
+ <div id="outline-container-orgc253c0e" class="outline-2">
+ <h2 id="orgc253c0e"> <a href="#orgc253c0e">関連</a></h2>
+ <div class="outline-text-2" id="text-orgc253c0e">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org98964dd" class="outline-2">
- <h2 id="org98964dd"> <a href="#org98964dd">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org98964dd">
+ <div id="outline-container-org60af0d7" class="outline-2">
+ <h2 id="org60af0d7"> <a href="#org60af0d7">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org60af0d7">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251201T085907--kdoc-493-明治神宮ミュージアムを観察する__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20251201T085907--kdoc-493-明治神宮ミュージアムを観察する__draft_essay.html</id>
-  <updated>2025-12-10T18:07:56+09:00</updated>
+  <updated>2025-12-11T07:18:28+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 482: 日本オリンピックミュージアムを観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgf0a94b1" class="outline-2">
- <h2 id="orgf0a94b1"> <a href="#orgf0a94b1">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgf0a94b1">
+ <div id="outline-container-org91dcc40" class="outline-2">
+ <h2 id="org91dcc40"> <a href="#org91dcc40">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org91dcc40">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-11-09 貴島</li>
 </ul></li>
@@ -716,9 +761,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0580973" class="outline-2">
- <h2 id="org0580973"> <a href="#org0580973">概要</a></h2>
- <div class="outline-text-2" id="text-org0580973">
+ <div id="outline-container-org921f0b2" class="outline-2">
+ <h2 id="org921f0b2"> <a href="#org921f0b2">概要</a></h2>
+ <div class="outline-text-2" id="text-org921f0b2">
  <p>
  <a href="https://japan-olympicmuseum.jp/jp/">日本オリンピックミュージアム</a>は、東京都新宿区にあるオリンピックの博物館である。
 </p>
@@ -726,9 +771,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3907.8700487139677!2d139.7126084119856!3d35.67492027247497!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188dd5f0e67841%3A0x9400bc4765094194!2sJapan%20Olympic%20Museum!5e1!3m2!1sen!2sjp!4v1762059791573!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 </div>
 </div>
- <div id="outline-container-orgb74d81a" class="outline-2">
- <h2 id="orgb74d81a"> <a href="#orgb74d81a">メモ</a></h2>
- <div class="outline-text-2" id="text-orgb74d81a">
+ <div id="outline-container-org0cb8162" class="outline-2">
+ <h2 id="org0cb8162"> <a href="#org0cb8162">メモ</a></h2>
+ <div class="outline-text-2" id="text-org0cb8162">
  <ul class="org-ul"> <li>フロアが広々としている。広さの割に人が少なくて快適であった</li>
  <li>オリンピックの歴史、2度の東京オリンピックやパラリンピックなどを解説している</li>
  <li>近代オリンピックは古代オリンピックと直接の関係はない。近代オリンピックはあくまで古代から着想を得たにすぎない</li>
@@ -746,31 +791,31 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <li>各所にある映像コンテンツは全体的に画面が大きく、快適に見られた。博物館での映像解説を立ち止まって見ることは少ないのだが、快適でほとんど見た</li>
 </ul></div>
 </div>
- <div id="outline-container-org2e4f5df" class="outline-2">
- <h2 id="org2e4f5df"> <a href="#org2e4f5df">関連</a></h2>
- <div class="outline-text-2" id="text-org2e4f5df">
+ <div id="outline-container-org7deddae" class="outline-2">
+ <h2 id="org7deddae"> <a href="#org7deddae">関連</a></h2>
+ <div class="outline-text-2" id="text-org7deddae">
  <ul class="org-ul"> <li>類推: 最初から完成されていたように見えるが、じつは長い歳月で形成されたもの</li>
 </ul></div>
 </div>
- <div id="outline-container-org91eb753" class="outline-2">
- <h2 id="org91eb753"> <a href="#org91eb753">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org91eb753">
+ <div id="outline-container-org8bd136f" class="outline-2">
+ <h2 id="org8bd136f"> <a href="#org8bd136f">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org8bd136f">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251102T140220--kdoc-482-日本オリンピックミュージアムを観察する__essay.html"/>
   <id>https://kijimad.github.io/roam/20251102T140220--kdoc-482-日本オリンピックミュージアムを観察する__essay.html</id>
-  <updated>2025-12-10T18:07:48+09:00</updated>
+  <updated>2025-12-11T07:18:19+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 494: 日時に関する統計ではタイムゾーンが必要になる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgd4b6f16" class="outline-2">
- <h2 id="orgd4b6f16"> <a href="#orgd4b6f16">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd4b6f16">
+ <div id="outline-container-orgb8cdcfc" class="outline-2">
+ <h2 id="orgb8cdcfc"> <a href="#orgb8cdcfc">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgb8cdcfc">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -779,9 +824,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org3b10c92" class="outline-2">
- <h2 id="org3b10c92"> <a href="#org3b10c92">概要</a></h2>
- <div class="outline-text-2" id="text-org3b10c92">
+ <div id="outline-container-org92e00fc" class="outline-2">
+ <h2 id="org92e00fc"> <a href="#org92e00fc">概要</a></h2>
+ <div class="outline-text-2" id="text-org92e00fc">
  <p>
 直感的でなかったことのメモ。
 </p>
@@ -795,9 +840,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </p>
 </div>
 </div>
- <div id="outline-container-org6fac498" class="outline-2">
- <h2 id="org6fac498"> <a href="#org6fac498">関連</a></h2>
- <div class="outline-text-2" id="text-org6fac498">
+ <div id="outline-container-orge40782f" class="outline-2">
+ <h2 id="orge40782f"> <a href="#orge40782f">関連</a></h2>
+ <div class="outline-text-2" id="text-orge40782f">
  <p>
 なし。
 </p>
@@ -806,16 +851,16 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251201T172433--kdoc-494-日時に関する統計ではタイムゾーンが必要になる__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20251201T172433--kdoc-494-日時に関する統計ではタイムゾーンが必要になる__draft_essay.html</id>
-  <updated>2025-12-10T18:07:47+09:00</updated>
+  <updated>2025-12-11T07:18:18+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 492: 小石川植物園を観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org572da3e" class="outline-2">
- <h2 id="org572da3e"> <a href="#org572da3e">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org572da3e">
+ <div id="outline-container-org7a9930e" class="outline-2">
+ <h2 id="org7a9930e"> <a href="#org7a9930e">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7a9930e">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -824,9 +869,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgf991d64" class="outline-2">
- <h2 id="orgf991d64"> <a href="#orgf991d64">概要</a></h2>
- <div class="outline-text-2" id="text-orgf991d64">
+ <div id="outline-container-org7dad1d0" class="outline-2">
+ <h2 id="org7dad1d0"> <a href="#org7dad1d0">概要</a></h2>
+ <div class="outline-text-2" id="text-org7dad1d0">
  <p>
 小石川植物園は、東京都文京区にある植物園である。
 </p>
@@ -834,42 +879,42 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7811.570390628713!2d139.74391341198717!3d35.71747657246128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188db3e92ec1bb%3A0xb8d81a9078dce5c5!2sKoishikawa%20Botanical%20Garden!5e1!3m2!1sen!2sjp!4v1764719370847!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 </div>
 </div>
- <div id="outline-container-orgcea8177" class="outline-2">
- <h2 id="orgcea8177"> <a href="#orgcea8177">メモ</a></h2>
- <div class="outline-text-2" id="text-orgcea8177">
+ <div id="outline-container-org7d36ccb" class="outline-2">
+ <h2 id="org7d36ccb"> <a href="#org7d36ccb">メモ</a></h2>
+ <div class="outline-text-2" id="text-org7d36ccb">
  <ul class="org-ul"> <li>広い。道は多くあって、特に順路などはない</li>
  <li>あまりイントロダクションはない。解説も各所にあるのだが、植物に関する知識がないのであまりピンとこなかった</li>
  <li>博物館として細かい文章を読むというよりは、公園として目で見て楽しんでいる人が多いように見えた。小さい字を読む気もあまり起きなかった。自然豊かなリラックスした雰囲気で、読んだり考えたくなかった。個別の植物を見るというより、森や公園の雰囲気を楽しんだ</li>
  <li>もともと植物を知っている人にとってはまた違った魅力を持つものだろう</li>
 </ul></div>
 </div>
- <div id="outline-container-orga660fe0" class="outline-2">
- <h2 id="orga660fe0"> <a href="#orga660fe0">関連</a></h2>
- <div class="outline-text-2" id="text-orga660fe0">
+ <div id="outline-container-orgda13e47" class="outline-2">
+ <h2 id="orgda13e47"> <a href="#orgda13e47">関連</a></h2>
+ <div class="outline-text-2" id="text-orgda13e47">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org92c3419" class="outline-2">
- <h2 id="org92c3419"> <a href="#org92c3419">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org92c3419">
+ <div id="outline-container-org607dfb9" class="outline-2">
+ <h2 id="org607dfb9"> <a href="#org607dfb9">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org607dfb9">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251130T101158--kdoc-492-小石川植物園を観察する__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20251130T101158--kdoc-492-小石川植物園を観察する__draft_essay.html</id>
-  <updated>2025-12-10T18:07:47+09:00</updated>
+  <updated>2025-12-11T07:18:17+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 483: 『ROCK IN!』のコンセプトを話す(訳)</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgcc45ecb" class="outline-2">
- <h2 id="orgcc45ecb"> <a href="#orgcc45ecb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgcc45ecb">
+ <div id="outline-container-org5fc9083" class="outline-2">
+ <h2 id="org5fc9083"> <a href="#org5fc9083">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org5fc9083">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-11-23 貴島</li>
 </ul></li>
@@ -878,9 +923,9 @@ HTTPの仕様のなかに、Cookieがある。HTTPリクエストとレスポン
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgfbdd691" class="outline-2">
- <h2 id="orgfbdd691"> <a href="#orgfbdd691">概要</a></h2>
- <div class="outline-text-2" id="text-orgfbdd691">
+ <div id="outline-container-org96f0883" class="outline-2">
+ <h2 id="org96f0883"> <a href="#org96f0883">概要</a></h2>
+ <div class="outline-text-2" id="text-org96f0883">
  <p>
 Vtuberの Koseki Bijou が語った内容のクリップ動画を見て、自分も何か頑張ろうと考えた。文字に書き起こして翻訳をつけた。
 </p>
@@ -1074,9 +1119,9 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org47759ca" class="outline-2">
- <h2 id="org47759ca"> <a href="#org47759ca">関連</a></h2>
- <div class="outline-text-2" id="text-org47759ca">
+ <div id="outline-container-orgb8b7bd0" class="outline-2">
+ <h2 id="orgb8b7bd0"> <a href="#orgb8b7bd0">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb8b7bd0">
  <p>
 なし。
 </p>
@@ -1085,16 +1130,16 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251103T231224--kdoc-483-『rock-in』のコンセプトを話す訳__essay.html"/>
   <id>https://kijimad.github.io/roam/20251103T231224--kdoc-483-『rock-in』のコンセプトを話す訳__essay.html</id>
-  <updated>2025-12-10T18:07:47+09:00</updated>
+  <updated>2025-12-11T07:18:17+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 489: 『Kubernetesで実践するクラウドネイティブDevOps』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org0a1fdce" class="outline-2">
- <h2 id="org0a1fdce"> <a href="#org0a1fdce">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0a1fdce">
+ <div id="outline-container-org4e9c4b2" class="outline-2">
+ <h2 id="org4e9c4b2"> <a href="#org4e9c4b2">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4e9c4b2">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -1103,14 +1148,14 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org4e14337" class="outline-2">
- <h2 id="org4e14337"> <a href="#org4e14337">概要</a></h2>
- <div class="outline-text-2" id="text-org4e14337">
+ <div id="outline-container-org2db1f49" class="outline-2">
+ <h2 id="org2db1f49"> <a href="#org2db1f49">概要</a></h2>
+ <div class="outline-text-2" id="text-org2db1f49">
 </div>
 </div>
- <div id="outline-container-org9ffb855" class="outline-2">
- <h2 id="org9ffb855"> <a href="#org9ffb855">メモ</a></h2>
- <div class="outline-text-2" id="text-org9ffb855">
+ <div id="outline-container-orgfb09c41" class="outline-2">
+ <h2 id="orgfb09c41"> <a href="#orgfb09c41">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgfb09c41">
  <ul class="org-ul"> <li>DepOptsの4つの柱(p5)
  <ul class="org-ul"> <li>文化</li>
  <li>自動化</li>
@@ -1119,9 +1164,9 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org4132f38" class="outline-2">
- <h2 id="org4132f38"> <a href="#org4132f38">関連</a></h2>
- <div class="outline-text-2" id="text-org4132f38">
+ <div id="outline-container-orgf370b00" class="outline-2">
+ <h2 id="orgf370b00"> <a href="#orgf370b00">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf370b00">
  <p>
 なし。
 </p>
@@ -1130,16 +1175,16 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251122T144737--kdoc-489-『kubernetesで実践するクラウドネイティブdevops』__draft_book.html"/>
   <id>https://kijimad.github.io/roam/20251122T144737--kdoc-489-『kubernetesで実践するクラウドネイティブdevops』__draft_book.html</id>
-  <updated>2025-12-10T18:07:45+09:00</updated>
+  <updated>2025-12-11T07:18:15+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 499: 0番ポートは動的割当に利用される</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgbac8131" class="outline-2">
- <h2 id="orgbac8131"> <a href="#orgbac8131">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgbac8131">
+ <div id="outline-container-org0c76bc1" class="outline-2">
+ <h2 id="org0c76bc1"> <a href="#org0c76bc1">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0c76bc1">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -1148,9 +1193,9 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb8af9c2" class="outline-2">
- <h2 id="orgb8af9c2"> <a href="#orgb8af9c2">概要</a></h2>
- <div class="outline-text-2" id="text-orgb8af9c2">
+ <div id="outline-container-org62ed72d" class="outline-2">
+ <h2 id="org62ed72d"> <a href="#org62ed72d">概要</a></h2>
+ <div class="outline-text-2" id="text-org62ed72d">
  <p>
 0番ポートは動的割当に利用される。
 </p>
@@ -1163,9 +1208,9 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org2bf8d58" class="outline-2">
- <h2 id="org2bf8d58"> <a href="#org2bf8d58">関連</a></h2>
- <div class="outline-text-2" id="text-org2bf8d58">
+ <div id="outline-container-orgf9e8a44" class="outline-2">
+ <h2 id="orgf9e8a44"> <a href="#orgf9e8a44">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf9e8a44">
  <p>
 なし。
 </p>
@@ -1174,16 +1219,16 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251207T203931--kdoc-499-0番ポートは動的割当に利用される__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20251207T203931--kdoc-499-0番ポートは動的割当に利用される__draft_permanent.html</id>
-  <updated>2025-12-10T18:07:42+09:00</updated>
+  <updated>2025-12-11T07:18:12+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 490: 301と302/307のキャッシュ動作の違い</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgdfcda90" class="outline-2">
- <h2 id="orgdfcda90"> <a href="#orgdfcda90">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgdfcda90">
+ <div id="outline-container-orgd25b5ba" class="outline-2">
+ <h2 id="orgd25b5ba"> <a href="#orgd25b5ba">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd25b5ba">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-06 貴島</li>
 </ul></li>
@@ -1192,9 +1237,9 @@ That was the basis of like envy. It’s in the visuals. It’s in the lyrics and
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgaaa6ba4" class="outline-2">
- <h2 id="orgaaa6ba4"> <a href="#orgaaa6ba4">概要</a></h2>
- <div class="outline-text-2" id="text-orgaaa6ba4">
+ <div id="outline-container-org890689d" class="outline-2">
+ <h2 id="org890689d"> <a href="#org890689d">概要</a></h2>
+ <div class="outline-text-2" id="text-org890689d">
  <p>
 HTTPステータスコードの301と302/307は、どれもリダイレクトということで似ているのだが、ブラウザでキャッシュの扱いに違いがある。
 </p>
@@ -1215,9 +1260,9 @@ A 301 response is heuristically cacheable; i.e., unless otherwise indicated by t
 </p>
 </div>
 </div>
- <div id="outline-container-org7ca74e7" class="outline-2">
- <h2 id="org7ca74e7"> <a href="#org7ca74e7">関連</a></h2>
- <div class="outline-text-2" id="text-org7ca74e7">
+ <div id="outline-container-orga7c1a29" class="outline-2">
+ <h2 id="orga7c1a29"> <a href="#orga7c1a29">関連</a></h2>
+ <div class="outline-text-2" id="text-orga7c1a29">
  <p>
 なし。
 </p>
@@ -1226,108 +1271,16 @@ A 301 response is heuristically cacheable; i.e., unless otherwise indicated by t
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251128T092223--kdoc-490-301と302307のキャッシュ動作の違い__draft_wiki.html"/>
   <id>https://kijimad.github.io/roam/20251128T092223--kdoc-490-301と302307のキャッシュ動作の違い__draft_wiki.html</id>
-  <updated>2025-12-10T18:07:41+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 481: Route53がパブリックIPのないELBを解決する様子を観察する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org17df40a" class="outline-2">
- <h2 id="org17df40a"> <a href="#org17df40a">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org17df40a">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-11-09 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-11-10 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org8517d99" class="outline-2">
- <h2 id="org8517d99"> <a href="#org8517d99">概要</a></h2>
- <div class="outline-text-2" id="text-org8517d99">
- <p>
-AWSのDNSサービスRoute53には、AWS内のサービスをパブリックIPなしで登録できる。どうやっているか。
-</p>
-
- <p>
-DNSレコードを見る。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>リクエストしたドメインは内部的にRoute53, ALBを使用している。ドメイン名はxxxxに置き換えていて、“xxxx.com”へリクエストしたわけではない</label> <pre class="src src-shell">dig xxxx.com
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> xxxx.com
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 24329
-;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;xxxx.com.	IN	A
-
-;; ANSWER SECTION:
-xxxx.com.	60 IN	A	52.198.233.137
-xxxx.com.	60 IN	A	18.180.41.67
-
-;; Query time: 55 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sat Nov 01 11:29:44 JST 2025
-;; MSG SIZE  rcvd: 91
-
-</pre>
-</div>
-
- <p>
-ここから観察する。
-</p>
-
- <ul class="org-ul"> <li>グローバルIPが登録されている。固定IPではないので、しばらくすると変わる</li>
- <li>リクエストしたドメインに紐づいたALBは2つのアベイラビリティゾーンを使っているので、2つのAレコードが登録されている</li>
-</ul> <p>
-また、内側から観察できることとして、AWSコンソール上で見ると、Route53, ロードバランサにはAWSドメインが割り当てられている。
-</p>
-
- <ul class="org-ul"> <li>ロードバランサには xxxx.ap-northeast-1.elb.amazonaws.com が割り当てられている。</li>
- <li>Route53 のロードバランサに関するレコードには  <code>dig</code> で観察できる結果とは異なり ↑のドメイン名が割り当てられている</li>
-</ul> <p>
-2段階のDNSがあるように見える。
-</p>
-
- <ul class="org-ul"> <li>1段階: リクエストされたドメインをAWS内部ドメインに変換する(エイリアス)
- <ul class="org-ul"> <li>xxxx.com -> xxxx.ap-northeast-1.elb.amazonaws.com</li>
-</ul></li>
- <li>2段階: AWS内部ドメインをグローバルIPに解決する
- <ul class="org-ul"> <li>xxxx.ap-northeast-1.elb.amazonaws.com -> 52.198.233.137</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org3d6dbcf" class="outline-2">
- <h2 id="org3d6dbcf"> <a href="#org3d6dbcf">関連</a></h2>
- <div class="outline-text-2" id="text-org3d6dbcf">
- <ul class="org-ul"> <li>未解決: こういったAWS内部動作を解像度高く調べる方法</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251101T111146--kdoc-481-route53がパブリックipのないelbを解決する様子を観察する__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20251101T111146--kdoc-481-route53がパブリックipのないelbを解決する様子を観察する__permanent.html</id>
-  <updated>2025-12-10T18:07:39+09:00</updated>
+  <updated>2025-12-11T07:18:11+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 485: asepriteでパッキングする</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org9c7747f" class="outline-2">
- <h2 id="org9c7747f"> <a href="#org9c7747f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org9c7747f">
+ <div id="outline-container-orge2c297d" class="outline-2">
+ <h2 id="orge2c297d"> <a href="#orge2c297d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orge2c297d">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-11-10 貴島</li>
 </ul></li>
@@ -1336,9 +1289,9 @@ xxxx.com.	60 IN	A	18.180.41.67
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0250641" class="outline-2">
- <h2 id="org0250641"> <a href="#org0250641">概要</a></h2>
- <div class="outline-text-2" id="text-org0250641">
+ <div id="outline-container-org9e2f48e" class="outline-2">
+ <h2 id="org9e2f48e"> <a href="#org9e2f48e">概要</a></h2>
+ <div class="outline-text-2" id="text-org9e2f48e">
  <p>
 2Dゲームでは小さな大量の画像を使う。それらを効率的に扱うためにはスプライトの管理が重要である。1ファイルに結合することで、ファイル読み込みを減らして高速化できる。
 </p>
@@ -1411,9 +1364,9 @@ asepriteはゲーム用のピクセル画像やアニメーションを描くツ
 </div>
 </div>
 </div>
- <div id="outline-container-orgb21ecff" class="outline-2">
- <h2 id="orgb21ecff"> <a href="#orgb21ecff">関連</a></h2>
- <div class="outline-text-2" id="text-orgb21ecff">
+ <div id="outline-container-org6cb20e7" class="outline-2">
+ <h2 id="org6cb20e7"> <a href="#org6cb20e7">関連</a></h2>
+ <div class="outline-text-2" id="text-org6cb20e7">
  <p>
 なし。
 </p>
@@ -1422,16 +1375,16 @@ asepriteはゲーム用のピクセル画像やアニメーションを描くツ
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251106T193702--kdoc-485-asepriteでパッキングする__wiki.html"/>
   <id>https://kijimad.github.io/roam/20251106T193702--kdoc-485-asepriteでパッキングする__wiki.html</id>
-  <updated>2025-12-10T18:07:38+09:00</updated>
+  <updated>2025-12-11T07:18:08+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 484: 『プログラミングコンテスト攻略のためのアルゴリズムとデータ構造』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org5224fdf" class="outline-2">
- <h2 id="org5224fdf"> <a href="#org5224fdf">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5224fdf">
+ <div id="outline-container-org690698b" class="outline-2">
+ <h2 id="org690698b"> <a href="#org690698b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org690698b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -1440,17 +1393,17 @@ asepriteはゲーム用のピクセル画像やアニメーションを描くツ
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgd5526a1" class="outline-2">
- <h2 id="orgd5526a1"> <a href="#orgd5526a1">概要</a></h2>
- <div class="outline-text-2" id="text-orgd5526a1">
+ <div id="outline-container-orgc61df65" class="outline-2">
+ <h2 id="orgc61df65"> <a href="#orgc61df65">概要</a></h2>
+ <div class="outline-text-2" id="text-orgc61df65">
  <p>
 『プログラミングコンテスト攻略のためのアルゴリズムとデータ構造』は、コンテストを題材にして基礎的なアルゴリズムを解説する本。
 </p>
 </div>
 </div>
- <div id="outline-container-orgea1df69" class="outline-2">
- <h2 id="orgea1df69"> <a href="#orgea1df69">メモ</a></h2>
- <div class="outline-text-2" id="text-orgea1df69">
+ <div id="outline-container-org4c5f053" class="outline-2">
+ <h2 id="org4c5f053"> <a href="#org4c5f053">メモ</a></h2>
+ <div class="outline-text-2" id="text-org4c5f053">
  <ul class="org-ul"> <li>アルゴリズムの効率は主に2つの計算量で評価される。このトレードオフを考えてアルゴリズムを設計する。時間計算量のほうが問題になることが多い(p43)
  <ul class="org-ul"> <li>時間計算量</li>
  <li>領域計算量</li>
@@ -1462,11 +1415,12 @@ asepriteはゲーム用のピクセル画像やアニメーションを描くツ
  <li>入力データの特徴が計算量に影響しないか</li>
 </ul></li>
  <li>選択ソートは離れた要素を交換するので安定なソートではない(p68)</li>
+ <li>キューの実装方法の1つとして、headとtailのポインタを記録しておく方法がある。キューを処理するたびに先頭要素がずれていき、そのままではメモリを無駄にする。かといってheadを常に0に保つようにデータ全体移動させると、そのたびに要素長ぶんの計算が必要になる。ので、リングバッファにする方法がある(p90)</li>
 </ul></div>
 </div>
- <div id="outline-container-org9b4da2d" class="outline-2">
- <h2 id="org9b4da2d"> <a href="#org9b4da2d">関連</a></h2>
- <div class="outline-text-2" id="text-org9b4da2d">
+ <div id="outline-container-org0d3dc63" class="outline-2">
+ <h2 id="org0d3dc63"> <a href="#org0d3dc63">関連</a></h2>
+ <div class="outline-text-2" id="text-org0d3dc63">
  <p>
 なし。
 </p>
@@ -1475,16 +1429,16 @@ asepriteはゲーム用のピクセル画像やアニメーションを描くツ
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251106T083403--kdoc-484-『プログラミングコンテスト攻略のためのアルゴリズムとデータ構造』__draft_book.html"/>
   <id>https://kijimad.github.io/roam/20251106T083403--kdoc-484-『プログラミングコンテスト攻略のためのアルゴリズムとデータ構造』__draft_book.html</id>
-  <updated>2025-12-10T18:07:37+09:00</updated>
+  <updated>2025-12-11T07:18:06+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 496: Index (Only) Scanの様子を見る</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org41e3c8b" class="outline-2">
- <h2 id="org41e3c8b"> <a href="#org41e3c8b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org41e3c8b">
+ <div id="outline-container-orgb191f78" class="outline-2">
+ <h2 id="orgb191f78"> <a href="#orgb191f78">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgb191f78">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -1493,9 +1447,9 @@ asepriteはゲーム用のピクセル画像やアニメーションを描くツ
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org5066c9d" class="outline-2">
- <h2 id="org5066c9d"> <a href="#org5066c9d">概要</a></h2>
- <div class="outline-text-2" id="text-org5066c9d">
+ <div id="outline-container-org2ee26d6" class="outline-2">
+ <h2 id="org2ee26d6"> <a href="#org2ee26d6">概要</a></h2>
+ <div class="outline-text-2" id="text-org2ee26d6">
  <p>
 indexが使われる様子を確かめる。
 </p>
@@ -1611,23 +1565,23 @@ index only scan するパターン。
 </div>
 </div>
 </div>
- <div id="outline-container-org2cbd26c" class="outline-2">
- <h2 id="org2cbd26c"> <a href="#org2cbd26c">関連</a></h2>
- <div class="outline-text-2" id="text-org2cbd26c">
+ <div id="outline-container-org53fb8de" class="outline-2">
+ <h2 id="org53fb8de"> <a href="#org53fb8de">関連</a></h2>
+ <div class="outline-text-2" id="text-org53fb8de">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgaa4055e" class="outline-2">
- <h2 id="orgaa4055e"> <a href="#orgaa4055e">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgaa4055e">
+ <div id="outline-container-orgc61859d" class="outline-2">
+ <h2 id="orgc61859d"> <a href="#orgc61859d">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgc61859d">
  <ul class="org-ul"> <li> <a href="./20251207T091742--kdoc-497-複合インデックスの使用条件を試す__draft_permanent.html">KDOC 497: 複合インデックスの使用条件を試す</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251206T213844--kdoc-496-index-only-scanの様子を見る__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20251206T213844--kdoc-496-index-only-scanの様子を見る__draft_permanent.html</id>
-  <updated>2025-12-10T18:07:35+09:00</updated>
+  <updated>2025-12-11T07:18:04+09:00</updated>
 </entry>
 </feed>

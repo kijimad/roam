@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-10T09:08:46Z -->
+<!-- 2025-12-10T22:18:08Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>KDOC 437: 過去のmap delete記法を見る</title>
+<title>KDOC 451: どういうときint64を使いたいのか?</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
 <link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
@@ -14,52 +14,39 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<h1 class="title">KDOC 437: 過去のmap delete記法を見る</h1>
-<div id="outline-container-org363388f" class="outline-2">
-<h2 id="org363388f"><a href="#org363388f">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org363388f">
+<h1 class="title">KDOC 451: どういうときint64を使いたいのか?</h1>
+<div id="outline-container-org4a7ca04" class="outline-2">
+<h2 id="org4a7ca04"><a href="#org4a7ca04">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4a7ca04">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="on"><input type='checkbox' checked='checked' /> 2025-09-14 貴島</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2025-10-17 貴島</li>
 </ul></li>
 <li>レビュー
 <ul class="org-ul">
-<li class="on"><input type='checkbox' checked='checked' /> 2025-09-14 貴島</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2025-10-17 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org5598963" class="outline-2">
-<h2 id="org5598963"><a href="#org5598963">概要</a></h2>
-<div class="outline-text-2" id="text-org5598963">
+<div id="outline-container-org46e5241" class="outline-2">
+<h2 id="org46e5241"><a href="#org46e5241">概要</a></h2>
+<div class="outline-text-2" id="text-org46e5241">
 <p>
-Go 1.0以前は、 <code>delete</code> キーワードがなく、map要素削除を専用の記法で記載していた。
+なぜ <code>int64</code> という型があるのだろう、と考えた。
 </p>
 
-<div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>okがfalseの場合に削除されていた。代入文の形式で削除されていた</label><pre class="src src-go">a[x] = v, ok
-</pre>
-</div>
-
-<ul class="org-ul">
-<li><a href="https://github.com/golang/go/commit/3e0c0a8add600cd395c4e30a4db8cc1ede90acc9">go spec: &ldquo;delete&rdquo; built-in function · golang/go@3e0c0a8</a></li>
-</ul>
-</div>
-</div>
-<div id="outline-container-org5469542" class="outline-2">
-<h2 id="org5469542"><a href="#org5469542">関連</a></h2>
-<div class="outline-text-2" id="text-org5469542">
 <p>
-なし。
+考えるために必要な前提は、通常のint型などは命令セットのビット長によってかわりうる、ということだ。だから、32bitマシンだと精度が落ちて困るようなものは <code>int64</code> として、命令セットによって変わらないようにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org4b604a2" class="outline-2">
-<h2 id="org4b604a2"><a href="#org4b604a2">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org4b604a2">
+<div id="outline-container-orgf98a170" class="outline-2">
+<h2 id="orgf98a170"><a href="#orgf98a170">関連</a></h2>
+<div class="outline-text-2" id="text-orgf98a170">
 <ul class="org-ul">
-<li><a href="./20250902T214123--kdoc-439-過去elseブロックでの中括弧は必須ではなかった__permanent.html">KDOC 439: 過去elseブロックでの中括弧は必須ではなかった</a></li>
+<li>補足: <a href="20250902T230002--kdoc-450-goで型のメモリ上のサイズの仕様がどうなっているか見る__permanent.html#ID-20250902T230002">KDOC 450: Goで型のメモリ上のサイズの仕様がどうなっているか見る</a>。命令セットによって型のサイズが変わりうることを仕様書で確認した</li>
 </ul>
 </div>
 </div>
