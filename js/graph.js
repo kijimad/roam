@@ -408,7 +408,7 @@ d3.json("js/graph.json").then(function(data) {
     // Create all the graph elements
     const svg = d3.select("svg")
                   .attr('width', '100%')
-                  .attr('height', '400')
+                  .attr('height', '300')
                   .attr('class', 'node-graph')
                   .attr("viewBox", [0, 0, width, height])
                   .attr("preserveAspectRatio", "xMidYMid meet")
@@ -434,7 +434,13 @@ d3.json("js/graph.json").then(function(data) {
             if (isWheelZoom) g.style("transition", "none");
         });
 
-    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(360, 120).scale(0.6));
+    // Calculate initial position to center the graph
+    const svgNode = svg.node();
+    const svgRect = svgNode.getBoundingClientRect();
+    const initialScale = 1.2;
+    const translateX = svgRect.width / 2 - (width / 2) * initialScale;
+    const translateY = svgRect.height / 2 - (height / 2) * initialScale;
+    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(translateX, translateY).scale(initialScale));
 
     const link = g.append("g")
                     .attr("stroke", "#666")
