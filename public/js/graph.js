@@ -1,25 +1,29 @@
 d3.json("js/graph.json").then(function(data) {
     // Canvas size
-    height = 1000;
-    width = 2000;
+    height = 600;
+    width = 1800;
     scale = 1.0;
 
-    // Create custom tooltip
+    // Create custom tooltip with modern design
     const tooltip = d3.select("body").append("div")
         .attr("class", "graph-tooltip")
         .style("position", "absolute")
         .style("visibility", "hidden")
-        .style("background-color", "rgba(0, 0, 0, 0.8)")
+        .style("background", "linear-gradient(135deg, rgba(30, 30, 40, 0.95), rgba(50, 50, 70, 0.95))")
         .style("color", "white")
-        .style("padding", "8px 12px")
-        .style("border-radius", "4px")
+        .style("padding", "10px 16px")
+        .style("border-radius", "8px")
         .style("font-size", "14px")
+        .style("font-weight", "500")
         .style("pointer-events", "none")
-        .style("z-index", "1000");
+        .style("z-index", "1000")
+        .style("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.3)")
+        .style("border", "1px solid rgba(255, 255, 255, 0.1)")
+        .style("backdrop-filter", "blur(10px)");
     // Radius function for nodes. Node radius are function of centrality
     radius = d => {
         if (!d.radius) {
-            d.radius = 11 + 24 * Math.pow(d.centrality, 9/5);
+            d.radius = 4 + 40 * Math.sqrt(d.centrality);
         }
         return d.radius;
     };
@@ -301,14 +305,16 @@ d3.json("js/graph.json").then(function(data) {
         }
 
         function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
+            if (!event.active) simulation.alphaTarget(0.1).restart();
             event.subject.fx = event.subject.x;
             event.subject.fy = event.subject.y;
         }
 
         function dragged(event) {
-            event.subject.fx = event.x;
-            event.subject.fy = event.y;
+            // Smooth interpolation
+            const smoothFactor = 0.3;
+            event.subject.fx += (event.x - event.subject.fx) * smoothFactor;
+            event.subject.fy += (event.y - event.subject.fy) * smoothFactor;
         }
 
         function dragended(event) {
@@ -329,15 +335,21 @@ d3.json("js/graph.json").then(function(data) {
     // Make nodes interactive to hovering
     handleMouseOver = (event, i) => {
         nde = d3.select(event.currentTarget);
-        nde.attr("fill", "#999")
-           .attr("r", nde.attr("r") * 1.4);
+        const r = nde.attr("r") * 1.5;
+        nde.attr("fill", "#FFD700")  // Gold color on hover
+           .attr("r", r)
+           .attr("stroke-width", Math.max(2, r / 6))
+           .attr("stroke", "#FFD700")
+           .style("filter", "drop-shadow(0 0 8px rgba(255, 215, 0, 0.6))");
 
         // Highlight only connected links
         highlightedLinks = d3.selectAll("line")
           .filter((l, _) => {
               return l && l.source && l.source.index == i.index || l && l.target && l.target.index == i.index
           })
-          .attr("stroke-width", 8)
+          .attr("stroke", "#FFD700")
+          .attr("stroke-opacity", 0.8)
+          .attr("stroke-width", 3)
           .nodes();
 
         // Show tooltip immediately
@@ -346,14 +358,21 @@ d3.json("js/graph.json").then(function(data) {
             .style("top", (event.pageY - 10) + "px")
             .style("left", (event.pageX + 10) + "px");
     };
-    handleMouseOut = (event, _) => {
+    handleMouseOut = (event, i) => {
         nde = d3.select(event.currentTarget);
-        nde.attr("fill", nodeColor)
-           .attr("r", nde.attr("r") / 1.4);
+        const r = nde.attr("r") / 1.5;
+        nde.attr("fill", nodeColor(i))
+           .attr("r", r)
+           .attr("stroke-width", Math.max(1, r / 8))
+           .attr("stroke", "#fff")
+           .style("filter", r > 20 ? "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))" : "none");
 
         // Reset only previously highlighted links
         highlightedLinks.forEach(link => {
-            d3.select(link).attr("stroke-width", 1);
+            d3.select(link)
+                .attr("stroke", "#666")
+                .attr("stroke-opacity", 0.3)
+                .attr("stroke-width", 1.5);
         });
         highlightedLinks = [];
 
@@ -388,44 +407,73 @@ d3.json("js/graph.json").then(function(data) {
 
     // Create all the graph elements
     const svg = d3.select("svg")
-                  .attr('max-width', '60%')
+                  .attr('width', '100%')
+                  .attr('height', '400')
                   .attr('class', 'node-graph')
-                  .attr("viewBox", [0, 0, width, height]);
+                  .attr("viewBox", [0, 0, width, height])
+                  .attr("preserveAspectRatio", "xMidYMid meet")
+                  .style("background", "transparent")
+                  .style("display", "block");
 
-    const link = svg.append("g")
-                    .attr("stroke", "#888")
-                    .attr("stroke-opacity", 0.6)
+    // Zoom and pan container
+    const g = svg.append("g");
+
+    let isWheelZoom = false;
+
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 10])
+        .on("start", (event) => {
+            isWheelZoom = event.sourceEvent && event.sourceEvent.type === "wheel";
+            g.style("transition", isWheelZoom ? "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)" : "none");
+        })
+        .on("zoom", (event) => {
+            const transform = event.transform;
+            g.style("transform", `translate(${transform.x}px, ${transform.y}px) scale(${transform.k})`);
+        })
+        .on("end", (event) => {
+            if (isWheelZoom) g.style("transition", "none");
+        });
+
+    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(360, 120).scale(0.6));
+
+    const link = g.append("g")
+                    .attr("stroke", "#666")
+                    .attr("stroke-opacity", 0.3)
                     .selectAll("line")
                     .data(links)
                     .join("line")
                     .attr("stroke-dasharray", d => (d.predicted? "5,5": "0,0"))
-                    .attr("stroke-width", 1);
+                    .attr("stroke-width", 1.5);
 
-    const node = svg.append("g")
+    const node = g.append("g")
                     .selectAll("circle")
                     .data(nodes)
                     .join("a")
                     .attr("xlink:href", d => {
-                        return "./" + d.lnk;
+                        return "./" + d.lnk + ".html";
                     })
                     .attr("id", d => "circle_" + d.lnk)
                     .append("circle")
                     .attr("id", d => d.id.toLowerCase())
                     .attr("r", radius)
                     .attr("fill", nodeColor)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", d => Math.max(1, radius(d) / 8))
+                    .attr("stroke-opacity", 0.8)
+                    .style("cursor", "pointer")
+                    .style("filter", d => radius(d) > 20 ? "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))" : "none")
                     .on("mouseover", handleMouseOver)
                     .on("mousemove", handleMouseMove)
                     .on("mouseout", handleMouseOut)
                     .call(drag(simulation));
 
-    // Run the simulation
     simulation.on("tick", () => {
+        node.attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
         link.attr("x1", d => d.source.x)
             .attr("y1", d => d.source.y)
             .attr("x2", d => d.target.x)
             .attr("y2", d => d.target.y);
-
-        node.attr("cx", d => d.x)
-            .attr("cy", d => d.y);
     });
 });
