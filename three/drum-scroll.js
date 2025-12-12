@@ -66,13 +66,15 @@ function initDrumScroll() {
         el.style.fontSize = '18px';
         el.style.overflow = 'hidden';
         el.style.position = 'relative';
+        el.style.boxSizing = 'border-box';
 
         // Clone content and position it to show the correct segment
         const contentClone = document.createElement('div');
         contentClone.innerHTML = content.innerHTML;
         contentClone.style.position = 'absolute';
         contentClone.style.top = (-i * segmentHeight) + 'px';
-        contentClone.style.width = pageWidth + 'px';
+        contentClone.style.left = '20px';
+        contentClone.style.right = '20px';
         el.appendChild(contentClone);
 
         const obj = new CSS3DObject(el);
