@@ -11,7 +11,7 @@ function initDrumScroll() {
 
     // Scene setup
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
     camera.position.set(0, 0, 450);
 
     // Renderer setup
@@ -29,49 +29,72 @@ function initDrumScroll() {
     controls.enableRotate = true;
     controls.rotateSpeed = 0.5;
 
-    // Create single page
-    const el = document.createElement('div');
-    el.style.width = '600px';
-    el.style.backgroundColor = '#fafafa';
-    el.style.padding = '40px';
-    el.style.fontSize = '18px';
-    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1)';
-    el.innerHTML = content.innerHTML;
+    // Create single page with segments
+    const pageWidth = 800;
+    const segmentHeight = 1000; // 各セグメントの高さ
 
-    // Get actual content height
-    document.body.appendChild(el);
-    const contentHeight = el.scrollHeight;
-    document.body.removeChild(el);
+    // Get total content height
+    const tempEl = document.createElement('div');
+    tempEl.style.width = pageWidth + 'px';
+    tempEl.style.padding = '20px';
+    tempEl.innerHTML = content.innerHTML;
+    document.body.appendChild(tempEl);
+    const contentHeight = tempEl.scrollHeight;
+    document.body.removeChild(tempEl);
 
     // Hide original content
     content.style.display = 'none';
 
-    // Create spacer for scrolling (add window height to ensure full scroll)
+    // Create spacer for scrolling
     const spacer = document.createElement('div');
     spacer.style.height = (contentHeight + window.innerHeight) + 'px';
     spacer.style.width = '1px';
     spacer.style.pointerEvents = 'none';
     document.body.appendChild(spacer);
 
-    const obj = new CSS3DObject(el);
-    // ファイルの上端が画面中央（y=0）に来るように配置
-    obj.position.set(0, 0, 0);
-    // 初期角度をつける
-    obj.rotation.x = -0.5;
-    scene.add(obj);
+    // Create segments
+    const segments = [];
+    const numSegments = Math.ceil(contentHeight / segmentHeight);
 
-    // リンクの上ではOrbitControlsを無効化
-    el.addEventListener('mouseenter', (e) => {
-        if (e.target.tagName === 'A') {
-            controls.enabled = false;
-        }
-    }, true);
+    for (let i = 0; i < numSegments; i++) {
+        const el = document.createElement('div');
+        el.style.width = pageWidth + 'px';
+        el.style.height = segmentHeight + 'px';
+        el.style.backgroundColor = '#fafafa';
+        el.style.padding = '20px';
+        el.style.fontSize = '18px';
+        el.style.overflow = 'hidden';
+        el.style.position = 'relative';
 
-    el.addEventListener('mouseleave', (e) => {
-        if (e.target.tagName === 'A') {
-            controls.enabled = true;
-        }
-    }, true);
+        // Clone content and position it to show the correct segment
+        const contentClone = document.createElement('div');
+        contentClone.innerHTML = content.innerHTML;
+        contentClone.style.position = 'absolute';
+        contentClone.style.top = (-i * segmentHeight) + 'px';
+        contentClone.style.width = pageWidth + 'px';
+        el.appendChild(contentClone);
+
+        const obj = new CSS3DObject(el);
+        obj.rotation.x = -0.5;
+        scene.add(obj);
+
+        segments.push(obj);
+    }
+
+    // リンクの上ではOrbitControlsを無効化（各セグメントに適用）
+    segments.forEach(seg => {
+        seg.element.addEventListener('mouseenter', (e) => {
+            if (e.target.tagName === 'A') {
+                controls.enabled = false;
+            }
+        }, true);
+
+        seg.element.addEventListener('mouseleave', (e) => {
+            if (e.target.tagName === 'A') {
+                controls.enabled = true;
+            }
+        }, true);
+    });
 
     // スクロールで縦移動
     let scrollY = 0;
@@ -85,13 +108,13 @@ function initDrumScroll() {
     function animate() {
         requestAnimationFrame(animate);
 
-        // ドキュメント上のスクロール位置をワールド座標に変換
-        const docY = scrollY * Math.cos(tiltAngle);
-        const docZ = -scrollY * Math.sin(tiltAngle);
-
-        // ドキュメントをスクロール位置に応じて移動
-        obj.position.y = docY;
-        obj.position.z = docZ;
+        // 各セグメントをスクロール位置に応じて移動
+        segments.forEach((seg, i) => {
+            const segmentOffset = i * segmentHeight;
+            const yPos = scrollY - segmentOffset;
+            seg.position.y = yPos * Math.cos(tiltAngle);
+            seg.position.z = -yPos * Math.sin(tiltAngle);
+        });
 
         controls.update();
         renderer.render(scene, camera);
