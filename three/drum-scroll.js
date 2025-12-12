@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { createNavigationButtons } from './navigation-buttons.js';
 
 function initDrumScroll() {
     const content = document.getElementById('content');
@@ -119,7 +120,6 @@ function initDrumScroll() {
         controls.update();
         renderer.render(scene, camera);
     }
-    animate();
 
     // Window resize
     window.addEventListener('resize', () => {
@@ -127,6 +127,12 @@ function initDrumScroll() {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // Add navigation buttons
+    createNavigationButtons(scene, controls);
+
+    // Start animation
+    animate();
 }
 
 // Initialize when DOM is ready
