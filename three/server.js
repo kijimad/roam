@@ -46,12 +46,10 @@ app.use(async (req, res, next) => {
   try {
     const decodedPath = decodeURIComponent(req.path);
     const filePath = join(PUBLIC_DIR, decodedPath);
-    console.log('Processing:', decodedPath);
     const html = await readFile(filePath, 'utf-8');
 
     // Check if scripts are already injected
     if (html.includes('three@0.170.0')) {
-      console.log('  Already has scripts, skipping');
       return res.send(html);
     }
 
@@ -61,11 +59,9 @@ app.use(async (req, res, next) => {
       `$1\n${IMPORTMAP_SCRIPT}`
     );
 
-    console.log('  Injected scripts');
     res.send(modifiedHtml);
   } catch (error) {
     // If file not found, continue to static file handler
-    console.log('  Error:', error.message);
     next();
   }
 });
@@ -181,8 +177,8 @@ app.get('/js/navigation-buttons.js', async (req, res) => {
 app.use(express.static(PUBLIC_DIR));
 
 // Start server
-const server = app.listen(PORT, () => {
-  console.log(`3D Viewer Server running at http://localhost:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`3D Viewer Server running at http://0.0.0.0:${PORT}`);
   console.log(`Serving files from: ${PUBLIC_DIR}`);
 });
 

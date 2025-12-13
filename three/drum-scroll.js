@@ -85,7 +85,6 @@ function initDrumScroll() {
     // n * segmentHeight - topPadding >= actualContentHeight
     // n >= (actualContentHeight + topPadding) / segmentHeight
     const numSegments = Math.ceil((actualContentHeight + topPadding) / segmentHeight);
-    console.log('actualContentHeight:', actualContentHeight, 'numSegments:', numSegments);
 
     // Create spacer for scrolling
     const spacer = document.createElement('div');
