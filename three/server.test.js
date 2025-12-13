@@ -145,5 +145,21 @@ describe('サーバーAPIテスト', () => {
       const scriptCount = (res.text.match(/three@0\.170\.0/g) || []).length;
       expect(scriptCount).toBe(1);
     });
+
+    it('ルートパス / にアクセスしたときもスクリプトを注入する', async () => {
+      // テスト用index.htmlを作成
+      await writeFile(
+        join(testDir, 'index.html'),
+        '<html><head></head><body>Index Page</body></html>'
+      );
+
+      const res = await request(app)
+        .get('/')
+        .expect(200);
+
+      expect(res.text).toContain('three@0.170.0');
+      expect(res.text).toContain('importmap');
+      expect(res.text).toContain('drum-scroll.js');
+    });
   });
 });

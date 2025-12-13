@@ -12,6 +12,10 @@ function initDrumScroll() {
     const content = document.getElementById('content');
     if (!content || window.innerWidth < 800) return;
 
+    // カメラが移動しなくなるので、カレンダー要素を削除する
+    const calendarElements = document.querySelectorAll('#calendar_basic');
+    calendarElements.forEach(el => el.remove());
+
     // Reset scroll position to top
     window.scrollTo(0, 0);
 

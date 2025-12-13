@@ -32,13 +32,17 @@ export function createApp(publicDir = PUBLIC_DIR) {
 
   // HTMLファイルにスクリプトを注入するミドルウェア
   app.use(async (req, res, next) => {
-    if (!req.path.endsWith('.html')) {
+    // .htmlで終わるパス、または / (index.htmlとして扱う)
+    if (!req.path.endsWith('.html') && req.path !== '/') {
       return next();
     }
 
     try {
       const decodedPath = decodeURIComponent(req.path);
-      const filePath = join(publicDir, decodedPath);
+      // / の場合は index.html として扱う
+      const filePath = decodedPath === '/'
+        ? join(publicDir, 'index.html')
+        : join(publicDir, decodedPath);
       const html = await readFile(filePath, 'utf-8');
 
       if (html.includes('three@0.170.0')) {
