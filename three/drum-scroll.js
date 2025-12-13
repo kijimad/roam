@@ -48,28 +48,56 @@ function initDrumScroll() {
     const pageWidth = 800;
     const segmentHeight = 1000; // 各セグメントの高さ
 
-    // Get total content height
-    const tempEl = document.createElement('div');
-    tempEl.style.width = pageWidth + 'px';
-    tempEl.style.padding = '80px 40px';  // 上下80px、左右40px
-    tempEl.innerHTML = content.innerHTML;
-    document.body.appendChild(tempEl);
-    const contentHeight = tempEl.scrollHeight;
-    document.body.removeChild(tempEl);
+    const topPadding = 150;
+    const segmentGap = 20;
+
+    // 実際のセグメント構造と同じ環境で高さを測定
+    const measureEl = document.createElement('div');
+    measureEl.style.width = pageWidth + 'px';
+    measureEl.style.height = 'auto';
+    measureEl.style.backgroundColor = '#fafafa';
+    measureEl.style.padding = '0';
+    measureEl.style.fontSize = '18px';
+    measureEl.style.overflow = 'hidden';
+    measureEl.style.position = 'absolute';
+    measureEl.style.left = '-9999px';  // 画面外に配置
+    measureEl.style.top = '0';
+    measureEl.style.boxSizing = 'border-box';
+
+    const measureContent = document.createElement('div');
+    measureContent.innerHTML = content.innerHTML;
+    measureContent.style.position = 'absolute';
+    measureContent.style.top = topPadding + 'px';
+    measureContent.style.left = '80px';
+    measureContent.style.right = '80px';
+    measureEl.appendChild(measureContent);
+
+    document.body.appendChild(measureEl);
+    const actualContentHeight = measureContent.scrollHeight;
+    document.body.removeChild(measureEl);
 
     // Hide original content
     content.style.display = 'none';
 
+    // セグメント数の計算:
+    // セグメントn-1で表示される終端 = n * segmentHeight - topPadding
+    // これが actualContentHeight 以上である必要がある
+    // n * segmentHeight - topPadding >= actualContentHeight
+    // n >= (actualContentHeight + topPadding) / segmentHeight
+    const numSegments = Math.ceil((actualContentHeight + topPadding) / segmentHeight);
+    console.log('actualContentHeight:', actualContentHeight, 'numSegments:', numSegments);
+
     // Create spacer for scrolling
     const spacer = document.createElement('div');
-    spacer.style.height = (contentHeight + window.innerHeight) + 'px';
+    // 最後のセグメント(i = numSegments - 1)の位置でスクロールを止める
+    const lastSegmentOffset = (numSegments - 1) * (segmentHeight + segmentGap);
+    spacer.style.height = (lastSegmentOffset + window.innerHeight) + 'px';
     spacer.style.width = '1px';
     spacer.style.pointerEvents = 'none';
     document.body.appendChild(spacer);
 
     // Create segments
     const segments = [];
-    const numSegments = Math.ceil(contentHeight / segmentHeight);
 
     for (let i = 0; i < numSegments; i++) {
         const el = document.createElement('div');
@@ -86,9 +114,9 @@ function initDrumScroll() {
         const contentClone = document.createElement('div');
         contentClone.innerHTML = content.innerHTML;
         contentClone.style.position = 'absolute';
-        contentClone.style.top = (-i * segmentHeight + 80) + 'px';  // 上padding80px分を加算
-        contentClone.style.left = '40px';
-        contentClone.style.right = '40px';
+        contentClone.style.top = (topPadding - i * segmentHeight) + 'px';
+        contentClone.style.left = '80px';
+        contentClone.style.right = '80px';
         el.appendChild(contentClone);
 
         const obj = new CSS3DObject(el);
@@ -127,7 +155,7 @@ function initDrumScroll() {
 
         // 各セグメントをスクロール位置に応じて移動
         segments.forEach((seg, i) => {
-            const segmentOffset = i * segmentHeight;
+            const segmentOffset = i * (segmentHeight + segmentGap);
             const yPos = scrollY - segmentOffset;
             seg.position.y = yPos * Math.cos(tiltAngle);
             seg.position.z = -yPos * Math.sin(tiltAngle);
