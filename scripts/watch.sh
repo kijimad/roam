@@ -27,7 +27,7 @@ modifyorg() {
             fi
             echo "✓ finish building"
 
-            docker run -v $PWD:/work/roam -w /work --rm roam_textlint bash -c "npx textlint -c ./.textlintrc ./roam/$FILE"
+            docker run -v $PWD:/work/roam -w /work --rm roam_textlint bash -c "npx textlint -c ./.textlintrc \"./roam/$FILE\""
             if [ $? -gt 0 ]; then
                 notify-send "Fail Textlint" ""
             fi
@@ -70,6 +70,15 @@ dblock() {
     inotifywait -m -e moved_to --format '%w%f' . | while read FILE; do
         if [[ $FILE =~ .*org$ ]]; then
             echo "File $FILE was move ..."
+
+            # ファイル名からIDを抽出して古いHTMLファイルを削除
+            BASENAME=$(basename "$FILE" .org)
+            if [[ $BASENAME =~ ^([0-9]{14}|[0-9]{8}T[0-9]{6}) ]]; then
+                ID="${BASH_REMATCH[1]}"
+                echo "Removing old HTML files: public/${ID}*.html"
+                rm -f public/${ID}*.html
+            fi
+
             # 対象ページのビルド
             emacs --batch -l ./publish.el \
                   --eval "(require 'org)" \
