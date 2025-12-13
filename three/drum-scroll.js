@@ -2,6 +2,11 @@ import * as THREE from 'three';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createNavigationButtons } from './navigation-buttons.js';
+import {
+    calculateNumSegments,
+    calculateSpacerHeight,
+    calculateContentPosition
+} from './drum-scroll-utils.js';
 
 function initDrumScroll() {
     const content = document.getElementById('content');
@@ -79,18 +84,12 @@ function initDrumScroll() {
     // Hide original content
     content.style.display = 'none';
 
-    // セグメント数の計算:
-    // セグメントn-1で表示される終端 = n * segmentHeight - topPadding
-    // これが actualContentHeight 以上である必要がある
-    // n * segmentHeight - topPadding >= actualContentHeight
-    // n >= (actualContentHeight + topPadding) / segmentHeight
-    const numSegments = Math.ceil((actualContentHeight + topPadding) / segmentHeight);
+    // セグメント数の計算
+    const numSegments = calculateNumSegments(actualContentHeight, topPadding, segmentHeight);
 
-    // Create spacer for scrolling
+    // スペーサーを作成してスクロール範囲を設定
     const spacer = document.createElement('div');
-    // 最後のセグメント(i = numSegments - 1)の位置でスクロールを止める
-    const lastSegmentOffset = (numSegments - 1) * (segmentHeight + segmentGap);
-    spacer.style.height = (lastSegmentOffset + window.innerHeight) + 'px';
+    spacer.style.height = calculateSpacerHeight(numSegments, segmentHeight, segmentGap, window.innerHeight) + 'px';
     spacer.style.width = '1px';
     spacer.style.pointerEvents = 'none';
     document.body.appendChild(spacer);
@@ -109,11 +108,11 @@ function initDrumScroll() {
         el.style.position = 'relative';
         el.style.boxSizing = 'border-box';
 
-        // Clone content and position it to show the correct segment
+        // コンテンツをクローンして正しいセグメントを表示する位置に配置
         const contentClone = document.createElement('div');
         contentClone.innerHTML = content.innerHTML;
         contentClone.style.position = 'absolute';
-        contentClone.style.top = (topPadding - i * segmentHeight) + 'px';
+        contentClone.style.top = calculateContentPosition(i, topPadding, segmentHeight) + 'px';
         contentClone.style.left = '80px';
         contentClone.style.right = '80px';
         el.appendChild(contentClone);
