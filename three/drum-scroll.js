@@ -10,21 +10,35 @@ function initDrumScroll() {
     // Reset scroll position to top
     window.scrollTo(0, 0);
 
+    // 背景を設定する
+    document.body.style.backgroundColor = '#333333';
+
     // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
     camera.position.set(0, 0, 450);
 
-    // Renderer setup
-    const renderer = new CSS3DRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.domElement.style.position = 'fixed';
-    renderer.domElement.style.top = '0';
-    renderer.domElement.style.left = '0';
-    document.body.appendChild(renderer.domElement);
+    // CSS3D Renderer setup (for content)
+    const cssRenderer = new CSS3DRenderer();
+    cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    cssRenderer.domElement.style.position = 'fixed';
+    cssRenderer.domElement.style.top = '0';
+    cssRenderer.domElement.style.left = '0';
+    document.body.appendChild(cssRenderer.domElement);
+
+    // WebGL Renderer setup (for 3D buttons)
+    const glRenderer = new THREE.WebGLRenderer({ alpha: true });
+    glRenderer.setSize(window.innerWidth, window.innerHeight);
+    glRenderer.domElement.style.position = 'fixed';
+    glRenderer.domElement.style.top = '0';
+    glRenderer.domElement.style.left = '0';
+    glRenderer.domElement.style.pointerEvents = 'none';  // リンククリックを通す
+    glRenderer.shadowMap.enabled = true;  // 影を有効化
+    glRenderer.shadowMap.type = THREE.PCFSoftShadowMap;  // ソフトシャドウ
+    document.body.appendChild(glRenderer.domElement);
 
     // Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, cssRenderer.domElement);
     controls.enableDamping = true;
     controls.enableZoom = false;
     controls.enableRotate = true;
@@ -37,7 +51,7 @@ function initDrumScroll() {
     // Get total content height
     const tempEl = document.createElement('div');
     tempEl.style.width = pageWidth + 'px';
-    tempEl.style.padding = '20px';
+    tempEl.style.padding = '80px 40px';  // 上下80px、左右40px
     tempEl.innerHTML = content.innerHTML;
     document.body.appendChild(tempEl);
     const contentHeight = tempEl.scrollHeight;
@@ -62,7 +76,7 @@ function initDrumScroll() {
         el.style.width = pageWidth + 'px';
         el.style.height = segmentHeight + 'px';
         el.style.backgroundColor = '#fafafa';
-        el.style.padding = '20px';
+        el.style.padding = '0';
         el.style.fontSize = '18px';
         el.style.overflow = 'hidden';
         el.style.position = 'relative';
@@ -72,9 +86,9 @@ function initDrumScroll() {
         const contentClone = document.createElement('div');
         contentClone.innerHTML = content.innerHTML;
         contentClone.style.position = 'absolute';
-        contentClone.style.top = (-i * segmentHeight) + 'px';
-        contentClone.style.left = '20px';
-        contentClone.style.right = '20px';
+        contentClone.style.top = (-i * segmentHeight + 80) + 'px';  // 上padding80px分を加算
+        contentClone.style.left = '40px';
+        contentClone.style.right = '40px';
         el.appendChild(contentClone);
 
         const obj = new CSS3DObject(el);
@@ -120,18 +134,20 @@ function initDrumScroll() {
         });
 
         controls.update();
-        renderer.render(scene, camera);
+        cssRenderer.render(scene, camera);
+        glRenderer.render(scene, camera);
     }
 
     // Window resize
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        glRenderer.setSize(window.innerWidth, window.innerHeight);
     });
 
     // Add navigation buttons
-    createNavigationButtons(scene, controls);
+    createNavigationButtons(scene, controls, camera, glRenderer);
 
     // Start animation
     animate();
