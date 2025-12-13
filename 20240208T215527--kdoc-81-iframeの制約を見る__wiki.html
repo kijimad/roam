@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-12T08:40:06Z -->
+<!-- 2025-12-13T18:58:42Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>KDOC 81: iframeの制約を考える</title>
+<title>KDOC 81: iframeの制約を見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
 <link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
@@ -14,10 +14,10 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<h1 class="title">KDOC 81: iframeの制約を考える</h1>
-<div id="outline-container-org8990a51" class="outline-2">
-<h2 id="org8990a51"><a href="#org8990a51">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org8990a51">
+<h1 class="title">KDOC 81: iframeの制約を見る</h1>
+<div id="outline-container-org59df347" class="outline-2">
+<h2 id="org59df347"><a href="#org59df347">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org59df347">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,31 +30,31 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orge5e2784" class="outline-2">
-<h2 id="orge5e2784"><a href="#orge5e2784">概要</a></h2>
-<div class="outline-text-2" id="text-orge5e2784">
+<div id="outline-container-org9297c2a" class="outline-2">
+<h2 id="org9297c2a"><a href="#org9297c2a">概要</a></h2>
+<div class="outline-text-2" id="text-org9297c2a">
 <p>
 iframeの制約について関して勘違いがあった。iframeの<a href="20210509100112-javascript.html#ID-a6980e15-ecee-466e-9ea7-2c0210243c0d">JavaScript</a>の制約はCORSを設定しても緩和できないということ。それについて書く。
 </p>
 </div>
 </div>
-<div id="outline-container-org8f123e2" class="outline-2">
-<h2 id="org8f123e2"><a href="#org8f123e2">イントロ</a></h2>
-<div class="outline-text-2" id="text-org8f123e2">
+<div id="outline-container-orgcc8326c" class="outline-2">
+<h2 id="orgcc8326c"><a href="#orgcc8326c">イントロ</a></h2>
+<div class="outline-text-2" id="text-orgcc8326c">
 <p>
 iframeはHTMLの要素の1つで、Webページ内にページを表示するのに使う。別のサイトへ干渉する可能性があるため、セキュリティ上の制約が厳しい。たとえば子要素として開いたiframeが親のウィンドウを操作したり中身が読み取れると、簡単に情報を抜き取ったり、改変ができてしまうだろう。
 </p>
 
 
-<div id="orge9e55e9" class="figure">
+<div id="org747be95" class="figure">
 <p><img src="./images/20240209-iframe.drawio.svg" alt="20240209-iframe.drawio.svg" class="org-svg">
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org66b104f" class="outline-2">
-<h2 id="org66b104f"><a href="#org66b104f">制約</a></h2>
-<div class="outline-text-2" id="text-org66b104f">
+<div id="outline-container-orgdf203f3" class="outline-2">
+<h2 id="orgdf203f3"><a href="#orgdf203f3">制約</a></h2>
+<div class="outline-text-2" id="text-orgdf203f3">
 <p>
 iframeからは、同一オリジンの場合を除いて、ほとんどのwindowプロパティにアクセスできない制約がある。
 </p>
@@ -119,11 +119,11 @@ iframeからは、同一オリジンの場合を除いて、ほとんどのwindo
 </blockquote>
 
 <p>
-ベースとして同一オリジンポリシーがあるけど、それだと困るケースもあるので、CORSによって特定のパスにアクセス権を与えて許可できる、というわけ。そうするとサーバ側で許可リソースを管理できる。
+ベースとして同一オリジンポリシーがあるが、それだと困るケースもあるので、CORSによって特定のパスにアクセス権を与えて許可できる。そうするとサーバ側で許可リソースを管理できる。
 </p>
 
 <p>
-オレが勘違いしていたのは、iframeの挙動もすべてCORSで許可できる、と考えていた点だ。それは違うようだ。またMDNドキュメントを見る。
+勘違いしていたのは、iframeの挙動もすべてCORSで許可できる、と考えていた点だ。それは違うようだ。またMDNドキュメントを見る。
 </p>
 
 <blockquote>
@@ -145,7 +145,7 @@ iframeからは、同一オリジンの場合を除いて、ほとんどのwindo
 </blockquote>
 
 <p>
-明確にiframeへの影響はないと書かれているわけではないのだが、どうもできなさそう。CORSはHTTPリクエストによるリソース権限管理の話であって、ブラウザの実装レベルの話ではない。↓オリジンをまたいだやりとりはjsのAPI使用を推奨している。
+明確にiframeへの影響はないと書かれているわけではないのだが、どうもできなさそうである。CORSはHTTPリクエストによるリソース権限管理の話であって、ブラウザの実装レベルの話ではない。↓オリジンをまたいだやりとりはjsのAPI使用を推奨している。
 </p>
 
 <blockquote>
@@ -182,21 +182,21 @@ X-Frame-Options: SAMEORIGIN
 </p>
 
 <p>
-ひとつ言えることは、iframeを使わなければいけない状況がおかしい、ということ。
+ひとつ言えることは、iframeを使わなければいけない状況自体がおかしい、ということである。
 </p>
 </div>
 </div>
-<div id="outline-container-org35952bc" class="outline-2">
-<h2 id="org35952bc"><a href="#org35952bc">関連</a></h2>
-<div class="outline-text-2" id="text-org35952bc">
+<div id="outline-container-org552032c" class="outline-2">
+<h2 id="org552032c"><a href="#org552032c">関連</a></h2>
+<div class="outline-text-2" id="text-org552032c">
 <ul class="org-ul">
-<li><a href="20240130T235419--kdoc-66-通知ビューワを作る__project.html#ID-20240130T235419">KDOC 66: 通知ビューワを作る</a>。では、iframeの制約を避けるためElectronを使って作った</li>
+<li>具体例: <a href="20240130T235419--kdoc-66-通知ビューワを作る__project.html#ID-20240130T235419">KDOC 66: 通知ビューワを作る</a>。では、iframeの制約を避けるためElectronを使って作った</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb440619" class="outline-2">
-<h2 id="orgb440619"><a href="#orgb440619">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgb440619">
+<div id="outline-container-org8aa26bd" class="outline-2">
+<h2 id="org8aa26bd"><a href="#org8aa26bd">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org8aa26bd">
 <ul class="org-ul">
 <li><a href="./20240209T111023--kdoc-83-corsを確認する__wiki.html">KDOC 83: CORSを確認する</a></li>
 </ul>

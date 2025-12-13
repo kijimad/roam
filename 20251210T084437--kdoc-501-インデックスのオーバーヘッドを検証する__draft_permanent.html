@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-12T08:40:02Z -->
+<!-- 2025-12-13T18:58:38Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 501: インデックスのオーバーヘッドを検証する</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 501: インデックスのオーバーヘッドを検証する</h1>
-<div id="outline-container-org806d788" class="outline-2">
-<h2 id="org806d788"><a href="#org806d788">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org806d788">
+<div id="outline-container-org08e3fab" class="outline-2">
+<h2 id="org08e3fab"><a href="#org08e3fab">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org08e3fab">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,9 +33,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org5f6069a" class="outline-2">
-<h2 id="org5f6069a"><a href="#org5f6069a">概要</a></h2>
-<div class="outline-text-2" id="text-org5f6069a">
+<div id="outline-container-org12de480" class="outline-2">
+<h2 id="org12de480"><a href="#org12de480">概要</a></h2>
+<div class="outline-text-2" id="text-org12de480">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>のOver-Indexingを読んで、インデックスの具体的なオーバヘッドを知った。
 </p>
@@ -52,10 +52,477 @@
 これらをじっさいに試す。
 </p>
 </div>
+<div id="outline-container-orgd766ecb" class="outline-3">
+<h3 id="orgd766ecb"><a href="#orgd766ecb">作成時のディスク容量</a></h3>
+<div class="outline-text-3" id="text-orgd766ecb">
+<p>
+レコードを作成して、インデックスのディスク容量を見る。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
+    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
+</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25407;&#20837;&#12377;&#12427;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span>
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     md5(random()::text) || md5(random()::text)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25968;&#12434;&#30906;&#35469;&#12377;&#12427;
+</span><span class="org-keyword">select</span> <span class="org-builtin">count</span>(*) <span class="org-keyword">from</span> users;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12469;&#12452;&#12474;&#12434;&#30906;&#35469;&#12377;&#12427;
+</span><span class="org-keyword">SELECT</span> pg_size_pretty(pg_relation_size(<span class="org-string">'idx_users_name'</span>));
+</pre>
 </div>
-<div id="outline-container-org3e6c347" class="outline-2">
-<h2 id="org3e6c347"><a href="#org3e6c347">関連</a></h2>
-<div class="outline-text-2" id="text-org3e6c347">
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                              |   |                     |
+|--------------------------------------------------------------+---+---------------------|
+| &gt; CREATE TABLE users (                                       |   |                     |
+| &gt;     name varchar(255)                                      |   |                     |
+| &gt; );                                                         |   |                     |
+| CREATE TABLE                                                 |   |                     |
+|                                                              |   |                     |
+| &gt; CREATE INDEX idx_users_name ON users(name);                |   |                     |
+| CREATE INDEX                                                 |   |                     |
+|                                                              |   |                     |
+| &gt; BEGIN;                                                     |   |                     |
+| BEGIN                                                        |   |                     |
+|                                                              |   |                     |
+| &gt; INSERT INTO users (name)                                   |   |                     |
+| &gt; SELECT                                                     |   |                     |
+| &gt;      -- 32x2 文字                                          |   |                     |
+| &gt;      md5(random()::text)                                   |   | md5(random()::text) |
+| &gt; FROM generate_series(1, 100000) i;                         |   |                     |
+| INSERT 0 100000                                              |   |                     |
+|                                                              |   |                     |
+| &gt; ROLLBACK;                                                  |   |                     |
+| ROLLBACK                                                     |   |                     |
+|                                                              |   |                     |
+| &gt; select count(*) from users;                                |   |                     |
+| count                                                        |   |                     |
+| 0                                                            |   |                     |
+|                                                              |   |                     |
+| &gt; SELECT pg_size_pretty(pg_relation_size('idx_users_name')); |   |                     |
+| pg_size_pretty                                               |   |                     |
+| 12 MB                                                        |   |                     |
+</pre>
+</div>
+
+<p>
+10万レコード、1レコード64バイトで、インデックスサイズは12MBある。
+</p>
+</div>
+</div>
+<div id="outline-container-org48d9ef2" class="outline-3">
+<h3 id="org48d9ef2"><a href="#org48d9ef2">更新時のコスト</a></h3>
+<div class="outline-text-3" id="text-org48d9ef2">
+<p>
+インデックスの有無を変えてフィールドを更新したときの時間を見る。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
+    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12394;&#12375;&#12391;&#25407;&#20837;&#12377;&#12427;
+</span><span class="org-keyword">BEGIN</span>;
+EXPLAIN ANALYZE
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span>
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     md5(random()::text) || md5(random()::text)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+<span class="org-keyword">ROLLBACK</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
+</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12354;&#12426;&#12391;&#25407;&#20837;&#12377;&#12427;
+</span><span class="org-keyword">BEGIN</span>;
+EXPLAIN ANALYZE
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span>
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     md5(random()::text) || md5(random()::text)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+<span class="org-keyword">ROLLBACK</span>;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                                                                      |   |                     |
+|--------------------------------------------------------------------------------------------------------------------------------------+---+---------------------|
+| &gt; CREATE TABLE users (                                                                                                               |   |                     |
+| &gt;     name varchar(255)                                                                                                              |   |                     |
+| &gt; );                                                                                                                                 |   |                     |
+| CREATE TABLE                                                                                                                         |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; BEGIN;                                                                                                                             |   |                     |
+| BEGIN                                                                                                                                |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| &gt; INSERT INTO users (name)                                                                                                           |   |                     |
+| &gt; SELECT                                                                                                                             |   |                     |
+| &gt;      -- 32x2 文字                                                                                                                  |   |                     |
+| &gt;      md5(random()::text)                                                                                                           |   | md5(random()::text) |
+| &gt; FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=118.697..118.698 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=102466 dirtied=1236 written=1238                                                                                 |   |                     |
+| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.688..88.235 rows=100000.00 loops=1)         |   |                     |
+| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.687..83.525 rows=100000.00 loops=1) |   |                     |
+| Planning:                                                                                                                            |   |                     |
+| Buffers: shared hit=6                                                                                                                |   |                     |
+| Planning Time: 0.032 ms                                                                                                              |   |                     |
+| Execution Time: 118.892 ms                                                                                                           |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; ROLLBACK;                                                                                                                          |   |                     |
+| ROLLBACK                                                                                                                             |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; CREATE INDEX idx_users_name ON users(name);                                                                                        |   |                     |
+| CREATE INDEX                                                                                                                         |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; BEGIN;                                                                                                                             |   |                     |
+| BEGIN                                                                                                                                |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| &gt; INSERT INTO users (name)                                                                                                           |   |                     |
+| &gt; SELECT                                                                                                                             |   |                     |
+| &gt;      -- 32x2 文字                                                                                                                  |   |                     |
+| &gt;      md5(random()::text)                                                                                                           |   | md5(random()::text) |
+| &gt; FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=267.753..267.753 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=398873 read=1 dirtied=2766 written=2765                                                                          |   |                     |
+| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.510..91.734 rows=100000.00 loops=1)         |   |                     |
+| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.509..86.862 rows=100000.00 loops=1) |   |                     |
+| Planning Time: 0.027 ms                                                                                                              |   |                     |
+| Execution Time: 267.930 ms                                                                                                           |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; ROLLBACK;                                                                                                                          |   |                     |
+| ROLLBACK                                                                                                                             |   |                     |
+</pre>
+</div>
+
+<p>
+Execution Time が 118.892 ms -&gt; 267.930 ms 。
+</p>
+
+<p>
+10万レコード挿入の実行時間が2倍になった。
+</p>
+</div>
+</div>
+<div id="outline-container-orgb9035fb" class="outline-3">
+<h3 id="orgb9035fb"><a href="#orgb9035fb">計画時間のコスト</a></h3>
+<div class="outline-text-3" id="text-orgb9035fb">
+<div class="org-src-container">
+<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
+    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25407;&#20837;&#12377;&#12427;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span>
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     md5(random()::text) || md5(random()::text)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25968;&#12434;&#30906;&#35469;&#12377;&#12427;
+</span><span class="org-keyword">select</span> <span class="org-builtin">count</span>(*) <span class="org-keyword">from</span> users;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35336;&#30011;&#12398;&#35443;&#32048;&#12434;&#20986;&#12377;
+</span>EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)
+<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">name</span> = <span class="org-string">'NO_INDEX'</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
+</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35336;&#30011;&#12398;&#35443;&#32048;&#12434;&#20986;&#12377;
+</span>EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)
+<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">name</span> = <span class="org-string">'WITH_INDEX'</span>;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                                                           |   |                     |
+|---------------------------------------------------------------------------------------------------------------------------+---+---------------------|
+| &gt; CREATE TABLE users (                                                                                                    |   |                     |
+| &gt;     name varchar(255)                                                                                                   |   |                     |
+| &gt; );                                                                                                                      |   |                     |
+| CREATE TABLE                                                                                                              |   |                     |
+|                                                                                                                           |   |                     |
+| &gt; INSERT INTO users (name)                                                                                                |   |                     |
+| &gt; SELECT                                                                                                                  |   |                     |
+| &gt;      -- 32x2 文字                                                                                                       |   |                     |
+| &gt;      md5(random()::text)                                                                                                |   | md5(random()::text) |
+| &gt; FROM generate_series(1, 100000) i;                                                                                      |   |                     |
+| INSERT 0 100000                                                                                                           |   |                     |
+|                                                                                                                           |   |                     |
+| &gt; select count(*) from users;                                                                                             |   |                     |
+| count                                                                                                                     |   |                     |
+| 100000                                                                                                                    |   |                     |
+|                                                                                                                           |   |                     |
+| &gt; EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)                                                                               |   |                     |
+| &gt; SELECT * FROM users WHERE name = 'NO_INDEX';                                                                            |   |                     |
+| QUERY PLAN                                                                                                                |   |                     |
+| Seq Scan on public.users  (cost=0.00..1466.56 rows=93 width=516) (actual time=2.421..2.421 rows=0.00 loops=1)             |   |                     |
+| Output: name                                                                                                              |   |                     |
+| Filter: ((users.name)::text = 'NO_INDEX'::text)                                                                           |   |                     |
+| Rows Removed by Filter: 100000                                                                                            |   |                     |
+| Buffers: shared hit=1235                                                                                                  |   |                     |
+| Planning:                                                                                                                 |   |                     |
+| Buffers: shared hit=9                                                                                                     |   |                     |
+| Planning Time: 0.038 ms                                                                                                   |   |                     |
+| Execution Time: 2.426 ms                                                                                                  |   |                     |
+|                                                                                                                           |   |                     |
+| &gt; CREATE INDEX idx_users_name ON users(name);                                                                             |   |                     |
+| CREATE INDEX                                                                                                              |   |                     |
+|                                                                                                                           |   |                     |
+| &gt; EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)                                                                               |   |                     |
+| &gt; SELECT * FROM users WHERE name = 'WITH_INDEX';                                                                          |   |                     |
+| QUERY PLAN                                                                                                                |   |                     |
+| Bitmap Heap Scan on public.users  (cost=28.29..974.23 rows=500 width=516) (actual time=0.014..0.015 rows=0.00 loops=1)    |   |                     |
+| Output: name                                                                                                              |   |                     |
+| Recheck Cond: ((users.name)::text = 'WITH_INDEX'::text)                                                                   |   |                     |
+| Buffers: shared read=3                                                                                                    |   |                     |
+| -&gt;  Bitmap Index Scan on idx_users_name  (cost=0.00..28.17 rows=500 width=0) (actual time=0.011..0.011 rows=0.00 loops=1) |   |                     |
+| Index Cond: ((users.name)::text = 'WITH_INDEX'::text)                                                                     |   |                     |
+| Index Searches: 1                                                                                                         |   |                     |
+| Buffers: shared read=3                                                                                                    |   |                     |
+| Planning:                                                                                                                 |   |                     |
+| Buffers: shared hit=15 read=1                                                                                             |   |                     |
+| Planning Time: 0.104 ms                                                                                                   |   |                     |
+| Execution Time: 0.021 ms                                                                                                  |   |                     |
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>Planning Time: 0.038 ms -&gt; 0.104 ms</li>
+<li>Execution Time: 2.426 ms -&gt; 0.021 ms</li>
+</ul>
+
+<p>
+実行時間は激減したが、計画時間は増えた。この例では明らかにメリットのほうが大きいが、インデックスが増えて選択肢が増えると悪化していくのだろう。
+</p>
+</div>
+</div>
+<div id="outline-container-org834ba0c" class="outline-3">
+<h3 id="org834ba0c"><a href="#org834ba0c">大量インデックスの計画コスト</a></h3>
+<div class="outline-text-3" id="text-org834ba0c">
+<p>
+インデックス増加による計画時間の増加を見る。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
+    noindex <span class="org-type">varchar</span>(255),
+    name1 <span class="org-type">varchar</span>(255),
+    name2 <span class="org-type">varchar</span>(255),
+    name3 <span class="org-type">varchar</span>(255),
+    name4 <span class="org-type">varchar</span>(255),
+    name5 <span class="org-type">varchar</span>(255),
+    name6 <span class="org-type">varchar</span>(255),
+    name7 <span class="org-type">varchar</span>(255),
+    name8 <span class="org-type">varchar</span>(255),
+    name9 <span class="org-type">varchar</span>(255),
+    name10 <span class="org-type">varchar</span>(255),
+    name11 <span class="org-type">varchar</span>(255),
+    name12 <span class="org-type">varchar</span>(255),
+    name13 <span class="org-type">varchar</span>(255),
+    name14 <span class="org-type">varchar</span>(255),
+    name15 <span class="org-type">varchar</span>(255),
+    name16 <span class="org-type">varchar</span>(255),
+    name17 <span class="org-type">varchar</span>(255),
+    name18 <span class="org-type">varchar</span>(255),
+    name19 <span class="org-type">varchar</span>(255),
+    name20 <span class="org-type">varchar</span>(255)
+);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25407;&#20837;&#12377;&#12427;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (name1)
+<span class="org-keyword">SELECT</span>
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     md5(random()::text) || md5(random()::text)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
+</span><span class="org-keyword">CREATE</span> INDEX idx_users_name1 <span class="org-keyword">ON</span> users(name1);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name2 <span class="org-keyword">ON</span> users(name2);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name3 <span class="org-keyword">ON</span> users(name3);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name4 <span class="org-keyword">ON</span> users(name4);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name5 <span class="org-keyword">ON</span> users(name5);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name6 <span class="org-keyword">ON</span> users(name6);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name7 <span class="org-keyword">ON</span> users(name7);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name8 <span class="org-keyword">ON</span> users(name8);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name9 <span class="org-keyword">ON</span> users(name9);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name10 <span class="org-keyword">ON</span> users(name10);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name11 <span class="org-keyword">ON</span> users(name11);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name12 <span class="org-keyword">ON</span> users(name12);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name13 <span class="org-keyword">ON</span> users(name13);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name14 <span class="org-keyword">ON</span> users(name14);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name15 <span class="org-keyword">ON</span> users(name15);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name16 <span class="org-keyword">ON</span> users(name16);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name17 <span class="org-keyword">ON</span> users(name17);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name18 <span class="org-keyword">ON</span> users(name18);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name19 <span class="org-keyword">ON</span> users(name19);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name20 <span class="org-keyword">ON</span> users(name20);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#12394;&#12356;&#12418;&#12398;&#12434;&#26908;&#32034;&#12377;&#12427;
+</span>EXPLAIN (ANALYZE)
+<span class="org-keyword">SELECT</span> noindex <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> noindex = <span class="org-string">'xx'</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#12354;&#12427;&#12418;&#12398;&#12434;&#26908;&#32034;&#12377;&#12427;
+</span>EXPLAIN (ANALYZE)
+<span class="org-keyword">SELECT</span> name1 <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> name1 = <span class="org-string">'xx'</span>;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                                                            |   |                     |
+|----------------------------------------------------------------------------------------------------------------------------+---+---------------------|
+| &gt; CREATE TABLE users (                                                                                                     |   |                     |
+| &gt;     noindex varchar(255),                                                                                                |   |                     |
+| &gt;     name1 varchar(255),                                                                                                  |   |                     |
+| &gt;     name2 varchar(255),                                                                                                  |   |                     |
+| &gt;     name3 varchar(255),                                                                                                  |   |                     |
+| &gt;     name4 varchar(255),                                                                                                  |   |                     |
+| &gt;     name5 varchar(255),                                                                                                  |   |                     |
+| &gt;     name6 varchar(255),                                                                                                  |   |                     |
+| &gt;     name7 varchar(255),                                                                                                  |   |                     |
+| &gt;     name8 varchar(255),                                                                                                  |   |                     |
+| &gt;     name9 varchar(255),                                                                                                  |   |                     |
+| &gt;     name10 varchar(255),                                                                                                 |   |                     |
+| &gt;     name11 varchar(255),                                                                                                 |   |                     |
+| &gt;     name12 varchar(255),                                                                                                 |   |                     |
+| &gt;     name13 varchar(255),                                                                                                 |   |                     |
+| &gt;     name14 varchar(255),                                                                                                 |   |                     |
+| &gt;     name15 varchar(255),                                                                                                 |   |                     |
+| &gt;     name16 varchar(255),                                                                                                 |   |                     |
+| &gt;     name17 varchar(255),                                                                                                 |   |                     |
+| &gt;     name18 varchar(255),                                                                                                 |   |                     |
+| &gt;     name19 varchar(255),                                                                                                 |   |                     |
+| &gt;     name20 varchar(255)                                                                                                  |   |                     |
+| &gt; );                                                                                                                       |   |                     |
+| CREATE TABLE                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; INSERT INTO users (name1)                                                                                                |   |                     |
+| &gt; SELECT                                                                                                                   |   |                     |
+| &gt;      -- 32x2 文字                                                                                                        |   |                     |
+| &gt;      md5(random()::text)                                                                                                 |   | md5(random()::text) |
+| &gt; FROM generate_series(1, 100000) i;                                                                                       |   |                     |
+| INSERT 0 100000                                                                                                            |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name1 ON users(name1);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name1_2 ON users(name1, name2);                                                                   |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name2 ON users(name2);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name3 ON users(name3);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name4 ON users(name4);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name5 ON users(name5);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name6 ON users(name6);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name7 ON users(name7);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name8 ON users(name8);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name9 ON users(name9);                                                                            |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name10 ON users(name10);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name11 ON users(name11);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name12 ON users(name12);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name13 ON users(name13);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name14 ON users(name14);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name15 ON users(name15);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name16 ON users(name16);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name17 ON users(name17);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name18 ON users(name18);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name19 ON users(name19);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; CREATE INDEX idx_users_name20 ON users(name20);                                                                          |   |                     |
+| CREATE INDEX                                                                                                               |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; EXPLAIN (ANALYZE)                                                                                                        |   |                     |
+| &gt; SELECT noindex FROM users WHERE noindex = 'xx';                                                                          |   |                     |
+| QUERY PLAN                                                                                                                 |   |                     |
+| Seq Scan on users  (cost=0.00..2584.00 rows=500 width=516) (actual time=1.908..1.908 rows=0.00 loops=1)                    |   |                     |
+| Filter: ((noindex)::text = 'xx'::text)                                                                                     |   |                     |
+| Rows Removed by Filter: 100000                                                                                             |   |                     |
+| Buffers: shared hit=1334                                                                                                   |   |                     |
+| Planning:                                                                                                                  |   |                     |
+| Buffers: shared hit=251 read=21                                                                                            |   |                     |
+| Planning Time: 0.296 ms                                                                                                    |   |                     |
+| Execution Time: 1.913 ms                                                                                                   |   |                     |
+|                                                                                                                            |   |                     |
+| &gt; EXPLAIN (ANALYZE)                                                                                                        |   |                     |
+| &gt; SELECT name1 FROM users WHERE name1 = 'xx';                                                                              |   |                     |
+| QUERY PLAN                                                                                                                 |   |                     |
+| Bitmap Heap Scan on users  (cost=28.29..1010.49 rows=500 width=516) (actual time=0.019..0.019 rows=0.00 loops=1)           |   |                     |
+| Recheck Cond: ((name1)::text = 'xx'::text)                                                                                 |   |                     |
+| Buffers: shared read=3                                                                                                     |   |                     |
+| -&gt;  Bitmap Index Scan on idx_users_name1  (cost=0.00..28.17 rows=500 width=0) (actual time=0.017..0.017 rows=0.00 loops=1) |   |                     |
+| Index Cond: ((name1)::text = 'xx'::text)                                                                                   |   |                     |
+| Index Searches: 1                                                                                                          |   |                     |
+| Buffers: shared read=3                                                                                                     |   |                     |
+| Planning Time: 0.037 ms                                                                                                    |   |                     |
+| Execution Time: 0.023 ms                                                                                                   |   |                     |
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>index使用時の計画時間が、indexが1つだけのときに比べて3倍になった</li>
+<li>index使用時の実行時間は、indexが1つだけのときと変わらない</li>
+<li>index不使用時の計画時間は増加していない</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-orged7da11" class="outline-2">
+<h2 id="orged7da11"><a href="#orged7da11">関連</a></h2>
+<div class="outline-text-2" id="text-orged7da11">
 <p>
 なし。
 </p>
