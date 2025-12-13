@@ -19,7 +19,7 @@ CLOCK: [2024-02-17 Sat 13:00]--[2024-02-17 Sat 13:25] =>  0:25
 - レビュー
   - [X] 2024-02-25 貴島
 * 概要
-以前[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]のerrors.Is()を調べたので、今度はerrors.As()を調べる。違いは何だろうか。
+以前[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]の ~errors.Is()~ を調べたので、今度は ~errors.As()~ を調べる。違いは何だろうか。
 
 #+caption: シグネチャ
 #+begin_src go
@@ -29,7 +29,7 @@ func As(err error, target any) bool
 - [[https://pkg.go.dev/errors#As][errors package - errors - Go Packages]]
 
 * ユースケース
-まずユースケースを見る。fs.PathErrorはUnwrap()、As()を実装してないので、エラーツリーを辿らず独自判定ロジックで実行しない。
+まずユースケースを見る。 ~fs.PathError~ は ~Unwrap()~ 、 ~As()~ を実装してないので、エラーツリーを辿らず独自判定ロジックで実行しない。
 
 #+caption: exampleから
 #+begin_src go :imports '("os" "io/fs" "fmt" "errors")
@@ -101,4 +101,6 @@ Is()とAs()の違いをまとめる。
 - errors.As()はエラーを区別しつつ、型アサーションする関数。型の代入可能性によって判定。エラーのフィールドを利用したいときに使う
 
 * 関連
-- [[id:20240210T220439][KDOC 86: errors.Is()の比較ロジックを見る]]。IsとAsがあるのはなぜか疑問を持ったので調べた
+
+- 動機: [[id:20240210T220439][KDOC 86: errors.Is()の比較ロジックを見る]]。IsとAsがあるのはなぜか疑問を持ったので調べた
+- 未解決: 代入可能とはどういうことなのか

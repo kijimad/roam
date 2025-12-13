@@ -30,7 +30,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 const (
 	exteriorSpriteNumber = 0
 	wallSpriteNumber     = 1
@@ -39,7 +39,7 @@ const (
 	boxSpriteNumber      = 4
 	playerSpriteNumber   = 5
 )
-#+end_results
+#+end_src
 
 * タイルに対する操作
 
@@ -50,7 +50,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // Tile is a game tile
 type Tile uint8
 
@@ -75,14 +75,14 @@ func (t *Tile) ContainsAny(other Tile) bool {
 
 // Set adds the provided tile to a game tile
 func (t *Tile) Set(other Tile) {
-	*t |= other
+	,*t |= other
 }
 
 // Remove removes the provided tile to a game tile
 func (t *Tile) Remove(other Tile) {
-	*t &= 0xFF ^ other
+	,*t &= 0xFF ^ other
 }
-#+end_results
+#+end_src
 
 * 読み込み
 
@@ -94,9 +94,9 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	grid := make([][]byte, len(lines))
-#+end_results
+#+end_src
 
 コンポーネントを追加している↓。
 
@@ -106,7 +106,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet *ec.SpriteSheet, line, col int) {
 	componentList.Engine = append(componentList.Engine, loader.EngineComponentList{
 		SpriteRender: &ec.SpriteRender{SpriteSheet: gameSpriteSheet, SpriteNumber: floorSpriteNumber},
@@ -116,7 +116,7 @@ func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteShee
 		GridElement: &gc.GridElement{Line: line, Col: col},
 	})
 }
-#+end_results
+#+end_src
 
 * コンポーネントの定義
 
@@ -127,7 +127,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 type gameComponentList struct {
 	GridElement *gc.GridElement
 	Player      *gc.Player
@@ -135,7 +135,7 @@ type gameComponentList struct {
 	Goal        *gc.Goal
 	Wall        *gc.Wall
 }
-#+end_results
+#+end_src
 
 保持している構造体↓。コンポーネントを入れる。
 
@@ -144,7 +144,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // Components contains references to all game components
 type Components struct {
 	GridElement *ecs.SliceComponent
@@ -153,7 +153,7 @@ type Components struct {
 	Goal        *ecs.NullComponent
 	Wall        *ecs.NullComponent
 }
-#+end_results
+#+end_src
 
 * resources
 
@@ -165,13 +165,13 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 const (
 	// MoveUpAction is the action for moving up
 	MoveUpAction = "MoveUp"
 	// MoveUpFastAction is the action for moving up fast
 	MoveUpFastAction = "MoveUpFast"
-#+end_results
+#+end_src
 
 アクションを初期化している部分(ライブラリ)↓。TOMLファイルから読み取って設定するよう。
 
@@ -186,7 +186,8 @@ TOMLファイル。対応関係がわかりやすい。
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/config/controls.toml#L1-L6
 #+end_src
 
-#+begin_src toml
+#+RESULTS:
+#+begin_src
 [controls.actions.MoveUp]
 combinations = [[{ key = "Up" }]]
 once = true
@@ -195,6 +196,14 @@ once = true
 combinations = [[{ key = "ShiftLeft" }, { key = "Up" }], [{ key = "ShiftRight" }, { key = "Up" }]]
 #+end_src
 
+#+begin_src toml
+[controls.actions.MoveUp]
+combinations = [[{ key = "Up" }]]
+once = true
+
+[controls.actions.MoveUpFast]
+combinations = [[{ key = "ShiftLeft" }, { key = "Up" }], [{ key = "ShiftRight" }, { key = "Up" }]]
+#+end_src
 
 * prefab
 
@@ -205,7 +214,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // MenuPrefabs contains menu prefabs
 type MenuPrefabs struct {
 	MainMenu          loader.EntityComponentList
@@ -215,7 +224,7 @@ type MenuPrefabs struct {
 	HighscoresMenu    loader.EntityComponentList
 	SolutionsMenu     loader.EntityComponentList
 }
-#+end_results
+#+end_src
 
 * UI更新
 
@@ -227,7 +236,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	// Update text components
 	world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 		text := world.Components.Engine.Text.Get(entity).(*ec.Text)
@@ -243,7 +252,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 			}
 		}
 	}))
-#+end_results
+#+end_src
 
 ↓コンポーネントはTOMLで定義されているようだ。各メニューごとにファイルがあるな。translationは配置する座標だな。なぜこの単語が使われているのかわからない。
 
@@ -252,7 +261,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 [entity.components.Text]
 id = "cursor_view_highscores"
 text = "\u25ba"
@@ -261,7 +270,7 @@ color = [255, 255, 255, 255]
 
 [entity.components.UITransform]
 translation = { x = 40, y = 400 }
-#+end_results
+#+end_src
 
 - [[https://developer.mozilla.org/ja/docs/Web/CSS/transform][ transform - CSS: カスケーディングスタイルシート | MDN]]
 
@@ -277,14 +286,14 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	// Handle mouse events only if mouse is moved or clicked
 	x, y := ebiten.CursorPosition()
 	if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		menuLastCursorPosition = m.VectorInt2{X: x, Y: y}
 
 		for iElem, id := range menu.getMenuIDs() {
-#+end_results
+#+end_src
 
 ↓コンポーネントのクエリ。レンダーできる、変形可能、マウスが反応可能、といった性質を持つものを対象にする。
 
@@ -294,9 +303,9 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 			if world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform, world.Components.Engine.MouseReactive).Visit(
-#+end_results
+#+end_src
 
 ↓コンポーネントを特定して、stateの ~selection~ (選択中の項目)を変える。クリックされていた場合は、遷移する。
 
@@ -306,7 +315,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 				func(index int) (skip bool) {
 					mouseReactive := world.Components.Engine.MouseReactive.Get(ecs.Entity(index)).(*ec.MouseReactive)
 					if mouseReactive.ID == id && mouseReactive.Hovered {
@@ -319,7 +328,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 					return false
 				}) {
 				return transition
-#+end_results
+#+end_src
 
 * GridElementとは何か
 
@@ -330,19 +339,19 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // GridTransformSystem sets transform for grid elements
 func GridTransformSystem(world w.World) {
-#+end_results
+#+end_src
 
 #+begin_src git-permalink
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_transform.go#L20
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	world.Manager.Join(gameComponents.GridElement, world.Components.Engine.SpriteRender, world.Components.Engine.Transform).Visit(ecs.Visit(func(entity ecs.Entity) {
-#+end_results
+#+end_src
 
 - GridElement -- 座標を持つことを示す
 - SpriteRender -- 描画可能なことを示す
@@ -360,7 +369,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	for iTile, tile := range gameResources.Level.Grid.Data {
 		switch {
 		case tile.Contains(resources.TilePlayer):
@@ -369,7 +378,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 			boxIndices = append(boxIndices, iTile)
 		}
 	}
-#+end_results
+#+end_src
 
 プレイヤーコンポーネント、箱コンポーネントのgridElementを更新する。
 
@@ -379,7 +388,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	world.Manager.Join(gameComponents.GridElement).Visit(ecs.Visit(func(entity ecs.Entity) {
 		switch {
 		case entity.HasComponent(gameComponents.Player):
@@ -395,7 +404,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 			gridElement.Col = paddingCol + boxIndex%levelWidth
 		}
 	}))
-#+end_results
+#+end_src
 
 * InfoSystemとは何か
 
@@ -409,7 +418,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results go
+#+begin_src
 	for _, tile := range gameResources.Level.Grid.Data {
 		if tile.Contains(resources.TileBox) {
 			boxCount += 1
@@ -419,7 +428,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 			}
 		}
 	}
-#+end_results
+#+end_src
 
 ↓テキストコンポーネントを更新する。IDで分岐する。
 
@@ -428,7 +437,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results go
+#+begin_src
 	// Set text info
 	world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 		text := world.Components.Engine.Text.Get(entity).(*ec.Text)
@@ -450,7 +459,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 			}
 		}
 	}))
-#+end_results
+#+end_src
 
 * Resourceとは何か
 
@@ -468,7 +477,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // Game contains game resources
 type Game struct {
 	StateEvent StateEvent
@@ -477,7 +486,7 @@ type Game struct {
 	GridLayout GridLayout
 	SaveConfig SaveConfig
 }
-#+end_results
+#+end_src
 
 - StateEvent :: 完了したかどうか
 - PackageData :: 読み込んだPackageのデータ。Packageはステージのセット
@@ -492,7 +501,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // List of game tiles
 const (
 	TilePlayer = gloader.TilePlayer
@@ -501,7 +510,7 @@ const (
 	TileWall   = gloader.TileWall
 	TileEmpty  = gloader.TileEmpty
 )
-#+end_results
+#+end_src
 
 * stateとsystemの関係
 
@@ -512,7 +521,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 func (st *GameplayState) Update(world w.World) states.Transition {
 	g.SwitchLevelSystem(world)
 	g.UndoSystem(world)
@@ -521,7 +530,7 @@ func (st *GameplayState) Update(world w.World) states.Transition {
 	g.InfoSystem(world, false)
 	g.GridUpdateSystem(world)
 	g.GridTransformSystem(world)
-#+end_results
+#+end_src
 
 * 移動はどうやっているか
 
@@ -532,22 +541,22 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // MoveSystem moves player
 func MoveSystem(world w.World) {
 	moveUpAction := world.Resources.InputHandler.Actions[resources.MoveUpAction]
-#+end_results
+#+end_src
 
 #+begin_src git-permalink
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/move.go#L21-L23
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	switch {
 	case moveUpAction || moveUpFastAction:
 		resources.Move(world, resources.MovementUp)
-#+end_results
+#+end_src
 
 ↓Actionsの中身は、アクション文字列とboolのマップである。
 
@@ -569,11 +578,11 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			world.Resources.InputHandler.Actions[resources.RestartAction] = true
 		}
-#+end_results
+#+end_src
 
 ↓そのあとsystemで処理する。
 
@@ -583,9 +592,9 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	restartAction := world.Resources.InputHandler.Actions[resources.RestartAction]
-#+end_results
+#+end_src
 
 #+caption: func SwitchLevelSystem(world w.World) bool {}
 #+begin_src git-permalink
@@ -593,12 +602,12 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results go
+#+begin_src
 	case restartAction:
 		gameResources.Level.Movements = []resources.MovementType{}
 		gameResources.Level.Modified = true
 		newLevel = gameResources.Level.CurrentNum
-#+end_results
+#+end_src
 
 * InputHandlerのリセットはどこでやっているか
 
@@ -626,7 +635,7 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 type menu interface {
 	getSelection() int
 	setSelection(selection int)
@@ -634,7 +643,7 @@ type menu interface {
 	getMenuIDs() []string
 	getCursorMenuIDs() []string
 }
-#+end_results
+#+end_src
 
 * どうやって描画しているか
 
@@ -652,14 +661,14 @@ https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf1884
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // Draw draws the screen after a state update
 func (sm *StateMachine) Draw(world w.World, screen *ebiten.Image) {
 	// Run drawing systems
 	s.RenderSpriteSystem(world, screen)
 	u.RenderUISystem(world, screen)
 }
-#+end_results
+#+end_src
 
 ↓呼び出されているRenderSpriteSystemの抜粋。
 
@@ -669,13 +678,13 @@ https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf1884
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 // RenderSpriteSystem draws images.
 // Images are drawn in ascending order of depth.
 // Images with higher depth are thus drawn above images with lower depth.
 func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
 	sprites := world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform)
-#+end_results
+#+end_src
 
 * StateMachineがどういう感じになっているか
 
@@ -693,20 +702,20 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src
 	textureImage := ebiten.NewImage(minGameWidth, minGameHeight)
 	textureImage.Fill(color.RGBA{A: 120})
 	spriteSheets["fadeOut"] = ec.SpriteSheet{Texture: ec.Texture{Image: textureImage}, Sprites: []ec.Sprite{{Width: minGameWidth, Height: minGameHeight}}}
-#+end_results
+#+end_src
 
 * stateとentity
 
 stateごとでファイルからentityを生成し直している。そこから、systemでいろいろentityを操作している。
 
 * Tasks
-* Footnotes
 
-[fn:1]ゲームづくりの定石知識が足りてない。
+なし。
+
 * Archives
 ** DONE 読む
 CLOSED: [2023-11-20 Mon 22:45]
@@ -727,3 +736,10 @@ CLOCK: [2023-11-19 Sun 17:45]--[2023-11-19 Sun 18:10] =>  0:25
 CLOCK: [2023-11-19 Sun 17:20]--[2023-11-19 Sun 17:45] =>  0:25
 :END:
 コードを読む。
+* 関連
+
+- 動機: [[id:20230909T204817][KDOC 28: 交通シミュレーションゲームを作る]]。で挫折したので先人のコードを読んでみることにした
+
+* Footnotes
+
+[fn:1]ゲームづくりの定石知識が足りてない。

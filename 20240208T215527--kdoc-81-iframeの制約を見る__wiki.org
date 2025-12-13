@@ -3,7 +3,7 @@
 :mtime:    20250626232306
 :ctime:    20241028101410
 :end:
-#+title:      KDOC 81: iframeの制約を考える
+#+title:      KDOC 81: iframeの制約を見る
 #+date:       [2024-02-08 Thu 21:55]
 #+filetags:   :wiki:
 #+identifier: 20240208T215527
@@ -59,9 +59,9 @@ https://developer.mozilla.org/ja/docs/Web/Security/Same-origin_policy
 https://developer.mozilla.org/ja/docs/Web/HTTP/CORS
 #+end_quote
 
-ベースとして同一オリジンポリシーがあるけど、それだと困るケースもあるので、CORSによって特定のパスにアクセス権を与えて許可できる、というわけ。そうするとサーバ側で許可リソースを管理できる。
+ベースとして同一オリジンポリシーがあるが、それだと困るケースもあるので、CORSによって特定のパスにアクセス権を与えて許可できる。そうするとサーバ側で許可リソースを管理できる。
 
-オレが勘違いしていたのは、iframeの挙動もすべてCORSで許可できる、と考えていた点だ。それは違うようだ。またMDNドキュメントを見る。
+勘違いしていたのは、iframeの挙動もすべてCORSで許可できる、と考えていた点だ。それは違うようだ。またMDNドキュメントを見る。
 
 #+begin_quote
 この cross-origin sharing standard では、以下についてオリジン間の HTTP リクエストができるようにしています。
@@ -75,7 +75,7 @@ https://developer.mozilla.org/ja/docs/Web/HTTP/CORS
 https://developer.mozilla.org/ja/docs/Web/HTTP/CORS
 #+end_quote
 
-明確にiframeへの影響はないと書かれているわけではないのだが、どうもできなさそう。CORSはHTTPリクエストによるリソース権限管理の話であって、ブラウザの実装レベルの話ではない。↓オリジンをまたいだやりとりはjsのAPI使用を推奨している。
+明確にiframeへの影響はないと書かれているわけではないのだが、どうもできなさそうである。CORSはHTTPリクエストによるリソース権限管理の話であって、ブラウザの実装レベルの話ではない。↓オリジンをまたいだやりとりはjsのAPI使用を推奨している。
 
 #+begin_quote
 オリジンをまたいだやりとりは Window.postMessage() を使用して実現できます。
@@ -96,7 +96,8 @@ https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Frame-Options
 
 調べた限り、制限を回避するにはブラウザの同一オリジン制限を外す💀、Window.postMessage()を使うという手段が多そうだった。あとは同一オリジンにフロントを置くか、ネイティブアプリを使う、くらいか。
 
-ひとつ言えることは、iframeを使わなければいけない状況がおかしい、ということ。
+ひとつ言えることは、iframeを使わなければいけない状況自体がおかしい、ということである。
 
 * 関連
-- [[id:20240130T235419][KDOC 66: 通知ビューワを作る]]。では、iframeの制約を避けるためElectronを使って作った
+
+- 具体例: [[id:20240130T235419][KDOC 66: 通知ビューワを作る]]。では、iframeの制約を避けるためElectronを使って作った

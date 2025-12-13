@@ -14,10 +14,10 @@
 - レビュー
   - [X] 2024-02-18 貴島
 * 概要
-POSTリクエストは成功するのに、GETリクエストがCORSエラーな状態になった。デベロッパーツールを見るとCORSエラーが出ていた。真の違いの理由は、トークンでAuthorizationヘッダーを使っていたことだった。調べて ~Access-Control-Allow-Headers~ を返すようにしたら解決したが、知らなかったので調べる。
+POSTリクエストは成功するのに、GETリクエストがCORSエラーな状態になった。デベロッパーツールを見るとCORSエラーが出ていた。真の違いの理由は、トークンで ~Authorization~ ヘッダーを使っていたことだった。調べて ~Access-Control-Allow-Headers~ を返すようにしたら解決したが、知らなかったので調べる。
 
 * 何か
-Access-Control-Allow-Headersは、同一オリジンでないときに、実際のリクエスト(プリフライトリクエストと対置して)で使用できるヘッダーの種類を示すものだ。デフォルトではAccept, Accept-Language, Content-Language, Content-Typeだけが許可されていて、Authorizationヘッダーは含まれていない。
+~Access-Control-Allow-Headers~ は、同一オリジンでないときに、実際のリクエスト(プリフライトリクエストと対置して)で使用できるヘッダーの種類を示すものだ。デフォルトでは ~Accept~, ~Accept-Language~, ~Content-Language~, ~Content-Type~ だけが許可されていて、 ~Authorization~ ヘッダーは含まれていない。
 
 Google Chromeの挙動を見る限り、同一オリジンでないときに許可してないヘッダーが含まれていた場合は、問答無用でCORSエラーになる。
 
@@ -82,8 +82,7 @@ Google Chromeの挙動を見る限り、同一オリジンでないときに許�
   < Access-Control-Allow-Headers: Authorization
 #+end_src
 
-* 参考
-- [[https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Headers][Access-Control-Allow-Headers - HTTP | MDN]]
-
 * 関連
-- [[id:20240209T111023][KDOC 83: CORSを確認する]]。CORSつながり
+
+- 参照: [[https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Headers][Access-Control-Allow-Headers - HTTP | MDN]]
+- 類似: [[id:20240209T111023][KDOC 83: CORSを確認する]]。同様にCORSを調べた

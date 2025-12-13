@@ -1,10 +1,10 @@
 :properties:
-:ID: 20251128T092223
+:ID: 20251212T232903
 :end:
-#+title:      KDOC 490: 301と302/307のキャッシュ動作の違い
-#+date:       [2025-11-28 Fri 09:22]
-#+filetags:   :draft:wiki:
-#+identifier: 20251128T092223
+#+title:      KDOC 503: Linuxカーネルは/boot配下にあるvmlinuzファイルである
+#+date:       [2025-12-12 Fri 23:29]
+#+filetags:   :draft:permanent:
+#+identifier: 20251212T232903
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -48,7 +48,8 @@
 
 * この文書のステータス
 - 作成
-  - [X] 2025-12-06 貴島
+  - [ ] <署名>
+# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -65,29 +66,16 @@
 * 概要
 # 本文(見出しも設定する)
 
-HTTPステータスコードの301と302/307は、どれもリダイレクトということで似ているのだが、ブラウザでキャッシュの扱いに違いがある。
+Linuxカーネルは ~/boot~ 配下にある ~vmlinuz~ ファイルである、といえる。
 
-301は恒久的リダイレクトで、キャッシュできる、とHTTPの仕様で言及されている。
-
-#+begin_quote
-A 301 response is heuristically cacheable; i.e., unless otherwise indicated by the method definition or explicit cache controls (see Section 4.2.2 of [CACHING]).
-[[https://www.rfc-editor.org/rfc/rfc9110#status.301][RFC 9110: HTTP Semantics]]
-#+end_quote
-
-302/307は一時的リダイレクトなので、キャッシュについては言及していないように見える。じっさいの動作から考えて、毎回リダイレクト判断するのだろう。
+カーネルは ~gzip~ で圧縮されているので ~z~ がついている。
 
 * 関連
 # 関連するエントリ。なぜ関連させたか理由を書く。意味のあるつながりを意識的につくる。
-# - この事実は自分のこのアイデアとどう整合するか。
-# - この現象はあの理論でどう説明できるか。
-# - ふたつのアイデアは互いに矛盾するか、互いを補っているか。
-# - いま聞いた内容は以前に聞いたことがなかったか。
-# - メモ y についてメモ x はどういう意味か。
-# - 対立する
-# - 修正する
-# - 補足する
-# - 付け加えるもの
-# - アイデア同士を組み合わせて新しいものを生み出せないか
-# - どんな疑問が浮かんだか
+# [引用、整合性、どう説明できるか、矛盾、補っているか、以前聞いたこと、対立、修正、補足、付け加え、組み合わせ、疑問]
+#
+# また、現在はリンクが見つからなくてもこういった切り口で将来関連させられそうな項目を書いておく
+# [類推、未解決、具体例、追加調査、理由、動機]
+# 横に類推するか、上に抽象化するか、下に具体化するか
 
-なし。
+- 引用: [[id:20240105T215847][KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』]]。から
