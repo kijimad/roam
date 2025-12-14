@@ -16,6 +16,10 @@ function initDrumScroll() {
     const calendarElements = document.querySelectorAll('#calendar_basic');
     calendarElements.forEach(el => el.remove());
 
+    // フッター要素を削除
+    const footerElements = document.querySelectorAll('footer, #footer, .footer');
+    footerElements.forEach(el => el.remove());
+
     // Reset scroll position to top
     window.scrollTo(0, 0);
 

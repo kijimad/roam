@@ -8,25 +8,7 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(0, 500, 500);
-    directionalLight.castShadow = true;  // 影を投射
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 1500;
-    directionalLight.shadow.camera.left = -1000;
-    directionalLight.shadow.camera.right = 1000;
-    directionalLight.shadow.camera.top = 1000;
-    directionalLight.shadow.camera.bottom = -1000;
     scene.add(directionalLight);
-
-    // 影を受け取る背景平面を追加（コンテンツと同じ角度・高さ）
-    const shadowPlaneGeometry = new THREE.PlaneGeometry(2000, 2000);
-    const shadowPlaneMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });
-    const shadowPlane = new THREE.Mesh(shadowPlaneGeometry, shadowPlaneMaterial);
-    shadowPlane.rotation.x = -0.5;  // コンテンツと同じ角度
-    shadowPlane.position.set(0, 0, 0);  // コンテンツと同じ高さ
-    shadowPlane.receiveShadow = true;  // 影を受け取る
-    scene.add(shadowPlane);
 
     // 3Dボタンを作成する関数
     function create3DButton(text, baseColor = 0x3c3c3c, topColor = 0xFFD700) {
@@ -57,18 +39,6 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
         topMesh.position.z = 25;
         topMesh.castShadow = true;  // 影を投射
         group.add(topMesh);
-
-        // エッジハイライト（リング）
-        const ringGeometry = new THREE.TorusGeometry(45, 2, 16, 32);
-        const ringMaterial = new THREE.MeshPhongMaterial({
-            color: 0x666666,
-            shininess: 100,
-            specular: 0xaaaaaa
-        });
-        const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-        ringMesh.position.z = 20;
-        ringMesh.castShadow = true;  // 影を投射
-        group.add(ringMesh);
 
         // テキストをCanvasで描画
         const canvas = document.createElement('canvas');
@@ -131,8 +101,10 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
     // Raycasterでクリック検出
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    let pressedButton = null;
+    let pressedButtonName = '';
 
-    window.addEventListener('click', (event) => {
+    window.addEventListener('mousedown', (event) => {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -144,9 +116,6 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
         ], true);
 
         if (intersects.length > 0) {
-            event.stopPropagation();
-            event.preventDefault();
-
             const clickedObject = intersects[0].object;
             let button = null;
             let buttonName = '';
@@ -164,16 +133,26 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
             }
 
             if (button) {
-                // 押し込みアニメーション
-                button.topMesh.position.z = button.originalZ - 5;
-                button.textMesh.position.z = 33 - 5;
+                // 押し込む
+                button.topMesh.position.z = button.originalZ - 10;
+                button.textMesh.position.z = 33 - 10;
+                pressedButton = button;
+                pressedButtonName = buttonName;
+            }
+        }
+    });
 
-                setTimeout(() => {
-                    button.topMesh.position.z = button.originalZ;
-                    button.textMesh.position.z = 33;
-                }, 100);
+    window.addEventListener('mouseup', (event) => {
+        if (pressedButton) {
+            // 戻す
+            pressedButton.topMesh.position.z = pressedButton.originalZ;
+            pressedButton.textMesh.position.z = 33;
 
-                // ナビゲーション
+            // ナビゲーション
+            const buttonName = pressedButtonName;
+            const button = pressedButton;
+
+            setTimeout(() => {
                 if (buttonName === 'prev' && button.url) {
                     location.href = button.url;
                 } else if (buttonName === 'next' && button.url) {
@@ -187,7 +166,10 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
                             }
                         });
                 }
-            }
+            }, 100);
+
+            pressedButton = null;
+            pressedButtonName = '';
         }
     });
 

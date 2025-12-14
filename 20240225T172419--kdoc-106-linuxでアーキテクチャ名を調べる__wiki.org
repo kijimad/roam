@@ -38,7 +38,7 @@ x86_64
 
 実際の場所を調べる。straceで見ると、unameシステムコールが発行されている↓。ので、システムコールの定義を見ればよいと考えた。
 
-#+caption: nameシステムコールが発行されている。2>&1はorg-babel用
+#+caption: unameシステムコールが発行されている。2>&1はorg-babel用
 #+begin_src shell :results raw
   strace uname -i 2>&1 | tail
 #+end_src
@@ -90,7 +90,9 @@ SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
 動いているマシン上で、/proc/sys/kernel にunameで出るリリース日とか、アーキテクチャ名があるのを確認した。が、どう利用しているのかはわからない。/procはオンメモリ、動的なディレクトリなはずなのでそれを制御しているコードもどこかにあるはずだが。
 
 * 関連
-- [[id:20240105T215847][KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』]]。を読んで、ここから知ろうと考えた
+
+- 動機: [[id:20240105T215847][KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』]]。を読んで、ここから知ろうと考えた
+- 未解決: Linuxカーネルのビルド時に決まるというアーキテクチャ名はどこに保存されているか
 
 * Footnotes
 [fn:1] [[https://amzn.to/3I8xXtT][私はどのようにしてLinuxカーネルを学んだか]]から。
