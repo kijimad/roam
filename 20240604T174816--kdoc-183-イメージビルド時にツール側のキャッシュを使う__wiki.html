@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-13T19:14:11Z -->
+<!-- 2025-12-14T19:04:50Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 183: イメージビルド時にツール側のキャッシュを使う</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 183: イメージビルド時にツール側のキャッシュを使う</h1>
-<div id="outline-container-org5c75a1c" class="outline-2">
-<h2 id="org5c75a1c"><a href="#org5c75a1c">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org5c75a1c">
+<div id="outline-container-orge37cd3a" class="outline-2">
+<h2 id="orge37cd3a"><a href="#orge37cd3a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge37cd3a">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,11 +30,11 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orge900732" class="outline-2">
-<h2 id="orge900732"><a href="#orge900732">概要</a></h2>
-<div class="outline-text-2" id="text-orge900732">
+<div id="outline-container-orgea8a357" class="outline-2">
+<h2 id="orgea8a357"><a href="#orgea8a357">概要</a></h2>
+<div class="outline-text-2" id="text-orgea8a357">
 <p>
-<a href="20210805005543-docker.html#ID-1658782a-d331-464b-9fd7-1f8233b8b7f8">Docker</a> imageをビルドするときレイヤーキャッシュが生成されるが、ファイル内容に違いがあると破棄されてビルドが再実行される。なのでコードが1行でも、依存ライブラリが1行でも変更されると、ゼロからビルドして時間がかかることになる。パッケージ管理ツールやコンパイラ自体のビルドキャッシュ/インストールキャッシュを利用するには、専用の領域を指定して保存しておく。
+<a href="20210805005543-docker.html#ID-1658782a-d331-464b-9fd7-1f8233b8b7f8">Docker</a> imageをビルドするときレイヤーキャッシュが生成されるが、ファイル内容に違いがあると破棄されてビルドが再実行される。なのでコードが1行でも、依存ライブラリが1行でも変更されると、ゼロからビルドして時間がかかることになる。コンパイラのビルドキャッシュ/パッケージ管理ツールのインストールキャッシュを利用するには、専用の領域を指定して保存しておく。
 </p>
 
 <div class="org-src-container">
@@ -52,7 +52,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 <ol class="org-ol">
 <li>内容が全く同じ場合はDockerのレイヤーキャッシュを使う</li>
-<li>内容が変わった場合はパッケージ管理ツールやコンパイラのキャッシュを使う</li>
+<li>内容が変わった場合はマウントしたモジュールキャッシュとコンパイラのビルドキャッシュを使う</li>
 </ol>
 
 <p>
@@ -60,12 +60,12 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 </p>
 </div>
 </div>
-<div id="outline-container-org25c6dbe" class="outline-2">
-<h2 id="org25c6dbe"><a href="#org25c6dbe">関連</a></h2>
-<div class="outline-text-2" id="text-org25c6dbe">
-<p>
-なし。
-</p>
+<div id="outline-container-org59dbcd3" class="outline-2">
+<h2 id="org59dbcd3"><a href="#org59dbcd3">関連</a></h2>
+<div class="outline-text-2" id="text-org59dbcd3">
+<ul class="org-ul">
+<li>追加調査: Docker の mount type の違いを調べる</li>
+</ul>
 </div>
 </div>
 </div>

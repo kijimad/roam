@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-13T19:14:23Z -->
+<!-- 2025-12-14T19:05:01Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 138: Goプロファイラの使い方を見る</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 138: Goプロファイラの使い方を見る</h1>
-<div id="outline-container-orgd41c662" class="outline-2">
-<h2 id="orgd41c662"><a href="#orgd41c662">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgd41c662">
+<div id="outline-container-org365f949" class="outline-2">
+<h2 id="org365f949"><a href="#org365f949">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org365f949">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,32 +30,32 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org02024cc" class="outline-2">
-<h2 id="org02024cc"><a href="#org02024cc">概要</a></h2>
-<div class="outline-text-2" id="text-org02024cc">
+<div id="outline-container-orgcb9c721" class="outline-2">
+<h2 id="orgcb9c721"><a href="#orgcb9c721">概要</a></h2>
+<div class="outline-text-2" id="text-orgcb9c721">
 <p>
 Goのプロファイラ、 <code>pprof</code> を使う手順を書く。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf35b13d" class="outline-2">
-<h2 id="orgf35b13d"><a href="#orgf35b13d">背景</a></h2>
-<div class="outline-text-2" id="text-orgf35b13d">
+<div id="outline-container-org22cd728" class="outline-2">
+<h2 id="org22cd728"><a href="#org22cd728">背景</a></h2>
+<div class="outline-text-2" id="text-org22cd728">
 <p>
 <a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>を使ってゲーム開発する過程で、いつのまにかメモリリークしていたのを発見した。原因を探るために、プロファイラを使って原因箇所を特定できた。強力な調査方法なので、いつでも使えるようにしておく。
 </p>
 </div>
 </div>
-<div id="outline-container-org7e9386a" class="outline-2">
-<h2 id="org7e9386a"><a href="#org7e9386a">手順</a></h2>
-<div class="outline-text-2" id="text-org7e9386a">
+<div id="outline-container-org9c686f6" class="outline-2">
+<h2 id="org9c686f6"><a href="#org9c686f6">手順</a></h2>
+<div class="outline-text-2" id="text-org9c686f6">
 <p>
 <code>pprof</code> の起動や取得方法にはいくつかの組み合わせがある。組み合わせる自由度が高いのはいいが、ややとっつきづらい。もっともシンプルに見える組み合わせだけを書く。
 </p>
 </div>
-<div id="outline-container-org45c512d" class="outline-3">
-<h3 id="org45c512d"><a href="#org45c512d">1. コードにプロファイラを埋め込む</a></h3>
-<div class="outline-text-3" id="text-org45c512d">
+<div id="outline-container-orga41fb8e" class="outline-3">
+<h3 id="orga41fb8e"><a href="#orga41fb8e">1. コードにプロファイラを埋め込む</a></h3>
+<div class="outline-text-3" id="text-orga41fb8e">
 <p>
 無名インポートすることで、デフォルトサーバにプロファイラのエンドポイントが追加される。
 </p>
@@ -71,51 +71,51 @@ func main() {
 </div>
 </div>
 </div>
-<div id="outline-container-orgdba1c12" class="outline-3">
-<h3 id="orgdba1c12"><a href="#orgdba1c12">2. 実行する</a></h3>
-<div class="outline-text-3" id="text-orgdba1c12">
+<div id="outline-container-orgcf762f7" class="outline-3">
+<h3 id="orgcf762f7"><a href="#orgcf762f7">2. 実行する</a></h3>
+<div class="outline-text-3" id="text-orgcf762f7">
 <p>
 埋め込んだコードをコンパイルして実行すると、↓のようなパスにアクセスしてプロファイルを取得できるようになる。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">  http://localhost:6060/debug/pprof/
-  http://localhost:6060/debug/pprof/allocs?<span class="org-variable-name">debug</span>=1
-  http://localhost:6060/debug/pprof/block?<span class="org-variable-name">debug</span>=1
-  http://localhost:6060/debug/pprof/cmdline?<span class="org-variable-name">debug</span>=1
-  http://localhost:6060/debug/pprof/goroutine?<span class="org-variable-name">debug</span>=1
-  http://localhost:6060/debug/pprof/heap?<span class="org-variable-name">debug</span>=1
-  http://localhost:6060/debug/pprof/mutex?<span class="org-variable-name">debug</span>=1
-  http://localhost:6060/debug/pprof/profile?<span class="org-variable-name">debug</span>=1
-  http://localhost:6060/debug/pprof/threadcreate?<span class="org-variable-name">debug</span>=1
-<span class="org-comment-delimiter">#</span><span class="org-comment">+end_
-</span>
-  <span class="org-comment-delimiter">#</span><span class="org-comment">+caption: /debug/pprof/allocs&#12434;&#35211;&#12390;&#12415;&#12427;
-</span>  <span class="org-comment-delimiter">#</span><span class="org-comment">+begin_src
-</span>  heap profile: 51: 49689536 [177: 61751432] @ heap/8192
-  4: 21135360 [4: 21135360] @ 0x76ba45 0x86a96f 0x8b24e5 0x8b1fa5 0x8b1e2f 0x8bbba8 0x8bf9d2 0x913465 0x7578fd 0x757b4e 0x75423b 0x9132b0 0x913294 0x913c8d 0x4423db 0x475481
-  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x76ba44        image.NewAlpha+0x64                                                             /usr/local/go/src/image/image.go:711
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x86a96e        github.com/golang/freetype/truetype.NewFace+0x38e                               /home/orange/go/pkg/mod/github.com/golang/freetype@v0.0.0-20170609003504-e2365dfdc4a0/truetype/face.go:206
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x8b24e4        github.com/kijimaD/ruins/lib/engine/loader.processTextData+0x1a4                /home/orange/Project/ruins/lib/engine/loader/entity.go:231
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x8b1fa4        github.com/kijimaD/ruins/lib/engine/loader.processComponentsListData+0x84       /home/orange/Project/ruins/lib/engine/loader/entity.go:110
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x8b1e2e        github.com/kijimaD/ruins/lib/engine/loader.LoadEngineComponents+0x20e           /home/orange/Project/ruins/lib/engine/loader/entity.go:101
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x8bbba7        github.com/kijimaD/ruins/lib/loader.PreloadEntities+0xe7                        /home/orange/Project/ruins/lib/loader/loader.go:49
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x8bf9d1        github.com/kijimaD/ruins/lib/game.InitWorld+0x471                               /home/orange/Project/ruins/lib/game/game.go:97
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x913464        github.com/kijimaD/ruins/lib/cmd.runPlay+0x124                                  /home/orange/Project/ruins/lib/cmd/play.go:43
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x7578fc        github.com/urfave/cli/v2.(*Command).Run+0x9dc                                   /home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/command.go:279
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x757b4d        github.com/urfave/cli/v2.(*Command).Run+0xc2d                                   /home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/command.go:272
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x75423a        github.com/urfave/cli/v2.(*App).RunContext+0x5da                                /home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/app.go:337
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x9132af        github.com/urfave/cli/v2.(*App).Run+0x2f                                        /home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/app.go:311
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x913293        github.com/kijimaD/ruins/lib/cmd.RunMainApp+0x13                                /home/orange/Project/ruins/lib/cmd/cmd.go:39
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x913c8c        main.main+0x2c                                                                  /home/orange/Project/ruins/main.go:19
-</span>  <span class="org-comment-delimiter">#     </span><span class="org-comment">0x4423da        runtime.main+0x2ba</span>
+<pre class="src src-shell">http://localhost:6060/debug/pprof/
+http://localhost:6060/debug/pprof/allocs?<span class="org-variable-name">debug</span>=1
+http://localhost:6060/debug/pprof/block?<span class="org-variable-name">debug</span>=1
+http://localhost:6060/debug/pprof/cmdline?<span class="org-variable-name">debug</span>=1
+http://localhost:6060/debug/pprof/goroutine?<span class="org-variable-name">debug</span>=1
+http://localhost:6060/debug/pprof/heap?<span class="org-variable-name">debug</span>=1
+http://localhost:6060/debug/pprof/mutex?<span class="org-variable-name">debug</span>=1
+http://localhost:6060/debug/pprof/profile?<span class="org-variable-name">debug</span>=1
+http://localhost:6060/debug/pprof/threadcreate?<span class="org-variable-name">debug</span>=1
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>/debug/pprof/allocsを見てみる</label><pre class="src src-nil">heap profile: 51: 49689536 [177: 61751432] @ heap/8192
+4: 21135360 [4: 21135360] @ 0x76ba45 0x86a96f 0x8b24e5 0x8b1fa5 0x8b1e2f 0x8bbba8 0x8bf9d2 0x913465 0x7578fd 0x757b4e 0x75423b 0x9132b0 0x913294 0x913c8d 0x4423db 0x475481
+#	0x76ba44	image.NewAlpha+0x64								/usr/local/go/src/image/image.go:711
+#	0x86a96e	github.com/golang/freetype/truetype.NewFace+0x38e				/home/orange/go/pkg/mod/github.com/golang/freetype@v0.0.0-20170609003504-e2365dfdc4a0/truetype/face.go:206
+#	0x8b24e4	github.com/kijimaD/ruins/lib/engine/loader.processTextData+0x1a4		/home/orange/Project/ruins/lib/engine/loader/entity.go:231
+#	0x8b1fa4	github.com/kijimaD/ruins/lib/engine/loader.processComponentsListData+0x84	/home/orange/Project/ruins/lib/engine/loader/entity.go:110
+#	0x8b1e2e	github.com/kijimaD/ruins/lib/engine/loader.LoadEngineComponents+0x20e		/home/orange/Project/ruins/lib/engine/loader/entity.go:101
+#	0x8bbba7	github.com/kijimaD/ruins/lib/loader.PreloadEntities+0xe7			/home/orange/Project/ruins/lib/loader/loader.go:49
+#	0x8bf9d1	github.com/kijimaD/ruins/lib/game.InitWorld+0x471				/home/orange/Project/ruins/lib/game/game.go:97
+#	0x913464	github.com/kijimaD/ruins/lib/cmd.runPlay+0x124					/home/orange/Project/ruins/lib/cmd/play.go:43
+#	0x7578fc	github.com/urfave/cli/v2.(*Command).Run+0x9dc					/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/command.go:279
+#	0x757b4d	github.com/urfave/cli/v2.(*Command).Run+0xc2d					/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/command.go:272
+#	0x75423a	github.com/urfave/cli/v2.(*App).RunContext+0x5da				/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/app.go:337
+#	0x9132af	github.com/urfave/cli/v2.(*App).Run+0x2f					/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/app.go:311
+#	0x913293	github.com/kijimaD/ruins/lib/cmd.RunMainApp+0x13				/home/orange/Project/ruins/lib/cmd/cmd.go:39
+#	0x913c8c	main.main+0x2c									/home/orange/Project/ruins/main.go:19
+#	0x4423da	runtime.main+0x2ba
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org8d8056f" class="outline-3">
-<h3 id="org8d8056f"><a href="#org8d8056f">3. プロファイルを収集する</a></h3>
-<div class="outline-text-3" id="text-org8d8056f">
+<div id="outline-container-orge6f5b1c" class="outline-3">
+<h3 id="orge6f5b1c"><a href="#orge6f5b1c">3. プロファイルを収集する</a></h3>
+<div class="outline-text-3" id="text-orge6f5b1c">
 <p>
 生のプロファイルは人が見るものではない。 <code>pprof</code> の収集コマンドを実行して可視化する。よくわからないポイントだが、起動中のコマンドと同じバイナリが必要。このバイナリからコード位置などの情報を取得しているのだろうか。
 </p>
@@ -133,7 +133,7 @@ func main() {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>実行結果</label><pre class="src src-shell">Fetching profile over HTTP from http://localhost:6060/debug/pprof/profile?<span class="org-variable-name">seconds</span>=10
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>実行結果</label><pre class="src src-shell">Fetching profile over HTTP from http://localhost:6060/debug/pprof/profile?<span class="org-variable-name">seconds</span>=10
 Saved profile<span class="org-keyword"> in</span> /home/orange/pprof/pprof.ruins.samples.cpu.008.pb.gz
 File: ruins
 Build ID: ab4fa2d3d6018e82aed20efe4b4d08193ee45510
@@ -150,15 +150,15 @@ Entering interactive mode (<span class="org-builtin">type</span> <span class="or
 </p>
 </div>
 </div>
-<div id="outline-container-org722224b" class="outline-3">
-<h3 id="org722224b"><a href="#org722224b">4. プロファイルを見る</a></h3>
-<div class="outline-text-3" id="text-org722224b">
+<div id="outline-container-org0412f15" class="outline-3">
+<h3 id="org0412f15"><a href="#org0412f15">4. プロファイルを見る</a></h3>
+<div class="outline-text-3" id="text-org0412f15">
 <p>
 <code>pprof</code> プロンプトが出ている状態で、コマンドを実行して結果を得る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>大きい順に表示する</label><pre class="src src-shell">  (pprof) top
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>大きい順に表示する</label><pre class="src src-shell">  (pprof) top
 Showing nodes accounting for 1070ms, 65.24% of 1640ms total
 Showing top 10 nodes out of 236
       flat  flat%   sum%        cum   cum%
@@ -181,12 +181,12 @@ Showing top 10 nodes out of 236
 </div>
 </div>
 </div>
-<div id="outline-container-org0bc70e5" class="outline-2">
-<h2 id="org0bc70e5"><a href="#org0bc70e5">関連</a></h2>
-<div class="outline-text-2" id="text-org0bc70e5">
+<div id="outline-container-orgabf3471" class="outline-2">
+<h2 id="orgabf3471"><a href="#orgabf3471">関連</a></h2>
+<div class="outline-text-2" id="text-orgabf3471">
 <ul class="org-ul">
-<li><a href="20240420T224401--kdoc-137-簡単にプロセスの使用メモリを確認する__wiki.html#ID-20240420T224401">KDOC 137: 簡単にプロセスの使用メモリを確認する</a>。で確かにリークしていることをざっくり調べた。さらに原因を絞る</li>
-<li><a href="20231128T074518--kdoc-59-ecsを使ってrpgを作る__project.html#ID-20231128T074518">KDOC 59: ECSを使ってRPGを作る</a>。の過程で調べるのに使った</li>
+<li>類推: <a href="20240420T224401--kdoc-137-簡単にプロセスの使用メモリを確認する__wiki.html#ID-20240420T224401">KDOC 137: 簡単にプロセスの使用メモリを確認する</a>。でメモリリークしていることをざっくり調べた。プロファイラでさらに原因を絞る</li>
+<li>動機: <a href="20231128T074518--kdoc-59-ecsを使ってrpgを作る__project.html#ID-20231128T074518">KDOC 59: ECSを使ってRPGを作る</a>。の過程で調べるのに使った</li>
 </ul>
 </div>
 </div>
