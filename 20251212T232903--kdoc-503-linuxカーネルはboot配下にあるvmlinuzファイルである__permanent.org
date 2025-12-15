@@ -1,0 +1,45 @@
+:properties:
+:ID: 20251212T232903
+:end:
+#+title:      KDOC 503: Linuxカーネルは/boot配下にあるvmlinuzファイルである
+#+date:       [2025-12-12 Fri 23:29]
+#+filetags:   :permanent:
+#+identifier: 20251212T232903
+
+* この文書のステータス
+- 作成
+  - [X] 2025-12-16 貴島
+- レビュー
+  - [X] 2025-12-16 貴島
+
+* 概要
+
+Linuxカーネルは ~/boot~ 配下にある ~vmlinuz~ ファイルである、といえる。カーネルは ~gzip~ で圧縮されているので ~z~ がついている。
+
+手元の環境で試してみると確かに ~vmlinuz~ が存在する。
+
+#+caption: 確かめる
+#+begin_src shell
+  ls /boot -al
+#+end_src
+
+#+RESULTS:
+#+begin_src
+total 95208
+drwxr-xr-x  4 root root     4096 Feb 11  2025 .
+drwxr-xr-x 24 root root     4096 Oct  5 22:04 ..
+-rw-r--r--  1 root root   287413 Dec  1  2024 config-6.8.0-51-generic
+drwx------  3 root root     4096 Jan  1  1970 efi
+drwxr-xr-x  5 root root     4096 Feb 11  2025 grub
+lrwxrwxrwx  1 root root       27 Feb 11  2025 initrd.img -> initrd.img-6.8.0-51-generic
+-rw-r--r--  1 root root 73134942 Feb 11  2025 initrd.img-6.8.0-51-generic
+lrwxrwxrwx  1 root root       27 Feb 11  2025 initrd.img.old -> initrd.img-6.8.0-51-generic
+-rw-------  1 root root  9072978 Dec  1  2024 System.map-6.8.0-51-generic
+lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generic
+-rw-r--r--  1 root root 14969224 Dec  1  2024 vmlinuz-6.8.0-51-generic
+#+end_src
+
+* 関連
+
+- 引用: [[id:20240105T215847][KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』]]から。端的にどこにあたるかが示されていて面白いと感じた
+- 追加調査: ~/boot~ ディレクトリのほかのファイルが何か見る

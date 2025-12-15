@@ -1,0 +1,125 @@
+:properties:
+:ID: 20251206T213844
+:end:
+#+title:      KDOC 496: Index (Only) Scanの様子を見る
+#+date:       [2025-12-06 Sat 21:38]
+#+filetags:   :permanent:
+#+identifier: 20251206T213844
+
+* この文書のステータス
+- 作成
+  - [X] 2025-12-15 貴島
+- レビュー
+  - [X] 2025-12-15 貴島
+
+* 概要
+PostgreSQLで、インデックスが使われる様子を確かめる。
+
+まず、indexを使わないパターン。
+
+#+caption: indexがないフィールドを条件にするのでindexは使われない
+#+begin_src sql
+  CREATE TABLE users (
+      NAME VARCHAR(255),
+      num INTEGER
+  );
+  CREATE INDEX idx_users_name ON users(NAME);
+
+  -- indexを使わない
+  explain
+  SELECT NAME FROM users WHERE num = 1;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                        |
+|--------------------------------------------------------|
+| > CREATE TABLE users (                                 |
+| >     NAME VARCHAR(255),                               |
+| >     num INTEGER                                      |
+| > );                                                   |
+| CREATE TABLE                                           |
+|                                                        |
+| > CREATE INDEX idx_users_name ON users(NAME);          |
+| CREATE INDEX                                           |
+|                                                        |
+| > explain                                              |
+| > SELECT NAME FROM users WHERE num = 1;                |
+| QUERY PLAN                                             |
+| Seq Scan on users  (cost=0.00..11.75 rows=1 width=516) |
+| Filter: (num = 1)                                      |
+#+end_src
+
+つぎに、index scan するパターン。
+
+#+caption: 検索にインデックスidx_users_nameを使うが、結果として返すidは含まれていないのでヒープアクセスが発生し、index Only Scanにはならない
+#+begin_src sql
+  CREATE TABLE users (
+      id serial PRIMARY KEY,
+      NAME VARCHAR(255)
+  );
+  CREATE INDEX idx_users_name ON users(NAME);
+
+  explain
+  SELECT id FROM users WHERE NAME = 'a';
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                            |
+|----------------------------------------------------------------------------|
+| > CREATE TABLE users (                                                     |
+| >     id serial PRIMARY KEY,                                               |
+| >     NAME VARCHAR(255)                                                    |
+| > );                                                                       |
+| CREATE TABLE                                                               |
+|                                                                            |
+| > CREATE INDEX idx_users_name ON users(NAME);                              |
+| CREATE INDEX                                                               |
+|                                                                            |
+| > explain                                                                  |
+| > SELECT id FROM users WHERE NAME = 'a';                                   |
+| QUERY PLAN                                                                 |
+| Index Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=4) |
+| Index Cond: ((name)::text = 'a'::text)                                     |
+#+end_src
+
+index only scan するパターン。
+
+#+caption: Index Only Scanする。検索にインデックスidx_users_nameを使い、結果もnameだけなので、indexだけで完結する。
+#+begin_src sql
+  CREATE TABLE users (
+      NAME VARCHAR(255),
+      num INTEGER
+  );
+  CREATE INDEX idx_users_name ON users(NAME);
+
+  -- indexを使う
+  explain
+  SELECT NAME FROM users WHERE NAME = 'a';
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                   |
+|-----------------------------------------------------------------------------------|
+| > CREATE TABLE users (                                                            |
+| >     NAME VARCHAR(255),                                                          |
+| >     num INTEGER                                                                 |
+| > );                                                                              |
+| CREATE TABLE                                                                      |
+|                                                                                   |
+| > CREATE INDEX idx_users_name ON users(NAME);                                     |
+| CREATE INDEX                                                                      |
+|                                                                                   |
+| > explain                                                                         |
+| > SELECT NAME FROM users WHERE NAME = 'a';                                        |
+| QUERY PLAN                                                                        |
+| Index Only Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=516) |
+| Index Cond: (name = 'a'::text)                                                    |
+#+end_src
+
+* 関連
+
+- 具体例: [[id:20251206T184941][KDOC 495: 文芸的にDB動作を検証できるようにする]]。を使って検証した
+- 追加調査: QUERY PLANの値の意味をよくわかってないので調べる
