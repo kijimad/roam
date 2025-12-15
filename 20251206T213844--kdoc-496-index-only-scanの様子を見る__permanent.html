@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-14T19:04:50Z -->
+<!-- 2025-12-16T01:00:24Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 496: Index (Only) Scanの様子を見る</title>
@@ -15,29 +15,26 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 496: Index (Only) Scanの様子を見る</h1>
-<div id="outline-container-org2626b9e" class="outline-2">
-<h2 id="org2626b9e"><a href="#org2626b9e">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org2626b9e">
+<div id="outline-container-org15601e7" class="outline-2">
+<h2 id="org15601e7"><a href="#org15601e7">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org15601e7">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2025-12-15 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2025-12-15 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org2cfc9bf" class="outline-2">
-<h2 id="org2cfc9bf"><a href="#org2cfc9bf">概要</a></h2>
-<div class="outline-text-2" id="text-org2cfc9bf">
+<div id="outline-container-org371fc89" class="outline-2">
+<h2 id="org371fc89"><a href="#org371fc89">概要</a></h2>
+<div class="outline-text-2" id="text-org371fc89">
 <p>
-indexが使われる様子を確かめる。
+PostgreSQLで、インデックスが使われる様子を確かめる。
 </p>
 
 <p>
@@ -46,14 +43,14 @@ indexが使われる様子を確かめる。
 
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>indexがないフィールドを条件にするのでindexは使われない</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255),
-    num <span class="org-type">integer</span>
+    <span class="org-keyword">NAME</span> <span class="org-type">VARCHAR</span>(255),
+    num <span class="org-type">INTEGER</span>
 );
-<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">NAME</span>);
 
 <span class="org-comment-delimiter">-- </span><span class="org-comment">index&#12434;&#20351;&#12431;&#12394;&#12356;
 </span>explain
-<span class="org-keyword">select</span> <span class="org-keyword">name</span> <span class="org-keyword">from</span> users <span class="org-keyword">where</span> num = 1;
+<span class="org-keyword">SELECT</span> <span class="org-keyword">NAME</span> <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> num = 1;
 </pre>
 </div>
 
@@ -61,16 +58,16 @@ indexが使われる様子を確かめる。
 <pre class="src src-nil">|                                                        |
 |--------------------------------------------------------|
 | &gt; CREATE TABLE users (                                 |
-| &gt;     name varchar(255),                               |
-| &gt;     num integer                                      |
+| &gt;     NAME VARCHAR(255),                               |
+| &gt;     num INTEGER                                      |
 | &gt; );                                                   |
 | CREATE TABLE                                           |
 |                                                        |
-| &gt; CREATE INDEX idx_users_name ON users(name);          |
+| &gt; CREATE INDEX idx_users_name ON users(NAME);          |
 | CREATE INDEX                                           |
 |                                                        |
 | &gt; explain                                              |
-| &gt; select name from users where num = 1;                |
+| &gt; SELECT NAME FROM users WHERE num = 1;                |
 | QUERY PLAN                                             |
 | Seq Scan on users  (cost=0.00..11.75 rows=1 width=516) |
 | Filter: (num = 1)                                      |
@@ -84,12 +81,12 @@ indexが使われる様子を確かめる。
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 2: </span>検索にインデックスidx_users_nameを使うが、結果として返すidは含まれていないのでヒープアクセスが発生し、index Only Scanにはならない</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
     id serial <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+    <span class="org-keyword">NAME</span> <span class="org-type">VARCHAR</span>(255)
 );
-<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">NAME</span>);
 
 explain
-<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span>;
+<span class="org-keyword">SELECT</span> id <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">NAME</span> = <span class="org-string">'a'</span>;
 </pre>
 </div>
 
@@ -98,15 +95,15 @@ explain
 |----------------------------------------------------------------------------|
 | &gt; CREATE TABLE users (                                                     |
 | &gt;     id serial PRIMARY KEY,                                               |
-| &gt;     name varchar(255)                                                    |
+| &gt;     NAME VARCHAR(255)                                                    |
 | &gt; );                                                                       |
 | CREATE TABLE                                                               |
 |                                                                            |
-| &gt; CREATE INDEX idx_users_name ON users(name);                              |
+| &gt; CREATE INDEX idx_users_name ON users(NAME);                              |
 | CREATE INDEX                                                               |
 |                                                                            |
 | &gt; explain                                                                  |
-| &gt; select id from users where name = 'a';                                   |
+| &gt; SELECT id FROM users WHERE NAME = 'a';                                   |
 | QUERY PLAN                                                                 |
 | Index Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=4) |
 | Index Cond: ((name)::text = 'a'::text)                                     |
@@ -119,14 +116,14 @@ index only scan するパターン。
 
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 3: </span>Index Only Scanする。検索にインデックスidx_users_nameを使い、結果もnameだけなので、indexだけで完結する。</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255),
-    num <span class="org-type">integer</span>
+    <span class="org-keyword">NAME</span> <span class="org-type">VARCHAR</span>(255),
+    num <span class="org-type">INTEGER</span>
 );
-<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">NAME</span>);
 
 <span class="org-comment-delimiter">-- </span><span class="org-comment">index&#12434;&#20351;&#12358;
 </span>explain
-<span class="org-keyword">select</span> <span class="org-keyword">name</span> <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span>;
+<span class="org-keyword">SELECT</span> <span class="org-keyword">NAME</span> <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">NAME</span> = <span class="org-string">'a'</span>;
 </pre>
 </div>
 
@@ -134,16 +131,16 @@ index only scan するパターン。
 <pre class="src src-nil">|                                                                                   |
 |-----------------------------------------------------------------------------------|
 | &gt; CREATE TABLE users (                                                            |
-| &gt;     name varchar(255),                                                          |
-| &gt;     num integer                                                                 |
+| &gt;     NAME VARCHAR(255),                                                          |
+| &gt;     num INTEGER                                                                 |
 | &gt; );                                                                              |
 | CREATE TABLE                                                                      |
 |                                                                                   |
-| &gt; CREATE INDEX idx_users_name ON users(name);                                     |
+| &gt; CREATE INDEX idx_users_name ON users(NAME);                                     |
 | CREATE INDEX                                                                      |
 |                                                                                   |
 | &gt; explain                                                                         |
-| &gt; select name from users where name = 'a';                                        |
+| &gt; SELECT NAME FROM users WHERE NAME = 'a';                                        |
 | QUERY PLAN                                                                        |
 | Index Only Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=516) |
 | Index Cond: (name = 'a'::text)                                                    |
@@ -151,19 +148,20 @@ index only scan するパターン。
 </div>
 </div>
 </div>
-<div id="outline-container-org646e71d" class="outline-2">
-<h2 id="org646e71d"><a href="#org646e71d">関連</a></h2>
-<div class="outline-text-2" id="text-org646e71d">
-<p>
-なし。
-</p>
-</div>
-</div>
-<div id="outline-container-org91bf7dc" class="outline-2">
-<h2 id="org91bf7dc"><a href="#org91bf7dc">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org91bf7dc">
+<div id="outline-container-org04f3ed8" class="outline-2">
+<h2 id="org04f3ed8"><a href="#org04f3ed8">関連</a></h2>
+<div class="outline-text-2" id="text-org04f3ed8">
 <ul class="org-ul">
-<li><a href="./20251207T091742--kdoc-497-複合インデックスの使用条件を試す__draft_permanent.html">KDOC 497: 複合インデックスの使用条件を試す</a></li>
+<li>具体例: <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。を使って検証した</li>
+<li>追加調査: QUERY PLANの値の意味をよくわかってないので調べる</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org9f1786e" class="outline-2">
+<h2 id="org9f1786e"><a href="#org9f1786e">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org9f1786e">
+<ul class="org-ul">
+<li><a href="./20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html">KDOC 497: 複合インデックスの使用条件を試す</a></li>
 </ul>
 </div>
 </div>
