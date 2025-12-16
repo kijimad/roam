@@ -96,35 +96,28 @@
 
 ** 更新時のコスト
 
-インデックスの有無を変えてフィールドを更新したときの時間を見る。
+インデックスの有無を変えてレコードを更新したときの時間を見る。
 
 #+begin_src sql
   CREATE TABLE users (
       name varchar(255)
   );
 
-  -- インデックスなしで挿入する
-  BEGIN;
   EXPLAIN ANALYZE
   INSERT INTO users (name)
   SELECT
        -- 32x2 文字
        md5(random()::text) || md5(random()::text)
   FROM generate_series(1, 100000) i;
-  ROLLBACK;
+
+  EXPLAIN ANALYZE
+  UPDATE users SET name = 'abc';
 
   -- インデックスを追加する
   CREATE INDEX idx_users_name ON users(name);
 
-  -- インデックスありで挿入する
-  BEGIN;
   EXPLAIN ANALYZE
-  INSERT INTO users (name)
-  SELECT
-       -- 32x2 文字
-       md5(random()::text) || md5(random()::text)
-  FROM generate_series(1, 100000) i;
-  ROLLBACK;
+  UPDATE users SET name = 'def';
 #+end_src
 
 #+RESULTS:
@@ -136,9 +129,6 @@
 | > );                                                                                                                                 |   |                     |
 | CREATE TABLE                                                                                                                         |   |                     |
 |                                                                                                                                      |   |                     |
-| > BEGIN;                                                                                                                             |   |                     |
-| BEGIN                                                                                                                                |   |                     |
-|                                                                                                                                      |   |                     |
 | > EXPLAIN ANALYZE                                                                                                                    |   |                     |
 | > INSERT INTO users (name)                                                                                                           |   |                     |
 | > SELECT                                                                                                                             |   |                     |
@@ -146,45 +136,51 @@
 | >      md5(random()::text)                                                                                                           |   | md5(random()::text) |
 | > FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
 | QUERY PLAN                                                                                                                           |   |                     |
-| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=118.697..118.698 rows=0.00 loops=1)                                |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=127.862..127.863 rows=0.00 loops=1)                                |   |                     |
 | Buffers: shared hit=102466 dirtied=1236 written=1238                                                                                 |   |                     |
-| ->  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.688..88.235 rows=100000.00 loops=1)         |   |                     |
-| ->  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.687..83.525 rows=100000.00 loops=1) |   |                     |
+| ->  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.628..92.992 rows=100000.00 loops=1)         |   |                     |
+| ->  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.627..88.029 rows=100000.00 loops=1) |   |                     |
 | Planning:                                                                                                                            |   |                     |
 | Buffers: shared hit=6                                                                                                                |   |                     |
-| Planning Time: 0.032 ms                                                                                                              |   |                     |
-| Execution Time: 118.892 ms                                                                                                           |   |                     |
+| Planning Time: 0.033 ms                                                                                                              |   |                     |
+| Execution Time: 128.000 ms                                                                                                           |   |                     |
 |                                                                                                                                      |   |                     |
-| > ROLLBACK;                                                                                                                          |   |                     |
-| ROLLBACK                                                                                                                             |   |                     |
+| > EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| > UPDATE users SET name = 'abc';                                                                                                     |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Update on users  (cost=0.00..1420.25 rows=0 width=0) (actual time=64.452..64.452 rows=0.00 loops=1)                                  |   |                     |
+| Buffers: shared hit=304574 dirtied=437 written=437                                                                                   |   |                     |
+| ->  Seq Scan on users  (cost=0.00..1420.25 rows=18525 width=522) (actual time=0.007..5.503 rows=100000.00 loops=1)                   |   |                     |
+| Buffers: shared hit=1235                                                                                                             |   |                     |
+| Planning:                                                                                                                            |   |                     |
+| Buffers: shared hit=22                                                                                                               |   |                     |
+| Planning Time: 0.112 ms                                                                                                              |   |                     |
+| Execution Time: 64.506 ms                                                                                                            |   |                     |
 |                                                                                                                                      |   |                     |
 | > CREATE INDEX idx_users_name ON users(name);                                                                                        |   |                     |
 | CREATE INDEX                                                                                                                         |   |                     |
 |                                                                                                                                      |   |                     |
-| > BEGIN;                                                                                                                             |   |                     |
-| BEGIN                                                                                                                                |   |                     |
-|                                                                                                                                      |   |                     |
 | > EXPLAIN ANALYZE                                                                                                                    |   |                     |
-| > INSERT INTO users (name)                                                                                                           |   |                     |
-| > SELECT                                                                                                                             |   |                     |
-| >      -- 32x2 文字                                                                                                                  |   |                     |
-| >      md5(random()::text)                                                                                                           |   | md5(random()::text) |
-| > FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| > UPDATE users SET name = 'def';                                                                                                     |   |                     |
 | QUERY PLAN                                                                                                                           |   |                     |
-| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=267.753..267.753 rows=0.00 loops=1)                                |   |                     |
-| Buffers: shared hit=398873 read=1 dirtied=2766 written=2765                                                                          |   |                     |
-| ->  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.510..91.734 rows=100000.00 loops=1)         |   |                     |
-| ->  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.509..86.862 rows=100000.00 loops=1) |   |                     |
-| Planning Time: 0.027 ms                                                                                                              |   |                     |
-| Execution Time: 267.930 ms                                                                                                           |   |                     |
-|                                                                                                                                      |   |                     |
-| > ROLLBACK;                                                                                                                          |   |                     |
-| ROLLBACK                                                                                                                             |   |                     |
+| Update on users  (cost=0.00..2672.00 rows=0 width=0) (actual time=119.053..119.053 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=501291 read=2 dirtied=518 written=516                                                                            |   |                     |
+| ->  Seq Scan on users  (cost=0.00..2672.00 rows=100000 width=522) (actual time=0.008..6.486 rows=100000.00 loops=1)                  |   |                     |
+| Buffers: shared hit=1672                                                                                                             |   |                     |
+| Planning:                                                                                                                            |   |                     |
+| Buffers: shared hit=15 read=1                                                                                                        |   |                     |
+| Planning Time: 0.074 ms                                                                                                              |   |                     |
+| Execution Time: 119.072 ms                                                                                                           |   |                     |
 #+end_src
 
-Execution Time が 118.892 ms -> 267.930 ms 。
+- インデックスなしフィールドの更新(10万件)
+  - Planning Time: 0.112 ms
+  - Execution Time: 64.506 ms
+- インデックスありフィールドの更新(10万件)
+  - Planning Time: 0.074 ms
+  - Execution Time: 119.072 ms
 
-10万レコード挿入の実行時間が2倍になった。
+インデックスがあると更新の計画時間は減ったが、実行時間が増加している。
 
 ** 計画時間のコスト
 
@@ -468,6 +464,98 @@ Execution Time が 118.892 ms -> 267.930 ms 。
 - index使用時の計画時間が、indexが1つだけのときに比べて3倍になった
 - index使用時の実行時間は、indexが1つだけのときと変わらない
 - index不使用時の計画時間は増加していない
+
+** 挿入時のコスト
+
+インデックスの有無を変えてレコードを挿入したときの時間を見る。
+
+#+begin_src sql
+  CREATE TABLE users (
+      name varchar(255)
+  );
+
+  -- インデックスなしで挿入する
+  BEGIN;
+  EXPLAIN ANALYZE
+  INSERT INTO users (name)
+  SELECT
+       -- 32x2 文字
+       md5(random()::text) || md5(random()::text)
+  FROM generate_series(1, 100000) i;
+  ROLLBACK;
+
+  -- インデックスを追加する
+  CREATE INDEX idx_users_name ON users(name);
+
+  -- インデックスありで挿入する
+  BEGIN;
+  EXPLAIN ANALYZE
+  INSERT INTO users (name)
+  SELECT
+       -- 32x2 文字
+       md5(random()::text) || md5(random()::text)
+  FROM generate_series(1, 100000) i;
+  ROLLBACK;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                                                                      |   |                     |
+|--------------------------------------------------------------------------------------------------------------------------------------+---+---------------------|
+| > CREATE TABLE users (                                                                                                               |   |                     |
+| >     name varchar(255)                                                                                                              |   |                     |
+| > );                                                                                                                                 |   |                     |
+| CREATE TABLE                                                                                                                         |   |                     |
+|                                                                                                                                      |   |                     |
+| > BEGIN;                                                                                                                             |   |                     |
+| BEGIN                                                                                                                                |   |                     |
+|                                                                                                                                      |   |                     |
+| > EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| > INSERT INTO users (name)                                                                                                           |   |                     |
+| > SELECT                                                                                                                             |   |                     |
+| >      -- 32x2 文字                                                                                                                  |   |                     |
+| >      md5(random()::text)                                                                                                           |   | md5(random()::text) |
+| > FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=118.697..118.698 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=102466 dirtied=1236 written=1238                                                                                 |   |                     |
+| ->  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.688..88.235 rows=100000.00 loops=1)         |   |                     |
+| ->  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.687..83.525 rows=100000.00 loops=1) |   |                     |
+| Planning:                                                                                                                            |   |                     |
+| Buffers: shared hit=6                                                                                                                |   |                     |
+| Planning Time: 0.032 ms                                                                                                              |   |                     |
+| Execution Time: 118.892 ms                                                                                                           |   |                     |
+|                                                                                                                                      |   |                     |
+| > ROLLBACK;                                                                                                                          |   |                     |
+| ROLLBACK                                                                                                                             |   |                     |
+|                                                                                                                                      |   |                     |
+| > CREATE INDEX idx_users_name ON users(name);                                                                                        |   |                     |
+| CREATE INDEX                                                                                                                         |   |                     |
+|                                                                                                                                      |   |                     |
+| > BEGIN;                                                                                                                             |   |                     |
+| BEGIN                                                                                                                                |   |                     |
+|                                                                                                                                      |   |                     |
+| > EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| > INSERT INTO users (name)                                                                                                           |   |                     |
+| > SELECT                                                                                                                             |   |                     |
+| >      -- 32x2 文字                                                                                                                  |   |                     |
+| >      md5(random()::text)                                                                                                           |   | md5(random()::text) |
+| > FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=267.753..267.753 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=398873 read=1 dirtied=2766 written=2765                                                                          |   |                     |
+| ->  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.510..91.734 rows=100000.00 loops=1)         |   |                     |
+| ->  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.509..86.862 rows=100000.00 loops=1) |   |                     |
+| Planning Time: 0.027 ms                                                                                                              |   |                     |
+| Execution Time: 267.930 ms                                                                                                           |   |                     |
+|                                                                                                                                      |   |                     |
+| > ROLLBACK;                                                                                                                          |   |                     |
+| ROLLBACK                                                                                                                             |   |                     |
+#+end_src
+
+Execution Time が 118.892 ms -> 267.930 ms 。
+
+10万レコード挿入の実行時間が2倍になった。
 
 * 関連
 

@@ -48,8 +48,7 @@
 
 * この文書のステータス
 - 作成
-  - [ ] <署名>
-# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+  - [X] 2025-12-16 貴島
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -64,12 +63,160 @@
 # タグを適切にした。
 # すべてのコメントを削除した。
 * 概要
-# 本文(見出しも設定する)
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
 
 [[https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220][「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文]]でjsonとjsonbについて説明していた。じっさいに使ってみて読み書き性能を試してみる。
 
-- 「キーの順序を保持する必要がある」という特殊なケースでない限り、jsonb 一択
-- jsonbはwrite時の変換コストがあるが、readは早い
+ドキュメントのJSONデータ型の説明を見る。
+
+#+begin_quote
+jsonデータ型は入力テキストの正確なコピーで格納し、処理関数を実行するたびに再解析する必要があります。jsonbデータ型では、分解されたバイナリ形式で格納されます。
+格納するときには変換のオーバーヘッドのため少し遅くなりますが、処理するときには、全く再解析が必要とされないので大幅に高速化されます。 また jsonb型の重要な利点はインデックスをサポートしていることです。
+[[https://www.postgresql.jp/docs/9.6/datatype-json.html][8.14. JSONデータ型]]
+#+end_quote
+
+試す。
+
+#+begin_src sql
+  CREATE TABLE users1 (
+      test JSON
+  );
+  CREATE TABLE users2 (
+      test JSONB
+  );
+
+  -- 検証データ挿入 ================
+  EXPLAIN ANALYZE
+  INSERT INTO users1 (test)
+  SELECT jsonb_build_object(
+      'a', md5(random()::text)::text,
+      'b', md5(random()::text)::text
+  )
+  FROM generate_series(1, 100000) i;
+
+  EXPLAIN ANALYZE
+  INSERT INTO users2 (test)
+  SELECT jsonb_build_object(
+      'a', md5(random()::text)::text,
+      'b', md5(random()::text)::text
+  )
+  FROM generate_series(1, 100000) i;
+
+  -- 確認
+  select test from users1 limit 3;
+  select test from users2 limit 3;
+
+  -- JSON/JSONBフィールドの特定キーを取得 ================
+  EXPLAIN ANALYZE
+  SELECT test->>'a' FROM users1;
+
+  EXPLAIN ANALYZE
+  SELECT test->>'a' FROM users2;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                                                                       |
+|---------------------------------------------------------------------------------------------------------------------------------------|
+| > CREATE TABLE users1 (                                                                                                               |
+| >     test JSON                                                                                                                       |
+| > );                                                                                                                                  |
+| CREATE TABLE                                                                                                                          |
+|                                                                                                                                       |
+| > CREATE TABLE users2 (                                                                                                               |
+| >     test JSONB                                                                                                                      |
+| > );                                                                                                                                  |
+| CREATE TABLE                                                                                                                          |
+|                                                                                                                                       |
+| > EXPLAIN ANALYZE                                                                                                                     |
+| > INSERT INTO users1 (test)                                                                                                           |
+| > SELECT jsonb_build_object(                                                                                                          |
+| >     'a', md5(random()::text)::text,                                                                                                 |
+| >     'b', md5(random()::text)::text                                                                                                  |
+| > )                                                                                                                                   |
+| > FROM generate_series(1, 100000) i;                                                                                                  |
+| QUERY PLAN                                                                                                                            |
+| Insert on users1  (cost=0.00..3750.00 rows=0 width=0) (actual time=184.280..184.281 rows=0.00 loops=1)                                |
+| Buffers: shared hit=102854 dirtied=1430 written=1432                                                                                  |
+| ->  Subquery Scan on "*SELECT*"  (cost=0.00..3750.00 rows=100000 width=32) (actual time=2.514..149.198 rows=100000.00 loops=1)          |
+| ->  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.508..127.342 rows=100000.00 loops=1) |
+| Planning:                                                                                                                             |
+| Buffers: shared hit=12                                                                                                                |
+| Planning Time: 0.036 ms                                                                                                               |
+| Execution Time: 184.505 ms                                                                                                            |
+|                                                                                                                                       |
+| > EXPLAIN ANALYZE                                                                                                                     |
+| > INSERT INTO users2 (test)                                                                                                           |
+| > SELECT jsonb_build_object(                                                                                                          |
+| >     'a', md5(random()::text)::text,                                                                                                 |
+| >     'b', md5(random()::text)::text                                                                                                  |
+| > )                                                                                                                                   |
+| > FROM generate_series(1, 100000) i;                                                                                                  |
+| QUERY PLAN                                                                                                                            |
+| Insert on users2  (cost=0.00..3250.00 rows=0 width=0) (actual time=158.466..158.467 rows=0.00 loops=1)                                |
+| Buffers: shared hit=102854 dirtied=1430 written=1432                                                                                  |
+| ->  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.466..123.663 rows=100000.00 loops=1) |
+| Planning Time: 0.025 ms                                                                                                               |
+| Execution Time: 158.657 ms                                                                                                            |
+|                                                                                                                                       |
+| > select test from users1 limit 3;                                                                                                    |
+| test                                                                                                                                  |
+| {"a": "dba001dbc53fb1affecb161244d49de5", "b": "1269bcf288fab7ff8bc8810322cf72df"}                                                    |
+| {"a": "f680462287f0e413535a1d1a9e08bd9c", "b": "78082ff4cf9ac36a66da115caa675057"}                                                    |
+| {"a": "ddda418ccf6b8bf7e601e3eeacd57d92", "b": "e1ab4cecb9a56acad02351bcd09ab0a9"}                                                    |
+|                                                                                                                                       |
+| > select test from users2 limit 3;                                                                                                    |
+| test                                                                                                                                  |
+| {"a": "3beeada8c14e8d4b1b137899bb26ab9e", "b": "68d8babc9da1ecc0d561d54d92f2d83e"}                                                    |
+| {"a": "ac5895ccaba4305066c3539ffc199525", "b": "e0ffd0cc569d1de65334dddeb0f9afe4"}                                                    |
+| {"a": "4d5ca26a018345a916c55d7aca560a84", "b": "2f068f30473bcee7650760a5c5431cb8"}                                                    |
+|                                                                                                                                       |
+| > EXPLAIN ANALYZE                                                                                                                     |
+| > SELECT test->>'a' FROM users1;                                                                                                      |
+| QUERY PLAN                                                                                                                            |
+| Seq Scan on users1  (cost=0.00..3858.30 rows=194344 width=32) (actual time=0.005..16.547 rows=100000.00 loops=1)                      |
+| Buffers: shared hit=1429                                                                                                              |
+| Planning Time: 0.004 ms                                                                                                               |
+| Execution Time: 18.648 ms                                                                                                             |
+|                                                                                                                                       |
+| > EXPLAIN ANALYZE                                                                                                                     |
+| > SELECT test->>'a' FROM users2;                                                                                                      |
+| QUERY PLAN                                                                                                                            |
+| Seq Scan on users2  (cost=0.00..3858.30 rows=194344 width=32) (actual time=0.004..7.037 rows=100000.00 loops=1)                       |
+| Buffers: shared hit=1429                                                                                                              |
+| Planning Time: 0.008 ms                                                                                                               |
+| Execution Time: 9.035 ms                                                                                                              |
+#+end_src
+
+書き込み。JSONBのほうが保存時パースする分遅い想定だったのだが、なぜかJSONBのほうが少し早い。構造の複雑さによるのだろうか。
+
+- JSONフィールドの書き込み(10万件)
+  - Planning Time: 0.036 ms
+  - Execution Time: 184.505 ms
+- JSONBフィールドの書き込み(10万件)
+  - Planning Time: 0.025 ms
+  - Execution Time: 158.657 ms
+
+読み出し。JSONBのほうが読み出し時にパースがないぶん早い。
+
+- JSONフィールドの読み出し(10万件)
+  - Planning Time: 0.004 ms
+  - Execution Time: 18.648 ms
+- JSONBフィールドの読み出し(10万件)
+  - Planning Time: 0.008 ms
+  - Execution Time: 9.035 ms
+
+#+begin_quote
+格納するときには変換のオーバーヘッドのため少し遅くなりますが、処理するときには、全く再解析が必要とされないので大幅に高速化されます。
+[[https://www.postgresql.jp/docs/9.6/datatype-json.html][8.14. JSONデータ型]]
+#+end_quote
 
 * 関連
 # 関連するエントリ。なぜ関連させたか理由を書く。意味のあるつながりを意識的につくる。
@@ -77,4 +224,5 @@
 # また、現在はリンクが見つからなくてもこういった切り口で将来関連させられそうな項目を書いておく
 # [類推、未解決、具体例、追加調査、理由、動機]
 # 横に類推するか、上に抽象化するか、下に具体化するか
-なし。
+
+- 追加調査: JSONBの書き込みのほうがなぜか早かった。複雑なJSON構造の場合はどうなるか確かめる
