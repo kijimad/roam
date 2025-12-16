@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-16T23:52:20Z -->
+<!-- 2025-12-17T08:16:56Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 502: jsonとjsonbの性能を比較する</title>
@@ -15,17 +15,14 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 502: jsonとjsonbの性能を比較する</h1>
-<div id="outline-container-orgf3f7994" class="outline-2">
-<h2 id="orgf3f7994"><a href="#orgf3f7994">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgf3f7994">
+<div id="outline-container-org5db72d3" class="outline-2">
+<h2 id="org5db72d3"><a href="#org5db72d3">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org5db72d3">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2025-12-16 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
 <li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
@@ -33,25 +30,189 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb4afc41" class="outline-2">
-<h2 id="orgb4afc41"><a href="#orgb4afc41">概要</a></h2>
-<div class="outline-text-2" id="text-orgb4afc41">
+<div id="outline-container-orgfa06d6d" class="outline-2">
+<h2 id="orgfa06d6d"><a href="#orgfa06d6d">概要</a></h2>
+<div class="outline-text-2" id="text-orgfa06d6d">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>でjsonとjsonbについて説明していた。じっさいに使ってみて読み書き性能を試してみる。
 </p>
 
-<ul class="org-ul">
-<li>「キーの順序を保持する必要がある」という特殊なケースでない限り、jsonb 一択</li>
-<li>jsonbはwrite時の変換コストがあるが、readは早い</li>
-</ul>
-</div>
-</div>
-<div id="outline-container-org207d38f" class="outline-2">
-<h2 id="org207d38f"><a href="#org207d38f">関連</a></h2>
-<div class="outline-text-2" id="text-org207d38f">
 <p>
-なし。
+ドキュメントのJSONデータ型の説明を見る。
 </p>
+
+<blockquote>
+<p>
+jsonデータ型は入力テキストの正確なコピーで格納し、処理関数を実行するたびに再解析する必要があります。jsonbデータ型では、分解されたバイナリ形式で格納されます。
+格納するときには変換のオーバーヘッドのため少し遅くなりますが、処理するときには、全く再解析が必要とされないので大幅に高速化されます。 また jsonb型の重要な利点はインデックスをサポートしていることです。
+<a href="https://www.postgresql.jp/docs/9.6/datatype-json.html">8.14. JSONデータ型</a>
+</p>
+</blockquote>
+
+<p>
+試す。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users1</span> (
+    test JSON
+);
+<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users2</span> (
+    test JSONB
+);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#26908;&#35388;&#12487;&#12540;&#12479;&#25407;&#20837; ================
+</span>EXPLAIN ANALYZE
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users1 (test)
+<span class="org-keyword">SELECT</span> jsonb_build_object(
+    <span class="org-string">'a'</span>, md5(random()::text)::text,
+    <span class="org-string">'b'</span>, md5(random()::text)::text
+)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+
+EXPLAIN ANALYZE
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users2 (test)
+<span class="org-keyword">SELECT</span> jsonb_build_object(
+    <span class="org-string">'a'</span>, md5(random()::text)::text,
+    <span class="org-string">'b'</span>, md5(random()::text)::text
+)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#30906;&#35469;
+</span><span class="org-keyword">select</span> test <span class="org-keyword">from</span> users1 <span class="org-keyword">limit</span> 3;
+<span class="org-keyword">select</span> test <span class="org-keyword">from</span> users2 <span class="org-keyword">limit</span> 3;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">JSON/JSONB&#12501;&#12451;&#12540;&#12523;&#12489;&#12398;&#29305;&#23450;&#12461;&#12540;&#12434;&#21462;&#24471; ================
+</span>EXPLAIN ANALYZE
+<span class="org-keyword">SELECT</span> test-&gt;&gt;<span class="org-string">'a'</span> <span class="org-keyword">FROM</span> users1;
+
+EXPLAIN ANALYZE
+<span class="org-keyword">SELECT</span> test-&gt;&gt;<span class="org-string">'a'</span> <span class="org-keyword">FROM</span> users2;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                                                                       |
+|---------------------------------------------------------------------------------------------------------------------------------------|
+| &gt; CREATE TABLE users1 (                                                                                                               |
+| &gt;     test JSON                                                                                                                       |
+| &gt; );                                                                                                                                  |
+| CREATE TABLE                                                                                                                          |
+|                                                                                                                                       |
+| &gt; CREATE TABLE users2 (                                                                                                               |
+| &gt;     test JSONB                                                                                                                      |
+| &gt; );                                                                                                                                  |
+| CREATE TABLE                                                                                                                          |
+|                                                                                                                                       |
+| &gt; EXPLAIN ANALYZE                                                                                                                     |
+| &gt; INSERT INTO users1 (test)                                                                                                           |
+| &gt; SELECT jsonb_build_object(                                                                                                          |
+| &gt;     'a', md5(random()::text)::text,                                                                                                 |
+| &gt;     'b', md5(random()::text)::text                                                                                                  |
+| &gt; )                                                                                                                                   |
+| &gt; FROM generate_series(1, 100000) i;                                                                                                  |
+| QUERY PLAN                                                                                                                            |
+| Insert on users1  (cost=0.00..3750.00 rows=0 width=0) (actual time=184.280..184.281 rows=0.00 loops=1)                                |
+| Buffers: shared hit=102854 dirtied=1430 written=1432                                                                                  |
+| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3750.00 rows=100000 width=32) (actual time=2.514..149.198 rows=100000.00 loops=1)          |
+| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.508..127.342 rows=100000.00 loops=1) |
+| Planning:                                                                                                                             |
+| Buffers: shared hit=12                                                                                                                |
+| Planning Time: 0.036 ms                                                                                                               |
+| Execution Time: 184.505 ms                                                                                                            |
+|                                                                                                                                       |
+| &gt; EXPLAIN ANALYZE                                                                                                                     |
+| &gt; INSERT INTO users2 (test)                                                                                                           |
+| &gt; SELECT jsonb_build_object(                                                                                                          |
+| &gt;     'a', md5(random()::text)::text,                                                                                                 |
+| &gt;     'b', md5(random()::text)::text                                                                                                  |
+| &gt; )                                                                                                                                   |
+| &gt; FROM generate_series(1, 100000) i;                                                                                                  |
+| QUERY PLAN                                                                                                                            |
+| Insert on users2  (cost=0.00..3250.00 rows=0 width=0) (actual time=158.466..158.467 rows=0.00 loops=1)                                |
+| Buffers: shared hit=102854 dirtied=1430 written=1432                                                                                  |
+| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.466..123.663 rows=100000.00 loops=1) |
+| Planning Time: 0.025 ms                                                                                                               |
+| Execution Time: 158.657 ms                                                                                                            |
+|                                                                                                                                       |
+| &gt; select test from users1 limit 3;                                                                                                    |
+| test                                                                                                                                  |
+| {"a": "dba001dbc53fb1affecb161244d49de5", "b": "1269bcf288fab7ff8bc8810322cf72df"}                                                    |
+| {"a": "f680462287f0e413535a1d1a9e08bd9c", "b": "78082ff4cf9ac36a66da115caa675057"}                                                    |
+| {"a": "ddda418ccf6b8bf7e601e3eeacd57d92", "b": "e1ab4cecb9a56acad02351bcd09ab0a9"}                                                    |
+|                                                                                                                                       |
+| &gt; select test from users2 limit 3;                                                                                                    |
+| test                                                                                                                                  |
+| {"a": "3beeada8c14e8d4b1b137899bb26ab9e", "b": "68d8babc9da1ecc0d561d54d92f2d83e"}                                                    |
+| {"a": "ac5895ccaba4305066c3539ffc199525", "b": "e0ffd0cc569d1de65334dddeb0f9afe4"}                                                    |
+| {"a": "4d5ca26a018345a916c55d7aca560a84", "b": "2f068f30473bcee7650760a5c5431cb8"}                                                    |
+|                                                                                                                                       |
+| &gt; EXPLAIN ANALYZE                                                                                                                     |
+| &gt; SELECT test-&gt;&gt;'a' FROM users1;                                                                                                      |
+| QUERY PLAN                                                                                                                            |
+| Seq Scan on users1  (cost=0.00..3858.30 rows=194344 width=32) (actual time=0.005..16.547 rows=100000.00 loops=1)                      |
+| Buffers: shared hit=1429                                                                                                              |
+| Planning Time: 0.004 ms                                                                                                               |
+| Execution Time: 18.648 ms                                                                                                             |
+|                                                                                                                                       |
+| &gt; EXPLAIN ANALYZE                                                                                                                     |
+| &gt; SELECT test-&gt;&gt;'a' FROM users2;                                                                                                      |
+| QUERY PLAN                                                                                                                            |
+| Seq Scan on users2  (cost=0.00..3858.30 rows=194344 width=32) (actual time=0.004..7.037 rows=100000.00 loops=1)                       |
+| Buffers: shared hit=1429                                                                                                              |
+| Planning Time: 0.008 ms                                                                                                               |
+| Execution Time: 9.035 ms                                                                                                              |
+</pre>
+</div>
+
+<p>
+書き込み。JSONBのほうが保存時パースする分遅い想定だったのだが、なぜかJSONBのほうが少し早い。構造の複雑さによるのだろうか。
+</p>
+
+<ul class="org-ul">
+<li>JSONフィールドの書き込み(10万件)
+<ul class="org-ul">
+<li>Planning Time: 0.036 ms</li>
+<li>Execution Time: 184.505 ms</li>
+</ul></li>
+<li>JSONBフィールドの書き込み(10万件)
+<ul class="org-ul">
+<li>Planning Time: 0.025 ms</li>
+<li>Execution Time: 158.657 ms</li>
+</ul></li>
+</ul>
+
+<p>
+読み出し。JSONBのほうが読み出し時にパースがないぶん早い。
+</p>
+
+<ul class="org-ul">
+<li>JSONフィールドの読み出し(10万件)
+<ul class="org-ul">
+<li>Planning Time: 0.004 ms</li>
+<li>Execution Time: 18.648 ms</li>
+</ul></li>
+<li>JSONBフィールドの読み出し(10万件)
+<ul class="org-ul">
+<li>Planning Time: 0.008 ms</li>
+<li>Execution Time: 9.035 ms</li>
+</ul></li>
+</ul>
+
+<blockquote>
+<p>
+格納するときには変換のオーバーヘッドのため少し遅くなりますが、処理するときには、全く再解析が必要とされないので大幅に高速化されます。
+<a href="https://www.postgresql.jp/docs/9.6/datatype-json.html">8.14. JSONデータ型</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-orgf7a36d4" class="outline-2">
+<h2 id="orgf7a36d4"><a href="#orgf7a36d4">関連</a></h2>
+<div class="outline-text-2" id="text-orgf7a36d4">
+<ul class="org-ul">
+<li>追加調査: JSONBの書き込みのほうがなぜか早かった。複雑なJSON構造の場合はどうなるか確かめる</li>
+</ul>
 </div>
 </div>
 </div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-16T23:51:07Z -->
+<!-- 2025-12-17T08:15:40Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 501: インデックスのオーバーヘッドを検証する</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 501: インデックスのオーバーヘッドを検証する</h1>
-<div id="outline-container-org139e90b" class="outline-2">
-<h2 id="org139e90b"><a href="#org139e90b">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org139e90b">
+<div id="outline-container-org37e0287" class="outline-2">
+<h2 id="org37e0287"><a href="#org37e0287">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org37e0287">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +30,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org25f5cda" class="outline-2">
-<h2 id="org25f5cda"><a href="#org25f5cda">概要</a></h2>
-<div class="outline-text-2" id="text-org25f5cda">
+<div id="outline-container-orga917a2a" class="outline-2">
+<h2 id="orga917a2a"><a href="#orga917a2a">概要</a></h2>
+<div class="outline-text-2" id="text-orga917a2a">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>のOver-Indexingを読んで、インデックスの具体的なオーバヘッドを知った。
 </p>
@@ -49,9 +49,9 @@
 これらをじっさいに試す。
 </p>
 </div>
-<div id="outline-container-orgb89060c" class="outline-3">
-<h3 id="orgb89060c"><a href="#orgb89060c">作成時のディスク容量</a></h3>
-<div class="outline-text-3" id="text-orgb89060c">
+<div id="outline-container-org2de7175" class="outline-3">
+<h3 id="org2de7175"><a href="#org2de7175">作成時のディスク容量</a></h3>
+<div class="outline-text-3" id="text-org2de7175">
 <p>
 レコードを作成して、インデックスのディスク容量を見る。
 </p>
@@ -118,11 +118,11 @@
 </p>
 </div>
 </div>
-<div id="outline-container-orgfda89a8" class="outline-3">
-<h3 id="orgfda89a8"><a href="#orgfda89a8">更新時のコスト</a></h3>
-<div class="outline-text-3" id="text-orgfda89a8">
+<div id="outline-container-orge460f68" class="outline-3">
+<h3 id="orge460f68"><a href="#orge460f68">更新時のコスト</a></h3>
+<div class="outline-text-3" id="text-orge460f68">
 <p>
-インデックスの有無を変えてフィールドを更新したときの時間を見る。
+インデックスの有無を変えてレコードを更新したときの時間を見る。
 </p>
 
 <div class="org-src-container">
@@ -130,28 +130,21 @@
     <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
 );
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12394;&#12375;&#12391;&#25407;&#20837;&#12377;&#12427;
-</span><span class="org-keyword">BEGIN</span>;
 EXPLAIN ANALYZE
 <span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
 <span class="org-keyword">SELECT</span>
      <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
 </span>     md5(random()::text) || md5(random()::text)
 <span class="org-keyword">FROM</span> generate_series(1, 100000) i;
-<span class="org-keyword">ROLLBACK</span>;
+
+EXPLAIN ANALYZE
+<span class="org-keyword">UPDATE</span> users <span class="org-keyword">SET</span> <span class="org-keyword">name</span> = <span class="org-string">'abc'</span>;
 
 <span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
 </span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12354;&#12426;&#12391;&#25407;&#20837;&#12377;&#12427;
-</span><span class="org-keyword">BEGIN</span>;
 EXPLAIN ANALYZE
-<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span>
-     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
-</span>     md5(random()::text) || md5(random()::text)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
-<span class="org-keyword">ROLLBACK</span>;
+<span class="org-keyword">UPDATE</span> users <span class="org-keyword">SET</span> <span class="org-keyword">name</span> = <span class="org-string">'def'</span>;
 </pre>
 </div>
 
@@ -163,9 +156,6 @@ EXPLAIN ANALYZE
 | &gt; );                                                                                                                                 |   |                     |
 | CREATE TABLE                                                                                                                         |   |                     |
 |                                                                                                                                      |   |                     |
-| &gt; BEGIN;                                                                                                                             |   |                     |
-| BEGIN                                                                                                                                |   |                     |
-|                                                                                                                                      |   |                     |
 | &gt; EXPLAIN ANALYZE                                                                                                                    |   |                     |
 | &gt; INSERT INTO users (name)                                                                                                           |   |                     |
 | &gt; SELECT                                                                                                                             |   |                     |
@@ -173,55 +163,65 @@ EXPLAIN ANALYZE
 | &gt;      md5(random()::text)                                                                                                           |   | md5(random()::text) |
 | &gt; FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
 | QUERY PLAN                                                                                                                           |   |                     |
-| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=118.697..118.698 rows=0.00 loops=1)                                |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=127.862..127.863 rows=0.00 loops=1)                                |   |                     |
 | Buffers: shared hit=102466 dirtied=1236 written=1238                                                                                 |   |                     |
-| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.688..88.235 rows=100000.00 loops=1)         |   |                     |
-| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.687..83.525 rows=100000.00 loops=1) |   |                     |
+| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.628..92.992 rows=100000.00 loops=1)         |   |                     |
+| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.627..88.029 rows=100000.00 loops=1) |   |                     |
 | Planning:                                                                                                                            |   |                     |
 | Buffers: shared hit=6                                                                                                                |   |                     |
-| Planning Time: 0.032 ms                                                                                                              |   |                     |
-| Execution Time: 118.892 ms                                                                                                           |   |                     |
+| Planning Time: 0.033 ms                                                                                                              |   |                     |
+| Execution Time: 128.000 ms                                                                                                           |   |                     |
 |                                                                                                                                      |   |                     |
-| &gt; ROLLBACK;                                                                                                                          |   |                     |
-| ROLLBACK                                                                                                                             |   |                     |
+| &gt; EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| &gt; UPDATE users SET name = 'abc';                                                                                                     |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Update on users  (cost=0.00..1420.25 rows=0 width=0) (actual time=64.452..64.452 rows=0.00 loops=1)                                  |   |                     |
+| Buffers: shared hit=304574 dirtied=437 written=437                                                                                   |   |                     |
+| -&gt;  Seq Scan on users  (cost=0.00..1420.25 rows=18525 width=522) (actual time=0.007..5.503 rows=100000.00 loops=1)                   |   |                     |
+| Buffers: shared hit=1235                                                                                                             |   |                     |
+| Planning:                                                                                                                            |   |                     |
+| Buffers: shared hit=22                                                                                                               |   |                     |
+| Planning Time: 0.112 ms                                                                                                              |   |                     |
+| Execution Time: 64.506 ms                                                                                                            |   |                     |
 |                                                                                                                                      |   |                     |
 | &gt; CREATE INDEX idx_users_name ON users(name);                                                                                        |   |                     |
 | CREATE INDEX                                                                                                                         |   |                     |
 |                                                                                                                                      |   |                     |
-| &gt; BEGIN;                                                                                                                             |   |                     |
-| BEGIN                                                                                                                                |   |                     |
-|                                                                                                                                      |   |                     |
 | &gt; EXPLAIN ANALYZE                                                                                                                    |   |                     |
-| &gt; INSERT INTO users (name)                                                                                                           |   |                     |
-| &gt; SELECT                                                                                                                             |   |                     |
-| &gt;      -- 32x2 文字                                                                                                                  |   |                     |
-| &gt;      md5(random()::text)                                                                                                           |   | md5(random()::text) |
-| &gt; FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| &gt; UPDATE users SET name = 'def';                                                                                                     |   |                     |
 | QUERY PLAN                                                                                                                           |   |                     |
-| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=267.753..267.753 rows=0.00 loops=1)                                |   |                     |
-| Buffers: shared hit=398873 read=1 dirtied=2766 written=2765                                                                          |   |                     |
-| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.510..91.734 rows=100000.00 loops=1)         |   |                     |
-| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.509..86.862 rows=100000.00 loops=1) |   |                     |
-| Planning Time: 0.027 ms                                                                                                              |   |                     |
-| Execution Time: 267.930 ms                                                                                                           |   |                     |
-|                                                                                                                                      |   |                     |
-| &gt; ROLLBACK;                                                                                                                          |   |                     |
-| ROLLBACK                                                                                                                             |   |                     |
+| Update on users  (cost=0.00..2672.00 rows=0 width=0) (actual time=119.053..119.053 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=501291 read=2 dirtied=518 written=516                                                                            |   |                     |
+| -&gt;  Seq Scan on users  (cost=0.00..2672.00 rows=100000 width=522) (actual time=0.008..6.486 rows=100000.00 loops=1)                  |   |                     |
+| Buffers: shared hit=1672                                                                                                             |   |                     |
+| Planning:                                                                                                                            |   |                     |
+| Buffers: shared hit=15 read=1                                                                                                        |   |                     |
+| Planning Time: 0.074 ms                                                                                                              |   |                     |
+| Execution Time: 119.072 ms                                                                                                           |   |                     |
 </pre>
 </div>
 
-<p>
-Execution Time が 118.892 ms -&gt; 267.930 ms 。
-</p>
+<ul class="org-ul">
+<li>インデックスなしフィールドの更新(10万件)
+<ul class="org-ul">
+<li>Planning Time: 0.112 ms</li>
+<li>Execution Time: 64.506 ms</li>
+</ul></li>
+<li>インデックスありフィールドの更新(10万件)
+<ul class="org-ul">
+<li>Planning Time: 0.074 ms</li>
+<li>Execution Time: 119.072 ms</li>
+</ul></li>
+</ul>
 
 <p>
-10万レコード挿入の実行時間が2倍になった。
+インデックスがあると更新の計画時間は減ったが、実行時間が増加している。
 </p>
 </div>
 </div>
-<div id="outline-container-org3a0a057" class="outline-3">
-<h3 id="org3a0a057"><a href="#org3a0a057">計画時間のコスト</a></h3>
-<div class="outline-text-3" id="text-org3a0a057">
+<div id="outline-container-org7889a3d" class="outline-3">
+<h3 id="org7889a3d"><a href="#org7889a3d">計画時間のコスト</a></h3>
+<div class="outline-text-3" id="text-org7889a3d">
 <div class="org-src-container">
 <pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
     <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
@@ -313,9 +313,9 @@ Execution Time が 118.892 ms -&gt; 267.930 ms 。
 </p>
 </div>
 </div>
-<div id="outline-container-org87a7255" class="outline-3">
-<h3 id="org87a7255"><a href="#org87a7255">大量インデックスの計画コスト</a></h3>
-<div class="outline-text-3" id="text-org87a7255">
+<div id="outline-container-org51205b2" class="outline-3">
+<h3 id="org51205b2"><a href="#org51205b2">大量インデックスの計画コスト</a></h3>
+<div class="outline-text-3" id="text-org51205b2">
 <p>
 インデックス増加による計画時間の増加を見る。
 </p>
@@ -516,10 +516,111 @@ Execution Time が 118.892 ms -&gt; 267.930 ms 。
 </ul>
 </div>
 </div>
+<div id="outline-container-org150813d" class="outline-3">
+<h3 id="org150813d"><a href="#org150813d">挿入時のコスト</a></h3>
+<div class="outline-text-3" id="text-org150813d">
+<p>
+インデックスの有無を変えてレコードを挿入したときの時間を見る。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
+    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12394;&#12375;&#12391;&#25407;&#20837;&#12377;&#12427;
+</span><span class="org-keyword">BEGIN</span>;
+EXPLAIN ANALYZE
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span>
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     md5(random()::text) || md5(random()::text)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+<span class="org-keyword">ROLLBACK</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
+</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12354;&#12426;&#12391;&#25407;&#20837;&#12377;&#12427;
+</span><span class="org-keyword">BEGIN</span>;
+EXPLAIN ANALYZE
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span>
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     md5(random()::text) || md5(random()::text)
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+<span class="org-keyword">ROLLBACK</span>;
+</pre>
 </div>
-<div id="outline-container-orgf246ba4" class="outline-2">
-<h2 id="orgf246ba4"><a href="#orgf246ba4">関連</a></h2>
-<div class="outline-text-2" id="text-orgf246ba4">
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                                                                      |   |                     |
+|--------------------------------------------------------------------------------------------------------------------------------------+---+---------------------|
+| &gt; CREATE TABLE users (                                                                                                               |   |                     |
+| &gt;     name varchar(255)                                                                                                              |   |                     |
+| &gt; );                                                                                                                                 |   |                     |
+| CREATE TABLE                                                                                                                         |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; BEGIN;                                                                                                                             |   |                     |
+| BEGIN                                                                                                                                |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| &gt; INSERT INTO users (name)                                                                                                           |   |                     |
+| &gt; SELECT                                                                                                                             |   |                     |
+| &gt;      -- 32x2 文字                                                                                                                  |   |                     |
+| &gt;      md5(random()::text)                                                                                                           |   | md5(random()::text) |
+| &gt; FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=118.697..118.698 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=102466 dirtied=1236 written=1238                                                                                 |   |                     |
+| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.688..88.235 rows=100000.00 loops=1)         |   |                     |
+| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.687..83.525 rows=100000.00 loops=1) |   |                     |
+| Planning:                                                                                                                            |   |                     |
+| Buffers: shared hit=6                                                                                                                |   |                     |
+| Planning Time: 0.032 ms                                                                                                              |   |                     |
+| Execution Time: 118.892 ms                                                                                                           |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; ROLLBACK;                                                                                                                          |   |                     |
+| ROLLBACK                                                                                                                             |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; CREATE INDEX idx_users_name ON users(name);                                                                                        |   |                     |
+| CREATE INDEX                                                                                                                         |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; BEGIN;                                                                                                                             |   |                     |
+| BEGIN                                                                                                                                |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; EXPLAIN ANALYZE                                                                                                                    |   |                     |
+| &gt; INSERT INTO users (name)                                                                                                           |   |                     |
+| &gt; SELECT                                                                                                                             |   |                     |
+| &gt;      -- 32x2 文字                                                                                                                  |   |                     |
+| &gt;      md5(random()::text)                                                                                                           |   | md5(random()::text) |
+| &gt; FROM generate_series(1, 100000) i;                                                                                                 |   |                     |
+| QUERY PLAN                                                                                                                           |   |                     |
+| Insert on users  (cost=0.00..3500.00 rows=0 width=0) (actual time=267.753..267.753 rows=0.00 loops=1)                                |   |                     |
+| Buffers: shared hit=398873 read=1 dirtied=2766 written=2765                                                                          |   |                     |
+| -&gt;  Subquery Scan on "*SELECT*"  (cost=0.00..3500.00 rows=100000 width=516) (actual time=2.510..91.734 rows=100000.00 loops=1)         |   |                     |
+| -&gt;  Function Scan on generate_series i  (cost=0.00..3250.00 rows=100000 width=32) (actual time=2.509..86.862 rows=100000.00 loops=1) |   |                     |
+| Planning Time: 0.027 ms                                                                                                              |   |                     |
+| Execution Time: 267.930 ms                                                                                                           |   |                     |
+|                                                                                                                                      |   |                     |
+| &gt; ROLLBACK;                                                                                                                          |   |                     |
+| ROLLBACK                                                                                                                             |   |                     |
+</pre>
+</div>
+
+<p>
+Execution Time が 118.892 ms -&gt; 267.930 ms 。
+</p>
+
+<p>
+10万レコード挿入の実行時間が2倍になった。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org07cedd5" class="outline-2">
+<h2 id="org07cedd5"><a href="#org07cedd5">関連</a></h2>
+<div class="outline-text-2" id="text-org07cedd5">
 <ul class="org-ul">
 <li>疑問: 計画時にオプション評価のコストがかかるというが、どのような状況で問題になるのだろうか。もっと端的に増えていくケースがあるのだろうか。調べた限りだとオーバーヘッドになっているのは確かだが、実行時間の削減量に比べてわずかで、あまり問題となるように見えない</li>
 </ul>
