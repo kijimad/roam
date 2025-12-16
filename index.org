@@ -157,7 +157,7 @@
       datestr_past=$1
       datestr_future=$2
 
-      count=`git whatchanged --diff-filter=A --since="$datestr_past" --until="$datestr_future"--format=oneline --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
+      count=`git log --diff-filter=A --since="$datestr_past" --until="$datestr_future" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
       printf "%s %s " `date --date "$datestr_past" "+%Y-%m-%d"` $count
       for (( i = 0; i < $count; i++ )); do
           printf "%s" "+"
@@ -226,10 +226,10 @@
   echo "最新のｺﾐｯﾄ" `git log --date=iso --date=format:"%Y-%m-%dT%H:%M:%S" --pretty=format:"%ad" | head -n 1`
   echo
   echo "追加ファイル"
-  echo "2年間" `git whatchanged --diff-filter=A --since="2 year ago" --format=oneline --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-  echo "1年間" `git whatchanged --diff-filter=A --since="1 year ago" --format=oneline --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-  echo "1ヶ月間" `git whatchanged --diff-filter=A --since="1 month ago" --format=oneline --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-  echo "1週間" `git whatchanged --diff-filter=A --since="1 week ago" --format=oneline --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
+  echo "2年間" `git log --diff-filter=A --since="2 year ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
+  echo "1年間" `git log --diff-filter=A --since="1 year ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
+  echo "1ヶ月間" `git log --diff-filter=A --since="1 month ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
+  echo "1週間" `git log --diff-filter=A --since="1 week ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
   file_changed_count_day "1 day ago" "0 day ago"
   file_changed_count_day "2 days ago" "1 day ago"
   file_changed_count_day "3 days ago" "2 days ago"
