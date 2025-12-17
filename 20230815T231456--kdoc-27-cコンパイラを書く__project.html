@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-17T23:05:43Z -->
+<!-- 2025-12-17T23:08:32Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 27: Cコンパイラを書く</title>
@@ -15,18 +15,18 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 27: Cコンパイラを書く</h1>
-<div id="outline-container-org0219d61" class="outline-2">
-<h2 id="org0219d61"><a href="#org0219d61">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org0219d61">
+<div id="outline-container-orge4107d6" class="outline-2">
+<h2 id="orge4107d6"><a href="#orge4107d6">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge4107d6">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> 作成</li>
 <li class="on"><input type='checkbox' checked='checked' /> レビュー</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org2ddb6f5" class="outline-2">
-<h2 id="org2ddb6f5"><a href="#org2ddb6f5"><span class="done CLOSE">CLOSE</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-org2ddb6f5">
+<div id="outline-container-orgda29141" class="outline-2">
+<h2 id="orgda29141"><a href="#orgda29141"><span class="done CLOSE">CLOSE</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-orgda29141">
 <p>
 プロジェクトは終了である。
 </p>
@@ -36,9 +36,9 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org871a1c7" class="outline-2">
-<h2 id="org871a1c7"><a href="#org871a1c7">概要</a></h2>
-<div class="outline-text-2" id="text-org871a1c7">
+<div id="outline-container-org79dc64a" class="outline-2">
+<h2 id="org79dc64a"><a href="#org79dc64a">概要</a></h2>
+<div class="outline-text-2" id="text-org79dc64a">
 <p>
 <a href="20230816114747-compiler.html#ID-6cbcac25-a12b-47c0-8183-62d18799835d">compiler</a>を作成する。自作言語だとだるくなるので、<a href="20210911104632-c_language.html#ID-656a0aa4-e5d3-416f-82d5-f909558d0639">C言語</a>の言語仕様でコンパイラを作る。8ccを参考にする。
 </p>
@@ -49,37 +49,37 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org6704d95" class="outline-2">
-<h2 id="org6704d95"><a href="#org6704d95">導入</a></h2>
-<div class="outline-text-2" id="text-org6704d95">
+<div id="outline-container-org82ce341" class="outline-2">
+<h2 id="org82ce341"><a href="#org82ce341">導入</a></h2>
+<div class="outline-text-2" id="text-org82ce341">
 <p>
 背景。
 </p>
 </div>
 </div>
-<div id="outline-container-org022d0a5" class="outline-2">
-<h2 id="org022d0a5"><a href="#org022d0a5">Tasks</a></h2>
-<div class="outline-text-2" id="text-org022d0a5">
+<div id="outline-container-org8e06e61" class="outline-2">
+<h2 id="org8e06e61"><a href="#org8e06e61">Tasks</a></h2>
+<div class="outline-text-2" id="text-org8e06e61">
 </div>
-<div id="outline-container-org867b8e9" class="outline-3">
-<h3 id="org867b8e9"><a href="#org867b8e9"><span class="todo TODO">TODO</span> 8ccを読む</a></h3>
-<div class="outline-text-3" id="text-org867b8e9">
+<div id="outline-container-org8a559f0" class="outline-3">
+<h3 id="org8a559f0"><a href="#org8a559f0"><span class="todo TODO">TODO</span> 8ccを読む</a></h3>
+<div class="outline-text-3" id="text-org8a559f0">
 <p>
 まず全体像を把握する。
 </p>
 </div>
 </div>
-<div id="outline-container-org3cf446a" class="outline-3">
-<h3 id="org3cf446a"><a href="#org3cf446a"><span class="todo TODO">TODO</span> 終端のチェックをやる</a></h3>
-<div class="outline-text-3" id="text-org3cf446a">
+<div id="outline-container-org4f7faf8" class="outline-3">
+<h3 id="org4f7faf8"><a href="#org4f7faf8"><span class="todo TODO">TODO</span> 終端のチェックをやる</a></h3>
+<div class="outline-text-3" id="text-org4f7faf8">
 <p>
 セミコロンをチェックする。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc4f401f" class="outline-3">
-<h3 id="orgc4f401f"><a href="#orgc4f401f"><span class="todo TODO">TODO</span> 変数宣言まわりで式の評価順が間違っているのを直す</a></h3>
-<div class="outline-text-3" id="text-orgc4f401f">
+<div id="outline-container-org40f2fc4" class="outline-3">
+<h3 id="org40f2fc4"><a href="#org40f2fc4"><span class="todo TODO">TODO</span> 変数宣言まわりで式の評価順が間違っているのを直す</a></h3>
+<div class="outline-text-3" id="text-org40f2fc4">
 <p>
 なぜか違う値になる。
 </p>
@@ -105,78 +105,78 @@
 </div>
 </div>
 </div>
-<div id="outline-container-org8db53fb" class="outline-3">
-<h3 id="org8db53fb"><a href="#org8db53fb"><span class="todo TODO">TODO</span> identの許容文字を明示する</a></h3>
-<div class="outline-text-3" id="text-org8db53fb">
+<div id="outline-container-orgf8be29b" class="outline-3">
+<h3 id="orgf8be29b"><a href="#orgf8be29b"><span class="todo TODO">TODO</span> identの許容文字を明示する</a></h3>
+<div class="outline-text-3" id="text-orgf8be29b">
 <p>
 小文字、大文字、アンダースコアのみにする。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org2cf8477" class="outline-2">
-<h2 id="org2cf8477"><a href="#org2cf8477">Archives</a></h2>
-<div class="outline-text-2" id="text-org2cf8477">
+<div id="outline-container-org07ed0f3" class="outline-2">
+<h2 id="org07ed0f3"><a href="#org07ed0f3">Archives</a></h2>
+<div class="outline-text-2" id="text-org07ed0f3">
 </div>
-<div id="outline-container-org8f5e1de" class="outline-3">
-<h3 id="org8f5e1de"><a href="#org8f5e1de"><span class="done DONE">DONE</span> 関数呼び出しを実装する</a></h3>
-<div class="outline-text-3" id="text-org8f5e1de">
+<div id="outline-container-orgba6f452" class="outline-3">
+<h3 id="orgba6f452"><a href="#orgba6f452"><span class="done DONE">DONE</span> 関数呼び出しを実装する</a></h3>
+<div class="outline-text-3" id="text-orgba6f452">
 <p>
 関数定義は後でやる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc067c53" class="outline-3">
-<h3 id="orgc067c53"><a href="#orgc067c53"><span class="done DONE">DONE</span> charを実装する</a></h3>
-<div class="outline-text-3" id="text-orgc067c53">
+<div id="outline-container-org166888e" class="outline-3">
+<h3 id="org166888e"><a href="#org166888e"><span class="done DONE">DONE</span> charを実装する</a></h3>
+<div class="outline-text-3" id="text-org166888e">
 <p>
 文字列と同じ感じでいけそう。
 </p>
 </div>
 </div>
-<div id="outline-container-org6ac91c5" class="outline-3">
-<h3 id="org6ac91c5"><a href="#org6ac91c5"><span class="done DONE">DONE</span> 文字列のテスト落ちを直す</a></h3>
-<div class="outline-text-3" id="text-org6ac91c5">
+<div id="outline-container-orgb39082c" class="outline-3">
+<h3 id="orgb39082c"><a href="#orgb39082c"><span class="done DONE">DONE</span> 文字列のテスト落ちを直す</a></h3>
+<div class="outline-text-3" id="text-orgb39082c">
 <p>
 テスト用のCの関数がintを返すようになっているから、文字列は返せないんだな。8ccではASTで文字列を返すようになっているので、同じ感じにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org53d52c1" class="outline-3">
-<h3 id="org53d52c1"><a href="#org53d52c1"><span class="done DONE">DONE</span> identを直す</a></h3>
-<div class="outline-text-3" id="text-org53d52c1">
+<div id="outline-container-org271760f" class="outline-3">
+<h3 id="org271760f"><a href="#org271760f"><span class="done DONE">DONE</span> identを直す</a></h3>
+<div class="outline-text-3" id="text-org271760f">
 <p>
 envが初期状態のままになっているようだ。分岐の箇所を間違っていた。
 </p>
 </div>
 </div>
-<div id="outline-container-org9394673" class="outline-3">
-<h3 id="org9394673"><a href="#org9394673"><span class="done DONE">DONE</span> stringを直す</a></h3>
-<div class="outline-text-3" id="text-org9394673">
+<div id="outline-container-org71775d9" class="outline-3">
+<h3 id="org71775d9"><a href="#org71775d9"><span class="done DONE">DONE</span> stringを直す</a></h3>
+<div class="outline-text-3" id="text-org71775d9">
 <p>
 データラベルが必要。
 </p>
 </div>
 </div>
-<div id="outline-container-org91863be" class="outline-3">
-<h3 id="org91863be"><a href="#org91863be"><span class="done DONE">DONE</span> 文字列テストを書き直す</a></h3>
-<div class="outline-text-3" id="text-org91863be">
+<div id="outline-container-org20c33c9" class="outline-3">
+<h3 id="org20c33c9"><a href="#org20c33c9"><span class="done DONE">DONE</span> 文字列テストを書き直す</a></h3>
+<div class="outline-text-3" id="text-org20c33c9">
 <p>
 printf関数を使って文字列テストをやる。
 </p>
 </div>
 </div>
-<div id="outline-container-org78de27c" class="outline-3">
-<h3 id="org78de27c"><a href="#org78de27c"><span class="done DONE">DONE</span> lexerまわりのリファクタ</a></h3>
-<div class="outline-text-3" id="text-org78de27c">
+<div id="outline-container-org8fc076d" class="outline-3">
+<h3 id="org8fc076d"><a href="#org8fc076d"><span class="done DONE">DONE</span> lexerまわりのリファクタ</a></h3>
+<div class="outline-text-3" id="text-org8fc076d">
 <p>
 細かいやつ。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf4850e3" class="outline-3">
-<h3 id="orgf4850e3"><a href="#orgf4850e3"><span class="done CLOSE">CLOSE</span> DeclStatementは中置演算子で書けないか</a></h3>
-<div class="outline-text-3" id="text-orgf4850e3">
+<div id="outline-container-orgdca49d4" class="outline-3">
+<h3 id="orgdca49d4"><a href="#orgdca49d4"><span class="done CLOSE">CLOSE</span> DeclStatementは中置演算子で書けないか</a></h3>
+<div class="outline-text-3" id="text-orgdca49d4">
 <p>
 いや、今のコミット時点の8ccと同じように合わせておくのが安全そう。いきなり大変になるし。
 </p>
@@ -206,17 +206,17 @@ int a &ldquo;=&rdquo; 2
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc8780af" class="outline-3">
-<h3 id="orgc8780af"><a href="#orgc8780af"><span class="done DONE">DONE</span> astのidentをvarにする</a></h3>
-<div class="outline-text-3" id="text-orgc8780af">
+<div id="outline-container-orgd09ae34" class="outline-3">
+<h3 id="orgd09ae34"><a href="#orgd09ae34"><span class="done DONE">DONE</span> astのidentをvarにする</a></h3>
+<div class="outline-text-3" id="text-orgd09ae34">
 <p>
 astの時点でidentの中の、varと確定できるので。lexerの時点ではidentのまま。
 </p>
 </div>
 </div>
-<div id="outline-container-org55e5d53" class="outline-3">
-<h3 id="org55e5d53"><a href="#org55e5d53"><span class="done DONE">DONE</span> ctypeを追加する</a></h3>
-<div class="outline-text-3" id="text-org55e5d53">
+<div id="outline-container-org0bf1ff5" class="outline-3">
+<h3 id="org0bf1ff5"><a href="#org0bf1ff5"><span class="done DONE">DONE</span> ctypeを追加する</a></h3>
+<div class="outline-text-3" id="text-org0bf1ff5">
 <ul class="org-ul">
 <li>それぞれのASTにctypeを追加する
 <ul class="org-ul">
@@ -227,9 +227,9 @@ astの時点でidentの中の、varと確定できるので。lexerの時点で�
 </ul>
 </div>
 </div>
-<div id="outline-container-orgbaada9b" class="outline-3">
-<h3 id="orgbaada9b"><a href="#orgbaada9b"><span class="done DONE">DONE</span> ast読み込みの時点で変数を確定する</a></h3>
-<div class="outline-text-3" id="text-orgbaada9b">
+<div id="outline-container-org1c3422a" class="outline-3">
+<h3 id="org1c3422a"><a href="#org1c3422a"><span class="done DONE">DONE</span> ast読み込みの時点で変数を確定する</a></h3>
+<div class="outline-text-3" id="text-org1c3422a">
 <p>
 今は変数の確認をasmでやっていて確定するが、それをparserでやる。うーん、変数の確認をするにはobjectを持ってくる必要があるが、面倒だな。
 </p>
