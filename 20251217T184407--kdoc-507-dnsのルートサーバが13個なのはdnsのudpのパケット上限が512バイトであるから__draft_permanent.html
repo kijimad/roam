@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-17T23:05:58Z -->
+<!-- 2025-12-17T23:06:55Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>KDOC 424: big.Ratのゼロ値はゼロ除算を避けるようになっている</title>
+<title>KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
 <link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
@@ -14,59 +14,39 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<h1 class="title">KDOC 424: big.Ratのゼロ値はゼロ除算を避けるようになっている</h1>
-<div id="outline-container-org1208a53" class="outline-2">
-<h2 id="org1208a53"><a href="#org1208a53">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org1208a53">
+<h1 class="title">KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</h1>
+<div id="outline-container-org1fb19dc" class="outline-2">
+<h2 id="org1fb19dc"><a href="#org1fb19dc">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1fb19dc">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="on"><input type='checkbox' checked='checked' /> 2025-07-27 貴島</li>
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
 </ul></li>
+</ul>
+
+<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="on"><input type='checkbox' checked='checked' /> 2025-09-04 貴島</li>
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org82fc25c" class="outline-2">
-<h2 id="org82fc25c"><a href="#org82fc25c">概要</a></h2>
-<div class="outline-text-2" id="text-org82fc25c">
+<div id="outline-container-org10f44b0" class="outline-2">
+<h2 id="org10f44b0"><a href="#org10f44b0">概要</a></h2>
+<div class="outline-text-2" id="text-org10f44b0">
 <p>
-Go言語の <code>big.Rat</code> 型は分数を表すための型である。ゼロ値でのゼロ除算を避けるため、分母は1として扱われている。
+DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約である(p57)。
 </p>
-
-<div class="org-src-container">
-<pre class="src src-go">import (
-  "math/big"
-  "fmt"
-)
-
-func main() {
-  var zero big.Rat // ゼロ値
-  fmt.Printf("%#v\n", zero.Num()) // 分子
-  fmt.Printf("%#v\n", zero.Denom()) // 分母
-
-  fmt.Printf("%#v\n", zero)
-  // aは分子、bは分母
-}
-</pre>
-</div>
-
-<div class="org-src-container">
-<pre class="src src-nil">0
-1
-big.Rat{a:big.Int{neg:false, abs:big.nat(nil)}, b:big.Int{neg:false, abs:big.nat(nil)}}
-</pre>
 </div>
 </div>
-</div>
-<div id="outline-container-org044d3d5" class="outline-2">
-<h2 id="org044d3d5"><a href="#org044d3d5">関連</a></h2>
-<div class="outline-text-2" id="text-org044d3d5">
+<div id="outline-container-org9573c01" class="outline-2">
+<h2 id="org9573c01"><a href="#org9573c01">関連</a></h2>
+<div class="outline-text-2" id="text-org9573c01">
 <ul class="org-ul">
-<li>類推: ゼロ除算まわりの特殊処理はほかにもありそう</li>
+<li>参照: <a href="20241102T084716--kdoc-258-『ピアリング戦記』__book.html#ID-20241102T084716">KDOC 258: 『ピアリング戦記』</a>から</li>
+<li>追加調査: なぜ13個になるのか詳細を調べる</li>
 </ul>
 </div>
 </div>
