@@ -85,14 +85,46 @@ describe('サーバーAPIテスト', () => {
     });
   });
 
+  describe('GET /api/next with draftOnly', () => {
+    it('draftOnlyモード: 非draftから次のdraftファイルへ', async () => {
+      // draftファイルを追加
+      await writeFile(
+        join(testDir, '20250101T120000--kdoc-500-draft-doc__draft.html'),
+        '<html><body>Draft 500</body></html>'
+      );
+      await writeFile(
+        join(testDir, '20250102T120000--kdoc-600-draft-doc__draft.html'),
+        '<html><body>Draft 600</body></html>'
+      );
+
+      // 現在: kdoc-100 (非draft), draftOnlyモード → 次のdraftファイル(500)を返す
+      const res = await request(app)
+        .get('/api/next?current=20250101T000000--kdoc-100-first.html&draftOnly=true')
+        .expect(200);
+
+      expect(res.body.next).toBe('/20250101T120000--kdoc-500-draft-doc__draft.html');
+      expect(res.body.kdocNumber).toBe(500);
+    });
+
+    it('draftOnlyモード: draft間のナビゲーション', async () => {
+      // 現在: kdoc-500 (draft) → 次のdraft(600)を返す
+      const res = await request(app)
+        .get('/api/next?current=20250101T120000--kdoc-500-draft-doc__draft.html&draftOnly=true')
+        .expect(200);
+
+      expect(res.body.next).toBe('/20250102T120000--kdoc-600-draft-doc__draft.html');
+      expect(res.body.kdocNumber).toBe(600);
+    });
+  });
+
   describe('GET /api/prev', () => {
     it('前のページを返す', async () => {
       const res = await request(app)
-        .get('/api/prev?current=20250102T000000--kdoc-200-second.html')
+        .get('/api/prev?current=20250103T000000--kdoc-300-third.html')
         .expect(200);
 
-      expect(res.body.prev).toBe('/20250101T000000--kdoc-100-first.html');
-      expect(res.body.kdocNumber).toBe(100);
+      expect(res.body.prev).toBe('/20250102T000000--kdoc-200-second.html');
+      expect(res.body.kdocNumber).toBe(200);
     });
 
     it('最初のページの場合はnullを返す', async () => {
@@ -112,6 +144,18 @@ describe('サーバーAPIテスト', () => {
     });
   });
 
+  describe('GET /api/prev with draftOnly', () => {
+    it('draftOnlyモード: 非draftから前のdraftファイルへ', async () => {
+      // 現在: kdoc-600 (draft) → 前のdraft(500)を返す
+      const res = await request(app)
+        .get('/api/prev?current=20250102T120000--kdoc-600-draft-doc__draft.html&draftOnly=true')
+        .expect(200);
+
+      expect(res.body.prev).toBe('/20250101T120000--kdoc-500-draft-doc__draft.html');
+      expect(res.body.kdocNumber).toBe(500);
+    });
+  });
+
   describe('GET /api/random', () => {
     it('ランダムなkdocページを返す', async () => {
       const res = await request(app)
@@ -120,7 +164,7 @@ describe('サーバーAPIテスト', () => {
 
       expect(res.body.random).toMatch(/^\/.*--kdoc-\d+-.*\.html$/);
       expect(res.body.kdocNumber).toBeGreaterThanOrEqual(100);
-      expect(res.body.kdocNumber).toBeLessThanOrEqual(400);
+      expect(res.body.kdocNumber).toBeLessThanOrEqual(600);
     });
   });
 

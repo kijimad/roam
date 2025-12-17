@@ -64,6 +64,7 @@ export function createApp(publicDir = PUBLIC_DIR) {
   app.get('/api/next', async (req, res) => {
     const current = decodeURIComponent(req.query.current || '').replace(/^\//, '');
     const currentKdocNumber = extractKdocNumber(current);
+    const draftOnly = req.query.draftOnly === 'true';
 
     if (!currentKdocNumber) {
       return res.json({ next: null });
@@ -71,10 +72,16 @@ export function createApp(publicDir = PUBLIC_DIR) {
 
     try {
       const files = await readdir(publicDir);
-      const kdocFiles = files
+      let kdocFiles = files
         .map(f => ({ filename: f, number: extractKdocNumber(f) }))
-        .filter(f => f.number !== null)
-        .sort((a, b) => a.number - b.number);
+        .filter(f => f.number !== null);
+
+      // draftOnlyがtrueの場合、_draftを含むファイルのみにフィルタ
+      if (draftOnly) {
+        kdocFiles = kdocFiles.filter(f => f.filename.includes('_draft'));
+      }
+
+      kdocFiles.sort((a, b) => a.number - b.number);
 
       const nextFile = kdocFiles.find(f => f.number > currentKdocNumber);
 
@@ -95,6 +102,7 @@ export function createApp(publicDir = PUBLIC_DIR) {
   app.get('/api/prev', async (req, res) => {
     const current = decodeURIComponent(req.query.current || '').replace(/^\//, '');
     const currentKdocNumber = extractKdocNumber(current);
+    const draftOnly = req.query.draftOnly === 'true';
 
     if (!currentKdocNumber) {
       return res.json({ prev: null });
@@ -102,10 +110,16 @@ export function createApp(publicDir = PUBLIC_DIR) {
 
     try {
       const files = await readdir(publicDir);
-      const kdocFiles = files
+      let kdocFiles = files
         .map(f => ({ filename: f, number: extractKdocNumber(f) }))
-        .filter(f => f.number !== null)
-        .sort((a, b) => a.number - b.number);
+        .filter(f => f.number !== null);
+
+      // draftOnlyがtrueの場合、_draftを含むファイルのみにフィルタ
+      if (draftOnly) {
+        kdocFiles = kdocFiles.filter(f => f.filename.includes('_draft'));
+      }
+
+      kdocFiles.sort((a, b) => a.number - b.number);
 
       const prevFiles = kdocFiles.filter(f => f.number < currentKdocNumber);
       const prevFile = prevFiles[prevFiles.length - 1];

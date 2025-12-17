@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
 export function createNavigationButtons(scene, controls, camera, renderer) {
+    // ローカルストレージから草案モードの状態を読み込み
+    const DRAFT_MODE_KEY = 'kdoc-draft-mode';
+    let draftMode = localStorage.getItem(DRAFT_MODE_KEY) === 'true';
+
     // ライトを追加（3Dボタンを照らす）
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
@@ -98,6 +102,12 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
     randomButton.group.rotation.x = -0.5;
     scene.add(randomButton.group);
 
+    // 草案トグルボタン（緑色/グレー）
+    const draftButton = create3DButton('草', 0x3c3c3c, draftMode ? 0x4CAF50 : 0x666666);
+    draftButton.group.position.set(-600, offset * Math.cos(tiltAngle), -offset * Math.sin(tiltAngle));
+    draftButton.group.rotation.x = -0.5;
+    scene.add(draftButton.group);
+
     // Raycasterでクリック検出
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -112,7 +122,8 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
         const intersects = raycaster.intersectObjects([
             prevButton.group,
             nextButton.group,
-            randomButton.group
+            randomButton.group,
+            draftButton.group
         ], true);
 
         if (intersects.length > 0) {
@@ -130,6 +141,9 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
             } else if (clickedObject.parent === randomButton.group || clickedObject === randomButton.group) {
                 button = randomButton;
                 buttonName = 'random';
+            } else if (clickedObject.parent === draftButton.group || clickedObject === draftButton.group) {
+                button = draftButton;
+                buttonName = 'draft';
             }
 
             if (button) {
@@ -165,6 +179,18 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
                                 location.href = data.random;
                             }
                         });
+                } else if (buttonName === 'draft') {
+                    // 草案モードをトグル
+                    draftMode = !draftMode;
+                    localStorage.setItem(DRAFT_MODE_KEY, draftMode);
+
+                    // ボタンの色を変更
+                    const newColor = draftMode ? 0x4CAF50 : 0x666666;
+                    draftButton.topMesh.material.color.setHex(newColor);
+                    draftButton.originalColor = newColor;
+
+                    // ナビゲーションを更新
+                    updateNavigation();
                 }
             }, 100);
 
@@ -182,13 +208,15 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
         const intersects = raycaster.intersectObjects([
             prevButton.group,
             nextButton.group,
-            randomButton.group
+            randomButton.group,
+            draftButton.group
         ], true);
 
         // 全ボタンを元の色に戻す
         prevButton.topMesh.material.color.setHex(prevButton.originalColor);
         nextButton.topMesh.material.color.setHex(nextButton.originalColor);
         randomButton.topMesh.material.color.setHex(randomButton.originalColor);
+        draftButton.topMesh.material.color.setHex(draftButton.originalColor);
 
         // ホバー中のボタンを明るくする
         if (intersects.length > 0) {
@@ -201,6 +229,8 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
                 hoveredButton = nextButton;
             } else if (hoveredObject.parent === randomButton.group || hoveredObject === randomButton.group) {
                 hoveredButton = randomButton;
+            } else if (hoveredObject.parent === draftButton.group || hoveredObject === draftButton.group) {
+                hoveredButton = draftButton;
             }
 
             if (hoveredButton) {
@@ -223,29 +253,50 @@ export function createNavigationButtons(scene, controls, camera, renderer) {
     // Fetch and setup navigation
     const currentPath = location.pathname.slice(1);
 
-    fetch(`/api/prev?current=${encodeURIComponent(currentPath)}`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.prev) {
-                prevButton.url = data.prev;
-            } else {
-                prevButton.topMesh.material.opacity = 0.3;
-                prevButton.topMesh.material.transparent = true;
-                prevButton.baseMesh.material.opacity = 0.3;
-                prevButton.baseMesh.material.transparent = true;
-            }
-        });
+    function updateNavigation() {
+        const draftParam = draftMode ? '&draftOnly=true' : '';
 
-    fetch(`/api/next?current=${encodeURIComponent(currentPath)}`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.next) {
-                nextButton.url = data.next;
-            } else {
-                nextButton.topMesh.material.opacity = 0.3;
-                nextButton.topMesh.material.transparent = true;
-                nextButton.baseMesh.material.opacity = 0.3;
-                nextButton.baseMesh.material.transparent = true;
-            }
-        });
+        // 前ボタンをリセット
+        prevButton.url = null;
+        prevButton.topMesh.material.opacity = 1;
+        prevButton.topMesh.material.transparent = false;
+        prevButton.baseMesh.material.opacity = 1;
+        prevButton.baseMesh.material.transparent = false;
+
+        // 次ボタンをリセット
+        nextButton.url = null;
+        nextButton.topMesh.material.opacity = 1;
+        nextButton.topMesh.material.transparent = false;
+        nextButton.baseMesh.material.opacity = 1;
+        nextButton.baseMesh.material.transparent = false;
+
+        fetch(`/api/prev?current=${encodeURIComponent(currentPath)}${draftParam}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.prev) {
+                    prevButton.url = data.prev;
+                } else {
+                    prevButton.topMesh.material.opacity = 0.3;
+                    prevButton.topMesh.material.transparent = true;
+                    prevButton.baseMesh.material.opacity = 0.3;
+                    prevButton.baseMesh.material.transparent = true;
+                }
+            });
+
+        fetch(`/api/next?current=${encodeURIComponent(currentPath)}${draftParam}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.next) {
+                    nextButton.url = data.next;
+                } else {
+                    nextButton.topMesh.material.opacity = 0.3;
+                    nextButton.topMesh.material.transparent = true;
+                    nextButton.baseMesh.material.opacity = 0.3;
+                    nextButton.baseMesh.material.transparent = true;
+                }
+            });
+    }
+
+    // 初期ナビゲーション設定
+    updateNavigation();
 }
