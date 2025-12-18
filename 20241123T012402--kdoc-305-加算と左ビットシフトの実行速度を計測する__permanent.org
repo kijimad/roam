@@ -23,7 +23,7 @@
 
 は、どちらが早いだろうか。これは言い換えると加算命令と左ビットシフトはどちらが早いか、ということになる。Go言語のベンチマークツールで加算命令と左ビットシフトの実行速度を計測する。
 
-まず、命令がコンパイラによって省略されないように調整する。デフォルトの挙動だと、使用されない変数はコンパイル結果から省かれるため ~//go:noinline~ が必要。乗算は2の倍数なので、左ビットシフト演算に変換されている。
+まず、命令がコンパイラによって省略されないように調整する。デフォルトの挙動だと、使用されない変数はコンパイル結果から省かれるため ~//go:noinline~ が必要である。乗算は2の倍数なので、左ビットシフト演算に変換されている。
 
 #+begin_export html
 <iframe width="800px" height="400px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:9,endLineNumber:7,positionColumn:9,positionLineNumber:7,selectionStartColumn:9,selectionStartLineNumber:7,startColumn:9,startLineNumber:7),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A%09_+%3D+add(42)%0A%09_+%3D+shl(42)%0A%7D%0A%0A//go:noinline%0Afunc+add(a+int)+int+%7B%0A%09return+a+%2B+a%0A%7D%0A%0A//go:noinline%0Afunc+shl(a+int)+int+%7B%0A%09return+a+*+2%0A%7D%0A'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gl1232,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gc+1.23.2+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
