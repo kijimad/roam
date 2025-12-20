@@ -1,0 +1,54 @@
+:properties:
+:ID: 20240320T195316
+:mtime:    20241103085433
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 126: xxdでファイルをバイナリで見る
+#+date:       [2024-03-20 Wed 19:53]
+#+filetags:   :permanent:
+#+identifier: 20240320T195316
+
+* この文書のステータス
+- 作成
+  - [X] 2024-03-21 貴島
+- レビュー
+  - [X] 2024-04-03 貴島
+
+* 概要
+YouTube動画を見て、ファイルをバイナリで見る方法を知った。
+
+#+begin_export html
+<iframe width="560" height="315" src="https://www.youtube.com/embed/8qg2b8ZZm_c?si=4ka7rJYoCiV2BObi" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+#+end_export
+
+こんな感じ。
+
+#+caption: 16進数表示する
+#+begin_src shell :results raw
+  echo -n "hello" | xxd
+#+end_src
+
+#+RESULTS:
+#+begin_src
+00000000: 6865 6c6c 6f                             hello
+#+end_src
+
+- ASCII Codeと対応していることが確認できる
+- ~0a~ は改行。echoで作った文字列には末尾に改行(LF)が入る
+- 右端にASCIIエンコードした文字を表示する
+
+#+caption: 2進数表示する
+#+begin_src shell :results raw
+  echo "hello" | xxd -b
+  echo -n "hello" | xxd -b # 改行なし
+#+end_src
+
+#+RESULTS:
+#+begin_src
+00000000: 01101000 01100101 01101100 01101100 01101111 00001010  hello.
+00000000: 01101000 01100101 01101100 01101100 01101111           hello
+#+end_src
+
+* 関連
+- 具体例: [[id:20240207T092747][KDOC 77: 検証する方法があると理解が進む]]。検証する方法の1つ
+- 類推: [[id:20240206T225726][KDOC 73: odでファイルの中身をN進数で見る]]。ほぼ同じようなツール

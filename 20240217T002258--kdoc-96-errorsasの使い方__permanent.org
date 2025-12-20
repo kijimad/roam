@@ -1,0 +1,106 @@
+:properties:
+:ID: 20240217T002258
+:mtime:    20241103085218
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 96: errors.As()の使い方
+#+date:       [2024-02-17 Sat 00:22]
+#+filetags:   :permanent:
+#+identifier: 20240217T002258
+
+* この文書のステータス
+:LOGBOOK:
+CLOCK: [2024-02-17 Sat 14:01]--[2024-02-17 Sat 14:26] =>  0:25
+CLOCK: [2024-02-17 Sat 13:25]--[2024-02-17 Sat 13:50] =>  0:25
+CLOCK: [2024-02-17 Sat 13:00]--[2024-02-17 Sat 13:25] =>  0:25
+:END:
+- 作成
+  - [X] 2024-02-17 貴島
+- レビュー
+  - [X] 2024-02-25 貴島
+* 概要
+以前[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]の ~errors.Is()~ を調べたので、今度は ~errors.As()~ を調べる。違いは何だろうか。
+
+#+caption: シグネチャ
+#+begin_src go
+func As(err error, target any) bool
+#+end_src
+
+- [[https://pkg.go.dev/errors#As][errors package - errors - Go Packages]]
+
+* ユースケース
+まずユースケースを見る。 ~fs.PathError~ は ~Unwrap()~ 、 ~As()~ を実装してないので、エラーツリーを辿らず独自判定ロジックで実行しない。
+
+#+caption: exampleから
+#+begin_src go :imports '("os" "io/fs" "fmt" "errors")
+  if _, err := os.Open("non-existing"); err != nil {
+          var pathError *fs.PathError
+          if errors.As(err, &pathError) {
+                  fmt.Println("Failed at path:", pathError.Path)
+          } else {
+                  fmt.Println(err)
+          }
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+Failed at path: non-existing
+#+end_src
+
+errをpathErrorに代入しているように見える。それによって、変数pathErrorのフィールドに値が入って、使えるようになっている。エラーの中身を使いたいとき用ということか。
+
+直接取り出せばいいのでは、と考えたがerr.Path
+errはos.Open()が返したインターフェース型 ~error~ なので、まだ型が未確定。なのでerr.PathはUndefinedになる。型アサーションしてからだとフィールドへアクセスできるようになる。現在コードの状況に限定して、同じようなコードを型アサーションを使って書いた。
+
+#+caption: 型アサーションで書いた
+#+begin_src go :imports '("os" "io/fs" "fmt")
+  if _, err := os.Open("non-existing"); err != nil {
+          var pathError *fs.PathError
+          pathError, _ = err.(*fs.PathError)
+          if pathError != nil {
+                  fmt.Println("Failed at path:", pathError.Path)
+          } else {
+                  fmt.Println(err)
+          }
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+Failed at path: non-existing
+#+end_src
+
+↑エラーツリーを辿らない、入力が限定されたもっともシンプルなケースでは、型アサーションでも同じ意味に見える。ただ、見やすさはよくなさそうだ。errors.As()は型アサーションと結果ブーリンアンの返却をシンプルにやってくれる関数、といえそうだ。
+
+errors.Is()との違いは、代入を使っていることだ。errの中身を取り出すには、本質的にerrorインターフェースの型を確定して、ターゲットの型を持つ別な変数に代入する必要がある。errors.Is()では ~==~ を使って多くの場合ポインタによって、つまりメモリアドレスでエラーの種類を判断していた。したがってIs()で型は全く出てこなかった。As()では代入が関連するので型が重要そうに見える。
+
+↓実装を見てみよう。本質的な部分はこのあたりか。
+
+#+begin_src git-permalink
+https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/errors/wrap.go#L118-L121
+#+end_src
+
+#+RESULTS:
+#+begin_src
+		if reflectlite.TypeOf(err).AssignableTo(targetType) {
+			targetVal.Elem().Set(reflectlite.ValueOf(err))
+			return true
+		}
+#+end_src
+
+素朴に、err(Asの第1引数)の型がtarget(Asの第2引数)の型へ代入可能であれば、targetの値にerrの値をセットする、に見える。
+
+では代入可能とはなにか、なぜ代入時に見慣れない書き方をしているのか、ということになるのだが、深遠なテーマになりそうなのでここでは進まない。
+
+* まとめ
+
+Is()とAs()の違いをまとめる。
+
+- errors.Is()は単純にエラーを区別する関数。同値性によって判定。どうやって同値とするかは型によって異なるがおおむねポインタ型によるメモリアドレス判定が使われる
+- errors.As()はエラーを区別しつつ、型アサーションする関数。型の代入可能性によって判定。エラーのフィールドを利用したいときに使う
+
+* 関連
+
+- 動機: [[id:20240210T220439][KDOC 86: errors.Is()の比較ロジックを見る]]。IsとAsがあるのはなぜか疑問を持ったので調べた
+- 未解決: 代入可能とはどういうことなのか

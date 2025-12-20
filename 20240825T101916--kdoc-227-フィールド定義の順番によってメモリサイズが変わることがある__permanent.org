@@ -1,0 +1,51 @@
+:properties:
+:ID: 20240825T101916
+:mtime:    20241103090127
+:ctime:    20241102134510
+:end:
+#+title:      KDOC 227: フィールド定義の順番によってメモリサイズが変わることがある
+#+date:       [2024-08-25 Sun 10:19]
+#+filetags:   :permanent:
+#+identifier: 20240825T101916
+
+* この文書のステータス
+- 作成
+  - [X] 2024-08-26 貴島
+- レビュー
+  - [X] 2024-09-09 貴島
+
+* 概要
+
+[[https://hirokuma.blog/?p=1691][【C言語】メモリアライメント を全力でわかりやすく説明する]]を、確認する。構造体のフィールドの順番どおりにメモリを割り当てるが、フィールドの型のサイズによっては、無駄なサイズを使うことになる。
+
+#+begin_export html
+<iframe width="800px" height="400px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:1,endLineNumber:16,positionColumn:1,positionLineNumber:16,selectionStartColumn:1,selectionStartLineNumber:16,startColumn:1,startLineNumber:16),source:'%23include+%3Cstdlib.h%3E%0A%0Atypedef+struct+%7B%0A++++unsigned+long+a%3B%0A++++unsigned+short+b%3B%0A++++unsigned+short+c%3B%0A++++unsigned+long+d%3B%0A%7D+sample1%3B%0A%0Atypedef+struct+%7B%0A++++unsigned+long+a%3B%0A++++unsigned+short+b%3B%0A++++unsigned+long+d%3B%0A++++unsigned+short+c%3B%0A%7D+sample2%3B%0A%0Aint+main()+%7B%0A++++sample1+s1+%3D+%7B1,+2,+3,+4%7D%3B%0A++++sample2+s2+%3D+%7B1,+2,+3,+4%7D%3B%0A%7D'),l:'5',n:'1',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+ストアしているアドレスを見ると、サイズがわかる。 ~sample2~ では、サイズがすべて4バイトになっていて、同じ情報量でも余計に使っているのがわかる。
+
+#+caption: sample1でのアドレスと差
+#+begin_src shell
+-28
+  <4>
+-24
+  <2>
+-22
+  <2>
+-20
+#+end_src
+
+#+caption: sample2でのアドレスと差
+#+begin_src shell
+-44
+  <4>
+-40
+  <4>
+-36
+  <4>
+-32
+#+end_src
+
+* 関連
+
+- 参照: [[id:20240717T223527][KDOC 202: 『30日でできる! OS自作入門』]]。出てくる説明をさらに調べた

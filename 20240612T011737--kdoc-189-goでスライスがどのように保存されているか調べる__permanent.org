@@ -1,0 +1,67 @@
+:properties:
+:ID: 20240612T011737
+:mtime:    20241103085954
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 189: Goでスライスがどのように保存されているか調べる
+#+date:       [2024-06-12 Wed 01:17]
+#+filetags:   :permanent:
+#+identifier: 20240612T011737
+
+* この文書のステータス
+- 作成
+  - [X] 2024-06-20 貴島
+- レビュー
+  - [X] 2024-06-20 貴島
+
+* 概要
+[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]でスライスが、どのようにメモリに保存されているか調べる。
+* 調べる
+
+まず、スライスの定義は↓のようになっており、配列の先頭要素へのポインタにすぎない。
+
+#+caption: スライスの定義
+#+begin_src go
+type slice struct {
+	array unsafe.Pointer
+	len   int
+	cap   int
+}
+#+end_src
+
+したがって、それぞれの要素を先頭にしたスライスを作り指すポインタを見ると、それぞれ位置するアドレスがわかる。
+
+#+caption: s1~s3のポインタから、スライスの要素はメモリに1バイトずつ保存されていることがわかる。s4はcapを超えてappendされ、スライスのコピーが走って別の位置に保存される
+#+begin_src go :imports fmt
+    func main(){
+            s1 := []byte{1, 2, 3}
+            s2 := s1[1:]
+            s3 := s1[2:]
+            s4 := s1
+            s4 = append(s4, 4)
+            fmt.Printf("s1: %v, addr: %p, len: %d, cap: %d\n", s1, s1, len(s1), cap(s1))
+            fmt.Printf("s2: %v, addr: %p, len: %d, cap: %d\n", s2, s2, len(s2), cap(s2))
+            fmt.Printf("s3: %v, addr: %p, len: %d, cap: %d\n", s3, s3, len(s3), cap(s3))
+            fmt.Printf("s4: %v, addr: %p, len: %d, cap: %d\n", s4, s4, len(s4), cap(s4))
+    }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+s1: [1 2 3], addr: 0xc0000120e0, len: 3, cap: 3
+s2: [2 3], addr: 0xc0000120e1, len: 2, cap: 2
+s3: [3], addr: 0xc0000120e2, len: 1, cap: 1
+s4: [1 2 3 4], addr: 0xc0000120e8, len: 4, cap: 8
+#+end_src
+
+図にするとこうなる。再割り当てされる位置は元の位置と空いているが、その箇所には何が入っているのだろうか。どうやって調べればよいか。
+
+#+caption: スライスの値とポインタの図
+#+begin_src
+ addr 0 1 2 3 4 5 6 7 8 9 a b
+ val  1 2 3 ? ? ? ? ? 1 2 3 4
+#+end_src
+
+* 関連
+
+- 参照: [[id:20240608T113006][KDOC 188: 『Visual Guide to Slices in Go』]]。読んで実際に試してみた

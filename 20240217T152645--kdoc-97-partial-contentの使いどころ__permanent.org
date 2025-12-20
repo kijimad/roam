@@ -1,0 +1,156 @@
+:properties:
+:ID: 20240217T152645
+:mtime:    20241103085226
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 97: Partial Contentの使いどころ
+#+date:       [2024-02-17 Sat 15:26]
+#+filetags:   :permanent:
+#+identifier: 20240217T152645
+
+* この文書のステータス
+:LOGBOOK:
+CLOCK: [2024-02-17 Sat 16:18]--[2024-02-17 Sat 16:43] =>  0:25
+CLOCK: [2024-02-17 Sat 15:52]--[2024-02-17 Sat 16:17] =>  0:25
+CLOCK: [2024-02-17 Sat 15:26]--[2024-02-17 Sat 15:51] =>  0:25
+:END:
+- 作成
+  - [X] 2024-02-17 貴島
+- レビュー
+  - [X] 2024-02-25 貴島
+* 概要
+CDNのリクエストログを見ていて、HTTPステータスが ~200~ に混じって ~206~ があった。これが何かを説明する。
+
+* イントロ
+ドキュメントを見る。
+
+[[https://developer.mozilla.org/ja/docs/Web/HTTP/Status/206][206 Partial Content - HTTP | MDN]]
+
+#+begin_quote
+HTTP 206 Partial Content は成功ステータスレスポンスコードで、そのリクエストが成功したこと、そしてリクエストの Range ヘッダーに記述された通り、要求された範囲のデータが本文に含まれていることを示します。
+#+end_quote
+
+このユースケースはどういうときか。
+
+- URLが画像だった場合にプレビュー画像を表示したいとき
+
+  Slackなんかにある機能。先にそのURLへアクセスして、一部だけ取得する(画像の場合バイナリ)。一部取得したファイルを、ファイルヘッダをチェックして判定する。プレビューできるとなったら、もう一度リクエストしてファイル全体を取得して、プレビュー画像としてセットする。1回めのチェックリクエストの段階ですべて取得する意味はないので、ファイルの一部だけを取得してくる。
+
+- 動画再生
+
+  途中から再生しているのに、動画ファイルの最初からダウンロードを開始するのは意味がない。ファイルのある範囲を指定することで、一部だけダウンロードしている。再生位置から20秒間分ダウンロードする、みたいな感じでダウンロードを断続的に走らせることでリソースの無駄をなくし、どこからでも再生できる。
+
+* 検証
+実際の動きを[[id:b11fb9a4-0a26-4354-bc60-6c755c256b21][curl]]で確かめる。リンク先のバイナリのファイルヘッダを確認するシチュエーション。対応してないサーバでやってもRange指定は無視されるだけなので、[[id:39f0af27-f685-4ce5-beac-a3398f648ba4][Wikipedia]]のメディアサーバで確かめる。
+
+まず、範囲指定しない場合。画像ファイル全体をダウンロードする。種別を確認したいだけなのにもったいない。
+
+#+caption: 画像バイナリを取得してチェックする
+#+begin_src shell :results raw
+  tmpfile=$(mktemp)
+  result=`curl -v --output $tmpfile https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png`
+  file -b --mime-type $tmpfile
+  rm $tmpfile
+#+end_src
+
+#+RESULTS:
+#+begin_src
+image/png
+#+end_src
+
+↓このときのリクエスト+レスポンスはこうなる。
+
+#+begin_src
+> GET /wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png HTTP/2
+> Host: upload.wikimedia.org
+> User-Agent: curl/8.4.0
+> Accept: */*
+>
+
+< HTTP/2 200 👈
+< date: Sat, 17 Feb 2024 02:23:17 GMT
+< etag: c4e5e81aa0475e2f1dae37acfadacd6c
+< server: ATS/9.1.4
+< content-type: image/png
+< content-disposition: inline;filename*=UTF-8''Wikipedia-logo-v2.svg.png
+< last-modified: Sun, 10 Sep 2023 12:27:10 GMT
+< content-length: 14729 👈
+< age: 16405
+< x-cache: cp5032 miss, cp5032 hit/117
+< x-cache-status: hit-front
+< server-timing: cache;desc="hit-front", host;desc="cp5032"
+< strict-transport-security: max-age=106384710; includeSubDomains; preload
+< report-to: { "group": "wm_nel", "max_age": 604800, "endpoints": [{ "url": "https://intake-logging.wikimedia.org/v1/events?stream=w3c.reportingapi.network_error&schema_uri=/w3c/reportingapi/network_error/1.0.0" }] }
+< nel: { "report_to": "wm_nel", "max_age": 604800, "failure_fraction": 0.05, "success_fraction": 0.0}
+< x-client-ip: 240b:10:91c1:d500:877b:f95b:ff57:d2fc
+< x-content-type-options: nosniff
+< access-control-allow-origin: *
+< access-control-expose-headers: Age, Date, Content-Length, Content-Range, X-Content-Duration, X-Cache
+< timing-allow-origin: *
+< accept-ranges: bytes
+<
+#+end_src
+
+- HTTPステータス200を返している
+- content-lengthは1万を超えている
+
+次に、Rangeを指定して結果を比較する。一部だけ取得するので無駄な資源を使わず環境に優しい。curlでは ~r~ オプションを使って指定する。
+
+#+caption: 範囲を指定する
+#+begin_src shell :results raw
+  tmpfile=$(mktemp)
+  result=`curl -v --output $tmpfile -r 0-100 https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png`
+  file -b --mime-type $tmpfile
+  rm $tmpfile
+#+end_src
+
+#+RESULTS:
+#+begin_src
+image/png
+#+end_src
+
+↑ファイルタイプはファイルヘッダーにあるので、バイナリが一部だけでも判定できるのを確認できた。
+
+↓このときのリクエスト+レスポンスはこうなる。
+
+#+begin_src
+> GET /wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png HTTP/2
+> Host: upload.wikimedia.org
+> Range: bytes=0-100 👈
+> User-Agent: curl/8.4.0
+> Accept: */*
+>
+< HTTP/2 206 👈
+< date: Sat, 17 Feb 2024 02:23:17 GMT
+< etag: c4e5e81aa0475e2f1dae37acfadacd6c
+< server: ATS/9.1.4
+< content-type: image/png
+< content-disposition: inline;filename*=UTF-8''Wikipedia-logo-v2.svg.png
+< last-modified: Sun, 10 Sep 2023 12:27:10 GMT
+< age: 18113
+< x-cache: cp5032 miss, cp5032 hit/128
+< x-cache-status: hit-front
+< server-timing: cache;desc="hit-front", host;desc="cp5032"
+< strict-transport-security: max-age=106384710; includeSubDomains; preload
+< report-to: { "group": "wm_nel", "max_age": 604800, "endpoints": [{ "url": "https://intake-logging.wikimedia.org/v1/events?stream=w3c.reportingapi.network_error&schema_uri=/w3c/reportingapi/network_error/1.0.0" }] }
+< nel: { "report_to": "wm_nel", "max_age": 604800, "failure_fraction": 0.05, "success_fraction": 0.0}
+< x-client-ip: 240b:10:91c1:d500:877b:f95b:ff57:d2fc
+< x-content-type-options: nosniff
+< access-control-allow-origin: *
+< access-control-expose-headers: Age, Date, Content-Length, Content-Range, X-Content-Duration, X-Cache
+< timing-allow-origin: *
+< accept-ranges: bytes
+< content-range: bytes 0-100/14729
+< content-length: 101 👈
+<
+#+end_src
+
+- リクエストヘッダーにRangeヘッダーが追加された
+- HTTPステータス206を返している
+- content-lengthが指定したサイズになっている
+
+ということで、リソースの一部だけ必要なときは206を使う。
+
+* 関連
+
+- 類推: [[id:20240209T111023][KDOC 83: CORSを確認する]]。同様にcurlでHTTPを検証する

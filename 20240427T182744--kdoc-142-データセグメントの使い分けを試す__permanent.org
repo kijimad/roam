@@ -1,0 +1,46 @@
+:properties:
+:ID: 20240427T182744
+:mtime:    20241103085601
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 142: データセグメントの使い分けを試す
+#+date:       [2024-04-27 Sat 18:27]
+#+filetags:   :permanent:
+#+identifier: 20240427T182744
+
+* この文書のステータス
+:LOGBOOK:
+CLOCK: [2024-04-28 Sun 12:18]--[2024-04-28 Sun 12:43] =>  0:25
+:END:
+- 作成
+  - [X] 2024-04-29 貴島
+- レビュー
+  - [X] 2024-05-06 貴島
+
+* 概要
+アセンブラで配列を宣言したときに、データセグメントで確保されたり直にテキストセグメントに現れたりするのを見つけたのでメモしておく[fn:1]。
+
+コンパイラによって違うのだろうが、何が根拠になっているのかは今の段階でわかっていない。
+
+* 実演
+
+- ↓配列要素の長さが4以上になるとデータセグメントで確保される。長さが4より小さいとテキストセグメントで1つずつセットしている。
+
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:2,endLineNumber:9,positionColumn:2,positionLineNumber:9,selectionStartColumn:2,selectionStartLineNumber:9,startColumn:2,startLineNumber:9),source:'void+main()+%7B%0A++++int+num1%5B3%5D+%3D+%7B1,+2,+3%7D%3B%0A++++int+num2%5B4%5D+%3D+%7B4,+5,+6,+7%7D%3B%0A++++int+num3%5B5%5D+%3D+%7B10,+11,+12,+13,+14%7D%3B%0A++++int+num4%5B%5D+%3D+%7B20,+21,+22%7D%3B%0A++++int+num5%5B%5D+%3D+%7B23,+24,+25,+26%7D%3B%0A++++char+str1%5B%5D+%3D+%22123456789%22%3B%0A++++char+str2%5B%5D+%3D+%221234567890%22%3B%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+- ↓バイト数が多い型にすると1要素でもデータセグメントで確保された(最後の行)。配列が1要素の場合はなぜかデータセグメントが下に記載された
+
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:22,endLineNumber:2,positionColumn:22,positionLineNumber:2,selectionStartColumn:22,selectionStartLineNumber:2,startColumn:22,startLineNumber:2),source:'void+main()+%7B%0A++++double+num%5B2%5D+%3D+%7B2.1%7D%3B%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+* 関連
+
+- [[id:20240427T113714][KDOC 140: 『自作エミュレータで学ぶx86アーキテクチャ』]]。読んだ内容を確かめているときに見つけた
+- 追加調査: データセグメント、テキストセグメントでどのような違いが出るか
+- 未解決: 使い分けロジックはどうなっているか
+
+* Footnotes
+[fn:1] 対応するドキュメントやコードがどこかにあるはずだが、どう調べればいいかわからなかった。

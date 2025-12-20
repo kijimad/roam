@@ -1,0 +1,66 @@
+:properties:
+:ID: 20231014T125935
+:mtime:    20241103084805
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 45: プログラミング言語の内部的な違いをアセンブリから調べる
+#+date:       [2023-10-14 Sat 12:59]
+#+filetags:   :permanent:
+#+identifier: 20231014T125935
+
+今まで、プログラミング言語の内部的な違いを調べるのに、ソースコードを読むしかないと考えていた。しかし別の方法もある。生成された[[id:e9a608aa-8545-42be-90bb-303097800a85][assembly language]]から調べる方法だ。
+
+たとえばC言語で、グローバル変数、ローカル変数は全く別の扱いなことを確かめる方法を書く。
+
+- グローバル変数はメモリ上の固定の位置にある
+
+#+caption: グローバル変数を定義する
+#+begin_src C
+int x;
+int y[20];
+
+int main() {
+    return x + y[5];
+}
+#+end_src
+
+#+caption: データはラベル(メモリ番地に名前をつける)に定義されている
+#+begin_src asm
+x:
+  .zero 4
+y:
+  .zero 80
+main:
+  movl y+20(%rip), %edx
+  movl x(%rip), %eax
+  addl %edx, %eax
+  ret
+#+end_src
+
+- ローカル変数はスタックの中にある
+
+#+caption: ローカル変数を定義する
+#+begin_src C
+int main() {
+    int a = 1;
+    return a;
+}
+#+end_src
+
+#+caption: データはスタック上にある
+#+begin_src asm
+main:
+  pushq %rbp
+  movq %rsp, %rbp
+  movl $1, -4(%rbp)
+  movl -4(%rbp), %eax
+  popq %rbp
+  ret
+#+end_src
+
+ということで、プログラムの疑問について究極的に答えを得る方法は、CPUが実行する処理の違いを見ることだ。
+
+* 関連
+
+- 参照: [[id:20231014T191829][KDOC 47: 『低レイヤを知りたい人のためのCコンパイラ作成入門』]]。で書かれていた
+- 類推: プログラミング言語以外だと、「アセンブリを見る」相当するものはどれになるか

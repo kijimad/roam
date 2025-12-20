@@ -1,0 +1,42 @@
+:properties:
+:ID: 20240420T224401
+:mtime:    20241103085508
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 137: 簡単にプロセスの使用メモリを確認する
+#+date:       [2024-04-20 Sat 22:44]
+#+filetags:   :permanent:
+#+identifier: 20240420T224401
+
+* この文書のステータス
+- 作成
+  - [X] 2024-04-20 貴島
+- レビュー
+  - [X] 2024-04-27 貴島
+
+* 概要
+ゲームを作る過程で、特定の画面を開くと激しくメモリ消費量が上がる問題にあたった。いままでメモリリークが問題となるような課題に取り組んでこなかったので、手間取った。
+
+まず状況を正しく把握するために、コマンドで定期実行してOS上のメモリを観察する。
+
+#+caption: マッチするプロセスを一覧する例。ヘッダーとともに出力する。grepのプロセスなども表示してしまっているのは省略した
+#+begin_src shell
+  watch -n 1 'ps aux | head -n 1 && ps aux | grep ruins'
+
+Every 1.0s: ps aux | head -n 1 && ps aux | grep ruins
+
+USER         PID %CPU %MEM    VSZ   RSS   TTY    STAT START   TIME COMMAND
+orange   2421837 25.8  0.6 4584268 218656 pts/10 Sl+  22:35   2:21 ruins
+orange   2481913  0.0  0.0  10148  1016 pts/8    S+   23:03   0:00 grep ruins
+...
+#+end_src
+
+- VSZ :: Virtual Memory Size(仮想メモリ)。プロセスがアクセスできるメモリ領域サイズの総和。プロセスは未使用の可能性がある
+- RSS :: Resident Set Size(物理メモリ)。プロセスが確保している物理メモリの使用量。mallocしても書き込みを行っていなければまだ確保されてない
+
+これだけで原因はわからない。プロセスを確認できたら別の方法(プログラミング言語ごとに用意されたプロファイラなど)で詳しく調べていく。
+
+* 関連
+
+- 参照: [[https://www.lineo.co.jp/blog/linux/sol01-processmemory.html][プロセスのメモリ使用量に関する指標を学ぶ (VSS, RSS, PSS, USS) - リネオブログ - リネオソリューションズ]]
+- 動機: [[id:20231128T074518][KDOC 59: ECSを使ってRPGを作る]]。作る過程で激しくメモリリークする問題にあたったので、調べた

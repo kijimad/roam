@@ -1,0 +1,65 @@
+:properties:
+:ID: 20250503T091848
+:mtime:    20250507231204
+:ctime:    20250503091849
+:end:
+#+title:      KDOC 365: toolchainを実際に試す
+#+date:       [2025-05-03 Sat 09:18]
+#+filetags:   :permanent:
+#+identifier: 20250503T091848
+
+* この文書のステータス
+- 作成
+  - [X] 2025-05-05 貴島
+- レビュー
+  - [X] 2025-05-07 貴島
+
+* 概要
+
+Go言語のtoolchainで指定バージョンがダウンロードされるのを試す。
+
+#+caption: go.mod
+#+begin_src code
+module playground/at-2025-05-03-083600
+
+go 1.21.1
+
+toolchain go1.23.1
+#+end_src
+
+#+caption: 実行に使うGoのバージョンが古くないと試せないので、少し古めのGoバージョンの環境を用意する(現時点の最新はgo1.24.2)。
+#+begin_src shell
+  docker run --rm -it -v $PWD:/work -w /work golang:1.21 /bin/sh
+  # このイメージでは、デフォルトでGOTOOLCHAINがlocalになっている
+  $ go env GOTOOLCHAIN
+  local
+#+end_src
+
+#+caption: GOTOOLCHAINがlocalだと、go.modに書いてあるバージョンは無視され、ローカルのGoのバージョンが使われる
+#+begin_src shell
+  $ go version
+  go version go1.21.13 linux/amd64
+#+end_src
+
+#+caption: GOTOOLCHAINをautoにすると、toolchainで指定したバージョンがインストールされた
+#+begin_src shell
+  $ GOTOOLCHAIN=auto
+  $ go version
+  go: downloading go1.23.1 (linux/amd64)
+  go version go1.23.1 linux/amd64
+#+end_src
+
+- toolchainにローカルより古いバージョンを指定すると無視された(ローカルのバージョンになった)
+
+#+caption: go.modでgoディレクティブのバージョンを新しくすると、1.24.1がインストールされた
+#+begin_src shell
+module playground/at-2025-05-03-083600
+
+go 1.24.1
+
+toolchain go1.22.1
+#+end_src
+
+* 関連
+
+- 動機(検証): [[id:20250502T001229][KDOC 360: goとtoolchainの違いは何か?]]。toolchainを実際に動かしてみて試す

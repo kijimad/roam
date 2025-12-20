@@ -1,0 +1,129 @@
+:properties:
+:ID: 20241117T232525
+:mtime:    20241119225807
+:ctime:    20241117232533
+:end:
+#+title:      KDOC 294: errorsは標準ライブラリと外部ライブラリで異なる
+#+date:       [2024-11-17 Sun 23:25]
+#+filetags:   :permanent:
+#+identifier: 20241117T232525
+
+* この文書のステータス
+- 作成
+  - [X] 2024-11-18 貴島
+- レビュー
+  - [X] 2024-11-19 貴島
+
+* 概要
+
+Go言語で、標準ライブラリ ~errors~ と外部ライブラリ ~github.com/pkg/errors~ は、パッケージ名は同じであるが、異なる。今まで、雑に ~errors~ で自動インポートされたほうを使っていた。
+
+違いをかんたんに確認した。
+
+#+caption: 標準ライブラリ
+#+begin_src go
+  package main
+  import (
+          "fmt"
+          "errors"
+  )
+  func main() {
+          err := fmt.Errorf("wrapした: %w", errors.New("wrappedされた"))
+          fmt.Printf("Error: %+v\n", err)
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+Error: wrapした: wrappedされた
+#+end_src
+
+標準ライブラリ。
+
+- ラップは ~fmt.Errorf~ とフォーマット指定子 ~%w~ で行う
+- 取り出しは ~As~ や ~Is~ で行う
+- スタックトレースは自動で保存してくれない
+
+#+caption: 外部ライブラリ
+#+begin_src go
+package main
+
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
+
+func main() {
+	// ラップあり
+	if err := level1(); err != nil {
+		fmt.Printf("Error: %+v\n", err)
+	}
+
+	fmt.Println("================")
+
+	// ラップなし
+	if err := doSomething(); err != nil {
+		fmt.Printf("Error: %+v\n", err)
+	}
+
+}
+
+func level1() error {
+	return level2()
+}
+
+func level2() error {
+	return errors.Wrap(doSomething(), "level2 failed")
+}
+
+func doSomething() error {
+	return errors.New("something went wrong")
+}
+#+end_src
+
+#+begin_src
+Error: something went wrong
+main.doSomething
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:43
+main.level2
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:39
+main.level1
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:35
+main.main
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:21
+runtime.main
+	/usr/local/go/src/runtime/proc.go:272
+runtime.goexit
+	/usr/local/go/src/runtime/asm_amd64.s:1700
+level2 failed
+main.level2
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:39
+main.level1
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:35
+main.main
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:21
+runtime.main
+	/usr/local/go/src/runtime/proc.go:272
+runtime.goexit
+	/usr/local/go/src/runtime/asm_amd64.s:1700
+================
+Error: something went wrong
+main.doSomething
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:43
+main.main
+	/home/orange/go/src/playground/at-2024-11-17-231508/snippet.go:28
+runtime.main
+	/usr/local/go/src/runtime/proc.go:272
+runtime.goexit
+	/usr/local/go/src/runtime/asm_amd64.s:1700
+#+end_src
+
+外部ライブラリ。
+
+- ラップは ~Wrap~ で行う
+- 取り出しは ~Cause~ で行う
+- ~fmt.Printf~ で ~%+v~ フォーマットを使うとスタックトレースを表示できる
+
+* 関連
+なし。

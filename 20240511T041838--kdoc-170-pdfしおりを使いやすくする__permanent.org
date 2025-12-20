@@ -1,0 +1,31 @@
+:properties:
+:ID: 20240511T041838
+:mtime:    20241103085829
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 170: PDFしおりを使いやすくする
+#+date:       [2024-05-11 Sat 04:18]
+#+filetags:   :permanent:
+#+identifier: 20240511T041838
+
+* この文書のステータス
+- 作成
+  - [X] 2024-05-13 貴島
+- レビュー
+  - [X] 2024-05-19 貴島
+
+* ブックマーク
+Chrome組み込みのPDFビューワや[[https://github.com/mozilla/pdf.js][pdf.js]]では、URLフラグメントで開くページを指定できる。リロードしても、前に指定していたページを開ける。現在ページをURLフラグメントに指定することで、しおり代わりにしている。
+
+URLにページを直入力していたのだが、ボタンでできるようにした。Chrome組み込みのPDFビューワはHTMl要素をいじれなかったので、pdf.jsにボタンを追加した。ブックマークレットでやるのもいいだろう。
+
+[[https://mozilla.github.io/pdf.js/web/viewer.html][pdf.js Online Demo]]でコンソールに入れて試せる。
+
+#+caption: URLフラグメントを現在ページで書き換える
+#+begin_src javascript
+  const page = PDFViewerApplication.pdfViewer.currentPageNumber;
+  window.location.hash = `page=${page}`;
+#+end_src
+
+* 関連
+- 発展: [[id:20240324T120408][KDOC 127: pdf.jsでしおりを使う]]。をボタンでできるようにした

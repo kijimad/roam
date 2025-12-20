@@ -1,0 +1,51 @@
+:properties:
+:ID: 20250913T204052
+:mtime:    20250914081541
+:ctime:    20250913204053
+:end:
+#+title:      KDOC 463: Base64エンコードでaがYQ==になるのはなぜか?
+#+date:       [2025-09-13 Sat 20:40]
+#+filetags:   :permanent:
+#+identifier: 20250913T204052
+
+* この文書のステータス
+- 作成
+  - [X] 2025-10-27 貴島
+- レビュー
+  - [X] 2025-10-27 貴島
+
+* 概要
+
+インターネットまわりでちょくちょく出てくるbase64だが、よく知らない。対応関係がさっぱりわからない。
+
+#+begin_src shell
+  echo -n "a" | base64
+#+end_src
+
+#+RESULTS:
+#+begin_src
+YQ==
+#+end_src
+
+[[https://qiita.com/PlanetMeron/items/2905e2d0aa7fe46a36d4][base64ってなんぞ？？理解のために実装してみた #base64 - Qiita]]を参考に試した。
+
+#+begin_src shell
+   echo -n "a" | xxd -b
+#+end_src
+
+#+RESULTS:
+#+begin_src
+00000000: 01100001                                               a
+#+end_src
+
+- 011000 01
+  - 6ビットに分ける
+- 011000 010000
+  - 6ビットに足りない分を0で埋める
+- Y      Q
+  - ビットと文字の対応表を見て変換する
+- ~YQ==~
+  - 4文字に分けて足りない分を ~=~ で埋める
+
+* 関連
+なし。

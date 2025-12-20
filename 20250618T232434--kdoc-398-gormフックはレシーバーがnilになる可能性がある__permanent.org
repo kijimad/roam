@@ -1,0 +1,33 @@
+:properties:
+:ID: 20250618T232434
+:mtime:    20250625235647
+:ctime:    20250618232436
+:end:
+#+title:      KDOC 398: GORMフックはレシーバーがnilになる可能性がある
+#+date:       [2025-06-18 Wed 23:24]
+#+filetags:   :permanent:
+#+identifier: 20250618T232434
+
+* この文書のステータス
+- 作成
+  - [X] 2025-06-19 貴島
+- レビュー
+  - [X] 2025-06-25 貴島
+
+* 概要
+
+GORMでは[[https://gorm.io/ja_JP/docs/hooks.html][Hooks]]を使用できる。これによってCRUD操作の前後の処理を挿入できる。
+
+#+caption: Userを削除する前に実行される
+#+begin_src go
+  func (u *User) BeforeDelete(tx *gorm.DB) (error) {
+          return nil
+  }
+#+end_src
+
+もし ~Delete()~ にスライスのUserを渡し一括で削除しようとすると、フックは1度だけ実行され、レシーバはnilになる。
+
+直感的ではないが、こうなっていなければ1件1件削除するたびにモデル情報を取得する必要があり、パフォーマンスの問題になるだろう。
+
+* 関連
+なし。

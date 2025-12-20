@@ -1,0 +1,81 @@
+:properties:
+:ID: 20240317T101828
+:mtime:    20241103085427
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 125: /procのマニュアルを調べる
+#+date:       [2024-03-17 Sun 10:18]
+#+filetags:   :permanent:
+#+identifier: 20240317T101828
+
+* この文書のステータス
+- 作成
+  - [X] 2024-03-17 貴島
+- レビュー
+  - [X] 2024-04-03 貴島
+
+* 概要
+[[id:7a81eb7c-8e2b-400a-b01a-8fa597ea527a][Linux]]などUnixライクなOSで使うディレクトリに ~/proc~ がある。CPU情報を見るときに呪文のように使ってきた。
+
+#+caption: CPU情報を見る
+#+begin_src shell :results raw
+  cat /proc/cpuinfo | head
+#+end_src
+
+#+RESULTS:
+#+begin_src
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 154
+model name	: 12th Gen Intel(R) Core(TM) i7-1260P
+stepping	: 3
+microcode	: 0x429
+cpu MHz		: 2500.000
+cache size	: 18432 KB
+physical id	: 0
+#+end_src
+
+これもOSの機能の1つであり、 ~procfs~ という。システム情報をファイルにマウントする機能。
+
+#+caption: 調べる
+#+begin_src shell :results raw
+  man procfs | head -n 16
+#+end_src
+
+#+RESULTS:
+#+begin_src
+PROC(5)                    Linux Programmer's Manual                   PROC(5)
+
+NAME
+       proc - process information pseudo-filesystem
+
+DESCRIPTION
+       The  proc filesystem is a pseudo-filesystem which provides an interface
+       to kernel data structures.  It is commonly  mounted  at  /proc.   Typi‐
+       cally,  it  is  mounted automatically by the system, but it can also be
+       mounted manually using a command such as:
+
+           mount -t proc proc /proc
+
+       Most of the files in the proc filesystem are read-only, but some  files
+       are writable, allowing kernel variables to be changed.
+
+#+end_src
+
+psとかpgrepは、 ~/proc~ 下を情報源として検索し表示している。↓生のファイルを見てみると、 ~(cat)~ があり、これがプロセス名である。
+
+#+caption: catプロセス自身の情報を見る
+#+begin_src shell
+cat /proc/self/stat
+#+end_src
+
+#+RESULTS:
+#+begin_src
+3394640 (cat) R 3394639 3394639 3394639 0 -1 4194304 95 0 0 0 0 0 0 0 20 0 1 0 159192456 9785344 249 18446744073709551615 94264123768832 94264123784246 140728130572832 0 0 0 0 0 0 0 0 0 17 4 0 0 0 0 0 94264123796192 94264123797608 94264147423232 140728130580548 140728130580568 140728130580568 140728130584555 0
+#+end_src
+
+* 関連
+
+- 補足: [[id:20240225T172419][KDOC 106: Linuxでアーキテクチャ名を調べる]]。にprocfsが出てきた。当時は知らなかった
+- 動機: [[id:20240314T212016][KDOC 122: Linuxカーネル知識の全体像を把握する]]。マニュアルを見て、全体像のなかでどこに位置するのか確認していく

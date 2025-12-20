@@ -1,0 +1,41 @@
+:properties:
+:ID: 20240429T125828
+:mtime:    20250626233028
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 145: Goアセンブリの違いを見る
+#+date:       [2024-04-29 Mon 12:58]
+#+filetags:   :permanent:
+#+identifier: 20240429T125828
+
+* この文書のステータス
+- 作成
+  - [X] 2024-05-01 貴島
+- レビュー
+  - [X] 2024-05-06 貴島
+
+* 概要
+Cが出力するアセンブリはだいたいわかってきた。自信がついてきたので、以前全然わからなかった[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]アセンブリも読んでみたところ、ぜんぜん読めなかった。違うと気づいた部分をまとめる。疑問点のメモで、とくに解決はしない。
+* 違い
+少なくとも、試したコードから見える違い。
+
+↓Goの、RISC-V向けアセンブリ。
+
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:19,endLineNumber:5,positionColumn:19,positionLineNumber:5,selectionStartColumn:19,selectionStartLineNumber:5,startColumn:19,startLineNumber:5),source:'package+main%0A%0Afunc+Hello()+int+%7B%0A++++a+:%3D+1%0A++++return+a+*+222%0A%7D%0A%0Afunc+main()+%7B%7D%0A'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:riscv64_gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+- 命令が大文字
+- 見慣れない中点記号
+- ラベル(~main:~ みたいな)がない
+- ~LEAF|NOFRAME|ABIInternal~ といった謎の文字がつく
+- ~FUNCDATA~ の行は謎
+- ~$0-8~ は引数のようだ
+- 関数は ~TEXT~, ~FUNCDATA~ で始まる形に置き換えられる
+- レジスタは ~X10~, ~X0~, ~X1~ とか。伝統的なレジスタ名は出てこない
+- このコード例だからだろうが、計算結果しかアセンブリに現れない。乗算命令 ~mul~ は出てこない。先に計算してそう
+- 馴染みのあるのは ~MOV~ くらい
+
+* 関連
+- 類推: [[id:20240427T120833][KDOC 141: Cのポインタ操作をアセンブリで見る]]。アセンブリで見るつながり
+- 未解決: Goアセンブリの読み方

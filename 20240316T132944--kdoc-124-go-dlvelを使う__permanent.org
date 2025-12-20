@@ -1,0 +1,54 @@
+:properties:
+:ID: 20240316T132944
+:mtime:    20241103085420
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 124: go-dlv.elを使う
+#+date:       [2024-03-16 Sat 13:29]
+#+filetags:   :permanent:
+#+identifier: 20240316T132944
+
+* この文書のステータス
+- 作成
+  - [X] 2024-03-16 貴島
+- レビュー
+  - [X] 2024-04-03 貴島
+
+* go-dlv.el
+[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]のデバッガでdelveをよく使う。
+
+Emacs上でこのdelveを扱いやすくするためのラッパーパッケージ[[https://github.com/benma/go-dlv.el/][go-dlv.el]]がある。 ~(dlv-current-func)~ を実行してカーソル上の関数をデバッグ実行できる。
+
+同じようなラッパーには ~dap-mode~ を使う方法もあるが、EmacsっぽくないUIであまり好みでない。なのでgo-dlv.elを使う。
+
+#+caption: (dlv-current-func)を実行したカーソル箇所にブレークポイントを打って実行してくれる。さらに該当コードは別バッファに表示されている
+#+begin_src
+(dlv) Breakpoint 1 set at 0x78e853 for main.main() ./snippet.go:27
+(dlv) > main.main() ./snippet.go:27 (hits goroutine(1):1 total:1) (PC: 0x78e853)
+    22:		if err != nil {
+    23:			log.Fatal(err)
+    24:		}
+    25:	}
+    26:
+=>  27:	func main() {
+    28:		http.HandleFunc("/hello", helloHandler)
+    29:		fmt.Println("Server Start Up........")
+    30:		log.Fatal(http.ListenAndServe("localhost:8080", nil))
+    31:	}
+(dlv) n
+> main.main() ./snippet.go:28 (PC: 0x78e85a)
+    23:			log.Fatal(err)
+    24:		}
+    25:	}
+    26:
+    27:	func main() {
+=>  28:		http.HandleFunc("/hello", helloHandler)
+    29:		fmt.Println("Server Start Up........")
+    30:		log.Fatal(http.ListenAndServe("localhost:8080", nil))
+    31:	}
+(dlv)
+#+end_src
+
+* 関連
+
+なし。

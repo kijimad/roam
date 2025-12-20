@@ -1,0 +1,38 @@
+:properties:
+:ID: 20240604T174816
+:mtime:    20241103085927
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 183: イメージビルド時にツール側のキャッシュを使う
+#+date:       [2024-06-04 Tue 17:48]
+#+filetags:   :permanent:
+#+identifier: 20240604T174816
+
+* この文書のステータス
+- 作成
+  - [X] 2024-06-04 貴島
+- レビュー
+  - [X] 2024-06-06 貴島
+
+* 概要
+[[id:1658782a-d331-464b-9fd7-1f8233b8b7f8][Docker]] imageをビルドするときレイヤーキャッシュが生成されるが、ファイル内容に違いがあると破棄されてビルドが再実行される。なのでコードが1行でも、依存ライブラリが1行でも変更されると、ゼロからビルドして時間がかかることになる。コンパイラのビルドキャッシュ/パッケージ管理ツールのインストールキャッシュを利用するには、専用の領域を指定して保存しておく。
+
+#+caption: https://docs.docker.com/build/guide/mounts/
+#+begin_src dockerfile
+  # Dockerfile
+  RUN --mount=type=cache,target=/go/pkg/mod \
+      --mount=type=cache,target=/root/.cache/go-build \
+      --mount=type=bind,target=. \
+      go build .
+#+end_src
+
+これによって、2段階のキャッシュを利用することになる。
+
+1. 内容が全く同じ場合はDockerのレイヤーキャッシュを使う
+2. 内容が変わった場合はマウントしたモジュールキャッシュとコンパイラのビルドキャッシュを使う
+
+となり、高速化できる。
+
+* 関連
+
+- 追加調査: Docker の mount type の違いを調べる

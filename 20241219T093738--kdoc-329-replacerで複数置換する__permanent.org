@@ -1,0 +1,50 @@
+:properties:
+:ID: 20241219T093738
+:mtime:    20250428165155
+:ctime:    20241219093742
+:end:
+#+title:      KDOC 329: Replacerで複数置換する
+#+date:       [2024-12-19 Thu 09:37]
+#+filetags:   :permanent:
+#+identifier: 20241219T093738
+
+* この文書のステータス
+- 作成
+  - [X] 2025-01-13 貴島
+- レビュー
+  - [X] 2025-02-11 貴島
+
+* 概要
+
+Go言語で、文字列を複数置換したいとき、Replacerを使うと簡単にできる。
+
+#+begin_src go
+  import (
+          "fmt"
+          "strings"
+  )
+
+  var dnaReplacer *strings.Replacer = strings.NewReplacer(
+          "A", "T",
+          "T", "A",
+          "C", "G",
+          "G", "C",
+  )
+
+  func DNAStrand(dna string) string {
+          return dnaReplacer.Replace(dna)
+  }
+
+  func main() {
+          fmt.Println(DNAStrand("ATCG"))
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+TAGC
+#+end_src
+
+* 関連
+
+- 類推: よりスマートな方法を探す

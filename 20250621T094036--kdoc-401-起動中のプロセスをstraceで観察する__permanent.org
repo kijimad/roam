@@ -1,0 +1,38 @@
+:properties:
+:ID: 20250621T094036
+:mtime:    20250626230953
+:ctime:    20250621094037
+:end:
+#+title:      KDOC 401: 起動中のプロセスをstraceで観察する
+#+date:       [2025-06-21 Sat 09:40]
+#+filetags:   :permanent:
+#+identifier: 20250621T094036
+
+* この文書のステータス
+- 作成
+  - [X] 2025-06-21 貴島
+- レビュー
+  - [X] 2025-06-26 貴島
+
+* 概要
+
+~strace -p~ ですでに起動しているプロセスを見てみると気軽に発行システムコールを眺められる。コマンドをメモしておく。
+
+#+caption: viteの開発サーバに対してアタッチする。ホットリロードのためにポーリングがされているのがわかる
+#+begin_src shell shell
+  sudo strace -p $(pgrep node | head -n1)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+strace: Process 1550973 attached
+epoll_pwait(15, [{events=EPOLLIN, data={u32=22, u64=22}}], 1024, 638, NULL, 8) = 1
+read(22, "\35\0\0\0H\253\0\0\6\1\0\0\0\7\0\0\0command\3\4\0\0\0pin"..., 65536) = 33
+write(20, "\t\0\0\0I\253\0\0\6\0\0\0\0", 13) = 13
+epoll_pwait(15, [], 1024, 0, NULL, 8)   = 0
+(略)
+#+end_src
+
+* 関連
+
+- 追加調査: ~strace~ のオプションをさらに調べる

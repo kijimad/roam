@@ -1,0 +1,191 @@
+:properties:
+:ID: 20240210T220439
+:mtime:    20250626232317
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 86: errors.Is()の比較ロジックを見る
+#+date:       [2024-02-10 Sat 22:04]
+#+filetags:   :permanent:
+#+identifier: 20240210T220439
+
+* この文書のステータス
+:LOGBOOK:
+CLOCK: [2024-02-17 Sat 00:42]--[2024-02-17 Sat 01:07] =>  0:25
+CLOCK: [2024-02-16 Fri 23:55]--[2024-02-17 Sat 00:20] =>  0:25
+CLOCK: [2024-02-16 Fri 21:19]--[2024-02-16 Fri 21:44] =>  0:25
+CLOCK: [2024-02-11 Sun 00:41]--[2024-02-11 Sun 01:06] =>  0:25
+:END:
+- 作成
+  - [X] 2024-02-17 貴島
+- レビュー
+  - [X] 2024-02-18 貴島
+* 概要
+[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]のerror.Is()は、2つのエラーが一致するかを判定する関数である。
+
+- [[https://pkg.go.dev/errors#example-Is][errors package - errors - Go Packages]]
+
+#+begin_src go
+func Is(err, target error) bool {}
+#+end_src
+
+エラー周りをいまいち理解してないが、調べるなかでエラーというより「一致(~==~)」とはなにかを理解していなかった。そのへんについて書く。
+
+* ユースケースを見る
+
+まずIs()の使い方を理解する。[[https://pkg.go.dev/errors][errors package]]のexampleを見る。
+
+#+caption: Is() example
+#+begin_src go :imports '("os" "errors" "fmt" "io/fs")
+	if _, err := os.Open("non-existing"); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			fmt.Println("file does not exist")
+		} else {
+			fmt.Println(err)
+		}
+	}
+#+end_src
+
+#+RESULTS:
+#+begin_src
+file does not exist
+#+end_src
+
+なんらかの方法で2つのエラー(err, fs.ErrNotExist)を比較し、結果を返している。
+
+↓ここで、ErrNotExistはエラー変数である。
+
+#+caption: ErrNotExist
+#+begin_src git-permalink
+https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/io/fs/fs.go#L146
+#+end_src
+
+#+RESULTS:
+#+begin_src
+	ErrNotExist   = errNotExist()   // "file does not exist"
+#+end_src
+
+↓さらに辿る。
+
+#+caption: 実態はoserror
+#+begin_src git-permalink
+https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/io/fs/fs.go#L153
+#+end_src
+
+#+RESULTS:
+#+begin_src
+func errNotExist() error   { return oserror.ErrNotExist }
+#+end_src
+
+↓ようやく定義にたどり着く。
+
+#+caption: internal packageのoserrorでの定義
+#+begin_src git-permalink
+https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/internal/oserror/errors.go#L12-L16
+#+end_src
+
+#+RESULTS:
+#+begin_src
+var (
+	ErrInvalid    = errors.New("invalid argument")
+	ErrPermission = errors.New("permission denied")
+	ErrExist      = errors.New("file already exists")
+	ErrNotExist   = errors.New("file does not exist")
+#+end_src
+
+errors.New()が返す構造体*errors.errorStringはUnwrap()、Is()を実装していないから、エラーチェーンを辿ることはない。単純にerrors.New()で作られたエラー変数自体を「比較」していることになる。比較ロジックはなんだろうか。実装を見る。
+
+#+begin_src git-permalink
+https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/errors/wrap.go#L55
+#+end_src
+
+#+RESULTS:
+#+begin_src
+		if targetComparable && err == target {
+#+end_src
+
+シンプルに ~==~ で比較している。ひとくちに比較といってもいろいろある。型の要素が一致しているか、値が一致しているか、指すメモリアドレスが同じか、など。どうなるのだろうか。
+
+* 比較ロジック
+
+動かして調べる。値や、型名の比較ではないことを確認する。
+
+#+begin_src go :imports '("io/fs" "fmt" "errors")
+  fmt.Println("↓falseになる")
+  fmt.Println(errors.Is(fs.ErrNotExist, errors.New("file does not exist")))
+  fmt.Println("↓==を使ってもfalseになる")
+  fmt.Println(fs.ErrNotExist == errors.New("file does not exist"))
+  fmt.Println("↓型は同じなのを確認する")
+  fmt.Printf("%T, %T\n", fs.ErrNotExist, errors.New("file does not exist"))
+  fmt.Println("↓フィールドの値は同じ")
+  fmt.Printf("%#v, %#v\n", fs.ErrNotExist, errors.New("file does not exist"))
+#+end_src
+
+#+RESULTS:
+#+begin_src
+↓falseになる
+false
+↓==を使ってもfalseになる
+false
+↓型は同じなのを確認する
+,*errors.errorString, *errors.errorString
+↓フィールドの値は同じ
+&errors.errorString{s:"file does not exist"}, &errors.errorString{s:"file does not exist"}
+#+end_src
+
+ここでよく見るとポインタ型なので、指すメモリアドレスを比較していると考えた。同じ変数だと、同じものを指しているので同じになるだろう。よく忘れるのだが、 ~error~ はインターフェースであって、型ではない。よく使われるerrors.New()は*errorString型のインスタンスを作成する。
+
+メモリアドレスの比較であることを確かめる。
+
+#+begin_src go :imports '("fmt" "errors")
+  // 値が完全に同じでも、メモリアドレスが違うのでfalse
+  fmt.Println(errors.New("dummy") == errors.New("dummy"))
+
+  e := errors.New("dummy")
+  // メモリアドレスが同じなのでtrue
+  fmt.Println(e == e)
+  // メモリアドレスが同じであればいいので別の変数に入れて元の変数と比較してもtrue
+  ee := e
+  fmt.Println(ee == e)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+false
+true
+true
+#+end_src
+
+errorを実装している型をポインタ型でないものにすると、値で比較するため構造体の値が同じであれば同じ判定になる。現実で使うケースはなさそうだが。
+
+- https://go.dev/play/p/qZe0EBI6td-
+
+#+begin_src go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+type dummy struct{ s string }
+
+func (d dummy) Error() string { return "" }
+
+var _ error = dummy{}
+
+func main() {
+	fmt.Println(errors.Is(dummy{}, dummy{}))       // true
+	fmt.Println(errors.Is(dummy{"a"}, dummy{"b"})) // false
+}
+
+#+end_src
+
+フィールドの値で比較していることがわかる。
+
+* まとめ
+- errors.Is()はエラーチェーンをたどったり独自の判定ロジックを適用してくれるが、もっともシンプルな例だと単純に ~==~ で比較しているだけにすぎない
+- ~error~ はインターフェースであり、よく見るerrors.New()で作られる変数の型はその実装の1つにすぎない
+- エラーのパッケージ変数はerrors.New()で作られる*errors.errorString型がよく使われる。ポインタなので、パッケージ変数として初期化・公開しておくと一致を安全に確認できる。ポインタ型なので、 **型で比較しているわけではない** 。
+
+* 関連
+- 補足: [[id:20231103T214003][KDOC 52: Goで構造体がインターフェースを実装しているか確認する]]。サンプルコードでインターフェースを確認するのに使った

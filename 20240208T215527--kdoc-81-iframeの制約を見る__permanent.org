@@ -1,0 +1,103 @@
+:properties:
+:ID: 20240208T215527
+:mtime:    20250626232306
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 81: iframeの制約を見る
+#+date:       [2024-02-08 Thu 21:55]
+#+filetags:   :permanent:
+#+identifier: 20240208T215527
+
+* この文書のステータス
+:LOGBOOK:
+CLOCK: [2024-02-08 Thu 22:03]--[2024-02-08 Thu 22:40] =>  0:37
+:END:
+- 作成
+  - [X] 2024-02-08 貴島
+- レビュー
+  - [X] 2024-02-12 貴島
+* 概要
+iframeの制約について関して勘違いがあった。iframeの[[id:a6980e15-ecee-466e-9ea7-2c0210243c0d][JavaScript]]の制約はCORSを設定しても緩和できないということ。それについて書く。
+* イントロ
+iframeはHTMLの要素の1つで、Webページ内にページを表示するのに使う。別のサイトへ干渉する可能性があるため、セキュリティ上の制約が厳しい。たとえば子要素として開いたiframeが親のウィンドウを操作したり中身が読み取れると、簡単に情報を抜き取ったり、改変ができてしまうだろう。
+
+[[file:./images/20240209-iframe.drawio.svg]]
+
+* 制約
+iframeからは、同一オリジンの場合を除いて、ほとんどのwindowプロパティにアクセスできない制約がある。
+
+#+begin_quote
+フレームの内容にアクセスするスクリプトは、同一オリジンポリシーに従います。別なオリジンから読み込まれたスクリプトは、フレーム内のスクリプトがフレームの親にアクセスする場合を含め、他の window オブジェクトのほとんどのプロパティにアクセスできません。オリジンをまたいだやりとりは Window.postMessage() を使用して実現できます。
+
+https://developer.mozilla.org/ja/docs/Web/HTML/Element/iframe
+#+end_quote
+
+つまり。
+
+- windowにアクセスできる
+  - iframe外 → localhost
+  - iframe内 → localhost
+- windowにアクセスできない
+  - iframe外 → localhost
+  - iframe内 → example.com
+
+同一オリジンポリシーとは何か。
+
+#+begin_quote
+同一オリジンポリシーは重要なセキュリティの仕組みであり、あるオリジンによって読み込まれた文書やスクリプトが、他のオリジンにあるリソースにアクセスできる方法を制限するものです。
+
+https://developer.mozilla.org/ja/docs/Web/Security/Same-origin_policy
+#+end_quote
+
+説明はだいたいかぶっているが、こっちの説明は文書やスクリプトといった静的リソースへの言及になっている。windowオブジェクトとかコードの一部分の話ではなく、実行そのものができないニュアンスだ。
+
+ところで、同一オリジンと聞いたときにセットで出てくるのは、CORSである。
+
+#+begin_quote
+オリジン間リソース共有 (Cross-Origin Resource Sharing, CORS) は、追加の HTTP ヘッダーを使用して、あるオリジンで動作しているウェブアプリケーションに、異なるオリジンにある選択されたリソースへのアクセス権を与えるようブラウザーに指示するための仕組みです。
+
+https://developer.mozilla.org/ja/docs/Web/HTTP/CORS
+#+end_quote
+
+ベースとして同一オリジンポリシーがあるが、それだと困るケースもあるので、CORSによって特定のパスにアクセス権を与えて許可できる。そうするとサーバ側で許可リソースを管理できる。
+
+勘違いしていたのは、iframeの挙動もすべてCORSで許可できる、と考えていた点だ。それは違うようだ。またMDNドキュメントを見る。
+
+#+begin_quote
+この cross-origin sharing standard では、以下についてオリジン間の HTTP リクエストができるようにしています。
+
+- 前述のような XMLHttpRequest または Fetch API の呼び出し。
+- ウェブフォント (CSS の @font-face で別ドメインのフォントを利用するため)。これによりサーバーは、許可したウェブサイトのみからオリジンをまたがって読み込んで利用できる TrueType フォントを提供することができます。
+- WebGL テクスチャ。
+- drawImage() を使用してキャンバスへ描かれた画像や映像のフレーム
+- 画像から生成した CSS シェイプ。
+
+https://developer.mozilla.org/ja/docs/Web/HTTP/CORS
+#+end_quote
+
+明確にiframeへの影響はないと書かれているわけではないのだが、どうもできなさそうである。CORSはHTTPリクエストによるリソース権限管理の話であって、ブラウザの実装レベルの話ではない。↓オリジンをまたいだやりとりはjsのAPI使用を推奨している。
+
+#+begin_quote
+オリジンをまたいだやりとりは Window.postMessage() を使用して実現できます。
+
+https://developer.mozilla.org/ja/docs/Web/HTML/Element/iframe
+#+end_quote
+
+X-Frame-Optionsは有望そうだったが、許可はできなかった。拒否するためのもの。過去存在したようだが、最近のブラウザでは動作しないとのこと。
+
+#+begin_quote
+X-Frame-Options には 2 つの有効なディレクティブがあります。
+
+X-Frame-Options: DENY
+X-Frame-Options: SAMEORIGIN
+
+https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Frame-Options
+#+end_quote
+
+調べた限り、制限を回避するにはブラウザの同一オリジン制限を外す💀、Window.postMessage()を使うという手段が多そうだった。あとは同一オリジンにフロントを置くか、ネイティブアプリを使う、くらいか。
+
+ひとつ言えることは、iframeを使わなければいけない状況自体がおかしい、ということである。
+
+* 関連
+
+- 具体例: [[id:20240130T235419][KDOC 66: 通知ビューワを作る]]。では、iframeの制約を避けるためElectronを使って作った

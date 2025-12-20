@@ -1,0 +1,180 @@
+:properties:
+:ID: 20240825T193415
+:mtime:    20241103090133
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 228: 変数を書いた順番とアドレスの関係はコンパイラによって異なる
+#+date:       [2024-08-25 Sun 19:34]
+#+filetags:   :permanent:
+#+identifier: 20240825T193415
+
+* この文書のステータス
+- 作成
+  - [X] 2024-08-25 貴島
+- レビュー
+  - [X] 2024-09-09 貴島
+
+* 概要
+コンパイラによって、コードで変数を初期化した順番とアドレスの順番は異なることがある。
+
+最初に、gcc。
+
+#+caption: 変数の番地を表示する
+#+begin_src C
+  int main() {
+    char base = 0;
+    char a = 'a';
+    char b = 'b';
+    char c = 'c';
+
+    printf("%p: base\n", &base);
+    printf("%p: a\n", &a);
+    printf("%p: b\n", &b);
+    printf("%p: c\n", &c);
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+0x7fffa55f0a84: base
+0x7fffa55f0a85: a
+0x7fffa55f0a86: b
+0x7fffa55f0a87: c
+#+end_src
+
+つまり、メモリは↓このようになっているように見える。コードで変数を初期化した順番とアドレスの順番が一致している。スタックだからアドレスが書いた逆順になる、というわけではない。
+
+#+caption: 先に書いた変数(base)が低位アドレスとなる
+#+begin_src shell
+  ^番地小(低)
+
+  | ...84: base |
+  | ...85: a |
+  | ...86: b |
+  | ...87: c |
+
+  v番地大(高)
+#+end_src
+
+アセンブラを見てみると、(低)base, a, b, c(高)順のアドレスになっているのを確認できた。
+
+#+caption: 手元のgccで-Sオプションを使って出力した
+#+begin_src asm
+          .file	"main.c"
+          .text
+          .section	.rodata
+  .LC0:
+          .string	"%p: base\n"
+  .LC1:
+          .string	"%p: a\n"
+  .LC2:
+          .string	"%p: b\n"
+  .LC3:
+          .string	"%p: c\n"
+          .text
+          .globl	main
+          .type	main, @function
+  main:
+  .LFB0:
+          .cfi_startproc
+          endbr64
+          pushq	%rbp
+          .cfi_def_cfa_offset 16
+          .cfi_offset 6, -16
+          movq	%rsp, %rbp
+          .cfi_def_cfa_register 6
+          subq	$16, %rsp
+          movq	%fs:40, %rax
+          movq	%rax, -8(%rbp)
+          xorl	%eax, %eax
+          movb	$0, -12(%rbp)  ; 👈
+          movb	$97, -11(%rbp) ; 👈
+          movb	$98, -10(%rbp) ; 👈
+          movb	$99, -9(%rbp)  ; 👈
+          leaq	-12(%rbp), %rax
+          movq	%rax, %rsi
+          leaq	.LC0(%rip), %rax
+          movq	%rax, %rdi
+          movl	$0, %eax
+          call	printf@PLT
+          leaq	-11(%rbp), %rax
+          movq	%rax, %rsi
+          leaq	.LC1(%rip), %rax
+          movq	%rax, %rdi
+          movl	$0, %eax
+          call	printf@PLT
+          leaq	-10(%rbp), %rax
+          movq	%rax, %rsi
+          leaq	.LC2(%rip), %rax
+          movq	%rax, %rdi
+          movl	$0, %eax
+          call	printf@PLT
+          leaq	-9(%rbp), %rax
+          movq	%rax, %rsi
+          leaq	.LC3(%rip), %rax
+          movq	%rax, %rdi
+          movl	$0, %eax
+          call	printf@PLT
+          movl	$0, %eax
+          movq	-8(%rbp), %rdx
+          subq	%fs:40, %rdx
+          je	.L3
+          call	__stack_chk_fail@PLT
+  .L3:
+          leave
+          .cfi_def_cfa 7, 8
+          ret
+          .cfi_endproc
+  .LFE0:
+          .size	main, .-main
+          .ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+          .section	.note.GNU-stack,"",@progbits
+          .section	.note.gnu.property,"a"
+          .align 8
+          .long	1f - 0f
+          .long	4f - 1f
+          .long	5
+  0:
+          .string	"GNU"
+  1:
+          .align 8
+          .long	0xc0000002
+          .long	3f - 2f
+  2:
+          .long	0x3
+  3:
+          .align 8
+  4:
+
+    --------------------------------
+    |-12(%rbp): base |
+    |-11(%rbp): a |
+    |-10(%rbp): b |
+    | -9(%rbp): c |
+#+end_src
+
+いっぽうclangでコンパイルした場合、先に書いた変数が高位アドレスとなる。
+
+#+caption: clangでコンパイルして実行した結果。先に書いた変数が高位アドレスとなる
+#+begin_src shell
+  0x7ffe71de7317: base
+  0x7ffe71de7316: a
+  0x7ffe71de7315: b
+  0x7ffe71de7314: c
+
+  --------------------
+  ^番地小(低)
+
+  | ...14: c |
+  | ...15: b |
+  | ...16: a |
+  | ...17: base |
+
+  v番地大(高)
+#+end_src
+
+つまり、コードで変数を初期化した順番と、アドレスの順番は必ずしも逆にはならないことがある。なぜそうなるのかは、いつか調べる。
+
+* 関連
+
+- 動機: [[id:20240824T190333][KDOC 226: 任意のアドレスに読み書きする]]。調べている途中で発見した

@@ -1,0 +1,62 @@
+:properties:
+:ID: 20240605T205919
+:mtime:    20241103085933
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 185: コンテナの中身をホストマシンにダンプして理解する
+#+date:       [2024-06-05 Wed 20:59]
+#+filetags:   :permanent:
+#+identifier: 20240605T205919
+
+* この文書のステータス
+- 作成
+  - [X] 2024-06-06 貴島
+- レビュー
+  - [X] 2024-06-10 貴島
+
+* 概要
+コンテナのルートファイルシステムを、ホストマシンのファイルシステムにダンプして中身を観察する。
+
+#+begin_src shell :results raw
+  mkdir -p bundle/rootfs
+  docker pull centos:8
+  docker run --rm --name tmp -d centos:8 sleep
+  docker export tmp | tar -xC bundle/rootfs
+  ls -al bundle/rootfs/
+#+end_src
+
+#+RESULTS:
+#+begin_src
+total 116
+drwxrwxr-x 17 orange orange  4096 Jun  5 21:01 .
+drwxrwxr-x  3 orange orange  4096 Jun  5 21:01 ..
+lrwxrwxrwx  1 orange orange     7 Nov  4  2020 bin -> usr/bin
+drwxr-xr-x  4 orange orange  4096 Jun  5 20:55 dev
+-rwxr-xr-x  1 orange orange     0 Jun  5 20:55 .dockerenv
+drwxr-xr-x 55 orange orange 24576 Jun  5 20:55 etc
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 home
+lrwxrwxrwx  1 orange orange     7 Nov  4  2020 lib -> usr/lib
+lrwxrwxrwx  1 orange orange     9 Nov  4  2020 lib64 -> usr/lib64
+drwx------  2 orange orange  4096 Sep 15  2021 lost+found
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 media
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 mnt
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 opt
+drwxr-xr-x  2 orange orange  4096 Sep 15  2021 proc
+dr-xr-x---  2 orange orange  4096 Sep 15  2021 root
+drwxr-xr-x 11 orange orange  4096 Sep 15  2021 run
+lrwxrwxrwx  1 orange orange     8 Nov  4  2020 sbin -> usr/sbin
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 srv
+drwxr-xr-x  2 orange orange  4096 Sep 15  2021 sys
+drwxrwxr-x  7 orange orange  4096 Sep 15  2021 tmp
+drwxr-xr-x 12 orange orange  4096 Sep 15  2021 usr
+drwxr-xr-x 20 orange orange  4096 Sep 15  2021 var
+#+end_src
+
+#+caption: 後片付け
+#+begin_src shell
+  docker stop tmp
+#+end_src
+
+* 関連
+
+- 参照: [[id:20240605T103458][KDOC 184: 『イラストでわかるDockerとKubernetes』]]で紹介されていた方法

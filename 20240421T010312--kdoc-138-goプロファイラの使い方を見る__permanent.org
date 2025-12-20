@@ -1,0 +1,132 @@
+:properties:
+:ID: 20240421T010312
+:mtime:    20250626233011
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 138: Goプロファイラの使い方を見る
+#+date:       [2024-04-21 Sun 01:03]
+#+filetags:   :permanent:
+#+identifier: 20240421T010312
+
+* この文書のステータス
+- 作成
+  - [X] 2024-04-28 貴島
+- レビュー
+  - [X] 2024-05-06 貴島
+
+* 概要
+Goのプロファイラ、 ~pprof~ を使う手順を書く。
+
+* 背景
+[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]を使ってゲーム開発する過程で、いつのまにかメモリリークしていたのを発見した。原因を探るために、プロファイラを使って原因箇所を特定できた。強力な調査方法なので、いつでも使えるようにしておく。
+
+* 手順
+~pprof~ の起動や取得方法にはいくつかの組み合わせがある。組み合わせる自由度が高いのはいいが、ややとっつきづらい。もっともシンプルに見える組み合わせだけを書く。
+
+** 1. コードにプロファイラを埋め込む
+
+無名インポートすることで、デフォルトサーバにプロファイラのエンドポイントが追加される。
+
+#+caption: 無名インポートとサーバの起動
+#+begin_src go
+  package main
+  import _ "net/http/pprof"
+
+  func main() {
+          _ = http.ListenAndServe("localhost:6060", nil)
+  }
+#+end_src
+
+** 2. 実行する
+
+埋め込んだコードをコンパイルして実行すると、↓のようなパスにアクセスしてプロファイルを取得できるようになる。
+
+#+begin_src shell
+  http://localhost:6060/debug/pprof/
+  http://localhost:6060/debug/pprof/allocs?debug=1
+  http://localhost:6060/debug/pprof/block?debug=1
+  http://localhost:6060/debug/pprof/cmdline?debug=1
+  http://localhost:6060/debug/pprof/goroutine?debug=1
+  http://localhost:6060/debug/pprof/heap?debug=1
+  http://localhost:6060/debug/pprof/mutex?debug=1
+  http://localhost:6060/debug/pprof/profile?debug=1
+  http://localhost:6060/debug/pprof/threadcreate?debug=1
+#+end_src
+
+#+caption: /debug/pprof/allocsを見てみる
+#+begin_src
+  heap profile: 51: 49689536 [177: 61751432] @ heap/8192
+  4: 21135360 [4: 21135360] @ 0x76ba45 0x86a96f 0x8b24e5 0x8b1fa5 0x8b1e2f 0x8bbba8 0x8bf9d2 0x913465 0x7578fd 0x757b4e 0x75423b 0x9132b0 0x913294 0x913c8d 0x4423db 0x475481
+  #	0x76ba44	image.NewAlpha+0x64								/usr/local/go/src/image/image.go:711
+  #	0x86a96e	github.com/golang/freetype/truetype.NewFace+0x38e				/home/orange/go/pkg/mod/github.com/golang/freetype@v0.0.0-20170609003504-e2365dfdc4a0/truetype/face.go:206
+  #	0x8b24e4	github.com/kijimaD/ruins/lib/engine/loader.processTextData+0x1a4		/home/orange/Project/ruins/lib/engine/loader/entity.go:231
+  #	0x8b1fa4	github.com/kijimaD/ruins/lib/engine/loader.processComponentsListData+0x84	/home/orange/Project/ruins/lib/engine/loader/entity.go:110
+  #	0x8b1e2e	github.com/kijimaD/ruins/lib/engine/loader.LoadEngineComponents+0x20e		/home/orange/Project/ruins/lib/engine/loader/entity.go:101
+  #	0x8bbba7	github.com/kijimaD/ruins/lib/loader.PreloadEntities+0xe7			/home/orange/Project/ruins/lib/loader/loader.go:49
+  #	0x8bf9d1	github.com/kijimaD/ruins/lib/game.InitWorld+0x471				/home/orange/Project/ruins/lib/game/game.go:97
+  #	0x913464	github.com/kijimaD/ruins/lib/cmd.runPlay+0x124					/home/orange/Project/ruins/lib/cmd/play.go:43
+  #	0x7578fc	github.com/urfave/cli/v2.(*Command).Run+0x9dc					/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/command.go:279
+  #	0x757b4d	github.com/urfave/cli/v2.(*Command).Run+0xc2d					/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/command.go:272
+  #	0x75423a	github.com/urfave/cli/v2.(*App).RunContext+0x5da				/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/app.go:337
+  #	0x9132af	github.com/urfave/cli/v2.(*App).Run+0x2f					/home/orange/go/pkg/mod/github.com/urfave/cli/v2@v2.27.1/app.go:311
+  #	0x913293	github.com/kijimaD/ruins/lib/cmd.RunMainApp+0x13				/home/orange/Project/ruins/lib/cmd/cmd.go:39
+  #	0x913c8c	main.main+0x2c									/home/orange/Project/ruins/main.go:19
+  #	0x4423da	runtime.main+0x2ba
+#+end_src
+
+** 3. プロファイルを収集する
+
+生のプロファイルは人が見るものではない。 ~pprof~ の収集コマンドを実行して可視化する。よくわからないポイントだが、起動中のコマンドと同じバイナリが必要。このバイナリからコード位置などの情報を取得しているのだろうか。
+
+#+begin_src shell
+  # ビルド
+  $ go build . -o aaaa
+  # プロファイル収集を実行する
+  $ go tool pprof aaaa "http://localhost:6060/debug/pprof/profile?seconds=10"
+#+end_src
+
+↑例では10秒間、起動中のコマンドから情報を収集する。
+
+#+caption: 実行結果
+#+begin_src shell
+  Fetching profile over HTTP from http://localhost:6060/debug/pprof/profile?seconds=10
+  Saved profile in /home/orange/pprof/pprof.ruins.samples.cpu.008.pb.gz
+  File: ruins
+  Build ID: ab4fa2d3d6018e82aed20efe4b4d08193ee45510
+  Type: cpu
+  Time: Apr 27, 2024 at 4:00pm (JST)
+  Duration: 10.16s, Total samples = 1.64s (16.15%)
+  Entering interactive mode (type "help" for commands, "o" for options)
+  (pprof) # 👈プロンプト
+#+end_src
+
+10秒間待って、 ~pprof~ のプロンプトが出れば成功。入力待ちになる。オプションによっては、ここでグラフ画像を表示できたりする。
+
+** 4. プロファイルを見る
+
+~pprof~ プロンプトが出ている状態で、コマンドを実行して結果を得る。
+
+#+caption: 大きい順に表示する
+#+begin_src shell
+  (pprof) top
+Showing nodes accounting for 1070ms, 65.24% of 1640ms total
+Showing top 10 nodes out of 236
+      flat  flat%   sum%        cum   cum%
+     520ms 31.71% 31.71%      560ms 34.15%  runtime.cgocall
+     320ms 19.51% 51.22%      320ms 19.51%  runtime.futex
+      30ms  1.83% 53.05%       30ms  1.83%  github.com/golang/freetype/truetype.(*Font).scale (inline)
+      30ms  1.83% 54.88%      130ms  7.93%  github.com/golang/freetype/truetype.(*GlyphBuf).Load
+      30ms  1.83% 56.71%      120ms  7.32%  github.com/hajimehoshi/ebiten/v2/internal/atlas.(*Image).drawTriangles
+      30ms  1.83% 58.54%       30ms  1.83%  github.com/hajimehoshi/ebiten/v2/internal/shaderir.(*Program).FilterUniformVariables
+      30ms  1.83% 60.37%      240ms 14.63%  runtime.findRunnable
+      30ms  1.83% 62.20%       30ms  1.83%  runtime.pMask.read (inline)
+      30ms  1.83% 64.02%       30ms  1.83%  runtime/internal/syscall.Syscall6
+      20ms  1.22% 65.24%       20ms  1.22%  github.com/golang/freetype/truetype.(*GlyphBuf).loadSimple
+#+end_src
+
+これによって、コードのどの部分でリソースを消費しているかがわかる。
+
+* 関連
+
+- 類推: [[id:20240420T224401][KDOC 137: 簡単にプロセスの使用メモリを確認する]]。でメモリリークしていることをざっくり調べた。プロファイラでさらに原因を絞る
+- 動機: [[id:20231128T074518][KDOC 59: ECSを使ってRPGを作る]]。の過程で調べるのに使った

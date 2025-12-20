@@ -1,0 +1,64 @@
+:properties:
+:ID: 20240428T105206
+:mtime:    20241103085655
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 144: データ型によるサイズの違いを確かめる
+#+date:       [2024-04-28 Sun 10:52]
+#+filetags:   :permanent:
+#+identifier: 20240428T105206
+
+* この文書のステータス
+- 作成
+  - [X] 2024-05-01 貴島
+- レビュー
+  - [X] 2024-05-06 貴島
+
+* 概要
+データ型によって値を保存するのに使うサイズが違う、というのを概念でしか把握していなかった。アセンブリで本当にそうなのか確かめる。
+* 違い
+** int型
+↓2つめの宣言でアドレスが4バイト進んでるので、int型は4バイトの長さがある。
+
+#+caption: int型は4バイト
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:18,endLineNumber:3,positionColumn:18,positionLineNumber:3,selectionStartColumn:18,selectionStartLineNumber:3,startColumn:18,startLineNumber:3),source:'void+main()+%7B%0A++++int+int1+%3D+1%3B%0A++++int+int2+%3D+2%3B++%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+↓つまり、格納できる最大の値がわかる。オーバーフローさせてみる。2つめの宣言はゼロが入っている。
+
+- 4バイト=32ビット=2^32=4294967296 -> 表現できる値の幅は4294967296。0はじまりなので0~4294967295
+
+#+caption: オーバーフローするのを確認する
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:26,endLineNumber:3,positionColumn:26,positionLineNumber:3,selectionStartColumn:26,selectionStartLineNumber:3,startColumn:26,startLineNumber:3),source:'void+main()+%7B%0A++++int+int1+%3D+4294967295%3B%0A++++int+int2+%3D+4294967296%3B%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+** double型
+↓2つめの宣言でアドレスが8バイト進んでいるので、double型は8バイトの長さがある。
+
+- 名前の通り、int型の倍である8バイトの長さがある
+
+#+caption: double型
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:23,endLineNumber:3,positionColumn:23,positionLineNumber:3,selectionStartColumn:23,selectionStartLineNumber:3,startColumn:23,startLineNumber:3),source:'void+main()+%7B%0A++++double+num1+%3D+1.0%3B%0A++++double+num2+%3D+2.0%3B%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+** float型
+↓2つめの宣言でアドレスが4バイト進んでいるので、float型は4バイトの長さがある。
+
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:20,endLineNumber:3,positionColumn:20,positionLineNumber:3,selectionStartColumn:20,selectionStartLineNumber:3,startColumn:20,startLineNumber:3),source:'void+main()+%7B%0A++++float+num1+%3D+1%3B%0A++++float+num2+%3D+2%3B%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+** char型
+↓2つめの宣言でアドレスが1バイト進んでいるので、char型は1バイトの長さがある。
+
+- 1バイト=8ビット=2^8=256 -> 表現できる値の幅は256。0はじまりなので0~255
+- 2つめの宣言ではオーバーフローしてゼロが入っている
+
+#+caption: char型
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:20,endLineNumber:3,positionColumn:20,positionLineNumber:3,selectionStartColumn:20,selectionStartLineNumber:3,startColumn:20,startLineNumber:3),source:'void+main()+%7B%0A++++char+num1+%3D+255%3B%0A++++char+num2+%3D+256%3B%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+* 関連
+- 具体例: [[id:20231014T125935][KDOC 45: プログラミング言語の内部的な違いをアセンブリから調べる]]。アセンブリを見て確認する具体例
+- 動機: [[id:20240427T182744][KDOC 142: データセグメントの使い分けを試す]]。いくつかの型の値を入れて試してみたときに、そういえば知らなかったと考えた

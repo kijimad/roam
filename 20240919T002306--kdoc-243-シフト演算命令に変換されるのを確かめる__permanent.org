@@ -1,0 +1,35 @@
+:properties:
+:ID: 20240919T002306
+:mtime:    20241103090205
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 243: シフト演算命令に変換されるのを確かめる
+#+date:       [2024-09-19 Thu 00:23]
+#+filetags:   :permanent:
+#+identifier: 20240919T002306
+
+* この文書のステータス
+- 作成
+  - [X] 2024-09-19 貴島
+- レビュー
+  - [X] 2024-10-05 貴島
+
+* 概要
+2の累乗の数の乗算や除算は、シフト演算で高速に行える。コンパイラはコードを判断してシフト演算に変換してくれるというので、確かめた。
+
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:2,endLineNumber:3,positionColumn:2,positionLineNumber:3,selectionStartColumn:2,selectionStartLineNumber:3,startColumn:2,startLineNumber:3),source:'int+main(int+a)+%7B%0A++++return+a+*+16%3B%0A%7D'),l:'5',n:'1',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:cclang1701,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+clang+17.0.1+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+16をかけた場合は ~SHLL~ 命令が確認できる。これは左シフト命令である。
+
+- 0b0001(0d1) -> 0b1000(0d8)
+
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:18,endLineNumber:2,positionColumn:18,positionLineNumber:2,selectionStartColumn:18,selectionStartLineNumber:2,startColumn:18,startLineNumber:2),source:'int+main(int+a)+%7B%0A++++return+a+*+17%3B%0A%7D'),l:'5',n:'1',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:cclang1701,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+clang+17.0.1+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+17をかけた場合は ~IMULL~ 命令が使われているのを確認できる。
+
+* 関連
+- 動機: [[id:20240810T122445][KDOC 217: 『基礎からきっちり覚える 機械語入門』]]。で読んだ内容を確かめた

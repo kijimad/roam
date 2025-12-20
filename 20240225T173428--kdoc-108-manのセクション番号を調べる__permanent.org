@@ -1,0 +1,74 @@
+:properties:
+:ID: 20240225T173428
+:mtime:    20241103085302
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 108: manのセクション番号を調べる
+#+date:       [2024-02-25 Sun 17:34]
+#+filetags:   :permanent:
+#+identifier: 20240225T173428
+
+* この文書のステータス
+- 作成
+  - [X] 2024-02-26 貴島
+- レビュー
+  - [X] 2024-03-17 貴島
+
+* 概要
+[[id:7a81eb7c-8e2b-400a-b01a-8fa597ea527a][Linux]]を理解するためにドキュメントをちゃんと読むようにする。manを読むときに ~(2)~ などと表記されるセクション番号の定義がわからなかったので調べ方を書いておく。
+
+* 調べ方
+
+man自体のドキュメントに書いてある。
+
+#+begin_src shell :results raw
+  man man | head -n 40
+#+end_src
+
+#+RESULTS:
+#+begin_src
+MAN(1)                        Manual pager utils                        MAN(1)
+
+NAME
+       man - an interface to the system reference manuals
+
+SYNOPSIS
+       man [man options] [[section] page ...] ...
+       man -k [apropos options] regexp ...
+       man -K [man options] [section] term ...
+       man -f [whatis options] page ...
+       man -l [man options] file ...
+       man -w|-W [man options] page ...
+
+DESCRIPTION
+       man  is  the system's manual pager.  Each page argument given to man is
+       normally the name of a program, utility or function.  The  manual  page
+       associated with each of these arguments is then found and displayed.  A
+       section, if provided, will direct man to look only in that  section  of
+       the  manual.   The  default action is to search in all of the available
+       sections following a pre-defined order (see DEFAULTS), and to show only
+       the first page found, even if page exists in several sections.
+
+       The table below shows the section numbers of the manual followed by the
+       types of pages they contain.
+
+       1   Executable programs or shell commands
+       2   System calls (functions provided by the kernel)
+       3   Library calls (functions within program libraries)
+       4   Special files (usually found in /dev)
+       5   File formats and conventions, e.g. /etc/passwd
+       6   Games
+       7   Miscellaneous (including  macro  packages  and  conventions),  e.g.
+           man(7), groff(7), man-pages(7)
+       8   System administration commands (usually only for root)
+       9   Kernel routines [Non standard]
+
+       A manual page consists of several sections.
+
+       Conventional  section  names include NAME, SYNOPSIS, CONFIGURATION, DE‐
+       SCRIPTION, OPTIONS,  EXIT STATUS,  RETURN VALUE,  ERRORS,  ENVIRONMENT,
+#+end_src
+
+* 関連
+- 動機: [[id:20240224T025714][KDOC 103: ゆるいインターネット断ちのやり方を考える]]。インターネットを遮断しているので、オフラインで調べられる方法が必要
+- 動機: [[id:20240225T172456][KDOC 107: システムコールをmanで調べる]]。で、manで調べる必要があった。しかしman自体の使い方がよくわからないので調べた
