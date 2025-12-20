@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:00Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 141: Cのポインタ操作をアセンブリで見る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 141: Cのポインタ操作をアセンブリで見る</h1>
+<div id="outline-container-org7eed878" class="outline-2">
+<h2 id="org7eed878"><a href="#org7eed878">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7eed878">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-04-29 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-05-06 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org2e09b5c" class="outline-2">
+<h2 id="org2e09b5c"><a href="#org2e09b5c">概要</a></h2>
+<div class="outline-text-2" id="text-org2e09b5c">
+<p>
+ポインタ型の引数に代入すると、関数をまたいで変更を反映できる(参照渡し)。<a href="20210911104632-c_language.html#ID-656a0aa4-e5d3-416f-82d5-f909558d0639">C言語</a>では返り値を複数返せないので、複数必要なときはこれを使う。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>ポインタ型で反映する例</label><pre class="src src-C"><span class="org-preprocessor">#include</span> <span class="org-string">&lt;stdio.h&gt;</span>
+
+<span class="org-type">void</span> <span class="org-function-name">inc</span>(<span class="org-type">int</span> *<span class="org-variable-name">a</span>) { <span class="org-comment-delimiter">// </span><span class="org-comment">&#12450;&#12489;&#12524;&#12473;&#12434;&#21463;&#12369;&#21462;&#12427;
+</span>  *a = *a+1; <span class="org-comment-delimiter">// </span><span class="org-comment">&#12450;&#12489;&#12524;&#12473;&#12364;&#21442;&#29031;&#12377;&#12427;&#20516;&#12434;&#21453;&#26144;&#12377;&#12427;
+</span>}
+
+<span class="org-type">int</span> <span class="org-function-name">main</span>(<span class="org-type">void</span>){
+  <span class="org-type">int</span> <span class="org-variable-name">a</span> = 0;
+  inc(&amp;a); <span class="org-comment-delimiter">// </span><span class="org-comment">&#12450;&#12489;&#12524;&#12473;&#12434;&#28193;&#12377;
+</span>  inc(&amp;a);
+  printf(<span class="org-string">"%d"</span>,a); <span class="org-comment-delimiter">// </span><span class="org-comment">2
+</span>}
+</pre>
+</div>
+
+<p>
+何が起きているのか、生成されたアセンブリを見て確かめる。
+</p>
+</div>
+</div>
+<div id="outline-container-orge00d86d" class="outline-2">
+<h2 id="orge00d86d"><a href="#orge00d86d">アセンブリで見ると</a></h2>
+<div class="outline-text-2" id="text-orge00d86d">
+<p>
+↓こうなっている。即値の代入とじつはあまり変わらない。スタックに入っている値を使うか、スタックのアドレスを使うかだけの違い。
+</p>
+
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:10,endLineNumber:1,positionColumn:10,positionLineNumber:1,selectionStartColumn:10,selectionStartLineNumber:1,startColumn:10,startLineNumber:1),source:'void+main(void)+%7B%0A+int+val%3B%0A+int+*ptr+%3D+%26val%3B%0A+*ptr+%3D+41%3B%0A%7D'),l:'5',n:'0',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:rv32-cgcctrunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+(32-bits)+gcc+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>説明</label><pre class="src src-asm"><span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;&#26032;&#12375;&#12356;&#12473;&#12479;&#12483;&#12463;&#21106;&#24403;&#12290;sp -&gt; &#12473;&#12479;&#12483;&#12463;&#12398;&#24213;
+</span><span class="org-function-name">addi</span> <span class="org-keyword">sp</span>,sp,-32
+<span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;&#20803;&#12293;&#12398;&#12524;&#12472;&#12473;&#12479;&#12398;&#20516;&#12434;&#12473;&#12479;&#12483;&#12463;&#12395;&#36864;&#36991;&#12377;&#12427;
+</span><span class="org-function-name">sw</span> <span class="org-keyword">ra</span>,28(sp)
+<span class="org-function-name">sw</span> <span class="org-keyword">s0</span>,24(sp)
+<span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;&#36864;&#36991;&#12375;&#12383;&#12398;&#12391;s0&#12434;&#19978;&#26360;&#12365;&#12375;&#12390;&#26032;&#12375;&#12356;&#12473;&#12479;&#12483;&#12463;&#12501;&#12524;&#12540;&#12512;&#12395;&#31227;&#21205;&#12373;&#12379;&#12427;&#12290;s0: &#12473;&#12479;&#12483;&#12463;&#12398;&#19968;&#30058;&#19978;&#12289;&#38283;&#22987;&#12450;&#12489;&#12524;&#12473;
+</span><span class="org-function-name">addi</span> <span class="org-keyword">s0</span>,sp,32
+
+<span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;&#31309;&#12435;&#12384;&#12473;&#12479;&#12483;&#12463;&#12398;&#19968;&#30058;&#19978;&#12398;**&#12450;&#12489;&#12524;&#12473;&#12434;**&#35336;&#31639;&#12375;&#12390;a5&#12395;&#26684;&#32013;
+</span><span class="org-function-name">addi</span> <span class="org-keyword">a5</span>,s0,-24
+<span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;a5(&#12450;&#12489;&#12524;&#12473;&#12364;&#20837;&#12387;&#12390;&#12427;)&#12434;&#12473;&#12479;&#12483;&#12463;&#12395;&#20445;&#23384;
+</span><span class="org-function-name">sw</span> <span class="org-keyword">a5</span>,-20(s0)
+<span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;a5&#12434;&#12473;&#12479;&#12483;&#12463;&#12363;&#12425;&#12525;&#12540;&#12489;(store&#12392;load&#12391;&#12289;&#32080;&#26524;&#12392;&#12375;&#12390;a5&#12398;&#20516;&#12399;&#22793;&#12431;&#12425;&#12394;&#12356;)
+</span><span class="org-function-name">lw</span> <span class="org-keyword">a5</span>,-20(s0)
+<span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;&#21363;&#20516;41&#12434;a4&#12395;&#12525;&#12540;&#12489;
+</span><span class="org-function-name">li</span> <span class="org-keyword">a4</span>,41
+<span class="org-comment-delimiter">// </span><span class="org-comment">&#8595;41&#30058;&#22320;&#12395;a5&#12434;&#20445;&#23384;
+</span><span class="org-function-name">sw</span> <span class="org-keyword">a4</span>,0(a5)
+<span class="org-function-name">nop</span>
+
+<span class="org-comment-delimiter">;; </span><span class="org-comment">&#12524;&#12472;&#12473;&#12479;&#12434;&#20803;&#12395;&#25147;&#12377;
+</span><span class="org-function-name">lw</span> <span class="org-keyword">ra</span>,28(sp)
+<span class="org-function-name">lw</span> <span class="org-keyword">s0</span>,24(sp)
+<span class="org-function-name">addi</span> <span class="org-keyword">sp</span>,sp,32
+<span class="org-comment-delimiter">;; </span><span class="org-comment">&#21628;&#12403;&#20986;&#12375;&#20808;&#12395;&#25147;&#12427;
+</span><span class="org-function-name">jr</span> <span class="org-keyword">ra</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd38cc5f" class="outline-2">
+<h2 id="orgd38cc5f"><a href="#orgd38cc5f">関連</a></h2>
+<div class="outline-text-2" id="text-orgd38cc5f">
+<ul class="org-ul">
+<li>検証: <a href="20240427T113714--kdoc-140-『自作エミュレータで学ぶx86アーキテクチャ』__book.html#ID-20240427T113714">KDOC 140: 『自作エミュレータで学ぶx86アーキテクチャ』</a>。出てきた内容を確かめた</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org9317311" class="outline-2">
+<h2 id="org9317311"><a href="#org9317311">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org9317311">
+<ul class="org-ul">
+<li><a href="./20240429T125828--kdoc-145-goアセンブリの違いを見る__permanent.html">KDOC 145: Goアセンブリの違いを見る</a></li>
+<li><a href="./20240728T215234--kdoc-208-宣言と定義の違いを見る__permanent.html">KDOC 208: 宣言と定義の違いを見る</a></li>
+<li><a href="./20250630T185540--kdoc-411-スタックは積み重ねて取り出して解放する。ではヒープは__permanent.html">KDOC 411: スタックは積み重ねて取り出して解放する。ではヒープは?</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:30:55Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 229: 浮動小数点を手計算する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 229: 浮動小数点を手計算する</h1>
+<div id="outline-container-org1f17abd" class="outline-2">
+<h2 id="org1f17abd"><a href="#org1f17abd">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1f17abd">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-08-27 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-09-03 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org7810eea" class="outline-2">
+<h2 id="org7810eea"><a href="#org7810eea">概要</a></h2>
+<div class="outline-text-2" id="text-org7810eea">
+<p>
+浮動小数点がどのように表現されるのが、わかっていなかった。手で計算して、確かめる。
+</p>
+</div>
+</div>
+<div id="outline-container-org2667b5c" class="outline-2">
+<h2 id="org2667b5c"><a href="#org2667b5c">0d0.5</a></h2>
+<div class="outline-text-2" id="text-org2667b5c">
+<p>
+10進数の0.5を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d0.5
+<ul class="org-ul">
+<li>小数部分</li>
+<li>0b0.101</li>
+<li>0b1.01 (小数点を右へ1つ動かす -1)</li>
+</ul></li>
+<li>数値 = - 1.{仮数部} x 2^{指数部+バイアス}</li>
+<li>- 1.{0} × 2^{-1+127}</li>
+<li>仮数部は常に1.から始まるため、その1は明示的に表示されない</li>
+<li>小数点を動かした数は-0b1。オフセットバイナリで、0b0が0d-127を示すようになっている。正の数を示すには、127を足す必要がある。バイアス0d127(0b0111 1111)を足す。指数部は0b0111 1110となる</li>
+<li>つまり符号は正、指数部は0b0111 1110、仮数部は0となる。</li>
+<li>0 0111 1110 000 0000 0000 0000 0000 0000</li>
+<li>0011 1111 0000 0000 0000 0000 0000 0000</li>
+<li>3    f    0    0    0    0    0    0</li>
+</ul>
+
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,selection:(endColumn:20,endLineNumber:2,positionColumn:20,positionLineNumber:2,selectionStartColumn:20,selectionStartLineNumber:2,startColumn:20,startLineNumber:2),source:'int+main()+%7B%0A++++float+f1+%3D+0.5%3B%0A%7D'),l:'5',n:'1',o:'C+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:cclang_trunk,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:___c,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+clang+(trunk)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+</div>
+</div>
+<div id="outline-container-orga8be09d" class="outline-2">
+<h2 id="orga8be09d"><a href="#orga8be09d">0d1</a></h2>
+<div class="outline-text-2" id="text-orga8be09d">
+<p>
+10進数の1を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d1</li>
+<li>0b1</li>
+<li>0 x 1.{0} x 2^{0+127}</li>
+<li>符号は正で0</li>
+<li>指数部は0 + 0b0111 1111</li>
+<li>仮数部は0</li>
+<li>0 0111 1111 000 0000 0000 0000 0000 0000</li>
+<li>0011 1111 1000 0000 0000 0000 0000 0000</li>
+<li>3    f    8    0    0    0    0    0</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org21a8448" class="outline-2">
+<h2 id="org21a8448"><a href="#org21a8448">0d2</a></h2>
+<div class="outline-text-2" id="text-org21a8448">
+<p>
+10進数の2を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d2</li>
+<li>0b10</li>
+<li>0b1.0 (小数点を左に1つ動かす +1)</li>
+<li>0 x 1.{0} x 2^{1+127}</li>
+<li>符号は正で0</li>
+<li>指数部は1 + 0b0111 1111 = 0b1000 0000</li>
+<li>仮数部は0</li>
+<li>0 1000 0000 000 0000 0000 0000 0000 0000</li>
+<li>0100 0000 0000 0000 0000 0000 0000 0000</li>
+<li>4    0    0    0    0    0    0    0</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org9437fb3" class="outline-2">
+<h2 id="org9437fb3"><a href="#org9437fb3">0d3</a></h2>
+<div class="outline-text-2" id="text-org9437fb3">
+<p>
+10進数の3を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d3</li>
+<li>0b11</li>
+<li>0b1.1 (小数点を左に1つ動かす +1)</li>
+<li>0 x 1.{1} x 2^{1+127}</li>
+<li>符号は正で0</li>
+<li>指数部は1 + 0b0111 1111 = 0b1000 0000</li>
+<li>仮数部は1</li>
+<li>0 1000 0000 100 0000 0000 0000 0000 0000</li>
+<li>0100 0000 0100 0000 0000 0000 0000 0000</li>
+<li>4    0    4    0    0    0    0    0</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org879e150" class="outline-2">
+<h2 id="org879e150"><a href="#org879e150">0d4</a></h2>
+<div class="outline-text-2" id="text-org879e150">
+<p>
+10進数の4を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d4</li>
+<li>0b100</li>
+<li>0b1.00 (小数点を左に2つ動かす +2)</li>
+<li>0 x 1.{0} x 2^{2+127}</li>
+<li>符号は正で0</li>
+<li>指数部は2 + 0b0111 1111 = 0b1000 0001</li>
+<li>仮数部は0</li>
+<li>0 1000 0001 000 0000 0000 0000 0000 0000</li>
+<li>0100 0000 1000 0000 0000 0000 0000 0000</li>
+<li>4    0    8    0    0    0    0    0</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org9ccdd8b" class="outline-2">
+<h2 id="org9ccdd8b"><a href="#org9ccdd8b">0d5</a></h2>
+<div class="outline-text-2" id="text-org9ccdd8b">
+<p>
+10進数の5を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d5</li>
+<li>0b101</li>
+<li>0b1.01 (小数点を左に2つ動かす +2)</li>
+<li>0 x 1.{1} x 2^{2+127}</li>
+<li>符号は正で0</li>
+<li>指数部は2 + 0b0111 1111 = 0b1000 0001</li>
+<li>仮数部は2</li>
+<li>0 1000 0001 010 0000 0000 0000 0000 0000</li>
+<li>0100 0000 1010 0000 0000 0000 0000 0000</li>
+<li>4    0    a    0    0    0    0    0</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org162f2b3" class="outline-2">
+<h2 id="org162f2b3"><a href="#org162f2b3">0d0.25</a></h2>
+<div class="outline-text-2" id="text-org162f2b3">
+<p>
+10進数の0.25を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d0.25
+<ul class="org-ul">
+<li>小数部分</li>
+<li>0b0.11001</li>
+<li>0b1.1001 (小数点を右に1つ動かす -1)</li>
+</ul></li>
+<li>0 x 1.{0} x 2^{-1+127}</li>
+<li>符号は正で0</li>
+<li>指数部は-1 + 0b0111 1111 = 0b0111 1101</li>
+<li>仮数部は0</li>
+<li>0 0111 1101 000 0000 0000 0000 0000 0000</li>
+<li>0011 1110 1000 0000 0000 0000 0000 0000</li>
+<li>3    e    8    0    0    0    0    0</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orge9bc395" class="outline-2">
+<h2 id="orge9bc395"><a href="#orge9bc395">0d1.5</a></h2>
+<div class="outline-text-2" id="text-orge9bc395">
+<p>
+10進数の1.5を浮動小数点で表示する。
+</p>
+
+<ul class="org-ul">
+<li>0d1.5
+<ul class="org-ul">
+<li>整数部分</li>
+<li>0b1</li>
+<li>小数部分</li>
+<li>0b0.101</li>
+<li>合計</li>
+<li>0b1.101 (小数点を動かさない 0)</li>
+</ul></li>
+<li>0 x 1.{4} x 2^{0+127}</li>
+<li>符号は正で0</li>
+<li>指数部は 0 + 0b0111 1111 = 0b0111 1111</li>
+<li>仮数部は0d4(0b100)</li>
+<li>0 0111 1111 100 0000 0000 0000 0000 0000</li>
+<li>0011 1111 1100 0000 0000 0000 0000 0000</li>
+<li>3    f    c    0    0    0    0    0</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org1d8e2a5" class="outline-2">
+<h2 id="org1d8e2a5"><a href="#org1d8e2a5">関連</a></h2>
+<div class="outline-text-2" id="text-org1d8e2a5">
+<ul class="org-ul">
+<li><a href="https://tools.m-bsys.com/calculators/ieee754.php">浮動小数点数内部表現シミュレーター - instant tools</a>
+<ul class="org-ul">
+<li>ビットずつに答え合わせできる。いくつか試してみるとわかりやすい</li>
+</ul></li>
+<li><a href="https://www.macnica.co.jp/business/semiconductor/articles/design/133320/">ビットで表す数字の世界～符号編～ - 半導体事業 - マクニカ</a>
+<ul class="org-ul">
+<li>オフセットバイナリの解説</li>
+</ul></li>
+<li><a href="https://www.macnica.co.jp/en/business/semiconductor/articles/intel/133327/">ビットで表す数字の世界～浮動小数点編～</a>
+<ul class="org-ul">
+<li>手続きのわかりやすい解説</li>
+</ul></li>
+<li>補足: 見返してみると、よくわからない。思い出せない</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org3fc4c05" class="outline-2">
+<h2 id="org3fc4c05"><a href="#org3fc4c05">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org3fc4c05">
+<ul class="org-ul">
+<li><a href="./20240921T111620--kdoc-246-浮動小数点の誤差を体感する__permanent.html">KDOC 246: 浮動小数点の誤差を体感する</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

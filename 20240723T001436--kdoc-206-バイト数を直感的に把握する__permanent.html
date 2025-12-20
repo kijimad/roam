@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:13Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 206: バイト数を直感的に把握する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 206: バイト数を直感的に把握する</h1>
+<div id="outline-container-org90ff32c" class="outline-2">
+<h2 id="org90ff32c"><a href="#org90ff32c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org90ff32c">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-07-30 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-08-01 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orge9e8b6d" class="outline-2">
+<h2 id="orge9e8b6d"><a href="#orge9e8b6d">概要</a></h2>
+<div class="outline-text-2" id="text-orge9e8b6d">
+<p>
+<a href="20240723001705-cpu.html#ID-3f07fe5f-95c8-4824-86ae-3cc616f787d3">CPU</a>まわりの本を読んでいると、よく1バイト分確保して〜という文章が出てくる。そのたびにちょっと考えて進数変換しているので、覚えて感覚でやるようにする。
+</p>
+
+<p>
+1バイト。
+</p>
+
+<ul class="org-ul">
+<li>(2進数) 8桁で1バイト <code>1000 1110</code></li>
+<li>(16進数) 2桁で1バイト <code>8E</code></li>
+<li>ASCIIコードでは1バイトで1文字を表す
+<ul class="org-ul">
+<li>「A」 → <code>41</code> , 「1」 → <code>31</code></li>
+</ul></li>
+</ul>
+
+<p>
+2バイト。
+</p>
+
+<ul class="org-ul">
+<li>(2進数) <code>1001 0000 1000 1110</code></li>
+<li>(16進数) <code>908E</code></li>
+</ul>
+
+<p>
+3バイト。
+</p>
+
+<ul class="org-ul">
+<li>(2進数) <code>1110 0110 1000 0100 1001 1011</code></li>
+<li>(16進数) <code>E6849B</code></li>
+<li>UTF-8エンコードは1〜4バイトの可変長コードである。多くの日本語は3バイトで表現される
+<ul class="org-ul">
+<li>「あ」 → <code>E3 81 82</code> , 「愛」 → <code>E6849B</code></li>
+</ul></li>
+<li>RGBカラーコードは、各色1バイトの合計3バイトで表現する
+<ul class="org-ul">
+<li><code>`FF FF FF</code> (白)</li>
+<li><a href="https://ja.wikipedia.org/wiki/%E3%82%AB%E3%83%A9%E3%83%BC%E3%82%B3%E3%83%BC%E3%83%89">カラーコード - Wikipedia</a></li>
+<li><a href="https://ja.wikipedia.org/wiki/%E3%82%A6%E3%82%A7%E3%83%96%E3%82%AB%E3%83%A9%E3%83%BC">ウェブカラー - Wikipedia</a></li>
+</ul></li>
+</ul>
+
+<p>
+<a href="20240803T161124--kdoc-210-『0と1のコンピュータ世界-バイナリで遊ぼう』__book.html#ID-20240803T161124">KDOC 210: 『0と1のコンピュータ世界 バイナリで遊ぼう!』</a>では、目安となる値を示している。
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-right">16進数表記</td>
+<td class="org-left">サイズ</td>
+<td class="org-left">覚え方</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0100</td>
+<td class="org-left">256バイト</td>
+<td class="org-left">char型の範囲</td>
+</tr>
+
+<tr>
+<td class="org-right">0x1000</td>
+<td class="org-left">4KB</td>
+<td class="org-left">仮想メモリのページサイズ</td>
+</tr>
+
+<tr>
+<td class="org-right">0x10000</td>
+<td class="org-left">64KB</td>
+<td class="org-left">16ビットで64KB</td>
+</tr>
+
+<tr>
+<td class="org-right">0x100000</td>
+<td class="org-left">1MB</td>
+<td class="org-left">フロッピーディスク1枚分</td>
+</tr>
+
+<tr>
+<td class="org-right">0x10000000</td>
+<td class="org-left">256MB</td>
+<td class="org-left">4GBの4分の1のさらに4分の1</td>
+</tr>
+
+<tr>
+<td class="org-right">0xFFFFFFFF</td>
+<td class="org-left">4GB</td>
+<td class="org-left">整数の最大サイズ</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-org54206d5" class="outline-2">
+<h2 id="org54206d5"><a href="#org54206d5">確認方法</a></h2>
+<div class="outline-text-2" id="text-org54206d5">
+<p>
+確かめてみると手っ取り早い。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>調べる方法1(文字列)。-nは末尾に改行を出さないオプション</label><pre class="src src-shell"><span class="org-builtin">echo</span> -n <span class="org-string">"&#24859;"</span> | hexdump -C
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">00000000  e6 84 9b                                          |...|
+00000003
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>調べる方法2(文字列)</label><pre class="src src-shell"><span class="org-builtin">echo</span> -n <span class="org-string">"ABCD"</span> | xxd
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">00000000: 4142 4344                                ABCD
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>調べる方法3(数値)</label><pre class="src src-ruby"><span class="org-keyword">def</span> <span class="org-function-name">conv</span>(target16)
+  <span class="org-builtin">puts</span>(<span class="org-string">"_____________________"</span>)
+  target10 = target16.to_i(16)
+  <span class="org-builtin">printf</span>(<span class="org-string">"16&#36914;&#25968;: </span><span class="org-variable-name">#{target16}</span><span class="org-string">\n"</span>)
+  <span class="org-builtin">printf</span>(<span class="org-string">"10&#36914;&#25968;: %s\n"</span>, target10)
+  <span class="org-builtin">printf</span>(<span class="org-string">" 8&#36914;&#25968;: %s\n"</span>, target10.to_s(8))
+  <span class="org-builtin">printf</span>(<span class="org-string">" 2&#36914;&#25968;: %s\n"</span>, target10.to_s(2))
+  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s bit\n"</span>, target10 * 8)
+  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s byte\n"</span>, target10)
+  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s KB\n"</span>, target10 / 1024.0)
+  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s MB\n"</span>, target10 / 1024.0 / 1024.0)
+  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s GB\n"</span>, target10 / 1024.0 / 1024.0 / 1024.0)
+<span class="org-keyword">end</span>
+conv(<span class="org-string">'100'</span>)
+conv(<span class="org-string">'1000'</span>)
+conv(<span class="org-string">'10000'</span>)
+conv(<span class="org-string">'100000'</span>)
+conv(<span class="org-string">'1000000'</span>)
+conv(<span class="org-string">'10000000'</span>)
+conv(<span class="org-string">'FFFFFFFF'</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">_____________________
+16進数: 100
+10進数: 256
+ 8進数: 400
+ 2進数: 100000000
+サイズ: 2048 bit
+サイズ: 256 byte
+サイズ: 0.25 KB
+サイズ: 0.000244140625 MB
+サイズ: 2.384185791015625e-07 GB
+_____________________
+16進数: 1000
+10進数: 4096
+ 8進数: 10000
+ 2進数: 1000000000000
+サイズ: 32768 bit
+サイズ: 4096 byte
+サイズ: 4.0 KB
+サイズ: 0.00390625 MB
+サイズ: 3.814697265625e-06 GB
+_____________________
+16進数: 10000
+10進数: 65536
+ 8進数: 200000
+ 2進数: 10000000000000000
+サイズ: 524288 bit
+サイズ: 65536 byte
+サイズ: 64.0 KB
+サイズ: 0.0625 MB
+サイズ: 6.103515625e-05 GB
+_____________________
+16進数: 100000
+10進数: 1048576
+ 8進数: 4000000
+ 2進数: 100000000000000000000
+サイズ: 8388608 bit
+サイズ: 1048576 byte
+サイズ: 1024.0 KB
+サイズ: 1.0 MB
+サイズ: 0.0009765625 GB
+_____________________
+16進数: 1000000
+10進数: 16777216
+ 8進数: 100000000
+ 2進数: 1000000000000000000000000
+サイズ: 134217728 bit
+サイズ: 16777216 byte
+サイズ: 16384.0 KB
+サイズ: 16.0 MB
+サイズ: 0.015625 GB
+_____________________
+16進数: 10000000
+10進数: 268435456
+ 8進数: 2000000000
+ 2進数: 10000000000000000000000000000
+サイズ: 2147483648 bit
+サイズ: 268435456 byte
+サイズ: 262144.0 KB
+サイズ: 256.0 MB
+サイズ: 0.25 GB
+_____________________
+16進数: FFFFFFFF
+10進数: 4294967295
+ 8進数: 37777777777
+ 2進数: 11111111111111111111111111111111
+サイズ: 34359738360 bit
+サイズ: 4294967295 byte
+サイズ: 4194303.9990234375 KB
+サイズ: 4095.9999990463257 MB
+サイズ: 3.9999999990686774 GB
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org84f42c3" class="outline-2">
+<h2 id="org84f42c3"><a href="#org84f42c3">関連</a></h2>
+<div class="outline-text-2" id="text-org84f42c3">
+<ul class="org-ul">
+<li>補足: <a href="20240320T195316--kdoc-126-xxdでファイルをバイナリで見る__permanent.html#ID-20240320T195316">KDOC 126: xxdでファイルをバイナリで見る</a>。バイナリを確認する方法</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

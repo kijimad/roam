@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:00Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 185: コンテナの中身をホストマシンにダンプして理解する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 185: コンテナの中身をホストマシンにダンプして理解する</h1>
+<div id="outline-container-org9b7a5d9" class="outline-2">
+<h2 id="org9b7a5d9"><a href="#org9b7a5d9">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org9b7a5d9">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-06-06 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-06-10 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org4b86829" class="outline-2">
+<h2 id="org4b86829"><a href="#org4b86829">概要</a></h2>
+<div class="outline-text-2" id="text-org4b86829">
+<p>
+コンテナのルートファイルシステムを、ホストマシンのファイルシステムにダンプして中身を観察する。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">mkdir -p bundle/rootfs
+docker pull centos:8
+docker run --rm --name tmp -d centos:8 sleep
+docker export tmp | tar -xC bundle/rootfs
+ls -al bundle/rootfs/
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">total 116
+drwxrwxr-x 17 orange orange  4096 Jun  5 21:01 .
+drwxrwxr-x  3 orange orange  4096 Jun  5 21:01 ..
+lrwxrwxrwx  1 orange orange     7 Nov  4  2020 bin -&gt; usr/bin
+drwxr-xr-x  4 orange orange  4096 Jun  5 20:55 dev
+-rwxr-xr-x  1 orange orange     0 Jun  5 20:55 .dockerenv
+drwxr-xr-x 55 orange orange 24576 Jun  5 20:55 etc
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 home
+lrwxrwxrwx  1 orange orange     7 Nov  4  2020 lib -&gt; usr/lib
+lrwxrwxrwx  1 orange orange     9 Nov  4  2020 lib64 -&gt; usr/lib64
+drwx------  2 orange orange  4096 Sep 15  2021 lost+found
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 media
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 mnt
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 opt
+drwxr-xr-x  2 orange orange  4096 Sep 15  2021 proc
+dr-xr-x---  2 orange orange  4096 Sep 15  2021 root
+drwxr-xr-x 11 orange orange  4096 Sep 15  2021 run
+lrwxrwxrwx  1 orange orange     8 Nov  4  2020 sbin -&gt; usr/sbin
+drwxr-xr-x  2 orange orange  4096 Nov  4  2020 srv
+drwxr-xr-x  2 orange orange  4096 Sep 15  2021 sys
+drwxrwxr-x  7 orange orange  4096 Sep 15  2021 tmp
+drwxr-xr-x 12 orange orange  4096 Sep 15  2021 usr
+drwxr-xr-x 20 orange orange  4096 Sep 15  2021 var
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>後片付け</label><pre class="src src-shell">docker stop tmp
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb50915b" class="outline-2">
+<h2 id="orgb50915b"><a href="#orgb50915b">関連</a></h2>
+<div class="outline-text-2" id="text-orgb50915b">
+<ul class="org-ul">
+<li>参照: <a href="20240605T103458--kdoc-184-『イラストでわかるdockerとkubernetes』__book.html#ID-20240605T103458">KDOC 184: 『イラストでわかるDockerとKubernetes』</a>で紹介されていた方法</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org344810e" class="outline-2">
+<h2 id="org344810e"><a href="#org344810e">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org344810e">
+<ul class="org-ul">
+<li><a href="./20240605T211653--kdoc-186-コンテナ実行環境の設定ファイルを見る__permanent.html">KDOC 186: コンテナ実行環境の設定ファイルを見る</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

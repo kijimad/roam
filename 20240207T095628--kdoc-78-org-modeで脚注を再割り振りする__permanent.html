@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:06Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 78: org-modeで脚注を再割り振りする</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 78: org-modeで脚注を再割り振りする</h1>
+<div id="outline-container-org640b4af" class="outline-2">
+<h2 id="org640b4af"><a href="#org640b4af">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org640b4af">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-02-07 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-02-08 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org1ca48be" class="outline-2">
+<h2 id="org1ca48be"><a href="#org1ca48be">概要</a></h2>
+<div class="outline-text-2" id="text-org1ca48be">
+<p>
+<a href="20210907012153-org_mode.html#ID-7e85e3f3-a6b9-447e-9826-307a3618dac8">org-mode</a>では脚注を使える。あとから脚注を追加して、番号が増減したときに自動で並び替える方法をまとめる。
+</p>
+</div>
+</div>
+<div id="outline-container-org771742f" class="outline-2">
+<h2 id="org771742f"><a href="#org771742f">並び替え方</a></h2>
+<div class="outline-text-2" id="text-org771742f">
+<p>
+<code>org-footnote-renumber-fn:N</code> を使って自動で並び替えられる。ユースケースを示す。
+</p>
+
+<p>
+orgドキュメントで、このような脚注になっているとする。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>既存の状態</label><pre class="src src-nil">ここに脚注a[fn:1]。
+ここに脚注b[fn:2]。
+
+* FootNotes
+[fn:1]aの定義。
+[fn:2]bの定義。
+</pre>
+</div>
+
+<p>
+先頭に、脚注を追加したいとすると、番号がかぶってしまうのでずらさなければならない。面倒である。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>番号がかぶる</label><pre class="src src-nil">ここに追加[fn:1] ← かぶってしまう
+ここに脚注a[fn:1]。
+ここに脚注b[fn:2]。
+
+* FootNotes
+[fn:1]aの定義。
+[fn:2]bの定義。
+</pre>
+</div>
+
+<p>
+そこで番号を前後する形で一時的に新しく番号をふる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>前後する番号をふる</label><pre class="src src-nil">ここに追加[fn:3] ← 新しく番号をふる
+ここに脚注a[fn:1]。
+ここに脚注b[fn:2]。
+
+* FootNotes
+[fn:1]aの定義。
+[fn:2]bの定義。
+[fn:3]追加部分の定義。
+</pre>
+</div>
+
+<p>
+そして、 <code>org-footnote-renumber-fn:N</code> を実行する。すると対応関係を維持しつつ、脚注が登場した順番に番号が割り振られ、定義が並び替えられる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>正しい形になる</label><pre class="src src-nil">ここに追加[fn:1]
+ここに脚注a[fn:2]。
+ここに脚注b[fn:3]。
+
+* FootNotes
+[fn:1]追加部分の定義。
+[fn:2]aの定義。
+[fn:2]bの定義。
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgba5fdee" class="outline-2">
+<h2 id="orgba5fdee"><a href="#orgba5fdee">関連</a></h2>
+<div class="outline-text-2" id="text-orgba5fdee">
+<ul class="org-ul">
+<li>動機: <a href="20240204T105547--kdoc-71-kdocエントリの書き方を考える__essay.html#ID-20240204T105547">KDOC 71: KDOCエントリの書き方を考える</a>。推敲の途中で脚注を追加したり削除するのがよくあるので調べた</li>
+<li>類推: <a href="20240206T010954--kdoc-72-org-modeのhtmlエクスポート時に結果だけを表示する__permanent.html#ID-20240206T010954">KDOC 72: org-modeのHTMLエクスポート時に結果だけを表示する</a>。org-modeを使い込むうえでのハックについて</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

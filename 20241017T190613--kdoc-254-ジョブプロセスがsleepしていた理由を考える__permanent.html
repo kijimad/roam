@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:13Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 254: ジョブプロセスがSleepしていた理由を考える</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 254: ジョブプロセスがSleepしていた理由を考える</h1>
+<div id="outline-container-org85ff1c2" class="outline-2">
+<h2 id="org85ff1c2"><a href="#org85ff1c2">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org85ff1c2">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-10-17 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-10-28 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgf28d8af" class="outline-2">
+<h2 id="orgf28d8af"><a href="#orgf28d8af">概要</a></h2>
+<div class="outline-text-2" id="text-orgf28d8af">
+<p>
+数時間かかる機械学習の推論処理をブラウザからキック + 進捗ログを確認できるようにする、ということをした。ジョブワーカーを起動して非同期処理をできるようにしたのだが、そこで不可解な事象にあたって悩んだので書いていく。ちゃんとわかっている人であれば秒で解決できただろう。
+</p>
+
+<p>
+前提。
+</p>
+
+<ul class="org-ul">
+<li>タスクのステータス(Running, Success, Failed, &#x2026;)はFlowerで確認できる</li>
+<li>ワーカーはDockerコンテナ上で動いている</li>
+</ul>
+
+<p>
+事象。
+</p>
+
+<ul class="org-ul">
+<li>タスクが永遠にRunningのままで、 終了ステータスにならない。ログを見ると同じ箇所で進まなくなっている
+<ul class="org-ul">
+<li>調べると、タスクプロセスがスリープステータスになっていた。終了はしていない</li>
+<li>スリープだけあって、CPU使用率はほぼ0%に近い。いっぽうメモリは率が高いままになっている</li>
+<li>スリープになったプロセスを再開させても、すぐスリープに戻る</li>
+<li>システムログにめぼしいメッセージは出ていない</li>
+<li>マシンリソースには余裕がある</li>
+</ul></li>
+<li>特定の入力データだけで起こる。データサイズに違いはない</li>
+<li>直にシェルから実行すると成功する。ジョブワーカー経由で実行すると失敗する</li>
+<li>straceで該当プロセスのシステムコールをトレースしてみると、最後に実行されているのは <code>write(2, "Warning: ...")</code> であった。プロセスを再開させて(すぐ終了する)トレースしても、最後に <code>write(2, "Warning: ...")</code> が実行されていた。</li>
+</ul>
+
+<p>
+原因。
+</p>
+
+<p>
+結論としては、タスク内で実行しているサブプロセスで標準エラー出力を取り出せておらず、標準エラー出力が詰まっていた<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>ためだった。詰まった結果、プロセスがスリープしていた。
+</p>
+
+<ul class="org-ul">
+<li>うまくいかない入力データでは、実行の過程でWarningが大量に出ており、このWarningは標準エラー出力に出されていた</li>
+<li>うまくいく入力データでは、Warningはあまり出ていない</li>
+</ul>
+
+<p>
+Warningは実行終了時に、まとめてログに書き込まれていた。標準エラー出力に書き込まれたそのタイミングでログに記録されるのではなく、終了時に標準エラー出力がまとめて書き込まれていた。推論コードはあまり見ていないので、標準エラー出力が最後にまとめて出ているのがおかしいことに気づかなかった。
+</p>
+
+<p>
+シェルで実行するときは標準エラー出力が即時に取り出される。そのためエラーが起きない。ジョブワーカー経由では、エラー出力を取り出せていなかったために、貯まってしまうようになっていた。
+</p>
+</div>
+</div>
+<div id="outline-container-orgbddc437" class="outline-2">
+<h2 id="orgbddc437"><a href="#orgbddc437">関連</a></h2>
+<div class="outline-text-2" id="text-orgbddc437">
+<p>
+なし。
+</p>
+</div>
+</div>
+<div id="outline-container-org57b8773" class="outline-2">
+<h2 id="org57b8773"><a href="#org57b8773">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org57b8773">
+<ul class="org-ul">
+<li><a href="./20241102T103338--kdoc-260-プロセスがsleepになるのを再現する__permanent.html">KDOC 260: プロセスがSleepになるのを再現する</a></li>
+<li><a href="./20241109T134521--kdoc-278-パイプの詰まりを再現する__permanent.html">KDOC 278: パイプの詰まりを再現する</a></li>
+</ul>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+ざっくりした表現なのはわかっていないためだ。文書やコードから挙動を理解したわけではなく、動作から推理したもので、確かではない。
+</p></div></div>
+
+
+</div>
+</div></div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

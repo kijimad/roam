@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:32:12Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 145: Goアセンブリの違いを見る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 145: Goアセンブリの違いを見る</h1>
+<div id="outline-container-org9a7e50f" class="outline-2">
+<h2 id="org9a7e50f"><a href="#org9a7e50f">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org9a7e50f">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-05-01 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-05-06 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orged4c0f6" class="outline-2">
+<h2 id="orged4c0f6"><a href="#orged4c0f6">概要</a></h2>
+<div class="outline-text-2" id="text-orged4c0f6">
+<p>
+Cが出力するアセンブリはだいたいわかってきた。自信がついてきたので、以前全然わからなかった<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>アセンブリも読んでみたところ、ぜんぜん読めなかった。違うと気づいた部分をまとめる。疑問点のメモで、とくに解決はしない。
+</p>
+</div>
+</div>
+<div id="outline-container-orge97ca5e" class="outline-2">
+<h2 id="orge97ca5e"><a href="#orge97ca5e">違い</a></h2>
+<div class="outline-text-2" id="text-orge97ca5e">
+<p>
+少なくとも、試したコードから見える違い。
+</p>
+
+<p>
+↓Goの、RISC-V向けアセンブリ。
+</p>
+
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:19,endLineNumber:5,positionColumn:19,positionLineNumber:5,selectionStartColumn:19,selectionStartLineNumber:5,startColumn:19,startLineNumber:5),source:'package+main%0A%0Afunc+Hello()+int+%7B%0A++++a+:%3D+1%0A++++return+a+*+222%0A%7D%0A%0Afunc+main()+%7B%7D%0A'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:riscv64_gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+RISC-V+64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+
+<ul class="org-ul">
+<li>命令が大文字</li>
+<li>見慣れない中点記号</li>
+<li>ラベル(<code>main:</code> みたいな)がない</li>
+<li><code>LEAF|NOFRAME|ABIInternal</code> といった謎の文字がつく</li>
+<li><code>FUNCDATA</code> の行は謎</li>
+<li><code>$0-8</code> は引数のようだ</li>
+<li>関数は <code>TEXT</code>, <code>FUNCDATA</code> で始まる形に置き換えられる</li>
+<li>レジスタは <code>X10</code>, <code>X0</code>, <code>X1</code> とか。伝統的なレジスタ名は出てこない</li>
+<li>このコード例だからだろうが、計算結果しかアセンブリに現れない。乗算命令 <code>mul</code> は出てこない。先に計算してそう</li>
+<li>馴染みのあるのは <code>MOV</code> くらい</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org382fc96" class="outline-2">
+<h2 id="org382fc96"><a href="#org382fc96">関連</a></h2>
+<div class="outline-text-2" id="text-org382fc96">
+<ul class="org-ul">
+<li>類推: <a href="20240427T120833--kdoc-141-cのポインタ操作をアセンブリで見る__permanent.html#ID-20240427T120833">KDOC 141: Cのポインタ操作をアセンブリで見る</a>。アセンブリで見るつながり</li>
+<li>未解決: Goアセンブリの読み方</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orge8013ab" class="outline-2">
+<h2 id="orge8013ab"><a href="#orge8013ab">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orge8013ab">
+<ul class="org-ul">
+<li><a href="./20240501T161813--kdoc-151-goコンパイラの定数式の埋め込みをみる__permanent.html">KDOC 151: Goコンパイラの定数式の埋め込みをみる</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

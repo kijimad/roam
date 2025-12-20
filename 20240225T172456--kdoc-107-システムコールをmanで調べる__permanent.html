@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:01Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 107: システムコールをmanで調べる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 107: システムコールをmanで調べる</h1>
+<div id="outline-container-orge42f50e" class="outline-2">
+<h2 id="orge42f50e"><a href="#orge42f50e">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge42f50e">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-02-26 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-03-17 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orga721595" class="outline-2">
+<h2 id="orga721595"><a href="#orga721595">概要</a></h2>
+<div class="outline-text-2" id="text-orga721595">
+<p>
+システムプログラミングを理解していくうえで、システムコールがどういったものかを理解しようとしている。調べる方法を書く。
+</p>
+</div>
+</div>
+<div id="outline-container-org8d583a8" class="outline-2">
+<h2 id="org8d583a8"><a href="#org8d583a8">調べる方法</a></h2>
+<div class="outline-text-2" id="text-org8d583a8">
+<p>
+セクション番号を調べる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>セクション番号を出したあと、絞り込む</label><pre class="src src-shell">man -k read | grep <span class="org-string">"2"</span> | head -n 30
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>セクション番号2がシステムコール</label><pre class="src src-nil">_llseek (2)          - reposition read/write file offset
+_sysctl (2)          - read/write system parameters
+arch_prctl (2)       - set architecture-specific thread state
+capget (2)           - set/get capabilities of thread(s)
+capset (2)           - set/get capabilities of thread(s)
+exit_group (2)       - exit all threads in a process
+file2brl (1)         - Translate an xml or a text file into an embosser-ready...
+get_mempolicy (2)    - retrieve NUMA memory policy for a thread
+get_thread_area (2)  - manipulate thread-local storage information
+getcpu (2)           - determine CPU and NUMA node on which the calling threa...
+gettid (2)           - get thread identification
+io_getevents (2)     - read asynchronous I/O events from the completion queue
+llseek (2)           - reposition read/write file offset
+lseek (2)            - reposition read/write file offset
+membarrier (2)       - issue memory barriers on a set of threads
+pciconfig_read (2)   - pci device information handling
+prctl (2)            - operations on a process or thread
+pread (2)            - read from or write to a file descriptor at a given offset
+pread64 (2)          - read from or write to a file descriptor at a given offset
+preadv (2)           - read or write data into multiple buffers
+preadv2 (2)          - read or write data into multiple buffers
+process_vm_readv (2) - transfer data between process address spaces
+pwrite (2)           - read from or write to a file descriptor at a given offset
+pwrite64 (2)         - read from or write to a file descriptor at a given offset
+pwritev (2)          - read or write data into multiple buffers
+pwritev2 (2)         - read or write data into multiple buffers
+read (2)             - read from a file descriptor
+readahead (2)        - initiate file readahead into page cache
+readdir (2)          - read directory entry
+readlink (2)         - read value of a symbolic link
+</pre>
+</div>
+
+<p>
+関数名のあとのカッコの番号がセクション番号。セクション番号1は実行可能コマンド。セクション番号2であればシステムコール。
+</p>
+
+<p>
+セクション番号によってシステムコールを特定できたら、該当ページを見る。↓readの例。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>readシステムコール(2) read</label><pre class="src src-shell">man -a read | head -n 20
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">READ(2)                    Linux Programmer's Manual                   READ(2)
+
+NAME
+       read - read from a file descriptor
+
+SYNOPSIS
+       #include &lt;unistd.h&gt;
+
+       ssize_t read(int fd, void *buf, size_t count);
+
+DESCRIPTION
+       read()  attempts to read up to count bytes from file descriptor fd into
+       the buffer starting at buf.
+
+       On files that support seeking, the read operation commences at the file
+       offset, and the file offset is incremented by the number of bytes read.
+       If the file offset is at or past the end of file, no  bytes  are  read,
+       and read() returns zero.
+
+       If count is zero, read() may detect the errors described below.  In the
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org950cc15" class="outline-2">
+<h2 id="org950cc15"><a href="#org950cc15">関連</a></h2>
+<div class="outline-text-2" id="text-org950cc15">
+<ul class="org-ul">
+<li>動機: <a href="20240105T215847--kdoc-63-『私はどのようにしてlinuxカーネルを学んだか』__book.html#ID-20240105T215847">KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』</a>。まずシステムコールと関数を区別をつけられるようにしようと考えた</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org5082114" class="outline-2">
+<h2 id="org5082114"><a href="#org5082114">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org5082114">
+<ul class="org-ul">
+<li><a href="./20240225T173428--kdoc-108-manのセクション番号を調べる__permanent.html">KDOC 108: manのセクション番号を調べる</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

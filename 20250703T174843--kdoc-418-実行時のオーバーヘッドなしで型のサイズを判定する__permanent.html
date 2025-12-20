@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:30:53Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 418: 実行時のオーバーヘッドなしで型のサイズを判定する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 418: 実行時のオーバーヘッドなしで型のサイズを判定する</h1>
+<div id="outline-container-org7a1006a" class="outline-2">
+<h2 id="org7a1006a"><a href="#org7a1006a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7a1006a">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-07-24 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-07-30 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org10d63ac" class="outline-2">
+<h2 id="org10d63ac"><a href="#org10d63ac">概要</a></h2>
+<div class="outline-text-2" id="text-org10d63ac">
+<p>
+CPUアーキテクチャによって、型のサイズは異なることがある。実行時のオーバーヘッドなしで判定しているのをGo言語自体のソースコードで見かけた。
+</p>
+
+<p>
+constなのでコンパイル時に、ビルド成果物へ値が埋め込まれる。実行時のオーバーヘッドがない。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>uint型のビットサイズを判定する</label><pre class="src src-git-permalink">https://github.com/golang/go/blob/0f8ab2db177baee7b04182f5641693df3b212aa9/src/math/bits/bits.go#L17
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">const uintSize = 32 &lt;&lt; (^uint(0) &gt;&gt; 63) // 32 or 64
+</pre>
+</div>
+
+<p>
+ビット演算に慣れてないので、一瞬でわからない。確認する。
+</p>
+
+<ul class="org-ul">
+<li><code>^</code> でビット反転する</li>
+<li>&gt;&gt; で右ビット演算する</li>
+<li>&lt;&lt; で左ビット演算する</li>
+</ul>
+
+<p>
+中心になるアイデアは、すべてのビットに1が立つとビットサイズの違いが現れるということだ。分解して見る。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>それぞれ見る(64bitアーキテクチャで実行した)</label><pre class="src src-go">import "fmt"
+func main() {
+  fmt.Printf("%b\n", uint(0))
+  fmt.Printf("%b\n", ^uint(0))
+
+  // ^uint(0) &gt;&gt; 63 の結果、32bit環境では 0 に、64bit環境では 1 になる
+  fmt.Printf("%d\n", 32 &lt;&lt; 0) // 移動しないので32のまま
+  fmt.Printf("%d\n", 32 &lt;&lt; 1) // 1だけ左シフトする。つまり32(2の5乗)から64(2の6乗)になる
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">0
+1111111111111111111111111111111111111111111111111111111111111111
+32
+64
+</pre>
+</div>
+
+<p>
+ビットシフト演算子の両辺どちらが移動量かわからなくなるので確認する。移動元、オペレータ、移動量の位置関係は同じで、矢印の向きがそのまま移動の向きになっている。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-go">import "fmt"
+func main() {
+  fmt.Printf("%b\n", 0b0010 &lt;&lt; 1)
+  fmt.Printf("%b\n", 0b0010 &gt;&gt; 1)
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">100
+1
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org3a051de" class="outline-2">
+<h2 id="org3a051de"><a href="#org3a051de">関連</a></h2>
+<div class="outline-text-2" id="text-org3a051de">
+<ul class="org-ul">
+<li>類推: 同様に実行時のオーバーヘッドがない系Tipsを書く</li>
+<li>類推: ビット演算ハックを書く</li>
+<li>疑問: 処理系が管理するそういう変数から取れないのだろうか</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:30:52Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 214: テンソルを確認する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 214: テンソルを確認する</h1>
+<div id="outline-container-org8061d79" class="outline-2">
+<h2 id="org8061d79"><a href="#org8061d79">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org8061d79">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-08-08 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-08-25 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgc3896fb" class="outline-2">
+<h2 id="orgc3896fb"><a href="#orgc3896fb">概要</a></h2>
+<div class="outline-text-2" id="text-orgc3896fb">
+<p>
+機械学習に不慣れな人がまずやるべきは各ステップでのテンソルの把握、だと考えた。
+</p>
+</div>
+</div>
+<div id="outline-container-org7459a1b" class="outline-2">
+<h2 id="org7459a1b"><a href="#org7459a1b">テンソル</a></h2>
+<div class="outline-text-2" id="text-org7459a1b">
+<p>
+慣れない機械学習に取り組んでいる。学習がうまくできてない、ということが何回かあった。動いてはいるのだが、数値がおかしい。エラーが出るわけではないので、そもそもおかしいか判断するのが難しいし、直す箇所を見つけるのも一苦労だ。
+</p>
+
+<p>
+知見のある人に聞いて解決するうち、よく引っかかるポイントが少しわかってきた。
+</p>
+
+<p>
+よく間違っていたのは、テンソルだった。特にチャンネル数の異なる画像やTiff画像をテンソルにするとき正しく扱えていなかった。熟達者がいうままにテンソル形状や型、そして値を確認することで、誤りに気づけた。
+</p>
+</div>
+</div>
+<div id="outline-container-org812c4d8" class="outline-2">
+<h2 id="org812c4d8"><a href="#org812c4d8">違い</a></h2>
+<div class="outline-text-2" id="text-org812c4d8">
+<p>
+Webサービスを作るのと機械学習とでもっとも異なるのは、エラーが出るかだ。次点に、扱うデータ形式の広さと量が異なる。
+</p>
+
+<ul class="org-ul">
+<li>データに起因する挙動の違いが起きやすい。データ形式を正しく理解していないと無意味な学習になる</li>
+<li>データの多様性を正しく理解していないと特定のデータだけ処理がおかしくなる</li>
+</ul>
+
+<p>
+コンピュータのバックグラウンドを持たない人が、それらをすぐ理解できるようになる近道はわからない。確かな方法は、1つずつ解像度の高い方法で確認して確かめることだ。
+</p>
+
+<p>
+例えば、このようなスクリプトでテンソルを確認する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>テンソルを確認する</label><pre class="src src-python"><span class="org-keyword">def</span> <span class="org-function-name">print_tensor_info</span>(tensor: torch.Tensor, name: <span class="org-builtin">str</span>) <span class="org-operator">-&gt;</span> <span class="org-constant">None</span>:
+    <span class="org-builtin">print</span>(
+        f<span class="org-string">"</span>{name}<span class="org-constant">\t</span><span class="org-string">- shape: </span>{tensor.shape}<span class="org-constant">\t</span><span class="org-string">, dtype: </span>{tensor.dtype}<span class="org-constant">\t</span><span class="org-string">, min: </span>{tensor.<span class="org-builtin">min</span>().item()}<span class="org-string">, max: </span>{tensor.<span class="org-builtin">max</span>().item()}<span class="org-string">"</span>
+    )
+</pre>
+</div>
+
+<p>
+重要な点は、値の範囲を確認していることだ。これがとてもわかりやすく感じる。単純にテンソルをプリントすると、値の量が多すぎて見にくく、把握しにくい。
+</p>
+
+<p>
+これを使って、データの「境目」でチェックを行って何が起きているかを調べる。
+</p>
+
+<ul class="org-ul">
+<li>入力データ</li>
+<li>教師データ</li>
+<li>正規化した後のデータ</li>
+<li>予測テンソル</li>
+<li>活性化関数を適用したテンソル</li>
+<li>損失関数を適用したテンソル</li>
+</ul>
+
+<p>
+型だけでなく値を具体的に知ることで、思い込みからくるミスを防ぎやすい。なによりテンソルがより身近になり、動きをイメージできるようになったように思える。
+</p>
+</div>
+</div>
+<div id="outline-container-orgc2cbe66" class="outline-2">
+<h2 id="orgc2cbe66"><a href="#orgc2cbe66">関連</a></h2>
+<div class="outline-text-2" id="text-orgc2cbe66">
+<ul class="org-ul">
+<li>類推: <a href="20240207T092747--kdoc-77-検証する方法があると理解が進む__essay.html#ID-20240207T092747">KDOC 77: 検証する方法があると理解が進む</a>。検証する方法で理解が進むという点が共通している</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

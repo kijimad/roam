@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:05Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 402: Goの識別子の境界を探る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 402: Goの識別子の境界を探る</h1>
+<div id="outline-container-org6594585" class="outline-2">
+<h2 id="org6594585"><a href="#org6594585">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org6594585">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-06-21 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-06-29 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgdf41094" class="outline-2">
+<h2 id="orgdf41094"><a href="#orgdf41094">概要</a></h2>
+<div class="outline-text-2" id="text-orgdf41094">
+<p>
+多くの現代的なプログラミング言語では識別子にUnicodeの文字(コードポイント)を使えるということを知っていたが、ちゃんとGoの仕様を調べたことはなかった。確認する。
+</p>
+
+<p>
+最初に、何も調べずに実行してみて確かめてみる。違和感がすごいが、英語ネイティブが見ているのはこういう景色なのだろう。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>すべて正しいシンタックス。ビルド、実行できる</label><pre class="src src-go">import "fmt"
+func main() {
+        // 変数名に日本語が使える
+        あ := "a"
+        fmt.Println(あ)
+
+        // 関数名に日本語が使える
+        漢字()
+
+        // 型名に日本語が使える
+        type 地名 struct {}
+        var 江戸川橋 地名
+        fmt.Println(江戸川橋)
+}
+
+func 漢字() {}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">a
+{}
+</pre>
+</div>
+
+<p>
+調べてみる。
+</p>
+
+<p>
+<a href="https://go.dev/ref/spec#letter">言語仕様書</a>によると、識別子(<code>identifier</code>)の定義はこうだ。出てきた <code>letter</code>, <code>unicode_letter</code> も辿って調べた。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>identifierの定義</label><pre class="src src-code">identifier = letter { letter | unicode_digit } .
+letter     = unicode_letter | "_" .
+unicode_letter = /* a Unicode code point categorized as "Letter" */ .
+</pre>
+</div>
+
+<p>
+ここからわかること、考察。
+</p>
+
+<ul class="org-ul">
+<li>Unicodeにはカテゴリという概念がある。letter(文字), mark(結合記号), number(数字), punctuation(句読点), &#x2026;
+<ul class="org-ul">
+<li>結合記号はアクセント記号のように、ほかの文字と組み合わせて使う記号のことである</li>
+<li>たとえば漢字はletterのサブカテゴリotherに属する</li>
+</ul></li>
+<li>識別子の先頭にletterカテゴリの文字があれば、あとはなんでもいい。逆にいえば、結合記号、数字、句読点、&#x2026;から開始できない</li>
+<li>アンダースコア <code>_</code> は句読点カテゴリの文字である。例外的にletterとして許容されている
+<ul class="org-ul">
+<li>自然に使っていて、全く意識してなかった</li>
+</ul></li>
+</ul>
+
+<p>
+以上から、無効なパターンを試した<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>結合記号、数字、句読点、&#x2026;から開始できない</label><pre class="src src-shell"><span class="org-variable-name">tmpfile</span>=$(mktemp /tmp/tmpgo.XXXXXX.go)
+
+cat &gt; $<span class="org-variable-name">tmpfile</span> &lt;&lt;EOF<span class="org-sh-heredoc">
+package main
+
+func main() {
+  // &#20808;&#38957;&#12398;&#12450;&#12463;&#12475;&#12531;&#12488;&#35352;&#21495;&#12399;&#19981;&#21487;
+  &#9676;&#768; := "&#12354;"
+  print(&#9676;&#768;)
+
+  // &#20808;&#38957;&#12398;&#25968;&#23383;&#12399;&#19981;&#21487;
+  &#65305; := "&#12354;"
+  print(&#65305;)
+
+  // &#20808;&#38957;&#12398;&#28450;&#25968;&#23383;&#12399;letter&#25201;&#12356;&#12394;&#12398;&#12391;&#21839;&#38988;&#12394;&#12356;
+  &#20061; := "&#12354;"
+  print(&#20061;)
+
+  // &#20808;&#38957;&#12398;&#21477;&#35501;&#28857;&#12399;&#19981;&#21487;
+  &#12289; := "&#12354;"
+  print(&#12289;)
+
+  // &#20808;&#38957;&#12398;&#12471;&#12531;&#12508;&#12523;&#12399;&#19981;&#21487;
+  &#128077; := "&#12354;"
+  print(&#128077;)
+}
+EOF
+</span>
+go run $<span class="org-variable-name">tmpfile</span> 2&gt;&amp;1
+rm $<span class="org-variable-name">tmpfile</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">/tmp/tmpgo.FO1KQz.go:5:3: invalid character U+25CC '◌' in identifier
+/tmp/tmpgo.FO1KQz.go:5:6: invalid character U+0300 '̀' in identifier
+/tmp/tmpgo.FO1KQz.go:6:9: invalid character U+25CC '◌' in identifier
+/tmp/tmpgo.FO1KQz.go:6:12: invalid character U+0300 '̀' in identifier
+/tmp/tmpgo.FO1KQz.go:9:3: identifier cannot begin with digit U+FF19 '９'
+/tmp/tmpgo.FO1KQz.go:10:9: identifier cannot begin with digit U+FF19 '９'
+/tmp/tmpgo.FO1KQz.go:17:3: invalid character U+3001 '、' in identifier
+/tmp/tmpgo.FO1KQz.go:18:9: invalid character U+3001 '、' in identifier
+/tmp/tmpgo.FO1KQz.go:21:3: invalid character U+1F44D '👍' in identifier
+/tmp/tmpgo.FO1KQz.go:22:9: invalid character U+1F44D '👍' in identifier
+/tmp/tmpgo.FO1KQz.go:22:9: too many errors
+</pre>
+</div>
+
+<p>
+調べる前の認識は、正確ではなかったのがわかった。
+</p>
+</div>
+</div>
+<div id="outline-container-org5862e2a" class="outline-2">
+<h2 id="org5862e2a"><a href="#org5862e2a">関連</a></h2>
+<div class="outline-text-2" id="text-org5862e2a">
+<ul class="org-ul">
+<li>類推: <a href="20250603T215002--kdoc-381-識別子の先頭に数値が使えないのは区別がつかなくなるから__permanent.html#ID-20250603T215002">KDOC 381: 識別子の先頭に数値が使えないのは区別がつかなくなるから</a>。識別子制限の理由の1つ</li>
+<li>参照: <a href="https://en.wikipedia.org/wiki/Unicode_character_property">Unicode character property - Wikipedia</a>。カテゴリ表を参考にした</li>
+<li>参照: <a href="https://go.dev/ref/spec#letter">The Go Programming Language Specification</a>。Goの言語仕様書</li>
+</ul>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">
+org-babelで標準エラーを出すためシェルスクリプトから実行している。
+</p></div></div>
+
+
+</div>
+</div></div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

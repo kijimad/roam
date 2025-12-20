@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:16Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 365: toolchainを実際に試す</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 365: toolchainを実際に試す</h1>
+<div id="outline-container-orgbec7bd8" class="outline-2">
+<h2 id="orgbec7bd8"><a href="#orgbec7bd8">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgbec7bd8">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-05-05 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-05-07 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org27ab7d9" class="outline-2">
+<h2 id="org27ab7d9"><a href="#org27ab7d9">概要</a></h2>
+<div class="outline-text-2" id="text-org27ab7d9">
+<p>
+Go言語のtoolchainで指定バージョンがダウンロードされるのを試す。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>go.mod</label><pre class="src src-code">module playground/at-2025-05-03-083600
+
+go 1.21.1
+
+toolchain go1.23.1
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>実行に使うGoのバージョンが古くないと試せないので、少し古めのGoバージョンの環境を用意する(現時点の最新はgo1.24.2)。</label><pre class="src src-shell">docker run --rm -it -v $<span class="org-variable-name">PWD</span>:/work -w /work golang:1.21 /bin/sh
+<span class="org-comment-delimiter"># </span><span class="org-comment">&#12371;&#12398;&#12452;&#12513;&#12540;&#12472;&#12391;&#12399;&#12289;&#12487;&#12501;&#12457;&#12523;&#12488;&#12391;GOTOOLCHAIN&#12364;local&#12395;&#12394;&#12387;&#12390;&#12356;&#12427;
+</span>$ go env GOTOOLCHAIN
+local
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>GOTOOLCHAINがlocalだと、go.modに書いてあるバージョンは無視され、ローカルのGoのバージョンが使われる</label><pre class="src src-shell">$ go version
+go version go1.21.13 linux/amd64
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>GOTOOLCHAINをautoにすると、toolchainで指定したバージョンがインストールされた</label><pre class="src src-shell">$ <span class="org-variable-name">GOTOOLCHAIN</span>=auto
+$ go version
+go: downloading go1.23.1 (linux/amd64)
+go version go1.23.1 linux/amd64
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>toolchainにローカルより古いバージョンを指定すると無視された(ローカルのバージョンになった)</li>
+</ul>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>go.modでgoディレクティブのバージョンを新しくすると、1.24.1がインストールされた</label><pre class="src src-shell">module playground/at-2025-05-03-083600
+
+go 1.24.1
+
+toolchain go1.22.1
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd9477d9" class="outline-2">
+<h2 id="orgd9477d9"><a href="#orgd9477d9">関連</a></h2>
+<div class="outline-text-2" id="text-orgd9477d9">
+<ul class="org-ul">
+<li>動機(検証): <a href="20250502T001229--kdoc-360-goとtoolchainの違いは何か__permanent.html#ID-20250502T001229">KDOC 360: goとtoolchainの違いは何か?</a>。toolchainを実際に動かしてみて試す</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

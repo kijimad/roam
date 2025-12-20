@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:30:51Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 228: 変数を書いた順番とアドレスの関係はコンパイラによって異なる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 228: 変数を書いた順番とアドレスの関係はコンパイラによって異なる</h1>
+<div id="outline-container-org99a6719" class="outline-2">
+<h2 id="org99a6719"><a href="#org99a6719">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org99a6719">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-08-25 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-09-09 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgd643203" class="outline-2">
+<h2 id="orgd643203"><a href="#orgd643203">概要</a></h2>
+<div class="outline-text-2" id="text-orgd643203">
+<p>
+コンパイラによって、コードで変数を初期化した順番とアドレスの順番は異なることがある。
+</p>
+
+<p>
+最初に、gcc。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>変数の番地を表示する</label><pre class="src src-C"><span class="org-type">int</span> <span class="org-function-name">main</span>() {
+  <span class="org-type">char</span> <span class="org-variable-name">base</span> = 0;
+  <span class="org-type">char</span> <span class="org-variable-name">a</span> = <span class="org-string">'a'</span>;
+  <span class="org-type">char</span> <span class="org-variable-name">b</span> = <span class="org-string">'b'</span>;
+  <span class="org-type">char</span> <span class="org-variable-name">c</span> = <span class="org-string">'c'</span>;
+
+  printf(<span class="org-string">"%p: base\n"</span>, &amp;base);
+  printf(<span class="org-string">"%p: a\n"</span>, &amp;a);
+  printf(<span class="org-string">"%p: b\n"</span>, &amp;b);
+  printf(<span class="org-string">"%p: c\n"</span>, &amp;c);
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">0x7fffa55f0a84: base
+0x7fffa55f0a85: a
+0x7fffa55f0a86: b
+0x7fffa55f0a87: c
+</pre>
+</div>
+
+<p>
+つまり、メモリは↓このようになっているように見える。コードで変数を初期化した順番とアドレスの順番が一致している。スタックだからアドレスが書いた逆順になる、というわけではない。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>先に書いた変数(base)が低位アドレスとなる</label><pre class="src src-shell">^&#30058;&#22320;&#23567;(&#20302;)
+
+| ...84: base |
+| ...85: a |
+| ...86: b |
+| ...87: c |
+
+<span class="org-function-name">v&#30058;&#22320;&#22823;</span>(&#39640;)
+</pre>
+</div>
+
+<p>
+アセンブラを見てみると、(低)base, a, b, c(高)順のアドレスになっているのを確認できた。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>手元のgccで-Sオプションを使って出力した</label><pre class="src src-asm">        <span class="org-keyword">.file</span>   <span class="org-string">"main.c"</span>
+        <span class="org-keyword">.text</span>
+        <span class="org-keyword">.section</span>        .rodata
+<span class="org-function-name">.LC0</span>:
+        <span class="org-keyword">.string</span> <span class="org-string">"%p: base\n"</span>
+<span class="org-function-name">.LC1</span>:
+        <span class="org-keyword">.string</span> <span class="org-string">"%p: a\n"</span>
+<span class="org-function-name">.LC2</span>:
+        <span class="org-keyword">.string</span> <span class="org-string">"%p: b\n"</span>
+<span class="org-function-name">.LC3</span>:
+        <span class="org-keyword">.string</span> <span class="org-string">"%p: c\n"</span>
+        <span class="org-keyword">.text</span>
+        <span class="org-keyword">.globl</span>  main
+        <span class="org-keyword">.type</span>   main, @function
+<span class="org-function-name">main</span>:
+<span class="org-function-name">.LFB0</span>:
+        <span class="org-keyword">.cfi_startproc</span>
+        <span class="org-keyword">endbr64</span>
+        <span class="org-keyword">pushq</span>   <span class="org-variable-name">%rbp</span>
+        <span class="org-keyword">.cfi_def_cfa_offset</span> 16
+        <span class="org-keyword">.cfi_offset</span> 6, -16
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rsp</span>, <span class="org-variable-name">%rbp</span>
+        <span class="org-keyword">.cfi_def_cfa_register</span> 6
+        <span class="org-keyword">subq</span>    $16, <span class="org-variable-name">%rsp</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%fs</span>:40, <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, -8(<span class="org-variable-name">%rbp</span>)
+        <span class="org-keyword">xorl</span>    <span class="org-variable-name">%eax</span>, <span class="org-variable-name">%eax</span>
+        <span class="org-keyword">movb</span>    $0, -12(<span class="org-variable-name">%rbp</span>)  <span class="org-comment-delimiter">; </span><span class="org-comment">&#128072;
+</span>        <span class="org-keyword">movb</span>    $97, -11(<span class="org-variable-name">%rbp</span>) <span class="org-comment-delimiter">; </span><span class="org-comment">&#128072;
+</span>        <span class="org-keyword">movb</span>    $98, -10(<span class="org-variable-name">%rbp</span>) <span class="org-comment-delimiter">; </span><span class="org-comment">&#128072;
+</span>        <span class="org-keyword">movb</span>    $99, -9(<span class="org-variable-name">%rbp</span>)  <span class="org-comment-delimiter">; </span><span class="org-comment">&#128072;
+</span>        <span class="org-keyword">leaq</span>    -12(<span class="org-variable-name">%rbp</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rsi</span>
+        <span class="org-keyword">leaq</span>    .LC0(<span class="org-variable-name">%rip</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rdi</span>
+        <span class="org-keyword">movl</span>    $0, <span class="org-variable-name">%eax</span>
+        <span class="org-keyword">call</span>    printf@PLT
+        <span class="org-keyword">leaq</span>    -11(<span class="org-variable-name">%rbp</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rsi</span>
+        <span class="org-keyword">leaq</span>    .LC1(<span class="org-variable-name">%rip</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rdi</span>
+        <span class="org-keyword">movl</span>    $0, <span class="org-variable-name">%eax</span>
+        <span class="org-keyword">call</span>    printf@PLT
+        <span class="org-keyword">leaq</span>    -10(<span class="org-variable-name">%rbp</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rsi</span>
+        <span class="org-keyword">leaq</span>    .LC2(<span class="org-variable-name">%rip</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rdi</span>
+        <span class="org-keyword">movl</span>    $0, <span class="org-variable-name">%eax</span>
+        <span class="org-keyword">call</span>    printf@PLT
+        <span class="org-keyword">leaq</span>    -9(<span class="org-variable-name">%rbp</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rsi</span>
+        <span class="org-keyword">leaq</span>    .LC3(<span class="org-variable-name">%rip</span>), <span class="org-variable-name">%rax</span>
+        <span class="org-keyword">movq</span>    <span class="org-variable-name">%rax</span>, <span class="org-variable-name">%rdi</span>
+        <span class="org-keyword">movl</span>    $0, <span class="org-variable-name">%eax</span>
+        <span class="org-keyword">call</span>    printf@PLT
+        <span class="org-keyword">movl</span>    $0, <span class="org-variable-name">%eax</span>
+        <span class="org-keyword">movq</span>    -8(<span class="org-variable-name">%rbp</span>), <span class="org-variable-name">%rdx</span>
+        <span class="org-keyword">subq</span>    <span class="org-variable-name">%fs</span>:40, <span class="org-variable-name">%rdx</span>
+        <span class="org-keyword">je</span>      .L3
+        <span class="org-keyword">call</span>    __stack_chk_fail@PLT
+<span class="org-function-name">.L3</span>:
+        <span class="org-keyword">leave</span>
+        <span class="org-keyword">.cfi_def_cfa</span> 7, 8
+        <span class="org-keyword">ret</span>
+        <span class="org-keyword">.cfi_endproc</span>
+<span class="org-function-name">.LFE0</span>:
+        <span class="org-keyword">.size</span>   main, .-main
+        <span class="org-keyword">.ident</span>  <span class="org-string">"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"</span>
+        <span class="org-keyword">.section</span>        .note.GNU-stack,<span class="org-string">""</span>,@progbits
+        <span class="org-keyword">.section</span>        .note.gnu.property,<span class="org-string">"a"</span>
+        <span class="org-keyword">.align</span> 8
+        <span class="org-keyword">.long</span>   1f - 0f
+        <span class="org-keyword">.long</span>   4f - 1f
+        <span class="org-keyword">.long</span>   5
+<span class="org-function-name">0</span>:
+        <span class="org-keyword">.string</span> <span class="org-string">"GNU"</span>
+<span class="org-function-name">1</span>:
+        <span class="org-keyword">.align</span> 8
+        <span class="org-keyword">.long</span>   0xc0000002
+        <span class="org-keyword">.long</span>   3f - 2f
+<span class="org-function-name">2</span>:
+        <span class="org-keyword">.long</span>   0x3
+<span class="org-function-name">3</span>:
+        <span class="org-keyword">.align</span> 8
+<span class="org-function-name">4</span>:
+
+  <span class="org-keyword">--------------------------------</span>
+  <span class="org-keyword">|-12</span>(<span class="org-variable-name">%rbp</span>): base |
+  <span class="org-keyword">|-11</span>(<span class="org-variable-name">%rbp</span>): a |
+  <span class="org-keyword">|-10</span>(<span class="org-variable-name">%rbp</span>): b |
+  <span class="org-keyword">|</span> -9(<span class="org-variable-name">%rbp</span>): c |
+</pre>
+</div>
+
+<p>
+いっぽうclangでコンパイルした場合、先に書いた変数が高位アドレスとなる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>clangでコンパイルして実行した結果。先に書いた変数が高位アドレスとなる</label><pre class="src src-shell">0x7ffe71de7317: base
+0x7ffe71de7316: a
+0x7ffe71de7315: b
+0x7ffe71de7314: c
+
+--------------------
+^&#30058;&#22320;&#23567;(&#20302;)
+
+| ...14: c |
+| ...15: b |
+| ...16: a |
+| ...17: base |
+
+<span class="org-function-name">v&#30058;&#22320;&#22823;</span>(&#39640;)
+</pre>
+</div>
+
+<p>
+つまり、コードで変数を初期化した順番と、アドレスの順番は必ずしも逆にはならないことがある。なぜそうなるのかは、いつか調べる。
+</p>
+</div>
+</div>
+<div id="outline-container-org6913652" class="outline-2">
+<h2 id="org6913652"><a href="#org6913652">関連</a></h2>
+<div class="outline-text-2" id="text-org6913652">
+<ul class="org-ul">
+<li>動機: <a href="20240824T190333--kdoc-226-任意のアドレスに読み書きする__permanent.html#ID-20240824T190333">KDOC 226: 任意のアドレスに読み書きする</a>。調べている途中で発見した</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

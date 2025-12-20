@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:30:56Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 200: X windowのログを見る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 200: X windowのログを見る</h1>
+<div id="outline-container-org726c5d7" class="outline-2">
+<h2 id="org726c5d7"><a href="#org726c5d7">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org726c5d7">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-07-20 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-07-22 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org3f2314b" class="outline-2">
+<h2 id="org3f2314b"><a href="#org3f2314b">概要</a></h2>
+<div class="outline-text-2" id="text-org3f2314b">
+<p>
+<a href="20240721122010-x_window_system.html#ID-1319483b-3976-4a2c-b5b9-08f79fcc32be">X Window System</a>アプリケーションをデバッグ、学習するために、ログを確認する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>ログを出力する</label><pre class="src src-shell">xtrace -o output.log ./app
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>抜粋</label><pre class="src src-nil">000:&lt;:0001: 20: Request(55): CreateGC cid=0x05600001 drawable=0x00000773 values={foreground=0x00ffffff}
+000:&lt;:0002: 40: Request(1): CreateWindow depth=0x18 window=0x05600002 parent=0x00000773 x=-1000 y=-1000 width=1 height=1 border-width=0 class=InputOutput(0x0001) visual=0x00000021 value-list={override-redirect=true(0x01) event-mask=PropertyChange}
+000:&lt;:0003:  8: Request(8): MapWindow window=0x05600002
+000:&lt;:0004: 16: Request(98): QueryExtension name='XINERAMA'
+000:&gt;:0004:32: Reply to QueryExtension: present=true(0x01) major-opcode=141 first-event=0 first-error=0
+</pre>
+</div>
+
+<p>
+このようにリクエスト、レスポンスする様子や値を確認できる。
+</p>
+
+<p>
+また、システムのログを見るとおもしろい。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>起動時を見る</label><pre class="src src-shell">head /var/log/Xorg.0.log -n 50
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">[193692.808]
+X.Org X Server 1.21.1.4
+X Protocol Version 11, Revision 0
+[193692.808] Current Operating System: Linux orange-ThinkPad-X1-Carbon-Gen-10 5.15.0-105-generic #115-Ubuntu SMP Mon Apr 15 09:52:04 UTC 2024 x86_64
+[193692.808] Kernel command line: BOOT_IMAGE=/boot/vmlinuz-5.15.0-105-generic root=UUID=2ef9dd21-ea63-4656-8249-b9355b9d7052 ro quiet splash
+[193692.808] xorg-server 2:21.1.4-2ubuntu1.7~22.04.10 (For technical support please see http://www.ubuntu.com/support)
+[193692.808] Current version of pixman: 0.40.0
+[193692.808] 	Before reporting problems, check http://wiki.x.org
+	to make sure that you have the latest version.
+[193692.808] Markers: (--) probed, (**) from config file, (==) default setting,
+	(++) from command line, (!!) notice, (II) informational,
+	(WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+[193692.808] (==) Log file: "/var/log/Xorg.0.log", Time: Tue Jul 16 11:18:22 2024
+[193692.808] (==) Using system config directory "/usr/share/X11/xorg.conf.d"
+[193692.808] (==) No Layout section.  Using the first Screen section.
+[193692.808] (==) No screen section available. Using defaults.
+[193692.808] (**) |--&gt;Screen "Default Screen Section" (0)
+[193692.808] (**) |   |--&gt;Monitor "&lt;default monitor&gt;"
+[193692.808] (==) No monitor specified for screen "Default Screen Section".
+	Using a default monitor configuration.
+[193692.808] (==) Automatically adding devices
+[193692.808] (==) Automatically enabling devices
+[193692.808] (==) Automatically adding GPU devices
+[193692.808] (==) Automatically binding GPU devices
+[193692.808] (==) Max clients allowed: 256, resource mask: 0x1fffff
+[193692.808] (WW) The directory "/usr/share/fonts/X11/cyrillic" does not exist.
+[193692.808] 	Entry deleted from font path.
+[193692.808] (WW) The directory "/usr/share/fonts/X11/100dpi/" does not exist.
+[193692.808] 	Entry deleted from font path.
+[193692.808] (WW) The directory "/usr/share/fonts/X11/75dpi/" does not exist.
+[193692.808] 	Entry deleted from font path.
+[193692.808] (WW) The directory "/usr/share/fonts/X11/100dpi" does not exist.
+[193692.808] 	Entry deleted from font path.
+[193692.808] (WW) The directory "/usr/share/fonts/X11/75dpi" does not exist.
+[193692.808] 	Entry deleted from font path.
+[193692.808] (==) FontPath set to:
+	/usr/share/fonts/X11/misc,
+	/usr/share/fonts/X11/Type1,
+	built-ins
+[193692.808] (==) ModulePath set to "/usr/lib/xorg/modules"
+[193692.808] (II) The server relies on udev to provide the list of input devices.
+	If no devices become available, reconfigure udev or disable AutoAddDevices.
+[193692.808] (II) Loader magic: 0x55f1ebf6f020
+[193692.808] (II) Module ABI versions:
+[193692.808] 	X.Org ANSI C Emulation: 0.4
+[193692.808] 	X.Org Video Driver: 25.2
+[193692.808] 	X.Org XInput driver : 24.4
+[193692.808] 	X.Org Server Extension : 10.0
+[193692.809] (++) using VT number 7
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>最新を見る</label><pre class="src src-shell">tail /var/log/Xorg.0.log -n 50
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">[331536.041] (II) modeset(0): EDID vendor "AUO", prod id 53905
+[331536.041] (II) modeset(0): Using hsync ranges from config file
+[331536.041] (II) modeset(0): Using vrefresh ranges from config file
+[331536.041] (II) modeset(0): Printing DDC gathered Modelines:
+[331536.041] (II) modeset(0): Modeline "1920x1200"x0.0  156.10  1920 1936 1952 2104  1200 1203 1217 1236 -hsync -vsync (74.2 kHz eP)
+[332036.859] (II) modeset(0): EDID vendor "AUO", prod id 53905
+[332036.859] (II) modeset(0): Using hsync ranges from config file
+[332036.859] (II) modeset(0): Using vrefresh ranges from config file
+[332036.859] (II) modeset(0): Printing DDC gathered Modelines:
+[332036.859] (II) modeset(0): Modeline "1920x1200"x0.0  156.10  1920 1936 1952 2104  1200 1203 1217 1236 -hsync -vsync (74.2 kHz eP)
+[337606.169] (II) config/udev: Adding input device WH-1000XM3 (AVRCP) (/dev/input/event17)
+[337606.169] (**) WH-1000XM3 (AVRCP): Applying InputClass "libinput keyboard catchall"
+[337606.169] (II) Using input driver 'libinput' for 'WH-1000XM3 (AVRCP)'
+[337606.169] (**) WH-1000XM3 (AVRCP): always reports core events
+[337606.169] (**) Option "Device" "/dev/input/event17"
+[337606.169] (II) event17 - WH-1000XM3 (AVRCP): is tagged by udev as: Keyboard
+[337606.170] (II) event17 - WH-1000XM3 (AVRCP): device is a keyboard
+[337606.170] (II) event17 - WH-1000XM3 (AVRCP): device removed
+[337606.192] (**) Option "config_info" "udev:/sys/devices/virtual/input/input34/event17"
+[337606.192] (II) XINPUT: Adding extended input device "WH-1000XM3 (AVRCP)" (type: KEYBOARD, id 18)
+[337606.192] (**) Option "xkb_model" "pc105"
+[337606.192] (**) Option "xkb_layout" "jp"
+[337606.192] (WW) Option "xkb_variant" requires a string value
+[337606.192] (WW) Option "xkb_options" requires a string value
+[337606.194] (II) event17 - WH-1000XM3 (AVRCP): is tagged by udev as: Keyboard
+[337606.194] (II) event17 - WH-1000XM3 (AVRCP): device is a keyboard
+[344364.017] (II) event17 - WH-1000XM3 (AVRCP): device removed
+[344364.068] (II) config/udev: removing device WH-1000XM3 (AVRCP)
+[344364.071] (II) UnloadModule: "libinput"
+[345174.520] (II) modeset(0): EDID vendor "AUO", prod id 53905
+[345174.520] (II) modeset(0): Using hsync ranges from config file
+[345174.520] (II) modeset(0): Using vrefresh ranges from config file
+[345174.520] (II) modeset(0): Printing DDC gathered Modelines:
+[345174.520] (II) modeset(0): Modeline "1920x1200"x0.0  156.10  1920 1936 1952 2104  1200 1203 1217 1236 -hsync -vsync (74.2 kHz eP)
+[362198.169] (II) config/udev: Adding input device WH-1000XM3 (AVRCP) (/dev/input/event17)
+[362198.169] (**) WH-1000XM3 (AVRCP): Applying InputClass "libinput keyboard catchall"
+[362198.169] (II) Using input driver 'libinput' for 'WH-1000XM3 (AVRCP)'
+[362198.169] (**) WH-1000XM3 (AVRCP): always reports core events
+[362198.169] (**) Option "Device" "/dev/input/event17"
+[362198.170] (II) event17 - WH-1000XM3 (AVRCP): is tagged by udev as: Keyboard
+[362198.170] (II) event17 - WH-1000XM3 (AVRCP): device is a keyboard
+[362198.170] (II) event17 - WH-1000XM3 (AVRCP): device removed
+[362198.204] (**) Option "config_info" "udev:/sys/devices/virtual/input/input35/event17"
+[362198.204] (II) XINPUT: Adding extended input device "WH-1000XM3 (AVRCP)" (type: KEYBOARD, id 18)
+[362198.204] (**) Option "xkb_model" "pc105"
+[362198.204] (**) Option "xkb_layout" "jp"
+[362198.204] (WW) Option "xkb_variant" requires a string value
+[362198.204] (WW) Option "xkb_options" requires a string value
+[362198.207] (II) event17 - WH-1000XM3 (AVRCP): is tagged by udev as: Keyboard
+[362198.207] (II) event17 - WH-1000XM3 (AVRCP): device is a keyboard
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>画面サイズ <code>1920x1200</code> などが表示されていて何かしていることがわかる</li>
+<li><code>WH-1000XM</code> は使っているワイヤレスヘッドホンの型番だ。これらの接続ログも出されているのがわかる</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org7fe78fd" class="outline-2">
+<h2 id="org7fe78fd"><a href="#org7fe78fd">関連</a></h2>
+<div class="outline-text-2" id="text-org7fe78fd">
+<p>
+なし。
+</p>
+</div>
+</div>
+<div id="outline-container-org7909a48" class="outline-2">
+<h2 id="org7909a48"><a href="#org7909a48">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org7909a48">
+<ul class="org-ul">
+<li><a href="./20240715T214607--kdoc-201-スクリーンルーラーを作る__project.html">KDOC 201: スクリーンルーラーを作る</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

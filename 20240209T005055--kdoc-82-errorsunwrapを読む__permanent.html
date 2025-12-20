@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:31:03Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 82: errors.Unwrapを読む</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 82: errors.Unwrapを読む</h1>
+<div id="outline-container-org93a508a" class="outline-2">
+<h2 id="org93a508a"><a href="#org93a508a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org93a508a">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-02-10 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-02-12 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org8822872" class="outline-2">
+<h2 id="org8822872"><a href="#org8822872">概要</a></h2>
+<div class="outline-text-2" id="text-org8822872">
+<p>
+<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>で <code>errors.Unwrap()</code> がシンプルで美しく見えたので読む。
+</p>
+</div>
+</div>
+<div id="outline-container-org6ba6650" class="outline-2">
+<h2 id="org6ba6650"><a href="#org6ba6650">コード</a></h2>
+<div class="outline-text-2" id="text-org6ba6650">
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>定義</label><pre class="src src-git-permalink">https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/errors/wrap.go#L11-L25
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-go">// Unwrap returns the result of calling the Unwrap method on err, if err's
+// type contains an Unwrap method returning error.
+// Otherwise, Unwrap returns nil.
+//
+// Unwrap only calls a method of the form "Unwrap() error".
+// In particular Unwrap does not unwrap errors returned by [Join].
+func Unwrap(err error) error {
+	u, ok := err.(interface {
+		Unwrap() error
+	})
+	if !ok {
+		return nil
+	}
+	return u.Unwrap()
+}
+</pre>
+</div>
+
+<p>
+引数で渡されたerror型の値が、Unwrap()メソッドを実装してれば実行する。実装してなければnilを返す。それだけ。使ってみる。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-go">import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+type wrapped struct {
+	msg string
+	err error
+}
+
+func (e wrapped) Error() string { return e.msg }
+func (e wrapped) Unwrap() error { return e.err }
+
+func TestUnwrap(t *testing.T) {
+	err1 := errors.New("1")
+	err2 := wrapped{"wrap 2", err1}
+
+	assert.Equal(t, nil, errors.Unwrap(wrapped{"wrapped", nil}))
+	assert.Equal(t, err1, errors.Unwrap(wrapped{"wrapped", err1}))
+	assert.Equal(t, err2, errors.Unwrap(wrapped{"wrapped", err2}))
+
+	assert.Equal(t, "wrap 2", err2.Error())
+	assert.Equal(t, "wrap 2", errors.Unwrap(wrapped{"wrapped", err2}).Error())
+}
+</pre>
+</div>
+
+
+<div id="orgb1ff483" class="figure">
+<p><img src="./images/20240210-unwrap.drawio.svg" alt="20240210-unwrap.drawio.svg" class="org-svg">
+</p>
+<p><span class="figure-number">Figure 1: </span>Error()とUnwrap()を使うイメージ</p>
+</div>
+
+<p>
+<code>Unwrap()</code> を使うと何がうれしいかというと、エラーの木構造を、 <code>Unwrap()</code> を再帰的に適用してたどれることにある。このため、たとえば「sqlite driverのエラー全般」、という形でグループとしてerrorを扱える。再帰的にたどって一致判定をしているのが <code>errors.Is()</code> と <code>errors.As()</code> である。 <code>Unwrap()</code> 単体だとあまり役に立たない。
+</p>
+</div>
+</div>
+<div id="outline-container-org5c8fbd4" class="outline-2">
+<h2 id="org5c8fbd4"><a href="#org5c8fbd4">関連</a></h2>
+<div class="outline-text-2" id="text-org5c8fbd4">
+<ul class="org-ul">
+<li>参照: <a href="https://pkg.go.dev/errors#Unwrap">errors package - errors - Go Packages</a>を読んだ</li>
+<li>類推: <a href="20231103T214045--kdoc-53-goで独自定義のエラーをconstにする__permanent.html#ID-20231103T214045">KDOC 53: Goで独自定義のエラーをconstにする</a>。Goのエラーを調べるつながり</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

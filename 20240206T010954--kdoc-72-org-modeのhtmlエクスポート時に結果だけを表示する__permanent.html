@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-20T17:30:54Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 72: org-modeのHTMLエクスポート時に結果だけを表示する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 72: org-modeのHTMLエクスポート時に結果だけを表示する</h1>
+<div id="outline-container-org35ce0aa" class="outline-2">
+<h2 id="org35ce0aa"><a href="#org35ce0aa">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org35ce0aa">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-02-06 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-02-08 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orge18a0a8" class="outline-2">
+<h2 id="orge18a0a8"><a href="#orge18a0a8">概要</a></h2>
+<div class="outline-text-2" id="text-orge18a0a8">
+<p>
+<a href="20210907012153-org_mode.html#ID-7e85e3f3-a6b9-447e-9826-307a3618dac8">org-mode</a>の機能の1つであるorg-babelでは、コードブロックを評価して結果をテキストに出力できる。これによってコードと結果を楽に残せる。<a href="20210923124913-html.html#ID-9f5b7514-d5e5-4997-81b0-bd453775415c">HTML</a>エクスポート時は結果だけを掲載したいときがある。そのときの書き方をまとめる。
+</p>
+</div>
+</div>
+<div id="outline-container-org52b1a63" class="outline-2">
+<h2 id="org52b1a63"><a href="#org52b1a63">やりかた</a></h2>
+<div class="outline-text-2" id="text-org52b1a63">
+<p>
+コマンドを実行して、エクスポート先ではコマンド結果の日付だけを表示したいとする。
+</p>
+
+<p>
+↓このままだと、<a href="20210923124913-html.html#ID-9f5b7514-d5e5-4997-81b0-bd453775415c">HTML</a>エクスポート時にコードブロックも表示される。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>エクスポート時にコードブロックと評価結果の両方がエクスポートされる</label><pre class="src src-shell"><span class="org-comment-delimiter">#</span><span class="org-comment">+begin_src shell
+</span>date
+<span class="org-comment-delimiter">#</span><span class="org-comment">+end_src
+</span>
+<span class="org-comment-delimiter">#</span><span class="org-comment">+RESULTS:
+</span><span class="org-comment-delimiter">#</span><span class="org-comment">+begin_src
+</span>Tue Feb  6 07:55:58 PM JST 2024
+<span class="org-comment-delimiter">#</span><span class="org-comment">+end_src</span>
+</pre>
+</div>
+
+<p>
+↓こうする。HTML_HEADをつけてコードブロック本体にCSSをつけて非表示にする。こうすることでHTMLエクスポート時は結果だけ表示されるようになる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>エクスポート時に評価結果だけがエクスポートされる</label><pre class="src src-shell"><span class="org-comment-delimiter">#</span><span class="org-comment">+HTML_HEAD: &lt;style&gt;.src { display: none; }&lt;/style&gt;
+</span><span class="org-comment-delimiter">#</span><span class="org-comment">+begin_src shell
+</span>date
+<span class="org-comment-delimiter">#</span><span class="org-comment">+end_src
+</span>
+<span class="org-comment-delimiter">#</span><span class="org-comment">+RESULTS:
+</span><span class="org-comment-delimiter">#</span><span class="org-comment">+begin_src
+</span>Tue Feb  6 07:55:58 PM JST 2024
+<span class="org-comment-delimiter">#</span><span class="org-comment">+end_src</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org7162429" class="outline-2">
+<h2 id="org7162429"><a href="#org7162429">関連</a></h2>
+<div class="outline-text-2" id="text-org7162429">
+<p>
+なし。
+</p>
+</div>
+</div>
+<div id="outline-container-orgc26261b" class="outline-2">
+<h2 id="orgc26261b"><a href="#orgc26261b">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgc26261b">
+<ul class="org-ul">
+<li><a href="./20240207T095628--kdoc-78-org-modeで脚注を再割り振りする__permanent.html">KDOC 78: org-modeで脚注を再割り振りする</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
