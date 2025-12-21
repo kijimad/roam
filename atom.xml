@@ -5,15 +5,15 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2025-12-20T17:32:13+09:00</updated>
+<updated>2025-12-22T08:11:00+09:00</updated>
 <entry>
   <title>KDOC 499: 0番ポートは動的割当に利用される</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org4332d5f" class="outline-2">
- <h2 id="org4332d5f"> <a href="#org4332d5f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4332d5f">
+ <div id="outline-container-org91e04a9" class="outline-2">
+ <h2 id="org91e04a9"> <a href="#org91e04a9">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org91e04a9">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
 </ul></li>
@@ -22,9 +22,9 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org57a2b4e" class="outline-2">
- <h2 id="org57a2b4e"> <a href="#org57a2b4e">概要</a></h2>
- <div class="outline-text-2" id="text-org57a2b4e">
+ <div id="outline-container-org7dfd574" class="outline-2">
+ <h2 id="org7dfd574"> <a href="#org7dfd574">概要</a></h2>
+ <div class="outline-text-2" id="text-org7dfd574">
  <p>
 0番ポートは動的割当に利用される。
 </p>
@@ -37,9 +37,9 @@
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org0fea54c" class="outline-2">
- <h2 id="org0fea54c"> <a href="#org0fea54c">関連</a></h2>
- <div class="outline-text-2" id="text-org0fea54c">
+ <div id="outline-container-org0e9c162" class="outline-2">
+ <h2 id="org0e9c162"> <a href="#org0e9c162">関連</a></h2>
+ <div class="outline-text-2" id="text-org0e9c162">
  <p>
 なし。
 </p>
@@ -51,27 +51,481 @@
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251207T203931--kdoc-499-0番ポートは動的割当に利用される__permanent.html"/>
   <id>https://kijimad.github.io/roam/20251207T203931--kdoc-499-0番ポートは動的割当に利用される__permanent.html</id>
-  <updated>2025-12-21T02:32:10+09:00</updated>
+  <updated>2025-12-22T17:10:58+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 502: jsonとjsonbの性能を比較する</title>
+  <title>KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org0b08fdd" class="outline-2">
- <h2 id="org0b08fdd"> <a href="#org0b08fdd">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0b08fdd">
+ <div id="outline-container-org0e9f27b" class="outline-2">
+ <h2 id="org0e9f27b"> <a href="#org0e9f27b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0e9f27b">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgade66cc" class="outline-2">
+ <h2 id="orgade66cc"> <a href="#orgade66cc">概要</a></h2>
+ <div class="outline-text-2" id="text-orgade66cc">
+ <p>
+DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約である(p57)。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>見てみる</label> <pre class="src src-shell">dig . NS
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> . NS
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 61072
+;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;.				IN	NS
+
+;; ANSWER SECTION:
+.			7007	IN	NS	i.root-servers.net.
+.			7007	IN	NS	g.root-servers.net.
+.			7007	IN	NS	j.root-servers.net.
+.			7007	IN	NS	b.root-servers.net.
+.			7007	IN	NS	h.root-servers.net.
+.			7007	IN	NS	a.root-servers.net.
+.			7007	IN	NS	k.root-servers.net.
+.			7007	IN	NS	d.root-servers.net.
+.			7007	IN	NS	m.root-servers.net.
+.			7007	IN	NS	c.root-servers.net.
+.			7007	IN	NS	f.root-servers.net.
+.			7007	IN	NS	l.root-servers.net.
+.			7007	IN	NS	e.root-servers.net.
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sun Dec 21 19:11:45 JST 2025
+;; MSG SIZE  rcvd: 239
+
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-shell">dig jp. NS
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> jp. NS
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 57427
+;; flags: qr rd ra; QUERY: 1, ANSWER: 8, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;jp.				IN	NS
+
+;; ANSWER SECTION:
+jp.			6621	IN	NS	d.dns.jp.
+jp.			6621	IN	NS	g.dns.jp.
+jp.			6621	IN	NS	h.dns.jp.
+jp.			6621	IN	NS	c.dns.jp.
+jp.			6621	IN	NS	e.dns.jp.
+jp.			6621	IN	NS	b.dns.jp.
+jp.			6621	IN	NS	a.dns.jp.
+jp.			6621	IN	NS	f.dns.jp.
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sun Dec 21 19:16:20 JST 2025
+;; MSG SIZE  rcvd: 163
+
+</pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org9acdb57" class="outline-2">
+ <h2 id="org9acdb57"> <a href="#org9acdb57">関連</a></h2>
+ <div class="outline-text-2" id="text-org9acdb57">
+ <ul class="org-ul"> <li>参照:  <a href="20241102T084716--kdoc-258-『ピアリング戦記』__book.html#ID-20241102T084716">KDOC 258: 『ピアリング戦記』</a>から</li>
+ <li>追加調査: なぜ13個になるのか詳細を調べる</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251217T184407--kdoc-507-dnsのルートサーバが13個なのはdnsのudpのパケット上限が512バイトであるから__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251217T184407--kdoc-507-dnsのルートサーバが13個なのはdnsのudpのパケット上限が512バイトであるから__draft_permanent.html</id>
+  <updated>2025-12-22T17:10:53+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 513: フレッツの利用者は10.0.0.0/8をローカルネットワーク内で使用できない</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orge17e7ec" class="outline-2">
+ <h2 id="orge17e7ec"> <a href="#orge17e7ec">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orge17e7ec">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org0d3e690" class="outline-2">
+ <h2 id="org0d3e690"> <a href="#org0d3e690">概要</a></h2>
+ <div class="outline-text-2" id="text-org0d3e690">
+ <p>
+NTTのフレッツ網は内部ネットワークでプライベートアドレス 10.0.0.0/8 を使用しているため、利用者はローカルネットワーク内で 10.0.0.0/8 を使用できない。
+</p>
+
+ <p>
+プライベートIP範囲のなかでも、もっともホスト部が大きな範囲を使用している。
+</p>
+
+ <ul class="org-ul"> <li>10.0.0.0/8 (クラスA)</li>
+ <li>172.16.0.0/12 (クラスB)</li>
+ <li>192.168.0.0/16 (クラスC)</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgb65a498" class="outline-2">
+ <h2 id="orgb65a498"> <a href="#orgb65a498">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb65a498">
+ <ul class="org-ul"> <li>参照:  <a href="https://ja.wikipedia.org/wiki/IP%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9#ISP_Shared_Address">IPアドレス - Wikipedia</a>から</li>
+ <li>疑問: なぜそうなったのか。標準仕様的に問題ないのか</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251220T210824--kdoc-513-フレッツの利用者は100008をローカルネットワーク内で使用できない__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251220T210824--kdoc-513-フレッツの利用者は100008をローカルネットワーク内で使用できない__draft_permanent.html</id>
+  <updated>2025-12-22T17:10:50+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 512: DNSの強制セーフサーチがどのように機能しているか見る</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org280e571" class="outline-2">
+ <h2 id="org280e571"> <a href="#org280e571">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org280e571">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-21 貴島</li>
 </ul></li>
  <li>レビュー
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org41d86fd" class="outline-2">
- <h2 id="org41d86fd"> <a href="#org41d86fd">概要</a></h2>
- <div class="outline-text-2" id="text-org41d86fd">
+ <div id="outline-container-orge8f8950" class="outline-2">
+ <h2 id="orge8f8950"> <a href="#orge8f8950">概要</a></h2>
+ <div class="outline-text-2" id="text-orge8f8950">
+ <p>
+DNSフィルタリングツールのAdGuardで、強制セーフサーチが適用されている様子を見る。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell">dig www.google.com
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> www.google.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 55983
+;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;www.google.com.			IN	A
+
+;; ANSWER SECTION:
+www.google.com.		3	IN	CNAME	forcesafesearch.google.com. 👈
+forcesafesearch.google.com. 3	IN	A	216.239.38.120
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sat Dec 20 19:54:25 JST 2025
+;; MSG SIZE  rcvd: 89
+
+</pre>
+</div>
+
+ <p>
+以下の流れのように、強制されていることがわかる。
+</p>
+
+ <ul class="org-ul"> <li>www.google.com -(CNAME)→ forcesafesearch.google.com -(A)→ 216.239.38.120</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgf38b08d" class="outline-2">
+ <h2 id="orgf38b08d"> <a href="#orgf38b08d">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf38b08d">
+ <ul class="org-ul"> <li>動機:  <a href="20241118T203644--kdoc-295-lanでdnsフィルタリングする流れを見る__permanent.html#ID-20241118T203644">KDOC 295: LANでDNSフィルタリングする流れを見る</a>。使っていて気になった</li>
+ <li>追加調査: www.google.com と google.com で結果が異なる。何が違うのか</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251220T195006--kdoc-512-dnsの強制セーフサーチがどのように機能しているか見る__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251220T195006--kdoc-512-dnsの強制セーフサーチがどのように機能しているか見る__draft_permanent.html</id>
+  <updated>2025-12-22T17:10:50+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 505: 既存メモ側からどういった関連ができそうか考える</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org42b62b7" class="outline-2">
+ <h2 id="org42b62b7"> <a href="#org42b62b7">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org42b62b7">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgffdf795" class="outline-2">
+ <h2 id="orgffdf795"> <a href="#orgffdf795">概要</a></h2>
+ <div class="outline-text-2" id="text-orgffdf795">
+ <p>
+ツェッテルカステンライクな方法でメモしている。
+</p>
+
+ <p>
+メモの関連が少なく、理解や思考を深められていないのを課題に感じてきた。単純に同じカテゴリの話題だから、という理由で関連させていることが多かったが、意味ないよな、と感じてきた。
+</p>
+
+ <p>
+既存メモ側にどういった関連ができそうかの想定を書いておくと関連させやすいことに気づいた。また、それだけだと忘れやすいので先に想定する関連に対して類型をつけて抽象化しておくと、組み合わせて考えやすいのに気づいた。
+</p>
+
+ <pre class="example" id="org77d71ba">
+KDOC 37: トップダウンかボトムアップ、どちらで成し遂げるか?
+- 具体例: トップダウンの主張も出す
+
+KDOC 71: KDOCエントリの書き方を考える
+- 補足: 結局テンプレートファイルに含めた項目以外は忘れ去っていた。仕組みにしなければならない
+
+KDOC 3: 『ない仕事の作り方』
+- 組み合わせ: 彼のスクラップ癖と知識獲得モデルは、メモのとりかたで説明できるのではないか
+</pre>
+
+ <p>
+そしてあとは、これらを見返して、この関連となるメモを追加していくわけである。
+</p>
+
+ <p>
+いままでは膨大な既存メモと、ランダムに書いた新規メモがあって、その関連を考えていた。結果、深まらないメモができていた。事前に関連を考えておく方式だと、既存メモから考えた関連をもとにメモを作る。最初から関連ありきでメモを作成するので、深まっていくだろう。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgfbc642c" class="outline-2">
+ <h2 id="orgfbc642c"> <a href="#orgfbc642c">関連</a></h2>
+ <div class="outline-text-2" id="text-orgfbc642c">
+ <ul class="org-ul"> <li>動機:  <a href="20240502T172812--kdoc-153-すでにあるメモから、関連させられないか考える__essay.html#ID-20240502T172812">KDOC 153: すでにあるメモから、関連させられないか考える</a>。「時間を作る」だけでは改善しなかったので、対策を具体化した</li>
+ <li>補足:  <a href="20231008T203658--kdoc-36-『take-notes』__book.html#ID-20231008T203658">KDOC 36: 『TAKE NOTES!』</a>。ツェッテルカステンで参考にしている本</li>
+</ul></div>
+</div>
+ <div id="outline-container-org2ab08ad" class="outline-2">
+ <h2 id="org2ab08ad"> <a href="#org2ab08ad">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org2ab08ad">
+ <ul class="org-ul"> <li> <a href="./20240504T224810--kdoc-165-メモの課題と対応策を考える__structure.html">KDOC 165: メモの課題と対応策を考える</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251214T123530--kdoc-505-既存メモ側からどういった関連ができそうか考える__essay.html"/>
+  <id>https://kijimad.github.io/roam/20251214T123530--kdoc-505-既存メモ側からどういった関連ができそうか考える__essay.html</id>
+  <updated>2025-12-22T17:10:48+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 504: 家電売り場で栄枯盛衰を感じる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org8e4c5db" class="outline-2">
+ <h2 id="org8e4c5db"> <a href="#org8e4c5db">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8e4c5db">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-20 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org916b10c" class="outline-2">
+ <h2 id="org916b10c"> <a href="#org916b10c">概要</a></h2>
+ <div class="outline-text-2" id="text-org916b10c">
+ <p>
+日曜の午後、池袋駅付近にある複数の大型家電店をぶらついた。あてもなく1フロアずつ練り歩いたところ、気づいたことがあった。
+</p>
+
+ <ul class="org-ul"> <li>どの店も1階にスマートフォン売り場があり、人で混雑している</li>
+ <li>PC周辺機器などのIT・小型家電で1フロアになっていることが多い。テレビ、冷蔵庫、洗濯機などの大型家電で1フロアになっていることが多い</li>
+ <li>テレビは広大な売り場面積を占めるが、閑散としていた。大量のテレビの音響が混ざり合ってガヤガヤした音だけが響いていた。数組の若いカップルと店員がテーブルに座って契約を進めているように見えた。明らかに大型家電にはシーズン性があるが、それを差し引いても人がいないのに驚いた。疲れて休憩がてら見る人さえいなかった。テレビは家電量販店の花形コーナーだと考えていた</li>
+ <li>PC周辺機器コーナーは1フロアを占めていて、老若男女多くの人がいた</li>
+ <li>カメラコーナーは広く充実しているが、あまり人はいない</li>
+</ul> <p>
+ひとくちに家電量販店といっても、内部では客数に大きな違いがあり、自分の持っている直感とは異なるのを体感した <sup> <a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>。自分が何を作りたいかと、それを時代が必要としているかは別の話だ。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgec6f63e" class="outline-2">
+ <h2 id="orgec6f63e"> <a href="#orgec6f63e">関連</a></h2>
+ <div class="outline-text-2" id="text-orgec6f63e">
+ <ul class="org-ul"> <li>追加調査: 具体的に額ベースや売り場面積でジャンルごとの推移を調べる方法はあるか</li>
+</ul></div>
+</div>
+ <div id="footnotes">
+ <h2 class="footnotes">Footnotes: </h2>
+ <div id="text-footnotes">
+
+ <div class="footdef"> <sup> <a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"> <p class="footpara">
+もちろん利益率が違うので、人があまり多くないように見えても利益率は高い、ということもありそうである。
+</p></div></div>
+
+
+</div>
+</div></div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251213T193458--kdoc-504-家電売り場で栄枯盛衰を感じる__essay.html"/>
+  <id>https://kijimad.github.io/roam/20251213T193458--kdoc-504-家電売り場で栄枯盛衰を感じる__essay.html</id>
+  <updated>2025-12-22T17:10:42+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 509: DNSフィルタリングされている様子をdigで見る</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgba99b0c" class="outline-2">
+ <h2 id="orgba99b0c"> <a href="#orgba99b0c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgba99b0c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-20 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-20 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org2c3c851" class="outline-2">
+ <h2 id="org2c3c851"> <a href="#org2c3c851">概要</a></h2>
+ <div class="outline-text-2" id="text-org2c3c851">
+ <p>
+AdGuardで、DNSフィルタリングされている様子を見る。
+</p>
+
+ <p>
+最初に通常のDNSレスポンスを確認する。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>通常のレスポンス</label> <pre class="src src-shell">dig google.com
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> google.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 20568
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;google.com.			IN	A
+
+;; ANSWER SECTION:
+google.com.		272	IN	A	172.217.174.110 👈
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Fri Dec 19 23:15:30 JST 2025
+;; MSG SIZE  rcvd: 55
+
+</pre>
+</div>
+
+ <p>
+次に、フィルタリングされているドメインへのDNSレスポンスを確認する。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 2: </span>フィルタリング設定しているドメイン。0.0.0.0に書き換えられている</label> <pre class="src src-shell">dig x.com
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> x.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 7283
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;x.com.				IN	A
+
+;; ANSWER SECTION:
+x.com.			10	IN	A	0.0.0.0 👈
+
+;; Query time: 112 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Fri Dec 19 08:58:38 JST 2025
+;; MSG SIZE  rcvd: 50
+
+</pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org74a2b46" class="outline-2">
+ <h2 id="org74a2b46"> <a href="#org74a2b46">関連</a></h2>
+ <div class="outline-text-2" id="text-org74a2b46">
+ <ul class="org-ul"> <li>補足:  <a href="20241118T203644--kdoc-295-lanでdnsフィルタリングする流れを見る__permanent.html#ID-20241118T203644">KDOC 295: LANでDNSフィルタリングする流れを見る</a>。を補足する</li>
+ <li>追加調査: AdGuardで上書きしている箇所を調べる</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251219T085723--kdoc-509-dnsフィルタリングされている様子をdigで見る__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251219T085723--kdoc-509-dnsフィルタリングされている様子をdigで見る__draft_permanent.html</id>
+  <updated>2025-12-22T17:09:58+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 502: jsonとjsonbの性能を比較する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org98031bb" class="outline-2">
+ <h2 id="org98031bb"> <a href="#org98031bb">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org98031bb">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-20 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgf8f0eb4" class="outline-2">
+ <h2 id="orgf8f0eb4"> <a href="#orgf8f0eb4">概要</a></h2>
+ <div class="outline-text-2" id="text-orgf8f0eb4">
  <p>
  <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>でjsonとjsonbについて説明していた。じっさいに使ってみて読み書き性能を試してみる。
 </p>
@@ -84,6 +538,13 @@
  <p>
 jsonデータ型は入力テキストの正確なコピーで格納し、処理関数を実行するたびに再解析する必要があります。jsonbデータ型では、分解されたバイナリ形式で格納されます。
 格納するときには変換のオーバーヘッドのため少し遅くなりますが、処理するときには、全く再解析が必要とされないので大幅に高速化されます。 また jsonb型の重要な利点はインデックスをサポートしていることです。
+ <a href="https://www.postgresql.jp/docs/9.6/datatype-json.html">8.14. JSONデータ型</a>
+</p>
+</blockquote>
+
+ <blockquote>
+ <p>
+格納するときには変換のオーバーヘッドのため少し遅くなりますが、処理するときには、全く再解析が必要とされないので大幅に高速化されます。
  <a href="https://www.postgresql.jp/docs/9.6/datatype-json.html">8.14. JSONデータ型</a>
 </p>
 </blockquote>
@@ -228,334 +689,98 @@ EXPLAIN ANALYZE
  <ul class="org-ul"> <li>Planning Time: 0.008 ms</li>
  <li>Execution Time: 9.035 ms</li>
 </ul></li>
-</ul> <blockquote>
+</ul></div>
+</div>
+ <div id="outline-container-orgcdab5b4" class="outline-2">
+ <h2 id="orgcdab5b4"> <a href="#orgcdab5b4">関連</a></h2>
+ <div class="outline-text-2" id="text-orgcdab5b4">
+ <ul class="org-ul"> <li>追加調査: 書き込みはJSONが早いはずだが、この例だとなぜかJSONBのほうがなぜか少し早かった。複雑なJSON構造の場合はどうなるか確かめる</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251211T084518--kdoc-502-jsonとjsonbの性能を比較する__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251211T084518--kdoc-502-jsonとjsonbの性能を比較する__permanent.html</id>
+  <updated>2025-12-22T17:09:54+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 515: DHCP OFFERではまだIPがないのにどうやってUDPで通信しているか?</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org44bc62c" class="outline-2">
+ <h2 id="org44bc62c"> <a href="#org44bc62c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org44bc62c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org7fb4bbb" class="outline-2">
+ <h2 id="org7fb4bbb"> <a href="#org7fb4bbb">概要</a></h2>
+ <div class="outline-text-2" id="text-org7fb4bbb">
  <p>
-格納するときには変換のオーバーヘッドのため少し遅くなりますが、処理するときには、全く再解析が必要とされないので大幅に高速化されます。
- <a href="https://www.postgresql.jp/docs/9.6/datatype-json.html">8.14. JSONデータ型</a>
+DHCP OFFERは、クライアントからのDHCP DISCOVERに対して割当可能なIPアドレスを提示する。DHCPはIPアドレスを自動設定するためのプロトコルなので、クライアントはOFFERを送った時点でIPアドレスを持っていない。
+</p>
+
+ <p>
+クライアント → サーバはブロードキャストで送っているので、IPアドレスがなくても動くのはわかるが、サーバ → クライアントはどうしているのだろうか。
+</p>
+
+ <blockquote>
+ <p>
+DHCPサーバは、基盤となるトランスポート層のハードウェアレベルのMACアドレスを参照することができる。現在のRFCでは、DHCPパケットにクライアント識別子が指定されていない場合はトランスポート層のMACアドレスを使用できる。
+ <a href="https://ja.wikipedia.org/wiki/DHCP#DHCP_offer">DHCP - Wikipedia</a>
 </p>
 </blockquote>
-</div>
-</div>
- <div id="outline-container-org8963225" class="outline-2">
- <h2 id="org8963225"> <a href="#org8963225">関連</a></h2>
- <div class="outline-text-2" id="text-org8963225">
- <ul class="org-ul"> <li>追加調査: JSONBの書き込みのほうがなぜか早かった。複雑なJSON構造の場合はどうなるか確かめる</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251211T084518--kdoc-502-jsonとjsonbの性能を比較する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20251211T084518--kdoc-502-jsonとjsonbの性能を比較する__draft_permanent.html</id>
-  <updated>2025-12-21T02:32:08+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgdc8d6b8" class="outline-2">
- <h2 id="orgdc8d6b8"> <a href="#orgdc8d6b8">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgdc8d6b8">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org8234caa" class="outline-2">
- <h2 id="org8234caa"> <a href="#org8234caa">概要</a></h2>
- <div class="outline-text-2" id="text-org8234caa">
- <p>
-DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約である(p57)。
-</p>
-</div>
-</div>
- <div id="outline-container-orgb1be08a" class="outline-2">
- <h2 id="orgb1be08a"> <a href="#orgb1be08a">関連</a></h2>
- <div class="outline-text-2" id="text-orgb1be08a">
- <ul class="org-ul"> <li>参照:  <a href="20241102T084716--kdoc-258-『ピアリング戦記』__book.html#ID-20241102T084716">KDOC 258: 『ピアリング戦記』</a>から</li>
- <li>追加調査: なぜ13個になるのか詳細を調べる</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251217T184407--kdoc-507-dnsのルートサーバが13個なのはdnsのudpのパケット上限が512バイトであるから__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20251217T184407--kdoc-507-dnsのルートサーバが13個なのはdnsのudpのパケット上限が512バイトであるから__draft_permanent.html</id>
-  <updated>2025-12-21T02:32:06+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 494: 日時に関する統計ではタイムゾーンが必要になる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org6f88c47" class="outline-2">
- <h2 id="org6f88c47"> <a href="#org6f88c47">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6f88c47">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org07f0839" class="outline-2">
- <h2 id="org07f0839"> <a href="#org07f0839">概要</a></h2>
- <div class="outline-text-2" id="text-org07f0839">
- <p>
-直感的でなかったことのメモ。
-</p>
-
- <p>
-たとえば、バックエンドで時間をUTCで保存するシステムがある。DBに保存されている値と、REST APIが返す時間はすべてUTCである。クライアントは各自のタイムゾーンで解釈して表示するような決まりになっている。
-</p>
-
- <p>
-点の時刻を返すだけだと単にUTCで返せばいいのだが、日/週/月ごと、などの期間ごとの統計をDBで行うときには期間の境界があるので、クエリにタイムゾーンを考慮した時刻が必要になる。日がいつ始まり終わるどうかは、タイムゾーンで異なる。
-</p>
-</div>
-</div>
- <div id="outline-container-org8a5fde5" class="outline-2">
- <h2 id="org8a5fde5"> <a href="#org8a5fde5">関連</a></h2>
- <div class="outline-text-2" id="text-org8a5fde5">
- <ul class="org-ul"> <li>類推: ほかにUTC保存で気をつけるところはあるか</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251201T172433--kdoc-494-日時に関する統計ではタイムゾーンが必要になる__essay.html"/>
-  <id>https://kijimad.github.io/roam/20251201T172433--kdoc-494-日時に関する統計ではタイムゾーンが必要になる__essay.html</id>
-  <updated>2025-12-21T02:32:03+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 505: 既存メモ側からどういった関連ができそうか考える</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orge8e7d8d" class="outline-2">
- <h2 id="orge8e7d8d"> <a href="#orge8e7d8d">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge8e7d8d">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgc4ad32d" class="outline-2">
- <h2 id="orgc4ad32d"> <a href="#orgc4ad32d">概要</a></h2>
- <div class="outline-text-2" id="text-orgc4ad32d">
- <p>
-ツェッテルカステンライクな方法でメモしている。
-</p>
-
- <p>
-メモの関連が少なく、理解や思考を深められていないのを課題に感じてきた。単純に同じカテゴリの話題だから、という理由で関連させていることが多かったが、意味ないよな、と感じてきた。
-</p>
-
- <p>
-既存メモ側にどういった関連ができそうかの想定を書いておくと関連させやすいことに気づいた。また、それだけだと忘れやすいので先に想定する関連に対して類型をつけて抽象化しておくと、組み合わせて考えやすいのに気づいた。
-</p>
-
- <pre class="example" id="orgebe6879">
-KDOC 37: トップダウンかボトムアップ、どちらで成し遂げるか?
-- 具体例: トップダウンの主張も出す
-
-KDOC 71: KDOCエントリの書き方を考える
-- 補足: 結局テンプレートファイルに含めた項目以外は忘れ去っていた。仕組みにしなければならない
-
-KDOC 3: 『ない仕事の作り方』
-- 組み合わせ: 彼のスクラップ癖と知識獲得モデルは、メモのとりかたで説明できるのではないか
-</pre>
-
- <p>
-そしてあとは、これらを見返して、この関連となるメモを追加していくわけである。
-</p>
-
- <p>
-いままでは膨大な既存メモと、ランダムに書いた新規メモがあって、その関連を考えていた。結果、深まらないメモができていた。事前に関連を考えておく方式だと、既存メモから考えた関連をもとにメモを作る。最初から関連ありきでメモを作成するので、深まっていくだろう。
-</p>
-</div>
-</div>
- <div id="outline-container-orgd80bb71" class="outline-2">
- <h2 id="orgd80bb71"> <a href="#orgd80bb71">関連</a></h2>
- <div class="outline-text-2" id="text-orgd80bb71">
- <ul class="org-ul"> <li>動機:  <a href="20240502T172812--kdoc-153-すでにあるメモから、関連させられないか考える__essay.html#ID-20240502T172812">KDOC 153: すでにあるメモから、関連させられないか考える</a>。「時間を作る」だけでは改善しなかったので、対策を具体化した</li>
- <li>補足:  <a href="20231008T203658--kdoc-36-『take-notes』__book.html#ID-20231008T203658">KDOC 36: 『TAKE NOTES!』</a>。ツェッテルカステンで参考にしている本</li>
-</ul></div>
-</div>
- <div id="outline-container-org0e2b770" class="outline-2">
- <h2 id="org0e2b770"> <a href="#org0e2b770">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org0e2b770">
- <ul class="org-ul"> <li> <a href="./20240504T224810--kdoc-165-メモの課題と対応策を考える__structure.html">KDOC 165: メモの課題と対応策を考える</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251214T123530--kdoc-505-既存メモ側からどういった関連ができそうか考える__essay.html"/>
-  <id>https://kijimad.github.io/roam/20251214T123530--kdoc-505-既存メモ側からどういった関連ができそうか考える__essay.html</id>
-  <updated>2025-12-21T02:32:01+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 504: 家電売り場で栄枯盛衰を感じる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgc904a20" class="outline-2">
- <h2 id="orgc904a20"> <a href="#orgc904a20">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc904a20">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org8d25160" class="outline-2">
- <h2 id="org8d25160"> <a href="#org8d25160">概要</a></h2>
- <div class="outline-text-2" id="text-org8d25160">
- <p>
-日曜の午後、池袋駅付近にある複数の大型家電店をぶらついた。あてもなく1フロアずつ練り歩いたところ、気づいたことがあった。
-</p>
-
- <ul class="org-ul"> <li>どの店も1階にスマートフォン売り場があり、人で混雑している</li>
- <li>PC周辺機器などのIT・小型家電で1フロアになっていることが多い。テレビ、冷蔵庫、洗濯機などの大型家電で1フロアになっていることが多い</li>
- <li>テレビは広大な売り場面積を占めるが、閑散としていた。大量のテレビの音響が混ざり合ってガヤガヤした音だけが響いていた。数組の若いカップルと店員がテーブルに座って契約を進めているように見えた。明らかに大型家電にはシーズン性があるが、それを差し引いても人がいないのに驚いた。疲れて休憩がてら見る人さえいなかった。テレビは家電量販店の花形コーナーだと考えていた</li>
- <li>カメラコーナーは広く充実しているが、あまり人はいない</li>
- <li>PC周辺機器コーナーは人が多く、老若男女多くの人がいた</li>
-</ul> <p>
-ひとくちに家電量販店といっても、内部では客数に大きな違いがあり、自分の持っている直感とは異なるのを体感した <sup> <a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>。自分が何を作りたいかと、それを時代が必要としているかは別の話だ。
-</p>
-</div>
-</div>
- <div id="outline-container-org55a7811" class="outline-2">
- <h2 id="org55a7811"> <a href="#org55a7811">関連</a></h2>
- <div class="outline-text-2" id="text-org55a7811">
- <ul class="org-ul"> <li>追加調査: 具体的に額ベースや売り場面積でジャンルごとの推移を調べる方法はあるか</li>
-</ul></div>
-</div>
- <div id="footnotes">
- <h2 class="footnotes">Footnotes: </h2>
- <div id="text-footnotes">
-
- <div class="footdef"> <sup> <a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"> <p class="footpara">
-もちろん利益率が違うので、人があまり多くないように見えても利益率は高い、ということもありそうである。
-</p></div></div>
-
-
-</div>
-</div></div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251213T193458--kdoc-504-家電売り場で栄枯盛衰を感じる__draft_essay.html"/>
-  <id>https://kijimad.github.io/roam/20251213T193458--kdoc-504-家電売り場で栄枯盛衰を感じる__draft_essay.html</id>
-  <updated>2025-12-21T02:31:57+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 509: DNSフィルタリングされている様子をdigで見る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org16d4c5b" class="outline-2">
- <h2 id="org16d4c5b"> <a href="#org16d4c5b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org16d4c5b">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org1514323" class="outline-2">
- <h2 id="org1514323"> <a href="#org1514323">概要</a></h2>
- <div class="outline-text-2" id="text-org1514323">
- <p>
-AdGuardで、DNSフィルタリングされている様子を見る。
-</p>
-
- <p>
-最初に通常のDNSレスポンスを確認する。
-</p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>通常のレスポンス</label> <pre class="src src-shell">dig google.com
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>DHCPコネクションはIPアドレスとMACアドレスの両方でハンドリングできるようになっている</label> <pre class="src src-git-permalink">https://github.com/AdguardTeam/AdGuardHome/blob/59e8c8385d1bb8239b83e5a514b524cdbcd1555e/internal/dhcpd/conn_linux.go#L34-L49
 </pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil">
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> google.com
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 20568
-;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+ <pre class="src src-nil">// dhcpConn is the net.PacketConn capable of handling both net.UDPAddr and
+// net.HardwareAddr.
+type dhcpConn struct {
+	// udpConn is the connection for UDP addresses.
+	udpConn net.PacketConn
+	// bcastIP is the broadcast address specific for the configured
+	// interface's subnet.
+	bcastIP net.IP
 
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;google.com.			IN	A
-
-;; ANSWER SECTION:
-google.com.		272	IN	A	172.217.174.110 👈
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Fri Dec 19 23:15:30 JST 2025
-;; MSG SIZE  rcvd: 55
-
-</pre>
-</div>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>フィルタリング設定しているドメイン</label> <pre class="src src-shell">dig x.com
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> x.com
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 7283
-;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;x.com.				IN	A
-
-;; ANSWER SECTION:
-x.com.			10	IN	A	0.0.0.0 👈
-
-;; Query time: 112 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Fri Dec 19 08:58:38 JST 2025
-;; MSG SIZE  rcvd: 50
-
+	// rawConn is the connection for MAC addresses.
+	rawConn net.PacketConn
+	// srcMAC is the hardware address of the configured network interface.
+	srcMAC net.HardwareAddr
+	// srcIP is the IP address  of the configured network interface.
+	srcIP net.IP
+}
 </pre>
 </div>
 </div>
 </div>
- <div id="outline-container-orga45f3ae" class="outline-2">
- <h2 id="orga45f3ae"> <a href="#orga45f3ae">関連</a></h2>
- <div class="outline-text-2" id="text-orga45f3ae">
- <p>
-なし。
-</p>
-</div>
+ <div id="outline-container-orgd363461" class="outline-2">
+ <h2 id="orgd363461"> <a href="#orgd363461">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd363461">
+ <ul class="org-ul"> <li>参照:  <a href="https://ja.wikipedia.org/wiki/DHCP#DHCP_offer">DHCP - Wikipedia</a></li>
+</ul></div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251219T085723--kdoc-509-dnsフィルタリングされている様子をdigで見る__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20251219T085723--kdoc-509-dnsフィルタリングされている様子をdigで見る__draft_permanent.html</id>
-  <updated>2025-12-21T02:31:14+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20251221T110432--kdoc-515-dhcp-offerはまだipがないのにどうやってudpで通信しているのか__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251221T110432--kdoc-515-dhcp-offerはまだipがないのにどうやってudpで通信しているのか__draft_permanent.html</id>
+  <updated>2025-12-22T17:09:52+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 510: DNSサーバでテストTDLを使用する例を示す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org421cf37" class="outline-2">
- <h2 id="org421cf37"> <a href="#org421cf37">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org421cf37">
+ <div id="outline-container-org0a43af5" class="outline-2">
+ <h2 id="org0a43af5"> <a href="#org0a43af5">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0a43af5">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -564,14 +789,14 @@ x.com.			10	IN	A	0.0.0.0 👈
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org7ecedd8" class="outline-2">
- <h2 id="org7ecedd8"> <a href="#org7ecedd8">概要</a></h2>
- <div class="outline-text-2" id="text-org7ecedd8">
+ <div id="outline-container-orga76eeef" class="outline-2">
+ <h2 id="orga76eeef"> <a href="#orga76eeef">概要</a></h2>
+ <div class="outline-text-2" id="text-orga76eeef">
 </div>
 </div>
- <div id="outline-container-org45cf228" class="outline-2">
- <h2 id="org45cf228"> <a href="#org45cf228">関連</a></h2>
- <div class="outline-text-2" id="text-org45cf228">
+ <div id="outline-container-orgb3c98b0" class="outline-2">
+ <h2 id="orgb3c98b0"> <a href="#orgb3c98b0">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb3c98b0">
  <p>
 なし。
 </p>
@@ -580,16 +805,16 @@ x.com.			10	IN	A	0.0.0.0 👈
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251220T094534--kdoc-510-dnsサーバでテストtdlを使用する例を示す__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20251220T094534--kdoc-510-dnsサーバでテストtdlを使用する例を示す__draft_permanent.html</id>
-  <updated>2025-12-21T02:31:09+09:00</updated>
+  <updated>2025-12-22T17:09:52+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 506: 圧倒的な量が集まってきたから好きになる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgb6a0c3d" class="outline-2">
- <h2 id="orgb6a0c3d"> <a href="#orgb6a0c3d">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgb6a0c3d">
+ <div id="outline-container-org9ab3a0a" class="outline-2">
+ <h2 id="org9ab3a0a"> <a href="#org9ab3a0a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9ab3a0a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
 </ul></li>
@@ -598,9 +823,9 @@ x.com.			10	IN	A	0.0.0.0 👈
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org2290e9e" class="outline-2">
- <h2 id="org2290e9e"> <a href="#org2290e9e">概要</a></h2>
- <div class="outline-text-2" id="text-org2290e9e">
+ <div id="outline-container-orgac4760d" class="outline-2">
+ <h2 id="orgac4760d"> <a href="#orgac4760d">概要</a></h2>
+ <div class="outline-text-2" id="text-orgac4760d">
  <p>
  <a href="20221027T235104--kdoc-3-『ない仕事の作り方』__book.html#ID-20221027T235104">KDOC 3: 『ない仕事の作り方』</a>から、ないジャンルに名前をつけ、発表にいたるまでの流れを示す。
 </p>
@@ -610,325 +835,25 @@ x.com.			10	IN	A	0.0.0.0 👈
  <li>「これだけ面白いものが流行らないわけがない」と自分の洗脳が進み、他人に興味を持ってもらえるようになっていく</li>
 </ol></div>
 </div>
- <div id="outline-container-org5b4ec26" class="outline-2">
- <h2 id="org5b4ec26"> <a href="#org5b4ec26">関連</a></h2>
- <div class="outline-text-2" id="text-org5b4ec26">
+ <div id="outline-container-org89a1ea4" class="outline-2">
+ <h2 id="org89a1ea4"> <a href="#org89a1ea4">関連</a></h2>
+ <div class="outline-text-2" id="text-org89a1ea4">
  <ul class="org-ul"> <li>引用:  <a href="20221027T235104--kdoc-3-『ない仕事の作り方』__book.html#ID-20221027T235104">KDOC 3: 『ない仕事の作り方』</a>。から</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251214T193935--kdoc-506-圧倒的な量が集まってきたから好きになる__essay.html"/>
   <id>https://kijimad.github.io/roam/20251214T193935--kdoc-506-圧倒的な量が集まってきたから好きになる__essay.html</id>
-  <updated>2025-12-21T02:31:09+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 496: Index (Only) Scanの様子を見る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org604700a" class="outline-2">
- <h2 id="org604700a"> <a href="#org604700a">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org604700a">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org3278aeb" class="outline-2">
- <h2 id="org3278aeb"> <a href="#org3278aeb">概要</a></h2>
- <div class="outline-text-2" id="text-org3278aeb">
- <p>
-PostgreSQLで、インデックスが使われる様子を確かめる。
-</p>
-
- <p>
-まず、indexを使わないパターン。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>indexがないフィールドを条件にするのでindexは使われない</label> <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (
-     <span class="org-keyword">NAME</span>  <span class="org-type">VARCHAR</span>(255),
-    num  <span class="org-type">INTEGER</span>
-);
- <span class="org-keyword">CREATE</span> INDEX idx_users_name  <span class="org-keyword">ON</span> users( <span class="org-keyword">NAME</span>);
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">indexを使わない
-</span>explain
- <span class="org-keyword">SELECT</span>  <span class="org-keyword">NAME</span>  <span class="org-keyword">FROM</span> users  <span class="org-keyword">WHERE</span> num = 1;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                        |
-|--------------------------------------------------------|
-| > CREATE TABLE users (                                 |
-| >     NAME VARCHAR(255),                               |
-| >     num INTEGER                                      |
-| > );                                                   |
-| CREATE TABLE                                           |
-|                                                        |
-| > CREATE INDEX idx_users_name ON users(NAME);          |
-| CREATE INDEX                                           |
-|                                                        |
-| > explain                                              |
-| > SELECT NAME FROM users WHERE num = 1;                |
-| QUERY PLAN                                             |
-| Seq Scan on users  (cost=0.00..11.75 rows=1 width=516) |
-| Filter: (num = 1)                                      |
-</pre>
-</div>
-
- <p>
-つぎに、index scan するパターン。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>検索にインデックスidx_users_nameを使うが、結果として返すidは含まれていないのでヒープアクセスが発生し、index Only Scanにはならない</label> <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (
-    id serial  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,
-     <span class="org-keyword">NAME</span>  <span class="org-type">VARCHAR</span>(255)
-);
- <span class="org-keyword">CREATE</span> INDEX idx_users_name  <span class="org-keyword">ON</span> users( <span class="org-keyword">NAME</span>);
-
-explain
- <span class="org-keyword">SELECT</span> id  <span class="org-keyword">FROM</span> users  <span class="org-keyword">WHERE</span>  <span class="org-keyword">NAME</span> =  <span class="org-string">'a'</span>;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                                            |
-|----------------------------------------------------------------------------|
-| > CREATE TABLE users (                                                     |
-| >     id serial PRIMARY KEY,                                               |
-| >     NAME VARCHAR(255)                                                    |
-| > );                                                                       |
-| CREATE TABLE                                                               |
-|                                                                            |
-| > CREATE INDEX idx_users_name ON users(NAME);                              |
-| CREATE INDEX                                                               |
-|                                                                            |
-| > explain                                                                  |
-| > SELECT id FROM users WHERE NAME = 'a';                                   |
-| QUERY PLAN                                                                 |
-| Index Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=4) |
-| Index Cond: ((name)::text = 'a'::text)                                     |
-</pre>
-</div>
-
- <p>
-index only scan するパターン。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 3: </span>Index Only Scanする。検索にインデックスidx_users_nameを使い、結果もnameだけなので、indexだけで完結する。</label> <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (
-     <span class="org-keyword">NAME</span>  <span class="org-type">VARCHAR</span>(255),
-    num  <span class="org-type">INTEGER</span>
-);
- <span class="org-keyword">CREATE</span> INDEX idx_users_name  <span class="org-keyword">ON</span> users( <span class="org-keyword">NAME</span>);
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">indexを使う
-</span>explain
- <span class="org-keyword">SELECT</span>  <span class="org-keyword">NAME</span>  <span class="org-keyword">FROM</span> users  <span class="org-keyword">WHERE</span>  <span class="org-keyword">NAME</span> =  <span class="org-string">'a'</span>;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                                                   |
-|-----------------------------------------------------------------------------------|
-| > CREATE TABLE users (                                                            |
-| >     NAME VARCHAR(255),                                                          |
-| >     num INTEGER                                                                 |
-| > );                                                                              |
-| CREATE TABLE                                                                      |
-|                                                                                   |
-| > CREATE INDEX idx_users_name ON users(NAME);                                     |
-| CREATE INDEX                                                                      |
-|                                                                                   |
-| > explain                                                                         |
-| > SELECT NAME FROM users WHERE NAME = 'a';                                        |
-| QUERY PLAN                                                                        |
-| Index Only Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=516) |
-| Index Cond: (name = 'a'::text)                                                    |
-</pre>
-</div>
-</div>
-</div>
- <div id="outline-container-org49e9dc0" class="outline-2">
- <h2 id="org49e9dc0"> <a href="#org49e9dc0">関連</a></h2>
- <div class="outline-text-2" id="text-org49e9dc0">
- <ul class="org-ul"> <li>具体例:  <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。を使って検証した</li>
- <li>追加調査: QUERY PLANの値の意味をよくわかってないので調べる</li>
-</ul></div>
-</div>
- <div id="outline-container-org3bd05cb" class="outline-2">
- <h2 id="org3bd05cb"> <a href="#org3bd05cb">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org3bd05cb">
- <ul class="org-ul"> <li> <a href="./20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html">KDOC 497: 複合インデックスの使用条件を試す</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html</id>
-  <updated>2025-12-21T02:31:06+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 495: 文芸的にDB動作を検証できるようにする</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgc580b23" class="outline-2">
- <h2 id="orgc580b23"> <a href="#orgc580b23">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc580b23">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org43d0b0e" class="outline-2">
- <h2 id="org43d0b0e"> <a href="#org43d0b0e">概要</a></h2>
- <div class="outline-text-2" id="text-org43d0b0e">
- <p>
-文芸的にDB動作を検証できるようにした。
-</p>
-</div>
-</div>
- <div id="outline-container-org39e6ab1" class="outline-2">
- <h2 id="org39e6ab1"> <a href="#org39e6ab1">背景</a></h2>
- <div class="outline-text-2" id="text-org39e6ab1">
- <p>
- <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？</a>を読んで、データベースの機能について知らないことが多いのを知った。
-</p>
-
- <p>
-コンピュータのほかの事柄と同様に、じっさいに試して、挙動を仔細にみて背景にあるアイデアを理解し、自分なりのモデルを構築していくのが必要に見えた。REPLでいじるのではなく、記録しつつ試していけると、あとで見返すこともできよさそうである。
-</p>
-
- <p>
-そういうことを気軽にできるようにした。
-</p>
-</div>
-</div>
- <div id="outline-container-org7f9b596" class="outline-2">
- <h2 id="org7f9b596"> <a href="#org7f9b596">要件</a></h2>
- <div class="outline-text-2" id="text-org7f9b596">
- <ul class="org-ul"> <li>少ない準備で気軽にデータベースを実行できる</li>
- <li>文芸的プログラミングができる。入力と標準出力をテキストに残し、そのままドキュメント化できる
- <ul class="org-ul"> <li>入力クエリを出力にエコー表示できる</li>
-</ul></li>
- <li>毎回クリーンな環境で、完全に再現できる</li>
- <li>org-mode org-babelの  <code>sql</code> ブロックから直接使える</li>
- <li>完全に同等の機能が使える。インデックス、EXPLAIN、トランザクション…が使える</li>
-</ul></div>
-</div>
- <div id="outline-container-org81ed3d1" class="outline-2">
- <h2 id="org81ed3d1"> <a href="#org81ed3d1">使用例</a></h2>
- <div class="outline-text-2" id="text-org81ed3d1">
- <p>
-リポジトリは <a href="https://github.com/kijimad/pgpg">kijimad/pgpg</a>にある。
-</p>
-
- <p>
-根本的なアイデアは、データベースのプロキシを実装し、フック処理を追加することである。プロキシで、実験に必要な処理(DB初期化と削除)を実行する。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>DBとプロキシを起動する</label> <pre class="src src-shell">docker compose up -d
-</pre>
-</div>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>org-modeの見出しやファイルヘッダに接続先情報を書く</label> <pre class="src src-org-mode">:PROPERTIES:
-  :header-args+: :results table
-  :header-args+: :database postgres
-  :header-args+: :dbhost localhost
-  :header-args+: :dbport 15432
-  :header-args+: :dbuser postgres
-  :header-args+: :engine postgresql
-:END:
-</pre>
-</div>
-
- <p>
-あとは、org-babelでSQLを実行して評価する。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <span class="org-keyword">select</span> 1+1  <span class="org-keyword">as</span>  <span class="org-keyword">result</span>;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                         |
-|-------------------------|
-| > select 1+1 as result; |
-| result                  |
-| 2                       |
-</pre>
-</div>
-
- <p>
-データベースは接続のたびにリセットされる。完全に再現可能で、あとで読みやすい。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 3: </span>リセットされるので実行のたびに同じ結果が出る</label> <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (
-     <span class="org-keyword">name</span>  <span class="org-type">varchar</span>(255),
-    tel  <span class="org-type">integer</span>
-);
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> users ( <span class="org-keyword">name</span>, tel)  <span class="org-keyword">VALUES</span> ( <span class="org-string">'きじま'</span>, 100);
- <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> users;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                         |     |
-|---------------------------------------------------------+-----|
-| > CREATE TABLE users (                                  |     |
-| >     name varchar(255),                                |     |
-| >     tel integer                                       |     |
-| > );                                                    |     |
-| CREATE TABLE                                            |     |
-|                                                         |     |
-| > INSERT INTO users (name, tel) VALUES ('きじま', 100); |     |
-| INSERT 0 1                                              |     |
-|                                                         |     |
-| > SELECT * FROM users;                                  |     |
-| name                                                    | tel |
-| きじま                                                  | 100 |
-</pre>
-</div>
-</div>
-</div>
- <div id="outline-container-orgd6a0ec3" class="outline-2">
- <h2 id="orgd6a0ec3"> <a href="#orgd6a0ec3">関連</a></h2>
- <div class="outline-text-2" id="text-orgd6a0ec3">
- <ul class="org-ul"> <li>動機:  <a href="20240207T092747--kdoc-77-検証する方法があると理解が進む__essay.html#ID-20240207T092747">KDOC 77: 検証する方法があると理解が進む</a>。に基づいて作った</li>
-</ul></div>
-</div>
- <div id="outline-container-orgb23b37f" class="outline-2">
- <h2 id="orgb23b37f"> <a href="#orgb23b37f">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgb23b37f">
- <ul class="org-ul"> <li> <a href="./20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html">KDOC 496: Index (Only) Scanの様子を見る</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html"/>
-  <id>https://kijimad.github.io/roam/20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html</id>
-  <updated>2025-12-21T02:31:06+09:00</updated>
+  <updated>2025-12-22T17:09:52+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 511: 半蔵門ミュージアムを観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org8d16786" class="outline-2">
- <h2 id="org8d16786"> <a href="#org8d16786">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org8d16786">
+ <div id="outline-container-org6953910" class="outline-2">
+ <h2 id="org6953910"> <a href="#org6953910">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6953910">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -937,9 +862,9 @@ index only scan するパターン。
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org6b04681" class="outline-2">
- <h2 id="org6b04681"> <a href="#org6b04681">概要</a></h2>
- <div class="outline-text-2" id="text-org6b04681">
+ <div id="outline-container-orgbf8816a" class="outline-2">
+ <h2 id="orgbf8816a"> <a href="#orgbf8816a">概要</a></h2>
+ <div class="outline-text-2" id="text-orgbf8816a">
  <p>
 半蔵門ミュージアムは、東京都千代田区にある歴史的な仏教美術品を展示する博物館である。
 </p>
@@ -947,17 +872,17 @@ index only scan するパターン。
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d125215.87139745476!2d139.66005903906253!3d35.656440154172365!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c6556d00001%3A0xcd6709c1ea4ad3e1!2sHanzomon%20Museum!5e1!3m2!1sen!2sjp!4v1766207040753!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 </div>
 </div>
- <div id="outline-container-orgc1f7c4e" class="outline-2">
- <h2 id="orgc1f7c4e"> <a href="#orgc1f7c4e">メモ</a></h2>
- <div class="outline-text-2" id="text-orgc1f7c4e">
+ <div id="outline-container-orgc27bad6" class="outline-2">
+ <h2 id="orgc27bad6"> <a href="#orgc27bad6">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgc27bad6">
  <ul class="org-ul"> <li>全体的に広々していて、豪勢なつくりになっている。特に地下は天井の高さが3フロアぶんくらいあって地下と感じないほど広々としている。間接照明で砂岩ふうの壁が照らされている。非常に静かで、厳かな雰囲気がする</li>
  <li>面積の割に従業員が多い。受付に2人、エレベーターに1人、売店に2人、館内をスーツで巡回する人が数人いる。半蔵門という超絶スポットにある。それにも関わらず、入館料は無料である。明らかに公立の博物館よりコストがかかっているが、成り立っているのを不思議に感じた。宗教のバックグラウンドによるトリックがあるのだろうか</li>
  <li>紀元付近につくられたというインドの本物の石彫刻は、ケースにも入っていなくて、間近に観察できる。キラキラしたものを含む岩石に掘られている。ケースの有無は全然違う。服装や顔の感じはギリシャふうの雰囲気である</li>
 </ul></div>
 </div>
- <div id="outline-container-orgad45073" class="outline-2">
- <h2 id="orgad45073"> <a href="#orgad45073">感想</a></h2>
- <div class="outline-text-2" id="text-orgad45073">
+ <div id="outline-container-orga60259b" class="outline-2">
+ <h2 id="orga60259b"> <a href="#orga60259b">感想</a></h2>
+ <div class="outline-text-2" id="text-orga60259b">
  <ul class="org-ul"> <li>新興宗教を興す教祖になったつもりで見た。宗教グッズやストーリーにどういう「効果」があるかという観点で見る</li>
  <li>昔の人も現代人と変わらない認識で、当時の人になりきって想像する</li>
  <li>仏像は現代のフィギュアやアイドル文化みたいなもの。寺はテーマパークである</li>
@@ -970,25 +895,31 @@ index only scan するパターン。
  <li>今大人になって、時間をつくるのは大変であるが、当時の人たちも石の彫刻をほる時間をとるのは大変だっただろう。ヘタウマなところも含めて趣味の熱意を感じる</li>
 </ul></div>
 </div>
- <div id="outline-container-orgb791f20" class="outline-2">
- <h2 id="orgb791f20"> <a href="#orgb791f20">関連</a></h2>
- <div class="outline-text-2" id="text-orgb791f20">
+ <div id="outline-container-org248bdce" class="outline-2">
+ <h2 id="org248bdce"> <a href="#org248bdce">関連</a></h2>
+ <div class="outline-text-2" id="text-org248bdce">
  <ul class="org-ul"> <li>類推:  <a href="20241027T201315--kdoc-255-『完全教祖マニュアル』__book.html#ID-20241027T201315">KDOC 255: 『完全教祖マニュアル』</a>。教祖としての宗教を解説する</li>
+</ul></div>
+</div>
+ <div id="outline-container-orge93f7c1" class="outline-2">
+ <h2 id="orge93f7c1"> <a href="#orge93f7c1">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orge93f7c1">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251220T140427--kdoc-511-半蔵門ミュージアムを観察する__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20251220T140427--kdoc-511-半蔵門ミュージアムを観察する__draft_essay.html</id>
-  <updated>2025-12-21T02:31:02+09:00</updated>
+  <updated>2025-12-22T17:09:46+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 500: Covering Indexを試す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org9066846" class="outline-2">
- <h2 id="org9066846"> <a href="#org9066846">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org9066846">
+ <div id="outline-container-orgfa1d8a8" class="outline-2">
+ <h2 id="orgfa1d8a8"> <a href="#orgfa1d8a8">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgfa1d8a8">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
 </ul></li>
@@ -997,9 +928,9 @@ index only scan するパターン。
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org2fcd60e" class="outline-2">
- <h2 id="org2fcd60e"> <a href="#org2fcd60e">概要</a></h2>
- <div class="outline-text-2" id="text-org2fcd60e">
+ <div id="outline-container-org9d017b4" class="outline-2">
+ <h2 id="org9d017b4"> <a href="#org9d017b4">概要</a></h2>
+ <div class="outline-text-2" id="text-org9d017b4">
  <p>
  <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？</a>で、Covering Indexという見慣れない単語を見た。調べて、試す。
 </p>
@@ -1065,9 +996,9 @@ index only scan するパターン。
 </div>
 </div>
 </div>
- <div id="outline-container-org43e7ad4" class="outline-2">
- <h2 id="org43e7ad4"> <a href="#org43e7ad4">関連</a></h2>
- <div class="outline-text-2" id="text-org43e7ad4">
+ <div id="outline-container-org6e6e6c8" class="outline-2">
+ <h2 id="org6e6e6c8"> <a href="#org6e6e6c8">関連</a></h2>
+ <div class="outline-text-2" id="text-org6e6e6c8">
  <ul class="org-ul"> <li>類推:  <a href="20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html#ID-20251207T091742">KDOC 497: 複合インデックスの使用条件を試す</a>。同じくインデックスの話題</li>
  <li>具体例: どういったユースケースでCovering Indexを使うべきなのか</li>
 </ul></div>
@@ -1075,74 +1006,16 @@ index only scan するパターン。
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251208T083954--kdoc-500-covering-indexを試す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20251208T083954--kdoc-500-covering-indexを試す__permanent.html</id>
-  <updated>2025-12-21T02:31:01+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 492: 小石川植物園を観察する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgbb69f1c" class="outline-2">
- <h2 id="orgbb69f1c"> <a href="#orgbb69f1c">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgbb69f1c">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orge5a0910" class="outline-2">
- <h2 id="orge5a0910"> <a href="#orge5a0910">概要</a></h2>
- <div class="outline-text-2" id="text-orge5a0910">
- <p>
-小石川植物園は、東京都文京区にある植物園である。
-</p>
-
- <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7811.570390628713!2d139.74391341198717!3d35.71747657246128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188db3e92ec1bb%3A0xb8d81a9078dce5c5!2sKoishikawa%20Botanical%20Garden!5e1!3m2!1sen!2sjp!4v1764719370847!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-</div>
-</div>
- <div id="outline-container-org436c2cc" class="outline-2">
- <h2 id="org436c2cc"> <a href="#org436c2cc">メモ</a></h2>
- <div class="outline-text-2" id="text-org436c2cc">
- <ul class="org-ul"> <li>広い。道は多くあって、特に順路などはない</li>
- <li>あまりイントロダクションはなく、自由に経路を選ぶ。解説も各所にあるのだが、植物に関する知識がないのであまりピンとこなかった</li>
- <li>博物館として細かい文章を読むというよりは、公園として目で見て楽しんでいる人が多いように見えた。広場でレクレーションをやっているグループさえあった。小さい字を読む気もあまり起きなかった。自然豊かなリラックスした雰囲気で、読んだり考えたくなかった。個別の植物を見るというより、森や公園の雰囲気を楽しんだ</li>
- <li>もともと植物を知っている人にとってはまた違った魅力を持つものだろう</li>
- <li>重厚な温室の設備があって、興味深かった。噴霧と気温でもうもうとしていて、メガネが一瞬で曇った</li>
- <li>鉢に管理番号カードを差して、1つ1つ管理しているようであった</li>
- <li>きれいな日本庭園と、大学の校舎として使われた歴史的建築物があった。こんな美しい校舎で学ぶのはいったいどのような気分なのだろうと考えた</li>
- <li>森林部分と日本庭園部分は高低差があり、崖状になっていた。それが美しい景観を生み出していたように見える</li>
-</ul></div>
-</div>
- <div id="outline-container-org3f1769b" class="outline-2">
- <h2 id="org3f1769b"> <a href="#org3f1769b">関連</a></h2>
- <div class="outline-text-2" id="text-org3f1769b">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org1106856" class="outline-2">
- <h2 id="org1106856"> <a href="#org1106856">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org1106856">
- <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251130T101158--kdoc-492-小石川植物園を観察する__essay.html"/>
-  <id>https://kijimad.github.io/roam/20251130T101158--kdoc-492-小石川植物園を観察する__essay.html</id>
-  <updated>2025-12-21T02:30:58+09:00</updated>
+  <updated>2025-12-22T17:09:44+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 503: Linuxカーネルは/boot配下にあるvmlinuzファイルである</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org1f1799b" class="outline-2">
- <h2 id="org1f1799b"> <a href="#org1f1799b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org1f1799b">
+ <div id="outline-container-org9f334be" class="outline-2">
+ <h2 id="org9f334be"> <a href="#org9f334be">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9f334be">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
 </ul></li>
@@ -1151,9 +1024,9 @@ index only scan するパターン。
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org606d644" class="outline-2">
- <h2 id="org606d644"> <a href="#org606d644">概要</a></h2>
- <div class="outline-text-2" id="text-org606d644">
+ <div id="outline-container-org75b64a7" class="outline-2">
+ <h2 id="org75b64a7"> <a href="#org75b64a7">概要</a></h2>
+ <div class="outline-text-2" id="text-org75b64a7">
  <p>
 Linuxカーネルは  <code>/boot</code> 配下にある  <code>vmlinuz</code> ファイルである、といえる。カーネルは  <code>gzip</code> で圧縮されているので  <code>z</code> がついている。
 </p>
@@ -1184,9 +1057,9 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
 </div>
 </div>
 </div>
- <div id="outline-container-orgf04bee5" class="outline-2">
- <h2 id="orgf04bee5"> <a href="#orgf04bee5">関連</a></h2>
- <div class="outline-text-2" id="text-orgf04bee5">
+ <div id="outline-container-org34bf4d7" class="outline-2">
+ <h2 id="org34bf4d7"> <a href="#org34bf4d7">関連</a></h2>
+ <div class="outline-text-2" id="text-org34bf4d7">
  <ul class="org-ul"> <li>引用:  <a href="20240105T215847--kdoc-63-『私はどのようにしてlinuxカーネルを学んだか』__book.html#ID-20240105T215847">KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』</a>から。端的にどこにあたるかが示されていて面白いと感じた</li>
  <li>追加調査:  <code>/boot</code> ディレクトリのほかのファイルが何か見る</li>
 </ul></div>
@@ -1194,16 +1067,16 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251212T232903--kdoc-503-linuxカーネルはboot配下にあるvmlinuzファイルである__permanent.html"/>
   <id>https://kijimad.github.io/roam/20251212T232903--kdoc-503-linuxカーネルはboot配下にあるvmlinuzファイルである__permanent.html</id>
-  <updated>2025-12-21T02:30:57+09:00</updated>
+  <updated>2025-12-22T17:09:40+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 497: 複合インデックスの使用条件を試す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org7b80dbb" class="outline-2">
- <h2 id="org7b80dbb"> <a href="#org7b80dbb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org7b80dbb">
+ <div id="outline-container-org7af83ac" class="outline-2">
+ <h2 id="org7af83ac"> <a href="#org7af83ac">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7af83ac">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
 </ul></li>
@@ -1212,9 +1085,9 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga396dbd" class="outline-2">
- <h2 id="orga396dbd"> <a href="#orga396dbd">概要</a></h2>
- <div class="outline-text-2" id="text-orga396dbd">
+ <div id="outline-container-orgaaa8eed" class="outline-2">
+ <h2 id="orgaaa8eed"> <a href="#orgaaa8eed">概要</a></h2>
+ <div class="outline-text-2" id="text-orgaaa8eed">
  <p>
 複合インデックスによるスキャン方法の変化を実験した。
 </p>
@@ -1335,9 +1208,9 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
  <li>Index Only Scan</li>
 </ul></div>
 </div>
- <div id="outline-container-org647cef7" class="outline-2">
- <h2 id="org647cef7"> <a href="#org647cef7">関連</a></h2>
- <div class="outline-text-2" id="text-org647cef7">
+ <div id="outline-container-orgd4a9999" class="outline-2">
+ <h2 id="orgd4a9999"> <a href="#orgd4a9999">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd4a9999">
  <ul class="org-ul"> <li>動機:  <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。インデックスを確かめているときに考えた</li>
  <li>追加調査: 複数のスキャン方法を試す</li>
  <li>疑問: 複合でないインデックスはなんというのか</li>
@@ -1345,25 +1218,102 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
  <li>疑問: 複合インデックスは技術的にどうなっているのか</li>
 </ul></div>
 </div>
- <div id="outline-container-orgddb6371" class="outline-2">
- <h2 id="orgddb6371"> <a href="#orgddb6371">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgddb6371">
+ <div id="outline-container-org2d6d30b" class="outline-2">
+ <h2 id="org2d6d30b"> <a href="#org2d6d30b">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org2d6d30b">
  <ul class="org-ul"> <li> <a href="./20251208T083954--kdoc-500-covering-indexを試す__permanent.html">KDOC 500: Covering Indexを試す</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html</id>
-  <updated>2025-12-21T02:30:56+09:00</updated>
+  <updated>2025-12-22T17:09:38+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 514: ARPテーブルとMACアドレステーブルの違い</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orge0e8be6" class="outline-2">
+ <h2 id="orge0e8be6"> <a href="#orge0e8be6">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orge0e8be6">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgdd7f2bb" class="outline-2">
+ <h2 id="orgdd7f2bb"> <a href="#orgdd7f2bb">概要</a></h2>
+ <div class="outline-text-2" id="text-orgdd7f2bb">
+ <p>
+ARPテーブルとMACアドレステーブルの違い。
+</p>
+
+ <ul class="org-ul"> <li>ARPテーブル: IP と MAC … 各NICデバイスごとで持つ</li>
+ <li>MACアドレステーブル: MACとポート … ポート番号を引く用, ブリッジが持つ</li>
+</ul></div>
+</div>
+ <div id="outline-container-org88fd9d4" class="outline-2">
+ <h2 id="org88fd9d4"> <a href="#org88fd9d4">関連</a></h2>
+ <div class="outline-text-2" id="text-org88fd9d4">
+ <ul class="org-ul"> <li>動機:  <a href="20251023T173743--kdoc-477-『docker-kubernetesネットワークのしくみ』__book.html#ID-20251023T173743">KDOC 477: 『Docker-Kubernetesネットワークのしくみ』</a>を読んでいて疑問に感じて調べた</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251221T092231--kdoc-514-arpテーブルとmacアドレステーブルの違い__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251221T092231--kdoc-514-arpテーブルとmacアドレステーブルの違い__draft_permanent.html</id>
+  <updated>2025-12-22T17:09:37+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 508: 除算の実行速度を計測する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org6624686" class="outline-2">
+ <h2 id="org6624686"> <a href="#org6624686">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6624686">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgce6789a" class="outline-2">
+ <h2 id="orgce6789a"> <a href="#orgce6789a">概要</a></h2>
+ <div class="outline-text-2" id="text-orgce6789a">
+ <p>
+除算というのは負荷の大きな演算であり、加算などの演算に比べると、実行に要する時間がはるかに長い(p51)。
+</p>
+
+ <p>
+305の方法で計測する。
+</p>
+</div>
+</div>
+ <div id="outline-container-org0f7d842" class="outline-2">
+ <h2 id="org0f7d842"> <a href="#org0f7d842">関連</a></h2>
+ <div class="outline-text-2" id="text-org0f7d842">
+ <ul class="org-ul"> <li>参照:  <a href="20240810T122445--kdoc-217-『基礎からきっちり覚える-機械語入門』__book.html#ID-20240810T122445">KDOC 217: 『基礎からきっちり覚える 機械語入門』</a>から</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20251218T232745--kdoc-508-除算の実行速度を計測する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20251218T232745--kdoc-508-除算の実行速度を計測する__draft_permanent.html</id>
+  <updated>2025-12-22T17:09:37+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 501: インデックスのオーバーヘッドを検証する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org7869cf7" class="outline-2">
- <h2 id="org7869cf7"> <a href="#org7869cf7">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org7869cf7">
+ <div id="outline-container-org29c3b07" class="outline-2">
+ <h2 id="org29c3b07"> <a href="#org29c3b07">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org29c3b07">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-16 貴島</li>
 </ul></li>
@@ -1372,9 +1322,9 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org7793957" class="outline-2">
- <h2 id="org7793957"> <a href="#org7793957">概要</a></h2>
- <div class="outline-text-2" id="text-org7793957">
+ <div id="outline-container-org2585988" class="outline-2">
+ <h2 id="org2585988"> <a href="#org2585988">概要</a></h2>
+ <div class="outline-text-2" id="text-org2585988">
  <p>
  <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>のOver-Indexingを読んで、インデックスの具体的なオーバヘッドを知った。
 </p>
@@ -1389,9 +1339,9 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
 これらをじっさいに試す。
 </p>
 </div>
- <div id="outline-container-org6406411" class="outline-3">
- <h3 id="org6406411"> <a href="#org6406411">作成時のディスク容量</a></h3>
- <div class="outline-text-3" id="text-org6406411">
+ <div id="outline-container-org21b6e3b" class="outline-3">
+ <h3 id="org21b6e3b"> <a href="#org21b6e3b">作成時のディスク容量</a></h3>
+ <div class="outline-text-3" id="text-org21b6e3b">
  <p>
 レコードを作成して、インデックスのディスク容量を見る。
 </p>
@@ -1458,9 +1408,9 @@ lrwxrwxrwx  1 root root       24 Feb 11  2025 vmlinuz -> vmlinuz-6.8.0-51-generi
 </p>
 </div>
 </div>
- <div id="outline-container-orgd6ecacc" class="outline-3">
- <h3 id="orgd6ecacc"> <a href="#orgd6ecacc">更新時のコスト</a></h3>
- <div class="outline-text-3" id="text-orgd6ecacc">
+ <div id="outline-container-org7a191e9" class="outline-3">
+ <h3 id="org7a191e9"> <a href="#org7a191e9">更新時のコスト</a></h3>
+ <div class="outline-text-3" id="text-org7a191e9">
  <p>
 インデックスの有無を変えてレコードを更新したときの時間を見る。
 </p>
@@ -1554,9 +1504,9 @@ EXPLAIN ANALYZE
 </p>
 </div>
 </div>
- <div id="outline-container-orgc3f40dc" class="outline-3">
- <h3 id="orgc3f40dc"> <a href="#orgc3f40dc">計画時間のコスト</a></h3>
- <div class="outline-text-3" id="text-orgc3f40dc">
+ <div id="outline-container-orgda851f1" class="outline-3">
+ <h3 id="orgda851f1"> <a href="#orgda851f1">計画時間のコスト</a></h3>
+ <div class="outline-text-3" id="text-orgda851f1">
  <div class="org-src-container">
  <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (
      <span class="org-keyword">name</span>  <span class="org-type">varchar</span>(255)
@@ -1645,9 +1595,9 @@ EXPLAIN ANALYZE
 </p>
 </div>
 </div>
- <div id="outline-container-org60fad6f" class="outline-3">
- <h3 id="org60fad6f"> <a href="#org60fad6f">大量インデックスの計画コスト</a></h3>
- <div class="outline-text-3" id="text-org60fad6f">
+ <div id="outline-container-orgdec1290" class="outline-3">
+ <h3 id="orgdec1290"> <a href="#orgdec1290">大量インデックスの計画コスト</a></h3>
+ <div class="outline-text-3" id="text-orgdec1290">
  <p>
 インデックス増加による計画時間の増加を見る。
 </p>
@@ -1846,9 +1796,9 @@ EXPLAIN ANALYZE
  <li>index不使用時の計画時間は増加していない</li>
 </ul></div>
 </div>
- <div id="outline-container-orgf8f4be4" class="outline-3">
- <h3 id="orgf8f4be4"> <a href="#orgf8f4be4">挿入時のコスト</a></h3>
- <div class="outline-text-3" id="text-orgf8f4be4">
+ <div id="outline-container-org57f717b" class="outline-3">
+ <h3 id="org57f717b"> <a href="#org57f717b">挿入時のコスト</a></h3>
+ <div class="outline-text-3" id="text-org57f717b">
  <p>
 インデックスの有無を変えてレコードを挿入したときの時間を見る。
 </p>
@@ -1948,80 +1898,25 @@ Execution Time が 118.892 ms -> 267.930 ms 。
 </div>
 </div>
 </div>
- <div id="outline-container-orgb45c648" class="outline-2">
- <h2 id="orgb45c648"> <a href="#orgb45c648">関連</a></h2>
- <div class="outline-text-2" id="text-orgb45c648">
+ <div id="outline-container-orgc69d2ad" class="outline-2">
+ <h2 id="orgc69d2ad"> <a href="#orgc69d2ad">関連</a></h2>
+ <div class="outline-text-2" id="text-orgc69d2ad">
  <ul class="org-ul"> <li>疑問: 計画時にオプション評価のコストがかかるというが、どのような状況で問題になるのだろうか。もっと端的に増えていくケースがあるのだろうか。調べた限りだとオーバーヘッドになっているのは確かだが、実行時間の削減量に比べてわずかで、あまり問題となるように見えない</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251210T084437--kdoc-501-インデックスのオーバーヘッドを検証する__permanent.html"/>
   <id>https://kijimad.github.io/roam/20251210T084437--kdoc-501-インデックスのオーバーヘッドを検証する__permanent.html</id>
-  <updated>2025-12-21T02:30:55+09:00</updated>
+  <updated>2025-12-22T17:09:37+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 493: 明治神宮ミュージアムを観察する</title>
+  <title>KDOC 516: 2025年をまとめる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org27ca9af" class="outline-2">
- <h2 id="org27ca9af"> <a href="#org27ca9af">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org27ca9af">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org1bbcbfd" class="outline-2">
- <h2 id="org1bbcbfd"> <a href="#org1bbcbfd">概要</a></h2>
- <div class="outline-text-2" id="text-org1bbcbfd">
- <p>
-明治神宮ミュージアムは、明治神宮を解説する博物館である。
-</p>
-
- <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7815.993728924776!2d139.6995454119855!3d35.67233027247567!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188d3793afecc3%3A0xa43c8d324731658c!2sMeiji%20Jingu%20Museum!5e1!3m2!1sen!2sjp!4v1764547132110!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-</div>
-</div>
- <div id="outline-container-orgad78fee" class="outline-2">
- <h2 id="orgad78fee"> <a href="#orgad78fee">メモ</a></h2>
- <div class="outline-text-2" id="text-orgad78fee">
- <ul class="org-ul"> <li>神社の建築時に使用したという大きな木の模型がある。これがガラスなどで覆われていなくて見やすい。かつ台の空間に余裕があるので、台に手をついてさまざまな角度から眺めやすい。模型は上から見てもよくわからない。同じ目線で見て、その縮尺の空間に自分が立っていることを想像しながら見るとおもしろい</li>
- <li>豪華絢爛な明治天皇ゆかりのグッズが展示されている。本質的に王様であった。平成以降しか知らないので、天皇が現在の位置づけとは異なることを認識するのだった。象徴ではなく、中央集権の頂点にいた時代</li>
- <li>明治神宮がもともと荒れ地で、人工的につくられた森であることに驚いた</li>
- <li>当時撮られた昭和初期の映像があって、すべてが珍しく感じた。たしかに歴史はつながっている</li>
- <li>明治神宮があまりに巨大な森なので全貌がわからなかったのだが、社の全体像を把握すると神聖を感じた</li>
-</ul></div>
-</div>
- <div id="outline-container-org6db3908" class="outline-2">
- <h2 id="org6db3908"> <a href="#org6db3908">関連</a></h2>
- <div class="outline-text-2" id="text-org6db3908">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org6cead43" class="outline-2">
- <h2 id="org6cead43"> <a href="#org6cead43">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org6cead43">
- <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251201T085907--kdoc-493-明治神宮ミュージアムを観察する__essay.html"/>
-  <id>https://kijimad.github.io/roam/20251201T085907--kdoc-493-明治神宮ミュージアムを観察する__essay.html</id>
-  <updated>2025-12-21T02:30:55+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 508: 除算の実行速度を計測する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgfd77c14" class="outline-2">
- <h2 id="orgfd77c14"> <a href="#orgfd77c14">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgfd77c14">
+ <div id="outline-container-org6a3a035" class="outline-2">
+ <h2 id="org6a3a035"> <a href="#org6a3a035">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6a3a035">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -2030,37 +1925,39 @@ Execution Time が 118.892 ms -> 267.930 ms 。
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org3e8b582" class="outline-2">
- <h2 id="org3e8b582"> <a href="#org3e8b582">概要</a></h2>
- <div class="outline-text-2" id="text-org3e8b582">
+ <div id="outline-container-orgd6c69ff" class="outline-2">
+ <h2 id="orgd6c69ff"> <a href="#orgd6c69ff">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd6c69ff">
  <p>
-除算というのは負荷の大きな演算であり、加算などの演算に比べると、実行に要する時間がはるかに長い(p51)。
+メモから思い出す。
 </p>
 
  <p>
-305の方法で計測する。
+個人的イベント。
 </p>
 </div>
 </div>
- <div id="outline-container-org0c224a7" class="outline-2">
- <h2 id="org0c224a7"> <a href="#org0c224a7">関連</a></h2>
- <div class="outline-text-2" id="text-org0c224a7">
- <ul class="org-ul"> <li>参照:  <a href="20240810T122445--kdoc-217-『基礎からきっちり覚える-機械語入門』__book.html#ID-20240810T122445">KDOC 217: 『基礎からきっちり覚える 機械語入門』</a>から</li>
+ <div id="outline-container-org66792f0" class="outline-2">
+ <h2 id="org66792f0"> <a href="#org66792f0">関連</a></h2>
+ <div class="outline-text-2" id="text-org66792f0">
+ <ul class="org-ul"> <li> <a href="20240203T020208--kdoc-67-2023年をまとめる__essay.html#ID-20240203T020208">KDOC 67: 2023年をまとめる</a>
+ <ul class="org-ul"> <li>2024年は抜けていることに気づいた</li>
+</ul></li>
 </ul></div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20251218T232745--kdoc-508-除算の実行速度を計測する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20251218T232745--kdoc-508-除算の実行速度を計測する__draft_permanent.html</id>
-  <updated>2025-12-21T02:30:54+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20251221T163444--kdoc-516-2025年をまとめる__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20251221T163444--kdoc-516-2025年をまとめる__draft_essay.html</id>
+  <updated>2025-12-22T17:09:34+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 498: 絶滅メディア博物館を観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org15e51d7" class="outline-2">
- <h2 id="org15e51d7"> <a href="#org15e51d7">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org15e51d7">
+ <div id="outline-container-orgbece72a" class="outline-2">
+ <h2 id="orgbece72a"> <a href="#orgbece72a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgbece72a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2025-12-15 貴島</li>
 </ul></li>
@@ -2069,9 +1966,9 @@ Execution Time が 118.892 ms -> 267.930 ms 。
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org495947e" class="outline-2">
- <h2 id="org495947e"> <a href="#org495947e">概要</a></h2>
- <div class="outline-text-2" id="text-org495947e">
+ <div id="outline-container-org25c9f2b" class="outline-2">
+ <h2 id="org25c9f2b"> <a href="#org25c9f2b">概要</a></h2>
+ <div class="outline-text-2" id="text-org25c9f2b">
  <p>
 絶滅メディア博物館は、東京都千代田区にある博物館である。
 </p>
@@ -2079,9 +1976,9 @@ Execution Time が 118.892 ms -> 267.930 ms 。
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d895.7287805120283!2d139.76786299441568!3d35.68951879196432!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188d7f2e9513d1%3A0x22e77b7e3001a812!2sExtinct%20Media%20Museum!5e1!3m2!1sen!2sjp!4v1765195098606!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 </div>
 </div>
- <div id="outline-container-orgb6adc01" class="outline-2">
- <h2 id="orgb6adc01"> <a href="#orgb6adc01">メモ</a></h2>
- <div class="outline-text-2" id="text-orgb6adc01">
+ <div id="outline-container-org37e6418" class="outline-2">
+ <h2 id="org37e6418"> <a href="#org37e6418">メモ</a></h2>
+ <div class="outline-text-2" id="text-org37e6418">
  <ul class="org-ul"> <li>各時代のメディアが数多く展示されている。手に持ったり、手で触れてボタンを押して試せる。これがほかの博物館ともっとも異なる点である</li>
  <li>古文書を読めるコーナーがある。古い東京の写真集や雑誌が大量にあって、手にとって読めるのは面白い体験だった</li>
  <li>たくさんの種類のガラケーがあって、当時はそうだった、と思い出した。いろいろな個性ある機種があって、携帯ショップを見るのは楽しかった。今は携帯端末は基本的にすべて同じ形状で、ささやかな違いがあるにすぎない。ショップで見る面白さは少なくなった。このパターンは、多くの博物館で見てきたものに見える。ある時期に、過剰ともいえるようなさまざまな種別が生まれるが、ある時期で収束して違いはなくなっていく。自動車/自転車/カメラ…</li>
@@ -2089,21 +1986,21 @@ Execution Time が 118.892 ms -> 267.930 ms 。
  <li>熱意のある個人の収集愛、脱力感を感じた。全国のリサイクルショップをまわって収集しているのだという。まさに目指している姿に近い、個人が運営する博物館なのではないか</li>
 </ul></div>
 </div>
- <div id="outline-container-orgbfb6a7f" class="outline-2">
- <h2 id="orgbfb6a7f"> <a href="#orgbfb6a7f">関連</a></h2>
- <div class="outline-text-2" id="text-orgbfb6a7f">
+ <div id="outline-container-org2b5e849" class="outline-2">
+ <h2 id="org2b5e849"> <a href="#org2b5e849">関連</a></h2>
+ <div class="outline-text-2" id="text-org2b5e849">
  <ul class="org-ul"> <li>アイデア: 人通りがあるエリアで簡単に展示できて、金まわりもやってくれるとしたら、個人的な博物館はもっと増えるのではないだろうかと考えた。本人がやるのは物を運び入れて、並べることだけである。美術館などの企画展示コーナーはあるが、そもそも人通りがなかったり煩雑だったりする。レンタルスペースや中野ブロードウェイのニュアンスだが、販売目的でなく入場料ベースなのが異なる</li>
 </ul></div>
 </div>
- <div id="outline-container-org4fecd7a" class="outline-2">
- <h2 id="org4fecd7a"> <a href="#org4fecd7a">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org4fecd7a">
+ <div id="outline-container-orgcfd00f6" class="outline-2">
+ <h2 id="orgcfd00f6"> <a href="#orgcfd00f6">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgcfd00f6">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20251207T143600--kdoc-498-絶滅メディア博物館を観察する__essay.html"/>
   <id>https://kijimad.github.io/roam/20251207T143600--kdoc-498-絶滅メディア博物館を観察する__essay.html</id>
-  <updated>2025-12-21T02:30:50+09:00</updated>
+  <updated>2025-12-22T17:09:32+09:00</updated>
 </entry>
 </feed>

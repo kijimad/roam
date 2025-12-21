@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-20T17:32:06Z -->
+<!-- 2025-12-22T08:10:53Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</h1>
-<div id="outline-container-orgdc8d6b8" class="outline-2">
-<h2 id="orgdc8d6b8"><a href="#orgdc8d6b8">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgdc8d6b8">
+<div id="outline-container-org0e9f27b" class="outline-2">
+<h2 id="org0e9f27b"><a href="#org0e9f27b">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org0e9f27b">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,17 +33,94 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org8234caa" class="outline-2">
-<h2 id="org8234caa"><a href="#org8234caa">概要</a></h2>
-<div class="outline-text-2" id="text-org8234caa">
+<div id="outline-container-orgade66cc" class="outline-2">
+<h2 id="orgade66cc"><a href="#orgade66cc">概要</a></h2>
+<div class="outline-text-2" id="text-orgade66cc">
 <p>
 DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約である(p57)。
 </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>見てみる</label><pre class="src src-shell">dig . NS
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">
+; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; . NS
+;; global options: +cmd
+;; Got answer:
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 61072
+;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;.				IN	NS
+
+;; ANSWER SECTION:
+.			7007	IN	NS	i.root-servers.net.
+.			7007	IN	NS	g.root-servers.net.
+.			7007	IN	NS	j.root-servers.net.
+.			7007	IN	NS	b.root-servers.net.
+.			7007	IN	NS	h.root-servers.net.
+.			7007	IN	NS	a.root-servers.net.
+.			7007	IN	NS	k.root-servers.net.
+.			7007	IN	NS	d.root-servers.net.
+.			7007	IN	NS	m.root-servers.net.
+.			7007	IN	NS	c.root-servers.net.
+.			7007	IN	NS	f.root-servers.net.
+.			7007	IN	NS	l.root-servers.net.
+.			7007	IN	NS	e.root-servers.net.
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sun Dec 21 19:11:45 JST 2025
+;; MSG SIZE  rcvd: 239
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-shell">dig jp. NS
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">
+; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; jp. NS
+;; global options: +cmd
+;; Got answer:
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 57427
+;; flags: qr rd ra; QUERY: 1, ANSWER: 8, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;jp.				IN	NS
+
+;; ANSWER SECTION:
+jp.			6621	IN	NS	d.dns.jp.
+jp.			6621	IN	NS	g.dns.jp.
+jp.			6621	IN	NS	h.dns.jp.
+jp.			6621	IN	NS	c.dns.jp.
+jp.			6621	IN	NS	e.dns.jp.
+jp.			6621	IN	NS	b.dns.jp.
+jp.			6621	IN	NS	a.dns.jp.
+jp.			6621	IN	NS	f.dns.jp.
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sun Dec 21 19:16:20 JST 2025
+;; MSG SIZE  rcvd: 163
+
+</pre>
 </div>
 </div>
-<div id="outline-container-orgb1be08a" class="outline-2">
-<h2 id="orgb1be08a"><a href="#orgb1be08a">関連</a></h2>
-<div class="outline-text-2" id="text-orgb1be08a">
+</div>
+<div id="outline-container-org9acdb57" class="outline-2">
+<h2 id="org9acdb57"><a href="#org9acdb57">関連</a></h2>
+<div class="outline-text-2" id="text-org9acdb57">
 <ul class="org-ul">
 <li>参照: <a href="20241102T084716--kdoc-258-『ピアリング戦記』__book.html#ID-20241102T084716">KDOC 258: 『ピアリング戦記』</a>から</li>
 <li>追加調査: なぜ13個になるのか詳細を調べる</li>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-22T08:09:52Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 515: DHCP OFFERではまだIPがないのにどうやってUDPで通信しているか?</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 515: DHCP OFFERではまだIPがないのにどうやってUDPで通信しているか?</h1>
+<div id="outline-container-org44bc62c" class="outline-2">
+<h2 id="org44bc62c"><a href="#org44bc62c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org44bc62c">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+
+<ul class="org-ul">
+<li>レビュー
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org7fb4bbb" class="outline-2">
+<h2 id="org7fb4bbb"><a href="#org7fb4bbb">概要</a></h2>
+<div class="outline-text-2" id="text-org7fb4bbb">
+<p>
+DHCP OFFERは、クライアントからのDHCP DISCOVERに対して割当可能なIPアドレスを提示する。DHCPはIPアドレスを自動設定するためのプロトコルなので、クライアントはOFFERを送った時点でIPアドレスを持っていない。
+</p>
+
+<p>
+クライアント → サーバはブロードキャストで送っているので、IPアドレスがなくても動くのはわかるが、サーバ → クライアントはどうしているのだろうか。
+</p>
+
+<blockquote>
+<p>
+DHCPサーバは、基盤となるトランスポート層のハードウェアレベルのMACアドレスを参照することができる。現在のRFCでは、DHCPパケットにクライアント識別子が指定されていない場合はトランスポート層のMACアドレスを使用できる。
+<a href="https://ja.wikipedia.org/wiki/DHCP#DHCP_offer">DHCP - Wikipedia</a>
+</p>
+</blockquote>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>DHCPコネクションはIPアドレスとMACアドレスの両方でハンドリングできるようになっている</label><pre class="src src-git-permalink">https://github.com/AdguardTeam/AdGuardHome/blob/59e8c8385d1bb8239b83e5a514b524cdbcd1555e/internal/dhcpd/conn_linux.go#L34-L49
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">// dhcpConn is the net.PacketConn capable of handling both net.UDPAddr and
+// net.HardwareAddr.
+type dhcpConn struct {
+	// udpConn is the connection for UDP addresses.
+	udpConn net.PacketConn
+	// bcastIP is the broadcast address specific for the configured
+	// interface's subnet.
+	bcastIP net.IP
+
+	// rawConn is the connection for MAC addresses.
+	rawConn net.PacketConn
+	// srcMAC is the hardware address of the configured network interface.
+	srcMAC net.HardwareAddr
+	// srcIP is the IP address  of the configured network interface.
+	srcIP net.IP
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd363461" class="outline-2">
+<h2 id="orgd363461"><a href="#orgd363461">関連</a></h2>
+<div class="outline-text-2" id="text-orgd363461">
+<ul class="org-ul">
+<li>参照: <a href="https://ja.wikipedia.org/wiki/DHCP#DHCP_offer">DHCP - Wikipedia</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
