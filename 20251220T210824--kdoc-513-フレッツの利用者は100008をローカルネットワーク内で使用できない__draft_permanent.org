@@ -1,10 +1,10 @@
 :properties:
-:ID: 20251217T184407
+:ID: 20251220T210824
 :end:
-#+title:      KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから
-#+date:       [2025-12-17 Wed 18:44]
+#+title:      KDOC 513: フレッツの利用者は10.0.0.0/8をローカルネットワーク内で使用できない
+#+date:       [2025-12-20 Sat 21:08]
 #+filetags:   :draft:permanent:
-#+identifier: 20251217T184407
+#+identifier: 20251220T210824
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -66,83 +66,13 @@
 * 概要
 # 本文(見出しも設定する)
 
-DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約である(p57)。
+NTTのフレッツ網は内部ネットワークでプライベートアドレス 10.0.0.0/8 を使用しているため、利用者はローカルネットワーク内で 10.0.0.0/8 を使用できない。
 
-#+caption: 見てみる
-#+begin_src shell
-dig . NS
-#+end_src
+プライベートIP範囲のなかでも、もっともホスト部が大きな範囲を使用している。
 
-#+RESULTS:
-#+begin_src
-
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> . NS
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 61072
-;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;.				IN	NS
-
-;; ANSWER SECTION:
-.			7007	IN	NS	i.root-servers.net.
-.			7007	IN	NS	g.root-servers.net.
-.			7007	IN	NS	j.root-servers.net.
-.			7007	IN	NS	b.root-servers.net.
-.			7007	IN	NS	h.root-servers.net.
-.			7007	IN	NS	a.root-servers.net.
-.			7007	IN	NS	k.root-servers.net.
-.			7007	IN	NS	d.root-servers.net.
-.			7007	IN	NS	m.root-servers.net.
-.			7007	IN	NS	c.root-servers.net.
-.			7007	IN	NS	f.root-servers.net.
-.			7007	IN	NS	l.root-servers.net.
-.			7007	IN	NS	e.root-servers.net.
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sun Dec 21 19:11:45 JST 2025
-;; MSG SIZE  rcvd: 239
-
-#+end_src
-
-#+begin_src shell
-  dig jp. NS
-#+end_src
-
-#+RESULTS:
-#+begin_src
-
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> jp. NS
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 57427
-;; flags: qr rd ra; QUERY: 1, ANSWER: 8, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;jp.				IN	NS
-
-;; ANSWER SECTION:
-jp.			6621	IN	NS	d.dns.jp.
-jp.			6621	IN	NS	g.dns.jp.
-jp.			6621	IN	NS	h.dns.jp.
-jp.			6621	IN	NS	c.dns.jp.
-jp.			6621	IN	NS	e.dns.jp.
-jp.			6621	IN	NS	b.dns.jp.
-jp.			6621	IN	NS	a.dns.jp.
-jp.			6621	IN	NS	f.dns.jp.
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sun Dec 21 19:16:20 JST 2025
-;; MSG SIZE  rcvd: 163
-
-#+end_src
+- 10.0.0.0/8 (クラスA)
+- 172.16.0.0/12 (クラスB)
+- 192.168.0.0/16 (クラスC)
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
@@ -151,5 +81,5 @@ jp.			6621	IN	NS	f.dns.jp.
 # [類推、未解決、具体例、追加調査、理由、動機、検証]
 # 横に類推するか、上に抽象化するか、下に具体化するか
 
-- 参照: [[id:20241102T084716][KDOC 258: 『ピアリング戦記』]]から
-- 追加調査: なぜ13個になるのか詳細を調べる
+- 参照: [[https://ja.wikipedia.org/wiki/IP%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9#ISP_Shared_Address][IPアドレス - Wikipedia]]から
+- 疑問: なぜそうなったのか。標準仕様的に問題ないのか

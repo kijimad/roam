@@ -1,10 +1,10 @@
 :properties:
-:ID: 20251217T184407
+:ID: 20251220T195006
 :end:
-#+title:      KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから
-#+date:       [2025-12-17 Wed 18:44]
+#+title:      KDOC 512: DNSの強制セーフサーチがどのように機能しているか見る
+#+date:       [2025-12-20 Sat 19:50]
 #+filetags:   :draft:permanent:
-#+identifier: 20251217T184407
+#+identifier: 20251220T195006
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -48,8 +48,7 @@
 
 * この文書のステータス
 - 作成
-  - [ ] <署名>
-# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+  - [X] 2025-12-21 貴島
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -66,83 +65,40 @@
 * 概要
 # 本文(見出しも設定する)
 
-DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約である(p57)。
+DNSフィルタリングツールのAdGuardで、強制セーフサーチが適用されている様子を見る。
 
-#+caption: 見てみる
 #+begin_src shell
-dig . NS
+  dig www.google.com
 #+end_src
 
 #+RESULTS:
 #+begin_src
 
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> . NS
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> www.google.com
 ;; global options: +cmd
 ;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 61072
-;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 1
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 55983
+;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 65494
 ;; QUESTION SECTION:
-;.				IN	NS
+;www.google.com.			IN	A
 
 ;; ANSWER SECTION:
-.			7007	IN	NS	i.root-servers.net.
-.			7007	IN	NS	g.root-servers.net.
-.			7007	IN	NS	j.root-servers.net.
-.			7007	IN	NS	b.root-servers.net.
-.			7007	IN	NS	h.root-servers.net.
-.			7007	IN	NS	a.root-servers.net.
-.			7007	IN	NS	k.root-servers.net.
-.			7007	IN	NS	d.root-servers.net.
-.			7007	IN	NS	m.root-servers.net.
-.			7007	IN	NS	c.root-servers.net.
-.			7007	IN	NS	f.root-servers.net.
-.			7007	IN	NS	l.root-servers.net.
-.			7007	IN	NS	e.root-servers.net.
+www.google.com.		3	IN	CNAME	forcesafesearch.google.com. 👈
+forcesafesearch.google.com. 3	IN	A	216.239.38.120
 
 ;; Query time: 0 msec
 ;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sun Dec 21 19:11:45 JST 2025
-;; MSG SIZE  rcvd: 239
+;; WHEN: Sat Dec 20 19:54:25 JST 2025
+;; MSG SIZE  rcvd: 89
 
 #+end_src
 
-#+begin_src shell
-  dig jp. NS
-#+end_src
+以下の流れのように、強制されていることがわかる。
 
-#+RESULTS:
-#+begin_src
-
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> jp. NS
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 57427
-;; flags: qr rd ra; QUERY: 1, ANSWER: 8, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;jp.				IN	NS
-
-;; ANSWER SECTION:
-jp.			6621	IN	NS	d.dns.jp.
-jp.			6621	IN	NS	g.dns.jp.
-jp.			6621	IN	NS	h.dns.jp.
-jp.			6621	IN	NS	c.dns.jp.
-jp.			6621	IN	NS	e.dns.jp.
-jp.			6621	IN	NS	b.dns.jp.
-jp.			6621	IN	NS	a.dns.jp.
-jp.			6621	IN	NS	f.dns.jp.
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sun Dec 21 19:16:20 JST 2025
-;; MSG SIZE  rcvd: 163
-
-#+end_src
+- www.google.com -(CNAME)→ forcesafesearch.google.com -(A)→ 216.239.38.120
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
@@ -151,5 +107,5 @@ jp.			6621	IN	NS	f.dns.jp.
 # [類推、未解決、具体例、追加調査、理由、動機、検証]
 # 横に類推するか、上に抽象化するか、下に具体化するか
 
-- 参照: [[id:20241102T084716][KDOC 258: 『ピアリング戦記』]]から
-- 追加調査: なぜ13個になるのか詳細を調べる
+- 動機: [[id:20241118T203644][KDOC 295: LANでDNSフィルタリングする流れを見る]]。使っていて気になった
+- 追加調査: www.google.com と google.com で結果が異なる。何が違うのか
