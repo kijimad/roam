@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-12-22T08:09:37Z -->
+<!-- 2025-12-24T21:28:59Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 508: 除算の実行速度を計測する</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 508: 除算の実行速度を計測する</h1>
-<div id="outline-container-org6624686" class="outline-2">
-<h2 id="org6624686"><a href="#org6624686">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org6624686">
+<div id="outline-container-orgca6b388" class="outline-2">
+<h2 id="orgca6b388"><a href="#orgca6b388">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgca6b388">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,23 +33,112 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgce6789a" class="outline-2">
-<h2 id="orgce6789a"><a href="#orgce6789a">概要</a></h2>
-<div class="outline-text-2" id="text-orgce6789a">
+<div id="outline-container-org1115a2a" class="outline-2">
+<h2 id="org1115a2a"><a href="#org1115a2a">概要</a></h2>
+<div class="outline-text-2" id="text-org1115a2a">
 <p>
 除算というのは負荷の大きな演算であり、加算などの演算に比べると、実行に要する時間がはるかに長い(p51)。
 </p>
 
 <p>
-305の方法で計測する。
+アセンブリを見てみると、除算は命令数が多いのを確認できる。単純に <code>DIV</code> 命令だけではない。
+</p>
+
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:17,endLineNumber:7,positionColumn:17,positionLineNumber:7,selectionStartColumn:17,selectionStartLineNumber:7,startColumn:17,startLineNumber:7),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A++++_+%3D+add(1,+2)%0A++++_+%3D+div(1,+2)%0A%7D%0A%0Afunc+add(a,+b+int)+int+%7B%0A++++return+a+%2B+b%0A%7D%0A%0Afunc+div(a,+b+int)+int%7B%0A+++return+a+/+b%0A%7D'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+
+<p>
+じっさいに計測してみる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>ベンチマーク</label><pre class="src src-shell">go install golang.org/x/perf/cmd/benchstat@latest
+
+<span class="org-variable-name">tmpdir</span>=$(mktemp -d)
+<span class="org-builtin">cd</span> $<span class="org-variable-name">tmpdir</span>
+
+cat &gt; $<span class="org-variable-name">tmpdir</span>/bench_test.go &lt;&lt;EOF<span class="org-sh-heredoc">
+  package main
+
+  import "testing"
+
+  func BenchmarkAdd(b *testing.B) {
+        for i := 0; i &lt; b.N; i++ {
+                _ = add(42)
+        }
+  }
+
+  func BenchmarkDiv(b *testing.B) {
+        for i := 0; i &lt; b.N; i++ {
+                _ = div(42)
+        }
+  }
+
+  //go:noinline
+  func add(a int) int {
+        return a + a
+  }
+
+  //go:noinline
+  func div(a int) int {
+        return a / a
+  }
+EOF
+</span>
+go mod init bench
+go mod tidy
+go test -bench=. -benchmem -count=10 &gt; exec.log
+
+benchstat exec.log 2&gt;&amp;1
+
+rm -rf $<span class="org-variable-name">tmpdir</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">goos: linux
+goarch: amd64
+pkg: bench
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+        │   exec.log   │
+        │    sec/op    │
+Add-24    0.9069n ± 1% 👈
+Div-24     1.262n ± 4% 👈
+geomean    1.070n
+
+        │   exec.log   │
+        │     B/op     │
+Add-24    0.000 ± 0%
+Div-24    0.000 ± 0%
+geomean              ¹
+¹ summaries must be &gt;0 to compute geomean
+
+        │   exec.log   │
+        │  allocs/op   │
+Add-24    0.000 ± 0%
+Div-24    0.000 ± 0%
+geomean              ¹
+¹ summaries must be &gt;0 to compute geomean
+</pre>
+</div>
+
+<p>
+たしかに、除算は加算より時間がかかるのを確認できた。
 </p>
 </div>
 </div>
-<div id="outline-container-org0f7d842" class="outline-2">
-<h2 id="org0f7d842"><a href="#org0f7d842">関連</a></h2>
-<div class="outline-text-2" id="text-org0f7d842">
+<div id="outline-container-org3dc7c95" class="outline-2">
+<h2 id="org3dc7c95"><a href="#org3dc7c95">関連</a></h2>
+<div class="outline-text-2" id="text-org3dc7c95">
 <ul class="org-ul">
 <li>参照: <a href="20240810T122445--kdoc-217-『基礎からきっちり覚える-機械語入門』__book.html#ID-20240810T122445">KDOC 217: 『基礎からきっちり覚える 機械語入門』</a>から</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgc285a17" class="outline-2">
+<h2 id="orgc285a17"><a href="#orgc285a17">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgc285a17">
+<ul class="org-ul">
+<li><a href="./20251224T090149--kdoc-520-goコンパイラは定数除算を乗算に変換する__draft_permanent.html">KDOC 520: Goコンパイラは定数除算を乗算に変換する</a></li>
 </ul>
 </div>
 </div>

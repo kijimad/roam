@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2025-12-24T21:30:00Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 517: DNS階層をたどる様子を見る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 517: DNS階層をたどる様子を見る</h1>
+<div id="outline-container-org7813d31" class="outline-2">
+<h2 id="org7813d31"><a href="#org7813d31">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7813d31">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+
+<ul class="org-ul">
+<li>レビュー
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgd49883a" class="outline-2">
+<h2 id="orgd49883a"><a href="#orgd49883a">概要</a></h2>
+<div class="outline-text-2" id="text-orgd49883a">
+<div class="org-src-container">
+<pre class="src src-shell">dig +trace www.github.com
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">
+; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; +trace www.github.com
+;; global options: +cmd
+.			6976	IN	NS	a.root-servers.net.
+.			6976	IN	NS	l.root-servers.net.
+.			6976	IN	NS	e.root-servers.net.
+.			6976	IN	NS	m.root-servers.net.
+.			6976	IN	NS	h.root-servers.net.
+.			6976	IN	NS	i.root-servers.net.
+.			6976	IN	NS	d.root-servers.net.
+.			6976	IN	NS	k.root-servers.net.
+.			6976	IN	NS	g.root-servers.net.
+.			6976	IN	NS	b.root-servers.net.
+.			6976	IN	NS	c.root-servers.net.
+.			6976	IN	NS	f.root-servers.net.
+.			6976	IN	NS	j.root-servers.net.
+;; Received 239 bytes from 127.0.0.53#53(127.0.0.53) in 0 ms
+
+;; UDP setup with 2001:dc3::35#53(2001:dc3::35) for www.github.com failed: network unreachable.
+;; no servers could be reached
+;; UDP setup with 2001:dc3::35#53(2001:dc3::35) for www.github.com failed: network unreachable.
+;; no servers could be reached
+;; UDP setup with 2001:dc3::35#53(2001:dc3::35) for www.github.com failed: network unreachable.
+;; UDP setup with 2001:503:c27::2:30#53(2001:503:c27::2:30) for www.github.com failed: network unreachable.
+com.			172800	IN	NS	l.gtld-servers.net.
+com.			172800	IN	NS	c.gtld-servers.net.
+com.			172800	IN	NS	k.gtld-servers.net.
+com.			172800	IN	NS	m.gtld-servers.net.
+com.			172800	IN	NS	i.gtld-servers.net.
+com.			172800	IN	NS	b.gtld-servers.net.
+com.			172800	IN	NS	h.gtld-servers.net.
+com.			172800	IN	NS	e.gtld-servers.net.
+com.			172800	IN	NS	d.gtld-servers.net.
+com.			172800	IN	NS	f.gtld-servers.net.
+com.			172800	IN	NS	a.gtld-servers.net.
+com.			172800	IN	NS	g.gtld-servers.net.
+com.			172800	IN	NS	j.gtld-servers.net.
+com.			86400	IN	DS	19718 13 2 8ACBB0CD28F41250A80A491389424D341522D946B0DA0C0291F2D3D7 71D7805A
+com.			86400	IN	RRSIG	DS 8 1 86400 20260103170000 20251221160000 61809 . LyStNQm9+1ankIVATIyU/cW7QtLvLE7NfHzzVnKqTLu6ko4/slJmY1QU bmhcRd6Z3e+u1k04++RixtKc/5N7MQ5olnze3pZ9y9VX0AdyGqnLSINP Ui3hZr5NIu3mTgjTt2PttfIEe1V0qrgaC903fIaNSdL2nISm49u5zoG6 LJ4l7rrDVt2pNvR+KiZtbSWp7ULt4jJLvQWjsvpfADnq2UqgOSVqNIvk kDQ8fXYFoNXETBHkdZ1NEQbIl/e4cj2vk0I4q5eeJReuKKamWjIxY6Zb GLnvjDVh2mAjVQcbkjde5r7oxrcJiK8z3Tx6Yd0QFns0g92/0JMukcZY r7em8g==
+;; Received 1205 bytes from 192.33.4.12#53(c.root-servers.net) in 2 ms
+
+;; UDP setup with 2001:502:7094::30#53(2001:502:7094::30) for www.github.com failed: network unreachable.
+;; UDP setup with 2001:503:a83e::2:30#53(2001:503:a83e::2:30) for www.github.com failed: network unreachable.
+github.com.		172800	IN	NS	ns-520.awsdns-01.net.
+github.com.		172800	IN	NS	ns-421.awsdns-52.com.
+github.com.		172800	IN	NS	ns-1707.awsdns-21.co.uk.
+github.com.		172800	IN	NS	ns-1283.awsdns-32.org.
+github.com.		172800	IN	NS	dns1.p08.nsone.net.
+github.com.		172800	IN	NS	dns2.p08.nsone.net.
+github.com.		172800	IN	NS	dns3.p08.nsone.net.
+github.com.		172800	IN	NS	dns4.p08.nsone.net.
+CK0POJMG874LJREF7EFN8430QVIT8BSM.com. 900 IN NSEC3 1 1 0 - CK0Q3UDG8CEKKAE7RUKPGCT1DVSSH8LL NS SOA RRSIG DNSKEY NSEC3PARAM
+CK0POJMG874LJREF7EFN8430QVIT8BSM.com. 900 IN RRSIG NSEC3 13 2 900 20251225002706 20251217231706 46539 com. gmHVJS+WmLxYXTQMDYmfFRMcTSDHtHHXgSTWPo3FbOjYVV6GmpBv4Rd3 q91lGtsv8vkur4/nrD7LolMHJ4gpqw==
+4KB4M5P0V10KIBJ8HQ2VH9EMME8NV6MR.com. 900 IN NSEC3 1 1 0 - 4KB4V9IAMJL29MC1VBJ8NDO7E6SI2B8O NS DS RRSIG
+4KB4M5P0V10KIBJ8HQ2VH9EMME8NV6MR.com. 900 IN RRSIG NSEC3 13 2 900 20251225021105 20251218010105 46539 com. 8mEzmw5hy48Fr2ps/fSxqKgLwBWLyLUV3RwXyj9cQshaoXLOhqhpIawj /fvfrbiMADGGEIjO7zwfrk338jhexg==
+;; Received 639 bytes from 192.43.172.30#53(i.gtld-servers.net) in 112 ms
+
+;; UDP setup with 2620:4d:4000:6259:7:8:0:3#53(2620:4d:4000:6259:7:8:0:3) for www.github.com failed: network unreachable.
+www.github.com.		3600	IN	CNAME	github.com.
+github.com.		60	IN	A	20.27.177.113
+;; Received 73 bytes from 198.51.44.72#53(dns3.p08.nsone.net) in 113 ms
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org98762ab" class="outline-2">
+<h2 id="org98762ab"><a href="#org98762ab">関連</a></h2>
+<div class="outline-text-2" id="text-org98762ab">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
