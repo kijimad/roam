@@ -1,10 +1,10 @@
 :properties:
-:ID: 20251220T195006
+:ID: 20251224T090149
 :end:
-#+title:      KDOC 512: DNSの強制セーフサーチがどのように機能しているか見る
-#+date:       [2025-12-20 Sat 19:50]
+#+title:      KDOC 520: Goコンパイラは定数除算を乗算に変換する
+#+date:       [2025-12-24 Wed 09:01]
 #+filetags:   :draft:permanent:
-#+identifier: 20251220T195006
+#+identifier: 20251224T090149
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -48,7 +48,8 @@
 
 * この文書のステータス
 - 作成
-  - [X] 2025-12-21 貴島
+  - [ ] <署名>
+# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -65,40 +66,16 @@
 * 概要
 # 本文(見出しも設定する)
 
-DNSフィルタリングツールのAdGuardで、強制セーフサーチが適用されている様子を見る。
+変数で除算する場合と、定数で除算する場合のアセンブリを比較する。
 
-#+begin_src shell
-  dig www.google.com
-#+end_src
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:2,endLineNumber:16,positionColumn:2,positionLineNumber:16,selectionStartColumn:2,selectionStartLineNumber:16,startColumn:2,startLineNumber:16),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A++++_+%3D+div1(1,+2)%0A++++_+%3D+div2(1,+2)%0A%7D%0A%0Afunc+div1(a,+b+int)+int+%7B%0A++++return+a+/+b%0A%7D%0A%0Afunc+div2(a,+_+int)+int%7B%0A+++return+a+/+3%0A%7D'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:15,endLineNumber:22,positionColumn:15,positionLineNumber:22,selectionStartColumn:15,selectionStartLineNumber:22,startColumn:15,startLineNumber:22),source:1),l:'5',n:'0',o:'+x86-64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
 
-#+RESULTS:
-#+begin_src
+- 変数で除算するコードでは除算命令 ~IDIVQ~ を使っている
+- 定数で除算するコードでは除算命令は登場せず乗算命令 ~IMULQ~ を使っている
 
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> www.google.com
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 55983
-;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;www.google.com.			IN	A
-
-;; ANSWER SECTION:
-www.google.com.		3	IN	CNAME	forcesafesearch.google.com. 👈
-forcesafesearch.google.com. 3	IN	A	216.239.38.120
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sat Dec 20 19:54:25 JST 2025
-;; MSG SIZE  rcvd: 89
-
-#+end_src
-
-以下の流れのように、強制されていることがわかる。
-
-- www.google.com -(CNAME)→ forcesafesearch.google.com -(A)→ 216.239.38.120
+また、変数で除算する場合はゼロ除算時のチェック ~CALL runtime.panicdivide(SB)~ が入っていたりする。
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
@@ -107,5 +84,4 @@ forcesafesearch.google.com. 3	IN	A	216.239.38.120
 # [類推、未解決、具体例、追加調査、理由、動機、検証]
 # 横に類推するか、上に抽象化するか、下に具体化するか
 
-- 動機: [[id:20241118T203644][KDOC 295: LANでDNSフィルタリングする流れを見る]]。使っていて気になった
-- 追加調査: www.google.com と google.com で結果が異なる。何が違うのか
+- 動機(追加調査): [[id:20251218T232745][KDOC 508: 除算の実行速度を計測する]]。調べているとき、変数か定数かで速度に違いがあることから命令に違いがありそうなことに気づいた

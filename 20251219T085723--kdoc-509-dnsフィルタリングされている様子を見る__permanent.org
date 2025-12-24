@@ -1,0 +1,84 @@
+:properties:
+:ID: 20251219T085723
+:end:
+#+title:      KDOC 509: DNSフィルタリングされている様子を見る
+#+date:       [2025-12-19 Fri 08:57]
+#+filetags:   :permanent:
+#+identifier: 20251219T085723
+
+* この文書のステータス
+- 作成
+  - [X] 2025-12-20 貴島
+- レビュー
+  - [X] 2025-12-20 貴島
+
+* 概要
+
+AdGuardで、DNSフィルタリングされている様子を見る。
+
+最初に通常のDNSレスポンスを確認する。
+
+#+caption: 通常のレスポンス
+#+begin_src shell
+  dig google.com
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> google.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 20568
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;google.com.			IN	A
+
+;; ANSWER SECTION:
+google.com.		272	IN	A	172.217.174.110 👈
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Fri Dec 19 23:15:30 JST 2025
+;; MSG SIZE  rcvd: 55
+
+#+end_src
+
+次に、フィルタリングされているドメインへのDNSレスポンスを確認する。
+
+#+caption: フィルタリング設定しているドメイン。0.0.0.0に書き換えられている
+#+begin_src shell
+  dig x.com
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> x.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 7283
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;x.com.				IN	A
+
+;; ANSWER SECTION:
+x.com.			10	IN	A	0.0.0.0 👈
+
+;; Query time: 112 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Fri Dec 19 08:58:38 JST 2025
+;; MSG SIZE  rcvd: 50
+
+#+end_src
+
+* 関連
+
+- 補足: [[id:20241118T203644][KDOC 295: LANでDNSフィルタリングする流れを見る]]。を補足する
+- 追加調査: AdGuardでAレコードを上書きしている箇所を調べる
