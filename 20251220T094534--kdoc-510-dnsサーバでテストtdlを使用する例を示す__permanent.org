@@ -1,0 +1,76 @@
+:properties:
+:ID: 20251220T094534
+:end:
+#+title:      KDOC 510: DNSサーバでテストTDLを使用する例を示す
+#+date:       [2025-12-20 Sat 09:45]
+#+filetags:   :permanent:
+#+identifier: 20251220T094534
+
+* この文書のステータス
+- 作成
+  - [X] 2025-12-23 貴島
+- レビュー
+  - [X] 2026-01-08 貴島
+
+* 概要
+
+~.test~ は特別なTDLで、使われないことが保証されているので、アプリケーションの内部用として自由に使える。
+
+#+begin_quote
+  To safely satisfy these needs, four domain names are reserved as
+  listed and described below.
+
+                  .test
+               .example
+               .invalid
+             .localhost
+
+     ".test" is recommended for use in testing of current or new DNS
+     related code.
+
+  [[https://www.rfc-editor.org/rfc/rfc2606.html][RFC2606]]
+#+end_quote
+
+~.test~ はとくにDNS関係のコードのテストに使用するのを推奨している。テスト用ドメインを使えることがどういうケースに役立つかを、AdGuardHomeのコードで示す。
+
+たとえば、DNSサーバ自身のヘルスチェックで使っている。
+
+#+begin_src git-permalink
+https://github.com/AdguardTeam/AdGuardHome/blob/63ec09f086f62009be5f53b941e44e522b5300dd/internal/dnsforward/process.go#L140-L148
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// healthcheckFQDN is a reserved domain-name used for healthchecking.
+//
+// [Section 6.2 of RFC 6761] states that DNS Registries/Registrars must not
+// grant requests to register test names in the normal way to any person or
+// entity, making domain names under the .test TLD free to use in internal
+// purposes.
+//
+// [Section 6.2 of RFC 6761]: https://www.rfc-editor.org/rfc/rfc6761.html#section-6.2
+const healthcheckFQDN = "healthcheck.adguardhome.test."
+#+end_src
+
+どう使われているか見る。
+
+#+caption: processInitial()にて
+#+begin_src git-permalink
+https://github.com/AdguardTeam/AdGuardHome/blob/59e8c8385d1bb8239b83e5a514b524cdbcd1555e/internal/dnsforward/process.go#L175-L180
+#+end_src
+
+#+RESULTS:
+#+begin_src
+	if q.Name == healthcheckFQDN {
+		// Generate a NODATA negative response to make nslookup exit with 0.
+		pctx.Res = s.replyCompressed(pctx.Req)
+
+		return resultCodeFinish
+	}
+#+end_src
+
+ヘルスチェックドメイン名のときは上位ネームサーバに解決しようとせずに、DNSサーバの生存を示す空のデータを返す。 ~.test~ は使われないことが保証されているので、こういうことができる。
+
+* 関連
+
+なし。

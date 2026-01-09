@@ -1,0 +1,102 @@
+:properties:
+:ID: 20251218T232745
+:end:
+#+title:      KDOC 508: 除算の実行速度を計測する
+#+date:       [2025-12-18 Thu 23:27]
+#+filetags:   :permanent:
+#+identifier: 20251218T232745
+
+* この文書のステータス
+- 作成
+  - [X] 2026-01-08 貴島
+- レビュー
+  - [X] 2026-01-08 貴島
+
+* 概要
+
+除算というのは負荷の大きな演算であり、加算などの演算に比べると、実行に要する時間がはるかに長い(p51)。
+
+アセンブリを見てみると、除算は命令数が多いのを確認できる。単純に ~DIV~ 命令だけではない。
+
+#+begin_export html
+<iframe width="800px" height="400px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:17,endLineNumber:7,positionColumn:17,positionLineNumber:7,selectionStartColumn:17,selectionStartLineNumber:7,startColumn:17,startLineNumber:7),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A++++_+%3D+add(1,+2)%0A++++_+%3D+div(1,+2)%0A%7D%0A%0Afunc+add(a,+b+int)+int+%7B%0A++++return+a+%2B+b%0A%7D%0A%0Afunc+div(a,+b+int)+int%7B%0A+++return+a+/+b%0A%7D'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+じっさいに計測してみる。
+
+#+caption: ベンチマーク
+#+begin_src shell :results output
+  go install golang.org/x/perf/cmd/benchstat@latest
+
+  tmpdir=$(mktemp -d)
+  cd $tmpdir
+
+  cat > $tmpdir/bench_test.go <<EOF
+    package main
+
+    import "testing"
+
+    func BenchmarkAdd(b *testing.B) {
+    	for i := 0; i < b.N; i++ {
+    		_ = add(42)
+    	}
+    }
+
+    func BenchmarkDiv(b *testing.B) {
+    	for i := 0; i < b.N; i++ {
+    		_ = div(42)
+    	}
+    }
+
+    //go:noinline
+    func add(a int) int {
+    	return a + a
+    }
+
+    //go:noinline
+    func div(a int) int {
+    	return a / a
+    }
+  EOF
+
+  go mod init bench
+  go mod tidy
+  go test -bench=. -benchmem -count=10 > exec.log
+
+  benchstat exec.log 2>&1
+
+  rm -rf $tmpdir
+#+end_src
+
+#+RESULTS:
+#+begin_src
+goos: linux
+goarch: amd64
+pkg: bench
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+        │   exec.log   │
+        │    sec/op    │
+Add-24    0.9069n ± 1% 👈
+Div-24     1.262n ± 4% 👈
+geomean    1.070n
+
+        │   exec.log   │
+        │     B/op     │
+Add-24    0.000 ± 0%
+Div-24    0.000 ± 0%
+geomean              ¹
+¹ summaries must be >0 to compute geomean
+
+        │   exec.log   │
+        │  allocs/op   │
+Add-24    0.000 ± 0%
+Div-24    0.000 ± 0%
+geomean              ¹
+¹ summaries must be >0 to compute geomean
+#+end_src
+
+たしかに、除算は加算より時間がかかるのを確認できた。
+
+* 関連
+
+- 参照: [[id:20240810T122445][KDOC 217: 『基礎からきっちり覚える 機械語入門』]]から

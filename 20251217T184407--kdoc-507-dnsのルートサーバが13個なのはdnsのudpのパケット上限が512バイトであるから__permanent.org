@@ -1,0 +1,67 @@
+:properties:
+:ID: 20251217T184407
+:end:
+#+title:      KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから
+#+date:       [2025-12-17 Wed 18:44]
+#+filetags:   :permanent:
+#+identifier: 20251217T184407
+
+* この文書のステータス
+- 作成
+  - [X] 2026-01-08 貴島
+- レビュー
+  - [X] 2026-01-08 貴島
+
+* 概要
+
+DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約であるという(p57)。
+
+DNSルートサーバを得るリクエストがどのようなものかを見る。
+
+#+caption: ルートサーバを見てみる
+#+begin_src shell
+dig . NS
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> . NS
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 61072
+;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;.				IN	NS
+
+;; ANSWER SECTION:
+.			7007	IN	NS	i.root-servers.net.
+.			7007	IN	NS	g.root-servers.net.
+.			7007	IN	NS	j.root-servers.net.
+.			7007	IN	NS	b.root-servers.net.
+.			7007	IN	NS	h.root-servers.net.
+.			7007	IN	NS	a.root-servers.net.
+.			7007	IN	NS	k.root-servers.net.
+.			7007	IN	NS	d.root-servers.net.
+.			7007	IN	NS	m.root-servers.net.
+.			7007	IN	NS	c.root-servers.net.
+.			7007	IN	NS	f.root-servers.net.
+.			7007	IN	NS	l.root-servers.net.
+.			7007	IN	NS	e.root-servers.net.
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sun Dec 21 19:11:45 JST 2025
+;; MSG SIZE  rcvd: 239
+
+#+end_src
+
+たしかに13個ある。これらが512バイトを超えないように数の制限があるということだろうか。
+
+* 関連
+
+- 参照: [[id:20241102T084716][KDOC 258: 『ピアリング戦記』]]から
+- 追加調査: バイト数の内訳を調べる
