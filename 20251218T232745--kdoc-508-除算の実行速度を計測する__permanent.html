@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-01-08T21:42:50Z -->
+<!-- 2026-01-09T09:22:54Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 508: 除算の実行速度を計測する</title>
@@ -15,27 +15,24 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 508: 除算の実行速度を計測する</h1>
-<div id="outline-container-orga086173" class="outline-2">
-<h2 id="orga086173"><a href="#orga086173">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orga086173">
+<div id="outline-container-org3b7b67f" class="outline-2">
+<h2 id="org3b7b67f"><a href="#org3b7b67f">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org3b7b67f">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-01-08 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-01-08 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org234b61d" class="outline-2">
-<h2 id="org234b61d"><a href="#org234b61d">概要</a></h2>
-<div class="outline-text-2" id="text-org234b61d">
+<div id="outline-container-org407d760" class="outline-2">
+<h2 id="org407d760"><a href="#org407d760">概要</a></h2>
+<div class="outline-text-2" id="text-org407d760">
 <p>
 除算というのは負荷の大きな演算であり、加算などの演算に比べると、実行に要する時間がはるかに長い(p51)。
 </p>
@@ -44,7 +41,7 @@
 アセンブリを見てみると、除算は命令数が多いのを確認できる。単純に <code>DIV</code> 命令だけではない。
 </p>
 
-<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:17,endLineNumber:7,positionColumn:17,positionLineNumber:7,selectionStartColumn:17,selectionStartLineNumber:7,startColumn:17,startLineNumber:7),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A++++_+%3D+add(1,+2)%0A++++_+%3D+div(1,+2)%0A%7D%0A%0Afunc+add(a,+b+int)+int+%7B%0A++++return+a+%2B+b%0A%7D%0A%0Afunc+div(a,+b+int)+int%7B%0A+++return+a+/+b%0A%7D'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+<iframe width="800px" height="400px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:17,endLineNumber:7,positionColumn:17,positionLineNumber:7,selectionStartColumn:17,selectionStartLineNumber:7,startColumn:17,startLineNumber:7),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A++++_+%3D+add(1,+2)%0A++++_+%3D+div(1,+2)%0A%7D%0A%0Afunc+add(a,+b+int)+int+%7B%0A++++return+a+%2B+b%0A%7D%0A%0Afunc+div(a,+b+int)+int%7B%0A+++return+a+/+b%0A%7D'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
 
 <p>
 じっさいに計測してみる。
@@ -126,17 +123,17 @@ geomean              ¹
 </p>
 </div>
 </div>
-<div id="outline-container-orgf1798f2" class="outline-2">
-<h2 id="orgf1798f2"><a href="#orgf1798f2">関連</a></h2>
-<div class="outline-text-2" id="text-orgf1798f2">
+<div id="outline-container-org58f7126" class="outline-2">
+<h2 id="org58f7126"><a href="#org58f7126">関連</a></h2>
+<div class="outline-text-2" id="text-org58f7126">
 <ul class="org-ul">
 <li>参照: <a href="20240810T122445--kdoc-217-『基礎からきっちり覚える-機械語入門』__book.html#ID-20240810T122445">KDOC 217: 『基礎からきっちり覚える 機械語入門』</a>から</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orge087047" class="outline-2">
-<h2 id="orge087047"><a href="#orge087047">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orge087047">
+<div id="outline-container-org185e503" class="outline-2">
+<h2 id="org185e503"><a href="#org185e503">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org185e503">
 <ul class="org-ul">
 <li><a href="./20251224T090149--kdoc-520-goコンパイラは定数除算を乗算に変換する__draft_permanent.html">KDOC 520: Goコンパイラは定数除算を乗算に変換する</a></li>
 </ul>

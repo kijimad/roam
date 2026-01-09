@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-01-08T21:44:03Z -->
+<!-- 2026-01-09T09:23:05Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</title>
@@ -15,33 +15,30 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 507: DNSのルートサーバが13個なのはDNSのUDPのパケット上限が512バイトであるから</h1>
-<div id="outline-container-orgd8b6aa5" class="outline-2">
-<h2 id="orgd8b6aa5"><a href="#orgd8b6aa5">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgd8b6aa5">
+<div id="outline-container-org921dff7" class="outline-2">
+<h2 id="org921dff7"><a href="#org921dff7">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org921dff7">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-01-08 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-01-08 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org2ffe820" class="outline-2">
-<h2 id="org2ffe820"><a href="#org2ffe820">概要</a></h2>
-<div class="outline-text-2" id="text-org2ffe820">
+<div id="outline-container-org77e29bd" class="outline-2">
+<h2 id="org77e29bd"><a href="#org77e29bd">概要</a></h2>
+<div class="outline-text-2" id="text-org77e29bd">
 <p>
 DNSのルートサーバは13個しかない。これはDNSにおけるUDPのパケット長の上限が512バイトであることからくる制約であるという(p57)。
 </p>
 
 <p>
-DNSルートサーバを得るリクエストがどのようなものかを見てみる。これが512バイトを超えないように数の制限があるということだろうか。
+DNSルートサーバを得るリクエストがどのようなものかを見る。
 </p>
 
 <div class="org-src-container">
@@ -85,49 +82,17 @@ DNSルートサーバを得るリクエストがどのようなものかを見�
 </pre>
 </div>
 
-<div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>.jpのネームサーバを見る</label><pre class="src src-shell">dig jp. NS
-</pre>
-</div>
-
-<div class="org-src-container">
-<pre class="src src-nil">
-; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; jp. NS
-;; global options: +cmd
-;; Got answer:
-;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 57427
-;; flags: qr rd ra; QUERY: 1, ANSWER: 8, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;jp.				IN	NS
-
-;; ANSWER SECTION:
-jp.			6621	IN	NS	d.dns.jp.
-jp.			6621	IN	NS	g.dns.jp.
-jp.			6621	IN	NS	h.dns.jp.
-jp.			6621	IN	NS	c.dns.jp.
-jp.			6621	IN	NS	e.dns.jp.
-jp.			6621	IN	NS	b.dns.jp.
-jp.			6621	IN	NS	a.dns.jp.
-jp.			6621	IN	NS	f.dns.jp.
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sun Dec 21 19:16:20 JST 2025
-;; MSG SIZE  rcvd: 163
-
-</pre>
+<p>
+たしかに13個ある。これらが512バイトを超えないように数の制限があるということだろうか。
+</p>
 </div>
 </div>
-</div>
-<div id="outline-container-orgb244760" class="outline-2">
-<h2 id="orgb244760"><a href="#orgb244760">関連</a></h2>
-<div class="outline-text-2" id="text-orgb244760">
+<div id="outline-container-org67a2d7f" class="outline-2">
+<h2 id="org67a2d7f"><a href="#org67a2d7f">関連</a></h2>
+<div class="outline-text-2" id="text-org67a2d7f">
 <ul class="org-ul">
 <li>参照: <a href="20241102T084716--kdoc-258-『ピアリング戦記』__book.html#ID-20241102T084716">KDOC 258: 『ピアリング戦記』</a>から</li>
-<li>追加調査: なぜ13個になるのか詳細を調べる</li>
+<li>追加調査: バイト数の内訳を調べる</li>
 </ul>
 </div>
 </div>
