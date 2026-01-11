@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const PORT = process.env.PORT || 3333;
-export const PUBLIC_DIR = join(__dirname, '..', 'public');
+export const PUBLIC_DIR = process.env.PUBLIC_DIR || 'public';
 
 // ファイル名からkdoc番号を抽出
 export function extractKdocNumber(filename) {

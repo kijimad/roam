@@ -10,3 +10,20 @@ services:
     restart: always
     labels:
       description: "メモ"
+
+  three-server:
+    image: docker.io/node:22
+    container_name: three-server
+    volumes:
+      - ./three:/app/three
+      - ./public:/app/public
+    working_dir: /app/three
+    ports:
+      - "3333:3333"
+    restart: always
+    command: sh -c "npm install && npm start"
+    environment:
+      - PORT=3333
+      - PUBLIC_DIR=/app/public
+    labels:
+      description: "3D Viewer Server"

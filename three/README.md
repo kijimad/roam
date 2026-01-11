@@ -1,13 +1,12 @@
 # Viewer Server
 
-Expressサーバーで、HTMLファイルにユーティリティを挿入して閲覧しやすくする。
+Expressサーバーで、HTMLファイルに操作ユーティリティを挿入して閲覧しやすくする。
 
-## 起動
+トップレベルのdocker compose設定ファイルに起動設定が記載されている。
+
+## テスト
 
 ```bash
-cd three
 npm install
-npm start
+npm run test
 ```
-
-http://localhost:3000
