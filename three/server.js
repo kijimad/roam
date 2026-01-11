@@ -19,18 +19,26 @@ export function extractKdocNumber(filename) {
 export function createApp(publicDir = PUBLIC_DIR) {
   const app = express();
 
-  // Three.js import map script
-  const IMPORTMAP_SCRIPT = `<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-  }
-}
-</script>
-<script type="module" src="js/drum-scroll.js"></script>`;
+  // ナビゲーションボタンのHTML
+  const NAV_BUTTONS_HTML = `
+<div id="navigation-buttons" class="py-3">
+  <div class="container">
+    <div class="d-flex justify-content-center align-items-center gap-2">
+      <button id="nav-prev" class="btn btn-outline-dark">← 前</button>
+      <button id="nav-random" class="btn btn-outline-dark">ランダム</button>
+      <button id="nav-next" class="btn btn-outline-dark">次 →</button>
+      <div class="form-check ms-3">
+        <input class="form-check-input" type="checkbox" id="draft-only-toggle">
+        <label class="form-check-label" for="draft-only-toggle">
+          ドラフトのみ
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/navigation.js"></script>`;
 
-  // HTMLファイルにスクリプトを注入するミドルウェア
+  // HTMLファイルにナビゲーションボタンを注入するミドルウェア
   app.use(async (req, res, next) => {
     // .htmlで終わるパス、または / (index.htmlとして扱う)
     if (!req.path.endsWith('.html') && req.path !== '/') {
@@ -45,13 +53,15 @@ export function createApp(publicDir = PUBLIC_DIR) {
         : join(publicDir, decodedPath);
       const html = await readFile(filePath, 'utf-8');
 
-      if (html.includes('three@0.170.0')) {
+      // 既にナビゲーションボタンが含まれている場合はそのまま返す
+      if (html.includes('id="navigation-buttons"')) {
         return res.send(html);
       }
 
+      // <div id="content">の直前にナビゲーションボタンを挿入
       const modifiedHtml = html.replace(
-        /(<head[^>]*>)/i,
-        `$1\n${IMPORTMAP_SCRIPT}`
+        /(<div id="content"[^>]*>)/i,
+        `${NAV_BUTTONS_HTML}\n$1`
       );
 
       res.send(modifiedHtml);
@@ -159,33 +169,11 @@ export function createApp(publicDir = PUBLIC_DIR) {
     }
   });
 
-  // drum-scroll.jsを配信
-  app.get('/js/drum-scroll.js', async (req, res) => {
+  // navigation.jsを配信
+  app.get('/js/navigation.js', async (req, res) => {
     try {
-      const drumScrollPath = join(__dirname, 'drum-scroll.js');
-      const content = await readFile(drumScrollPath, 'utf-8');
-      res.type('application/javascript').send(content);
-    } catch (error) {
-      res.status(404).send('Not found');
-    }
-  });
-
-  // drum-scroll-utils.jsを配信
-  app.get('/js/drum-scroll-utils.js', async (req, res) => {
-    try {
-      const utilsPath = join(__dirname, 'drum-scroll-utils.js');
-      const content = await readFile(utilsPath, 'utf-8');
-      res.type('application/javascript').send(content);
-    } catch (error) {
-      res.status(404).send('Not found');
-    }
-  });
-
-  // navigation-buttons.jsを配信
-  app.get('/js/navigation-buttons.js', async (req, res) => {
-    try {
-      const navButtonsPath = join(__dirname, 'navigation-buttons.js');
-      const content = await readFile(navButtonsPath, 'utf-8');
+      const navigationPath = join(__dirname, 'navigation.js');
+      const content = await readFile(navigationPath, 'utf-8');
       res.type('application/javascript').send(content);
     } catch (error) {
       res.status(404).send('Not found');

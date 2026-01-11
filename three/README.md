@@ -1,6 +1,6 @@
-# 3D Viewer Server
+# Viewer Server
 
-Expressサーバーで、HTMLファイルに自動的にThree.jsを注入してメモを3D表示できるようにする。
+Expressサーバーで、HTMLファイルにユーティリティを挿入して閲覧しやすくする。
 
 ## 起動
 

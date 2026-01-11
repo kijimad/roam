@@ -34,20 +34,20 @@ describe('サーバーAPIテスト', () => {
     // テスト用HTMLファイルを作成
     await writeFile(
       join(testDir, '20250101T000000--kdoc-100-first.html'),
-      '<html><head></head><body>First</body></html>'
+      '<html><head></head><body><div id="content">First</div></body></html>'
     );
     await writeFile(
       join(testDir, '20250102T000000--kdoc-200-second.html'),
-      '<html><head></head><body>Second</body></html>'
+      '<html><head></head><body><div id="content">Second</div></body></html>'
     );
     await writeFile(
       join(testDir, '20250103T000000--kdoc-300-third.html'),
-      '<html><head></head><body>Third</body></html>'
+      '<html><head></head><body><div id="content">Third</div></body></html>'
     );
-    // スクリプトが既に注入されているファイル
+    // ナビゲーションボタンが既に注入されているファイル
     await writeFile(
       join(testDir, '20250104T000000--kdoc-400-already-injected.html'),
-      '<html><head><script>three@0.170.0</script></head><body>Already injected</body></html>'
+      '<html><head></head><body><div id="navigation-buttons">Already injected</div><div id="content">Content</div></body></html>'
     );
 
     app = createApp(testDir);
@@ -90,11 +90,11 @@ describe('サーバーAPIテスト', () => {
       // draftファイルを追加
       await writeFile(
         join(testDir, '20250101T120000--kdoc-500-draft-doc__draft.html'),
-        '<html><body>Draft 500</body></html>'
+        '<html><body><div id="content">Draft 500</div></body></html>'
       );
       await writeFile(
         join(testDir, '20250102T120000--kdoc-600-draft-doc__draft.html'),
-        '<html><body>Draft 600</body></html>'
+        '<html><body><div id="content">Draft 600</div></body></html>'
       );
 
       // 現在: kdoc-100 (非draft), draftOnlyモード → 次のdraftファイル(500)を返す
@@ -168,42 +168,44 @@ describe('サーバーAPIテスト', () => {
     });
   });
 
-  describe('HTMLスクリプト注入', () => {
-    it('HTMLにthree.jsスクリプトを注入する', async () => {
+  describe('HTMLナビゲーションボタン注入', () => {
+    it('HTMLにナビゲーションボタンを注入する', async () => {
       const res = await request(app)
         .get('/20250101T000000--kdoc-100-first.html')
         .expect(200);
 
-      expect(res.text).toContain('three@0.170.0');
-      expect(res.text).toContain('importmap');
-      expect(res.text).toContain('drum-scroll.js');
+      expect(res.text).toContain('id="navigation-buttons"');
+      expect(res.text).toContain('id="nav-prev"');
+      expect(res.text).toContain('id="nav-next"');
+      expect(res.text).toContain('id="nav-random"');
+      expect(res.text).toContain('id="draft-only-toggle"');
+      expect(res.text).toContain('/js/navigation.js');
     });
 
-    it('スクリプトを2重に注入しない', async () => {
-      // 既にスクリプトがあるファイルをリクエスト
+    it('ナビゲーションボタンを2重に注入しない', async () => {
+      // 既にナビゲーションボタンがあるファイルをリクエスト
       const res = await request(app)
         .get('/20250104T000000--kdoc-400-already-injected.html')
         .expect(200);
 
-      // 追加のスクリプトを注入せずそのまま返す
-      const scriptCount = (res.text.match(/three@0\.170\.0/g) || []).length;
-      expect(scriptCount).toBe(1);
+      // 追加のボタンを注入せずそのまま返す
+      const buttonCount = (res.text.match(/id="navigation-buttons"/g) || []).length;
+      expect(buttonCount).toBe(1);
     });
 
-    it('ルートパス / にアクセスしたときもスクリプトを注入する', async () => {
+    it('ルートパス / にアクセスしたときもナビゲーションボタンを注入する', async () => {
       // テスト用index.htmlを作成
       await writeFile(
         join(testDir, 'index.html'),
-        '<html><head></head><body>Index Page</body></html>'
+        '<html><head></head><body><div id="content">Index Page</div></body></html>'
       );
 
       const res = await request(app)
         .get('/')
         .expect(200);
 
-      expect(res.text).toContain('three@0.170.0');
-      expect(res.text).toContain('importmap');
-      expect(res.text).toContain('drum-scroll.js');
+      expect(res.text).toContain('id="navigation-buttons"');
+      expect(res.text).toContain('/js/navigation.js');
     });
   });
 });
