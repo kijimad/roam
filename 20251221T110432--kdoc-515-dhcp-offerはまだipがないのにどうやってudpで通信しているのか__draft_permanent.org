@@ -48,11 +48,9 @@
 
 * この文書のステータス
 - 作成
-  - [ ] <署名>
-# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+  - [X] 2026-01-09 貴島
 - レビュー
-  - [ ] <署名>
-# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+  - [X] 2026-01-09 貴島
 
 # チェックリスト ================
 # 関連をつけた。
@@ -66,7 +64,7 @@
 * 概要
 # 本文(見出しも設定する)
 
-DHCP OFFERは、クライアントからのDHCP DISCOVERに対して割当可能なIPアドレスを提示する。DHCPはIPアドレスを自動設定するためのプロトコルなので、クライアントはOFFERを送った時点でIPアドレスを持っていない。
+DHCP OFFERは、クライアントからのDHCP DISCOVERに対して割当可能なIPアドレスを提示する。DHCPはIPアドレスを自動設定するためのプロトコルなので、クライアントはOFFERを送った時点でIPアドレスを持っていない。IPアドレスを持たない相手にどう返すのだろうか。
 
 クライアント → サーバはブロードキャストで送っているので、IPアドレスがなくても動くのはわかるが、サーバ → クライアントはどうしているのだろうか。
 
@@ -74,6 +72,10 @@ DHCP OFFERは、クライアントからのDHCP DISCOVERに対して割当可能
 DHCPサーバは、基盤となるトランスポート層のハードウェアレベルのMACアドレスを参照することができる。現在のRFCでは、DHCPパケットにクライアント識別子が指定されていない場合はトランスポート層のMACアドレスを使用できる。
 [[https://ja.wikipedia.org/wiki/DHCP#DHCP_offer][DHCP - Wikipedia]]
 #+end_quote
+
+MACアドレスあるいはクライアント識別子が使われるということだろうか。
+
+↓たしかにフィールドは持っていそうだが、どう使っているのかわからない。
 
 #+caption: DHCPコネクションはIPアドレスとMACアドレスの両方でハンドリングできるようになっている
 #+begin_src git-permalink
@@ -108,3 +110,4 @@ type dhcpConn struct {
 # 横に類推するか、上に抽象化するか、下に具体化するか
 
 - 参照: [[https://ja.wikipedia.org/wiki/DHCP#DHCP_offer][DHCP - Wikipedia]]
+- 追加調査: どう通信しているか調べる
