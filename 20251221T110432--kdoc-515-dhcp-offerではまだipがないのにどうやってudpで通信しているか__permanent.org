@@ -1,0 +1,58 @@
+:properties:
+:ID: 20251221T110432
+:end:
+#+title:      KDOC 515: DHCP OFFERではまだIPがないのにどうやってUDPで通信しているか?
+#+date:       [2025-12-21 Sun 11:04]
+#+filetags:   :permanent:
+#+identifier: 20251221T110432
+
+* この文書のステータス
+- 作成
+  - [X] 2026-01-09 貴島
+- レビュー
+  - [X] 2026-01-09 貴島
+
+* 概要
+
+DHCP OFFERは、クライアントからのDHCP DISCOVERに対して割当可能なIPアドレスを提示する。DHCPはIPアドレスを自動設定するためのプロトコルなので、クライアントはOFFERを送った時点でIPアドレスを持っていない。IPアドレスを持たない相手にどう返すのだろうか。
+
+クライアント → サーバはブロードキャストで送っているので、IPアドレスがなくても動くのはわかるが、サーバ → クライアントはどうしているのだろうか。
+
+#+begin_quote
+DHCPサーバは、基盤となるトランスポート層のハードウェアレベルのMACアドレスを参照することができる。現在のRFCでは、DHCPパケットにクライアント識別子が指定されていない場合はトランスポート層のMACアドレスを使用できる。
+[[https://ja.wikipedia.org/wiki/DHCP#DHCP_offer][DHCP - Wikipedia]]
+#+end_quote
+
+MACアドレスあるいはクライアント識別子が使われるということだろうか。
+
+↓たしかにフィールドは持っていそうだが、どう使っているのかわからない。
+
+#+caption: DHCPコネクションはIPアドレスとMACアドレスの両方でハンドリングできるようになっている
+#+begin_src git-permalink
+https://github.com/AdguardTeam/AdGuardHome/blob/59e8c8385d1bb8239b83e5a514b524cdbcd1555e/internal/dhcpd/conn_linux.go#L34-L49
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// dhcpConn is the net.PacketConn capable of handling both net.UDPAddr and
+// net.HardwareAddr.
+type dhcpConn struct {
+	// udpConn is the connection for UDP addresses.
+	udpConn net.PacketConn
+	// bcastIP is the broadcast address specific for the configured
+	// interface's subnet.
+	bcastIP net.IP
+
+	// rawConn is the connection for MAC addresses.
+	rawConn net.PacketConn
+	// srcMAC is the hardware address of the configured network interface.
+	srcMAC net.HardwareAddr
+	// srcIP is the IP address  of the configured network interface.
+	srcIP net.IP
+}
+#+end_src
+
+* 関連
+
+- 参照: [[https://ja.wikipedia.org/wiki/DHCP#DHCP_offer][DHCP - Wikipedia]]
+- 追加調査: OFFERがどう通信しているか調べる

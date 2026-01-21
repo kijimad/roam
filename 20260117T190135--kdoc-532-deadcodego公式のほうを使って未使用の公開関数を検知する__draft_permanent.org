@@ -1,10 +1,10 @@
 :properties:
-:ID: 20251221T110432
+:ID: 20260117T190135
 :end:
-#+title:      KDOC 515: DHCP OFFERではまだIPがないのにどうやってUDPで通信しているか?
-#+date:       [2025-12-21 Sun 11:04]
+#+title:      KDOC 532: deadcode(Go公式のほう)を使って未使用の公開関数を検知する
+#+date:       [2026-01-17 Sat 19:01]
 #+filetags:   :draft:permanent:
-#+identifier: 20251221T110432
+#+identifier: 20260117T190135
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -48,9 +48,11 @@
 
 * この文書のステータス
 - 作成
-  - [X] 2026-01-09 貴島
+  - [ ] <署名>
+# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
 - レビュー
-  - [X] 2026-01-09 貴島
+  - [ ] <署名>
+# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
 
 # チェックリスト ================
 # 関連をつけた。
@@ -64,43 +66,18 @@
 * 概要
 # 本文(見出しも設定する)
 
-DHCP OFFERは、クライアントからのDHCP DISCOVERに対して割当可能なIPアドレスを提示する。DHCPはIPアドレスを自動設定するためのプロトコルなので、クライアントはOFFERを送った時点でIPアドレスを持っていない。IPアドレスを持たない相手にどう返すのだろうか。
+生成AIを使ってGo言語で開発している。早く進むわけであるが、未使用の機能や関数が生まれていることが多い。プロンプトで指定してもこぼれがあって、そのたびに手直ししたり、あとから気づいたりした。検知したい、と考えた。
 
-クライアント → サーバはブロードキャストで送っているので、IPアドレスがなくても動くのはわかるが、サーバ → クライアントはどうしているのだろうか。
+golanglint-ciには ~unused~ ルールがあるが、これは未使用のprivateの項目限定であり、公開していると未使用でも検知されない。
 
-#+begin_quote
-DHCPサーバは、基盤となるトランスポート層のハードウェアレベルのMACアドレスを参照することができる。現在のRFCでは、DHCPパケットにクライアント識別子が指定されていない場合はトランスポート層のMACアドレスを使用できる。
-[[https://ja.wikipedia.org/wiki/DHCP#DHCP_offer][DHCP - Wikipedia]]
-#+end_quote
+Goチーム公式が出している、 ~deadcode~ CLIツールを使うと、検知できる。同じ名前のツールやルールがほかにもあったりするのだが、Goチームが出しているものである。
 
-MACアドレスあるいはクライアント識別子が使われるということだろうか。
-
-↓たしかにフィールドは持っていそうだが、どう使っているのかわからない。
-
-#+caption: DHCPコネクションはIPアドレスとMACアドレスの両方でハンドリングできるようになっている
-#+begin_src git-permalink
-https://github.com/AdguardTeam/AdGuardHome/blob/59e8c8385d1bb8239b83e5a514b524cdbcd1555e/internal/dhcpd/conn_linux.go#L34-L49
+#+caption: 使用例
+#+begin_src shell
+deadcode -test ./...
 #+end_src
 
-#+RESULTS:
-#+begin_src
-// dhcpConn is the net.PacketConn capable of handling both net.UDPAddr and
-// net.HardwareAddr.
-type dhcpConn struct {
-	// udpConn is the connection for UDP addresses.
-	udpConn net.PacketConn
-	// bcastIP is the broadcast address specific for the configured
-	// interface's subnet.
-	bcastIP net.IP
-
-	// rawConn is the connection for MAC addresses.
-	rawConn net.PacketConn
-	// srcMAC is the hardware address of the configured network interface.
-	srcMAC net.HardwareAddr
-	// srcIP is the IP address  of the configured network interface.
-	srcIP net.IP
-}
-#+end_src
+golanglint-ciには含まれていない。[[https://speakerdeck.com/kuro_kurorrr/deep-dive-into-deadcode][deadcode超解剖 - Speaker Deck]]によると、それは検知方式に由来していて、静的解析ではないということで却下されているのだという。
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
@@ -109,5 +86,4 @@ type dhcpConn struct {
 # [類推、未解決、具体例、追加調査、理由、動機、検証]
 # 横に類推するか、上に抽象化するか、下に具体化するか
 
-- 参照: [[https://ja.wikipedia.org/wiki/DHCP#DHCP_offer][DHCP - Wikipedia]]
-- 追加調査: どう通信しているか調べる
+なし。

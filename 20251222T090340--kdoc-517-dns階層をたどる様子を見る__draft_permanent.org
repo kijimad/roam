@@ -48,8 +48,7 @@
 
 * この文書のステータス
 - 作成
-  - [ ] <署名>
-# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+  - [X] 2026-01-12 貴島
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -66,55 +65,65 @@
 * 概要
 # 本文(見出しも設定する)
 
+DNSは階層的な分散型データシステムである。
+
+#+begin_quote
+具体的な例として、ja.wikipedia.orgというホスト名の IPアドレスを検索することを考えると、再帰検索は、トップレベルドメインをルートサーバに問い合わせることからはじまる。ja.wikipedia.orgというホスト名はwikipedia.orgドメインに属し、またwikipedia.orgドメインはorgドメインに属するため、クライアントは最初にorgドメインのDNSサーバ（ネームサーバ）のIPアドレスを得なければならない。
+
+まず、クライアントは適当なルートサーバをひとつ選ぶ。ここでは A.ROOT-SERVERS.NET（198.41.0.4）とする。現在、ルートサーバに登録されているorgドメインのネームサーバは9つあり、そのうちのひとつはa7.nstld.com（192.5.6.36）である。
+
+つぎにクライアントは、このネームサーバにwikipedia.orgドメインのネームサーバの IPアドレスを問い合わせる。するとそのネームサーバのホスト名はdns34.register.com（216.21.226.87）であることがわかる。
+
+最後に、このネームサーバにja.wikipedia.orgのIPアドレスを問い合わせる。するとこのサーバは最終的な答130.94.122.197を返す。こうして目的とするホスト名のIPアドレスを検索できる。
+
+[[https://ja.wikipedia.org/wiki/Domain_Name_System#DNS%E3%82%B5%E3%83%BC%E3%83%90%E3%81%AE%E5%BD%B9%E5%89%B2][Domain Name System - Wikipedia]]
+#+end_quote
+
+トップレベルドメインからNSレコードを辿っていき、最終的にAレコードを得る様子を見る。
+
+~.com~ の場合を見る。
+
 #+begin_src shell
-  dig +trace www.github.com
+  dig +trace -4 github.com
 #+end_src
 
 #+RESULTS:
 #+begin_src
 
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> +trace www.github.com
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> +trace -4 github.com
 ;; global options: +cmd
-.			6976	IN	NS	a.root-servers.net.
-.			6976	IN	NS	l.root-servers.net.
-.			6976	IN	NS	e.root-servers.net.
-.			6976	IN	NS	m.root-servers.net.
-.			6976	IN	NS	h.root-servers.net.
-.			6976	IN	NS	i.root-servers.net.
-.			6976	IN	NS	d.root-servers.net.
-.			6976	IN	NS	k.root-servers.net.
-.			6976	IN	NS	g.root-servers.net.
-.			6976	IN	NS	b.root-servers.net.
-.			6976	IN	NS	c.root-servers.net.
-.			6976	IN	NS	f.root-servers.net.
-.			6976	IN	NS	j.root-servers.net.
+.			5038	IN	NS	f.root-servers.net.
+.			5038	IN	NS	i.root-servers.net.
+.			5038	IN	NS	e.root-servers.net.
+.			5038	IN	NS	b.root-servers.net.
+.			5038	IN	NS	g.root-servers.net.
+.			5038	IN	NS	d.root-servers.net.
+.			5038	IN	NS	a.root-servers.net.
+.			5038	IN	NS	j.root-servers.net.
+.			5038	IN	NS	c.root-servers.net.
+.			5038	IN	NS	k.root-servers.net.
+.			5038	IN	NS	m.root-servers.net.
+.			5038	IN	NS	l.root-servers.net.
+.			5038	IN	NS	h.root-servers.net.
 ;; Received 239 bytes from 127.0.0.53#53(127.0.0.53) in 0 ms
 
-;; UDP setup with 2001:dc3::35#53(2001:dc3::35) for www.github.com failed: network unreachable.
-;; no servers could be reached
-;; UDP setup with 2001:dc3::35#53(2001:dc3::35) for www.github.com failed: network unreachable.
-;; no servers could be reached
-;; UDP setup with 2001:dc3::35#53(2001:dc3::35) for www.github.com failed: network unreachable.
-;; UDP setup with 2001:503:c27::2:30#53(2001:503:c27::2:30) for www.github.com failed: network unreachable.
-com.			172800	IN	NS	l.gtld-servers.net.
-com.			172800	IN	NS	c.gtld-servers.net.
-com.			172800	IN	NS	k.gtld-servers.net.
-com.			172800	IN	NS	m.gtld-servers.net.
-com.			172800	IN	NS	i.gtld-servers.net.
-com.			172800	IN	NS	b.gtld-servers.net.
-com.			172800	IN	NS	h.gtld-servers.net.
-com.			172800	IN	NS	e.gtld-servers.net.
-com.			172800	IN	NS	d.gtld-servers.net.
-com.			172800	IN	NS	f.gtld-servers.net.
 com.			172800	IN	NS	a.gtld-servers.net.
+com.			172800	IN	NS	b.gtld-servers.net.
+com.			172800	IN	NS	c.gtld-servers.net.
+com.			172800	IN	NS	d.gtld-servers.net.
+com.			172800	IN	NS	e.gtld-servers.net.
+com.			172800	IN	NS	f.gtld-servers.net.
 com.			172800	IN	NS	g.gtld-servers.net.
+com.			172800	IN	NS	h.gtld-servers.net.
+com.			172800	IN	NS	i.gtld-servers.net.
 com.			172800	IN	NS	j.gtld-servers.net.
+com.			172800	IN	NS	k.gtld-servers.net.
+com.			172800	IN	NS	l.gtld-servers.net.
+com.			172800	IN	NS	m.gtld-servers.net.
 com.			86400	IN	DS	19718 13 2 8ACBB0CD28F41250A80A491389424D341522D946B0DA0C0291F2D3D7 71D7805A
-com.			86400	IN	RRSIG	DS 8 1 86400 20260103170000 20251221160000 61809 . LyStNQm9+1ankIVATIyU/cW7QtLvLE7NfHzzVnKqTLu6ko4/slJmY1QU bmhcRd6Z3e+u1k04++RixtKc/5N7MQ5olnze3pZ9y9VX0AdyGqnLSINP Ui3hZr5NIu3mTgjTt2PttfIEe1V0qrgaC903fIaNSdL2nISm49u5zoG6 LJ4l7rrDVt2pNvR+KiZtbSWp7ULt4jJLvQWjsvpfADnq2UqgOSVqNIvk kDQ8fXYFoNXETBHkdZ1NEQbIl/e4cj2vk0I4q5eeJReuKKamWjIxY6Zb GLnvjDVh2mAjVQcbkjde5r7oxrcJiK8z3Tx6Yd0QFns0g92/0JMukcZY r7em8g==
-;; Received 1205 bytes from 192.33.4.12#53(c.root-servers.net) in 2 ms
+com.			86400	IN	RRSIG	DS 8 1 86400 20260125050000 20260112040000 21831 . ZxvdGVZKN2nSe3J+8z4B5jKhpwdWgBAX8SS1/Jw/fdo8hxb8XAZVP5+6 M7xLNBgvj7vHIzR/Gfiz0kAJeeTmTRU6uglTwf0tmvM9cCHr4J7sTc3r cDzLUZd6/kMskW5HSYOq5hBgLROzukzTVg1KO4AVGn6JL4iyAdtnoTyT pFt02zXADLs3CEfjZqLR+yzH/pqD9FYbDANdaljpxN/qpU7Itfz1ldV2 YZi1oKdrDixSFA00iHMYOcYI+laktp63yNAm73n+4E+O2p+r9u1KAmqL Yy2erLx7v6acR1eKw0S6HxLQekaTSSGLDuuhk5ztMCi1QKXlXp7dTwg5 oBJHkw==
+;; Received 1170 bytes from 192.58.128.30#53(j.root-servers.net) in 108 ms
 
-;; UDP setup with 2001:502:7094::30#53(2001:502:7094::30) for www.github.com failed: network unreachable.
-;; UDP setup with 2001:503:a83e::2:30#53(2001:503:a83e::2:30) for www.github.com failed: network unreachable.
 github.com.		172800	IN	NS	ns-520.awsdns-01.net.
 github.com.		172800	IN	NS	ns-421.awsdns-52.com.
 github.com.		172800	IN	NS	ns-1707.awsdns-21.co.uk.
@@ -124,15 +133,78 @@ github.com.		172800	IN	NS	dns2.p08.nsone.net.
 github.com.		172800	IN	NS	dns3.p08.nsone.net.
 github.com.		172800	IN	NS	dns4.p08.nsone.net.
 CK0POJMG874LJREF7EFN8430QVIT8BSM.com. 900 IN NSEC3 1 1 0 - CK0Q3UDG8CEKKAE7RUKPGCT1DVSSH8LL NS SOA RRSIG DNSKEY NSEC3PARAM
-CK0POJMG874LJREF7EFN8430QVIT8BSM.com. 900 IN RRSIG NSEC3 13 2 900 20251225002706 20251217231706 46539 com. gmHVJS+WmLxYXTQMDYmfFRMcTSDHtHHXgSTWPo3FbOjYVV6GmpBv4Rd3 q91lGtsv8vkur4/nrD7LolMHJ4gpqw==
+CK0POJMG874LJREF7EFN8430QVIT8BSM.com. 900 IN RRSIG NSEC3 13 2 900 20260118002710 20260110231710 46539 com. NJZOGM6/58BaMKgZQx3rszUB4kwgp/075NDSCLL5AH9z02FiE+DgsxFR djxD/mRLTPZAaNUuvtHv76ZIxIchcA==
 4KB4M5P0V10KIBJ8HQ2VH9EMME8NV6MR.com. 900 IN NSEC3 1 1 0 - 4KB4V9IAMJL29MC1VBJ8NDO7E6SI2B8O NS DS RRSIG
-4KB4M5P0V10KIBJ8HQ2VH9EMME8NV6MR.com. 900 IN RRSIG NSEC3 13 2 900 20251225021105 20251218010105 46539 com. 8mEzmw5hy48Fr2ps/fSxqKgLwBWLyLUV3RwXyj9cQshaoXLOhqhpIawj /fvfrbiMADGGEIjO7zwfrk338jhexg==
-;; Received 639 bytes from 192.43.172.30#53(i.gtld-servers.net) in 112 ms
+4KB4M5P0V10KIBJ8HQ2VH9EMME8NV6MR.com. 900 IN RRSIG NSEC3 13 2 900 20260118021121 20260111010121 46539 com. 9fgJGD+ItOwih/kCASh2P3+nhrE7CFiQtzusLGGm3Entyu7/h7ci+tim VsYfJ5bwYi4KizXq/3lVaSfTlIydXA==
+;; Received 635 bytes from 192.52.178.30#53(k.gtld-servers.net) in 189 ms
 
-;; UDP setup with 2620:4d:4000:6259:7:8:0:3#53(2620:4d:4000:6259:7:8:0:3) for www.github.com failed: network unreachable.
-www.github.com.		3600	IN	CNAME	github.com.
 github.com.		60	IN	A	20.27.177.113
-;; Received 73 bytes from 198.51.44.72#53(dns3.p08.nsone.net) in 113 ms
+github.com.		900	IN	NS	dns1.p08.nsone.net.
+github.com.		900	IN	NS	dns2.p08.nsone.net.
+github.com.		900	IN	NS	dns3.p08.nsone.net.
+github.com.		900	IN	NS	dns4.p08.nsone.net.
+github.com.		900	IN	NS	ns-1283.awsdns-32.org.
+github.com.		900	IN	NS	ns-1707.awsdns-21.co.uk.
+github.com.		900	IN	NS	ns-421.awsdns-52.com.
+github.com.		900	IN	NS	ns-520.awsdns-01.net.
+;; Received 278 bytes from 205.251.197.3#53(ns-1283.awsdns-32.org) in 4 ms
+
+#+end_src
+
+同様に ~.jp~ も試す。
+
+#+begin_src shell
+  dig +trace -4 note.jp
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> +trace -4 note.jp
+;; global options: +cmd
+.			4988	IN	NS	a.root-servers.net.
+.			4988	IN	NS	g.root-servers.net.
+.			4988	IN	NS	b.root-servers.net.
+.			4988	IN	NS	h.root-servers.net.
+.			4988	IN	NS	m.root-servers.net.
+.			4988	IN	NS	i.root-servers.net.
+.			4988	IN	NS	d.root-servers.net.
+.			4988	IN	NS	l.root-servers.net.
+.			4988	IN	NS	j.root-servers.net.
+.			4988	IN	NS	f.root-servers.net.
+.			4988	IN	NS	k.root-servers.net.
+.			4988	IN	NS	c.root-servers.net.
+.			4988	IN	NS	e.root-servers.net.
+;; Received 239 bytes from 127.0.0.53#53(127.0.0.53) in 0 ms
+
+jp.			172800	IN	NS	a.dns.jp.
+jp.			172800	IN	NS	b.dns.jp.
+jp.			172800	IN	NS	c.dns.jp.
+jp.			172800	IN	NS	d.dns.jp.
+jp.			172800	IN	NS	e.dns.jp.
+jp.			172800	IN	NS	f.dns.jp.
+jp.			172800	IN	NS	g.dns.jp.
+jp.			172800	IN	NS	h.dns.jp.
+jp.			86400	IN	DS	33631 8 2 B54097461F9DBC3D9D87E74552C76314B421D178A18D8CB74DD2D97F 34FBADBE
+jp.			86400	IN	RRSIG	DS 8 1 86400 20260125050000 20260112040000 21831 . QEFbHHyuCVClqh4q0bxZJuyr8qcS/suW+l5YAvmqSsnWwnccRnTkkoNO /zR2kWumTHHKjwWJ5I9VY5Dn2ywxrJescwdb1GgHk8xHkosgt6MAfOgK gkSGOzlf9B6rqPjWmCCCmbvM3N9ErUndIUg5oNy7w874aQK3IfQkTEZV Y87Gv7Nfa8V4NMy7vstbssYqXgWwbXiDKJQyaLWpyTW/GnWZ+GZeVvGS 7RMDWkKJS+QXMt8ioZol6eb35qJ4yDvZ+r+WtekSL1df9io2yTMVtD59 ULfUivAoqHRcnmOd+E4icogbZ4mEiy0kzHPS5x9c3Ykw9fUlo0ctRrPf j7CoOA==
+;; Received 827 bytes from 199.7.83.42#53(l.root-servers.net) in 117 ms
+
+note.jp.		86400	IN	NS	ns-139.awsdns-17.com.
+note.jp.		86400	IN	NS	ns-675.awsdns-20.net.
+note.jp.		86400	IN	NS	ns-1391.awsdns-45.org.
+note.jp.		86400	IN	NS	ns-1650.awsdns-14.co.uk.
+b9ccvllht15jm5het57bq8mlbaakpi82.jp. 900 IN NSEC3 1 1 0 - B9GCLVHJOFB3318PIQ42MAJLDH459SFM NS SOA RRSIG DNSKEY NSEC3PARAM
+b9ccvllht15jm5het57bq8mlbaakpi82.jp. 900 IN RRSIG NSEC3 8 2 900 20260209174503 20260110174503 62703 jp. tB7WC8UIsO4S3FOjtRKfiVd7a4dvGu/hQD5CKU/tJrmg+W4LyMqHUeTy /wD0ClTIbv7gWfh+WbkHeCA0MeU/X7Hy5damcvGajz9/QLLdjNQSJeHG xOe7irqopZZNrjLSKapewJyUgZglxx4VIe8r2Py9FIWiCk9CaSPUhSAl WCw=
+31taohd0oni1cga6biicglbhhh6i1san.jp. 900 IN NSEC3 1 1 0 - 31V1508LCTMLVPQRIVORPD3UJG8TF416 NS DS RRSIG
+31taohd0oni1cga6biicglbhhh6i1san.jp. 900 IN RRSIG NSEC3 8 2 900 20260209174503 20260110174503 62703 jp. D8JUgZtoIA2kXrV4qO3w9nxrG0H9NhNn/3+kLb9yIzrP84fjU2lfjG5j Sz5NDIBItw5Ymnm6+8quTkpIuzGZQPKr9rUAjgCGmz5YlG8f1iIYxA/x FRpTs06Oz/Xd30ck3yDpzOotKc2GEb87cKZFGGoVFltGurP1TZUrcEpw AX8=
+;; Received 659 bytes from 192.50.43.53#53(e.dns.jp) in 11 ms
+
+note.jp.		300	IN	A	18.176.100.108
+note.jp.		172800	IN	NS	ns-139.awsdns-17.com.
+note.jp.		172800	IN	NS	ns-1391.awsdns-45.org.
+note.jp.		172800	IN	NS	ns-1650.awsdns-14.co.uk.
+note.jp.		172800	IN	NS	ns-675.awsdns-20.net.
+;; Received 192 bytes from 205.251.194.163#53(ns-675.awsdns-20.net) in 109 ms
 
 #+end_src
 
@@ -142,4 +214,5 @@ github.com.		60	IN	A	20.27.177.113
 # また、現在はリンクが見つからなくてもこういった切り口で将来関連させられそうな項目を書いておく
 # [類推、未解決、具体例、追加調査、理由、動機、検証]
 # 横に類推するか、上に抽象化するか、下に具体化するか
-なし。
+
+- 追加調査: NSレコードは複数あるが、どうやって選ばれているのか
