@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-01-19T23:00:19Z -->
+<!-- 2026-01-22T08:54:35Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 59: ECSを使ってRPGを作る</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 59: ECSを使ってRPGを作る</h1>
-<div id="outline-container-org9c46328" class="outline-2">
-<h2 id="org9c46328"><a href="#org9c46328">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org9c46328">
+<div id="outline-container-orgb8ee968" class="outline-2">
+<h2 id="orgb8ee968"><a href="#orgb8ee968">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgb8ee968">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,17 +30,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org65e35a2" class="outline-2">
-<h2 id="org65e35a2"><a href="#org65e35a2"><span class="todo WIP">WIP</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-org65e35a2">
+<div id="outline-container-orge92f495" class="outline-2">
+<h2 id="orge92f495"><a href="#orge92f495"><span class="todo WIP">WIP</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-orge92f495">
 <p>
 プロジェクトは進行中である。
 </p>
 </div>
 </div>
-<div id="outline-container-orga022536" class="outline-2">
-<h2 id="orga022536"><a href="#orga022536">概要</a></h2>
-<div class="outline-text-2" id="text-orga022536">
+<div id="outline-container-org3b0cb42" class="outline-2">
+<h2 id="org3b0cb42"><a href="#org3b0cb42">概要</a></h2>
+<div class="outline-text-2" id="text-org3b0cb42">
 <p>
 <a href="20230930175757-entitycomponentsystem.html#ID-dc45bd7d-b8c4-47ef-ae84-c548f81c50bb">Entity Component System</a>を使って、サンプルゲームを作る。
 </p>
@@ -66,9 +66,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org3fe6720" class="outline-2">
-<h2 id="org3fe6720"><a href="#org3fe6720">方針</a></h2>
-<div class="outline-text-2" id="text-org3fe6720">
+<div id="outline-container-org9d56b0e" class="outline-2">
+<h2 id="org9d56b0e"><a href="#org9d56b0e">方針</a></h2>
+<div class="outline-text-2" id="text-org9d56b0e">
 <p>
 まずストーリー抜きで、RPGとしてゲームが成立するようにする。
 </p>
@@ -85,9 +85,9 @@
 </ol>
 </div>
 </div>
-<div id="outline-container-orgb7ea6fd" class="outline-2">
-<h2 id="orgb7ea6fd"><a href="#orgb7ea6fd">素材</a></h2>
-<div class="outline-text-2" id="text-orgb7ea6fd">
+<div id="outline-container-orgd1fce3c" class="outline-2">
+<h2 id="orgd1fce3c"><a href="#orgd1fce3c">素材</a></h2>
+<div class="outline-text-2" id="text-orgd1fce3c">
 <p>
 よさげな素材をリンクしておく。
 </p>
@@ -100,26 +100,107 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org21bf956" class="outline-2">
-<h2 id="org21bf956"><a href="#org21bf956">Tasks</a></h2>
-<div class="outline-text-2" id="text-org21bf956">
+<div id="outline-container-orgeac95ae" class="outline-2">
+<h2 id="orgeac95ae"><a href="#orgeac95ae">Tasks</a></h2>
+<div class="outline-text-2" id="text-orgeac95ae">
 </div>
-<div id="outline-container-orgf710988" class="outline-3">
-<h3 id="orgf710988"><a href="#orgf710988"><span class="todo TODO">TODO</span> enum対策する</a></h3>
-<div class="outline-text-3" id="text-orgf710988">
+<div id="outline-container-org7202d47" class="outline-3">
+<h3 id="org7202d47"><a href="#org7202d47"><span class="todo TODO">TODO</span> 戦闘システムの再設計</a></h3>
+<div class="outline-text-3" id="text-org7202d47">
 <p>
-いらなそう。
+以下で考えたが、結局微妙である。とくに、戦闘と地形が乖離するのがローグライクの意味がなくなる。
+</p>
+
+<p>
+現状ありきたりのもので、特有の面白さがない。
+</p>
+
+<p>
+事前に情報をみつつ、どこで交戦するかを選択でき、有利な位置を探れる。
 </p>
 
 <ul class="org-ul">
-<li>exhaustive linter導入</li>
-<li>外部から不正な値を作れないようにする</li>
+<li>遠距離ボーナス: +60%</li>
+<li>近距離ボーナス(自分のタイル種別): +20%</li>
+</ul>
+
+<p>
+そのうえで、オプショナルなアイテムを選んで条件を有利にしていく。
+</p>
+
+<p>
+選択肢。
+</p>
+
+<ol class="org-ol">
+<li>射撃(距離があるときだけ選択できる、0~1つ選択する)
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> ハンドガン</li>
+<li class="off"><input type='checkbox' /> ライフル</li>
+</ul></li>
+<li>近接(1つ選択する)
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> 日本刀</li>
+<li class="off"><input type='checkbox' /> 斧</li>
+<li class="off"><input type='checkbox' /> 素手</li>
+</ul></li>
+<li>補助アイテム(複数選択できる)
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> 手榴弾(射撃フェーズで固定ダメージ)</li>
+<li class="off"><input type='checkbox' /> 煙幕(敵の射撃の命中率が低下する)</li>
+</ul></li>
+</ol>
+
+<p>
+戦闘のフェーズ。
+</p>
+
+<ol class="org-ol">
+<li>射撃フェーズ
+<ul class="org-ul">
+<li>味方と敵が射撃選択肢を持つ場合のみ実行する</li>
+</ul></li>
+<li>近接フェーズ
+<ul class="org-ul">
+<li>必ず発生する</li>
+</ul></li>
+</ol>
+
+<p>
+メモ。
+</p>
+
+<ul class="org-ul">
+<li>逃亡は戦闘上の選択肢にない(タイル上で敵と距離をとる)</li>
+<li>隣接した場合は強制的に戦闘になり、不利な条件になる</li>
+<li>近隣に複数の敵がいるとき交戦するとチェインして敵が強くなり、被害が増加する</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org8f700db" class="outline-3">
-<h3 id="org8f700db"><a href="#org8f700db"><span class="todo TODO">TODO</span> 複数のテーブル選択ロジックをどうするか考える</a></h3>
-<div class="outline-text-3" id="text-org8f700db">
+<div id="outline-container-orgcfbaa41" class="outline-3">
+<h3 id="orgcfbaa41"><a href="#orgcfbaa41"><span class="todo TODO">TODO</span> tomlフィールドをソートする</a></h3>
+<div class="outline-text-3" id="text-orgcfbaa41">
+<p>
+長くなってわかりにくくなってきた。
+</p>
+
+<ul class="org-ul">
+<li>ファイルを分割する</li>
+<li>フィールドだけソートする</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orge15e141" class="outline-3">
+<h3 id="orge15e141"><a href="#orge15e141"><span class="todo TODO">TODO</span> 分解システムを追加する</a></h3>
+<div class="outline-text-3" id="text-orge15e141">
+<p>
+配置物を分解してたくさんのアイテムを手に入れる。
+</p>
+</div>
+</div>
+<div id="outline-container-org86df1cf" class="outline-3">
+<h3 id="org86df1cf"><a href="#org86df1cf"><span class="todo TODO">TODO</span> 複数のテーブル選択ロジックをどうするか考える</a></h3>
+<div class="outline-text-3" id="text-org86df1cf">
 <p>
 似通った部分がある。
 </p>
@@ -135,9 +216,9 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org2b9fc73" class="outline-3">
-<h3 id="org2b9fc73"><a href="#org2b9fc73"><span class="todo TODO">TODO</span> 画面フィルターを追加してきれいにする</a></h3>
-<div class="outline-text-3" id="text-org2b9fc73">
+<div id="outline-container-org5a38e5e" class="outline-3">
+<h3 id="org5a38e5e"><a href="#org5a38e5e"><span class="todo TODO">TODO</span> 画面フィルターを追加してきれいにする</a></h3>
+<div class="outline-text-3" id="text-org5a38e5e">
 <ul class="org-ul">
 <li>おすすめの組み合わせ（実装の容易さ順）</li>
 </ul>
@@ -173,9 +254,9 @@
 </ol>
 </div>
 </div>
-<div id="outline-container-org63c7db8" class="outline-3">
-<h3 id="org63c7db8"><a href="#org63c7db8"><span class="todo TODO">TODO</span> エリア定義</a></h3>
-<div class="outline-text-3" id="text-org63c7db8">
+<div id="outline-container-org52175d7" class="outline-3">
+<h3 id="org52175d7"><a href="#org52175d7"><span class="todo TODO">TODO</span> エリア定義</a></h3>
+<div class="outline-text-3" id="text-org52175d7">
 <p>
 エリアを定義しておき、入ったときに名前が出るようにしたい。
 </p>
@@ -186,18 +267,18 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb0b82ad" class="outline-3">
-<h3 id="orgb0b82ad"><a href="#orgb0b82ad"><span class="todo TODO">TODO</span> APの処理追加</a></h3>
-<div class="outline-text-3" id="text-orgb0b82ad">
+<div id="outline-container-org6533ee8" class="outline-3">
+<h3 id="org6533ee8"><a href="#org6533ee8"><span class="todo TODO">TODO</span> APの処理追加</a></h3>
+<div class="outline-text-3" id="text-org6533ee8">
 <ul class="org-ul">
 <li>まず、よくわからないコードになっている。ゲーム性の根幹なので整理する</li>
 <li>足りない場合はターンスキップする</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org51d0378" class="outline-3">
-<h3 id="org51d0378"><a href="#org51d0378"><span class="todo TODO">TODO</span> コンテキスト移動する</a></h3>
-<div class="outline-text-3" id="text-org51d0378">
+<div id="outline-container-orga2a5462" class="outline-3">
+<h3 id="orga2a5462"><a href="#orga2a5462"><span class="todo TODO">TODO</span> コンテキスト移動する</a></h3>
+<div class="outline-text-3" id="text-orga2a5462">
 <p>
 同じ方向キーでも、コンテキストによってじっさいの実行イベントは変化する。こうすることで直感的に操作できる。
 </p>
@@ -247,9 +328,9 @@
 </div>
 </div>
 </div>
-<div id="outline-container-orge0dc5fa" class="outline-3">
-<h3 id="orge0dc5fa"><a href="#orge0dc5fa"><span class="todo TODO">TODO</span> プレハブを作成する</a></h3>
-<div class="outline-text-3" id="text-orge0dc5fa">
+<div id="outline-container-orga39c395" class="outline-3">
+<h3 id="orga39c395"><a href="#orga39c395"><span class="todo TODO">TODO</span> プレハブを作成する</a></h3>
+<div class="outline-text-3" id="text-orga39c395">
 <ul class="org-ul">
 <li>文字列で小さなタイルを作っておき、それを組み合わせられるようにする
 <ul class="org-ul">
@@ -258,9 +339,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org8630263" class="outline-3">
-<h3 id="org8630263"><a href="#org8630263"><span class="todo TODO">TODO</span> 徘徊AIを強化する</a></h3>
-<div class="outline-text-3" id="text-org8630263">
+<div id="outline-container-org49b2f49" class="outline-3">
+<h3 id="org49b2f49"><a href="#org49b2f49"><span class="todo TODO">TODO</span> 徘徊AIを強化する</a></h3>
+<div class="outline-text-3" id="text-org49b2f49">
 <ul class="org-ul">
 <li>追跡モード追加する</li>
 <li>デバッグ用にステート、索敵範囲、方向を表示する</li>
@@ -269,9 +350,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org6c510d7" class="outline-3">
-<h3 id="org6c510d7"><a href="#org6c510d7"><span class="todo TODO">TODO</span> VRTを強化する</a></h3>
-<div class="outline-text-3" id="text-org6c510d7">
+<div id="outline-container-org45b7c93" class="outline-3">
+<h3 id="org45b7c93"><a href="#org45b7c93"><span class="todo TODO">TODO</span> VRTを強化する</a></h3>
+<div class="outline-text-3" id="text-org45b7c93">
 <p>
 強化する。
 </p>
@@ -282,9 +363,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org9e8bb70" class="outline-3">
-<h3 id="org9e8bb70"><a href="#org9e8bb70"><span class="todo TODO">TODO</span> イベントのテーブルをどうするか考える</a></h3>
-<div class="outline-text-3" id="text-org9e8bb70">
+<div id="outline-container-orgad7110e" class="outline-3">
+<h3 id="orgad7110e"><a href="#orgad7110e"><span class="todo TODO">TODO</span> イベントのテーブルをどうするか考える</a></h3>
+<div class="outline-text-3" id="text-orgad7110e">
 <p>
 いくつかの入力によって、たとえばイベントの戦闘がどうなるかは異なる。あるいはアイテムの取得テーブル。
 </p>
@@ -313,34 +394,34 @@
 </p>
 </div>
 </div>
-<div id="outline-container-orga018477" class="outline-3">
-<h3 id="orga018477"><a href="#orga018477"><span class="todo TODO">TODO</span> デバッグ設定を調整する</a></h3>
-<div class="outline-text-3" id="text-orga018477">
+<div id="outline-container-org30b4a9b" class="outline-3">
+<h3 id="org30b4a9b"><a href="#org30b4a9b"><span class="todo TODO">TODO</span> デバッグ設定を調整する</a></h3>
+<div class="outline-text-3" id="text-org30b4a9b">
 <ul class="org-ul">
 <li>戦闘時のHP表示</li>
 <li>フィールド上でのエンカウント無視</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org59038fb" class="outline-3">
-<h3 id="org59038fb"><a href="#org59038fb"><span class="todo TODO">TODO</span> 合成のレアリティスコア</a></h3>
-<div class="outline-text-3" id="text-org59038fb">
+<div id="outline-container-org2bd9387" class="outline-3">
+<h3 id="org2bd9387"><a href="#org2bd9387"><span class="todo TODO">TODO</span> 合成のレアリティスコア</a></h3>
+<div class="outline-text-3" id="text-org2bd9387">
 <p>
 性能にスコアをつけ、結果的に出来上がったものに対してレアリティランクをつけるとよさそう。
 </p>
 </div>
 </div>
-<div id="outline-container-orgccc2cf8" class="outline-3">
-<h3 id="orgccc2cf8"><a href="#orgccc2cf8"><span class="todo TODO">TODO</span> ゲームループカウントをグローバル化する</a></h3>
-<div class="outline-text-3" id="text-orgccc2cf8">
+<div id="outline-container-org2f109cf" class="outline-3">
+<h3 id="org2f109cf"><a href="#org2f109cf"><span class="todo TODO">TODO</span> ゲームループカウントをグローバル化する</a></h3>
+<div class="outline-text-3" id="text-org2f109cf">
 <p>
 カウントしてメッセージをアニメーションさせる用。汎用的なのでグローバルでやってよさそう。アニメーションのためのもっとよい方法がある可能性はある。ちゃんと調べないとな…。
 </p>
 </div>
 </div>
-<div id="outline-container-orge647354" class="outline-3">
-<h3 id="orge647354"><a href="#orge647354"><span class="todo TODO">TODO</span> アニメーションのやり方を考える</a></h3>
-<div class="outline-text-3" id="text-orge647354">
+<div id="outline-container-orge72ec90" class="outline-3">
+<h3 id="orge72ec90"><a href="#orge72ec90"><span class="todo TODO">TODO</span> アニメーションのやり方を考える</a></h3>
+<div class="outline-text-3" id="text-orge72ec90">
 <p>
 どうやっているのだろう。
 </p>
@@ -351,17 +432,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org7fbc42f" class="outline-3">
-<h3 id="org7fbc42f"><a href="#org7fbc42f"><span class="todo TODO">TODO</span> 本を読めるようにする</a></h3>
-<div class="outline-text-3" id="text-org7fbc42f">
+<div id="outline-container-org117d848" class="outline-3">
+<h3 id="org117d848"><a href="#org117d848"><span class="todo TODO">TODO</span> 本を読めるようにする</a></h3>
+<div class="outline-text-3" id="text-org117d848">
 <p>
 ランダムに拾えるアイテムによって世界観を知っていく。アイテムコレクション要素。
 </p>
 </div>
 </div>
-<div id="outline-container-org6a0ba24" class="outline-3">
-<h3 id="org6a0ba24"><a href="#org6a0ba24"><span class="todo TODO">TODO</span> セーブデータの互換性を考える</a></h3>
-<div class="outline-text-3" id="text-org6a0ba24">
+<div id="outline-container-org207ef56" class="outline-3">
+<h3 id="org207ef56"><a href="#org207ef56"><span class="todo TODO">TODO</span> セーブデータの互換性を考える</a></h3>
+<div class="outline-text-3" id="text-org207ef56">
 <ul class="org-ul">
 <li>今の仕組みだと、値を変えたりしたときに既存セーブデータに反映されない</li>
 <li>セーブデータにバージョンを保存しておいて弾く、警告を出すだけでよいかも</li>
@@ -369,45 +450,45 @@
 </div>
 </div>
 </div>
-<div id="outline-container-org062f1da" class="outline-2">
-<h2 id="org062f1da"><a href="#org062f1da">Archives</a></h2>
-<div class="outline-text-2" id="text-org062f1da">
+<div id="outline-container-org05dd526" class="outline-2">
+<h2 id="org05dd526"><a href="#org05dd526">Archives</a></h2>
+<div class="outline-text-2" id="text-org05dd526">
 </div>
-<div id="outline-container-org881dce8" class="outline-3">
-<h3 id="org881dce8"><a href="#org881dce8"><span class="done DONE">DONE</span> メッセージ表示できるようにする</a></h3>
-<div class="outline-text-3" id="text-org881dce8">
+<div id="outline-container-orgd500c3a" class="outline-3">
+<h3 id="orgd500c3a"><a href="#orgd500c3a"><span class="done DONE">DONE</span> メッセージ表示できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgd500c3a">
 <p>
 <a href="https://github.com/x-hgg-x/sokoban-go">x-hgg-x/sokoban-go</a>を使って小さいサンプルを作る。
 </p>
 </div>
 </div>
-<div id="outline-container-org1be4a7b" class="outline-3">
-<h3 id="org1be4a7b"><a href="#org1be4a7b"><span class="done DONE">DONE</span> メッセージシステムのリファクタ</a></h3>
-<div class="outline-text-3" id="text-org1be4a7b">
+<div id="outline-container-org249d80b" class="outline-3">
+<h3 id="org249d80b"><a href="#org249d80b"><span class="done DONE">DONE</span> メッセージシステムのリファクタ</a></h3>
+<div class="outline-text-3" id="text-org249d80b">
 <p>
 使いにくいので直す。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb1cf538" class="outline-3">
-<h3 id="orgb1cf538"><a href="#orgb1cf538"><span class="done DONE">DONE</span> メッセージシステムに自動改行を入れる</a></h3>
-<div class="outline-text-3" id="text-orgb1cf538">
+<div id="outline-container-orgaaf4f2f" class="outline-3">
+<h3 id="orgaaf4f2f"><a href="#orgaaf4f2f"><span class="done DONE">DONE</span> メッセージシステムに自動改行を入れる</a></h3>
+<div class="outline-text-3" id="text-orgaaf4f2f">
 <p>
 飛び出すのを防ぐ。
 </p>
 </div>
 </div>
-<div id="outline-container-org283436a" class="outline-3">
-<h3 id="org283436a"><a href="#org283436a"><span class="done DONE">DONE</span> ファイルを埋め込む</a></h3>
-<div class="outline-text-3" id="text-org283436a">
+<div id="outline-container-orgcfcb755" class="outline-3">
+<h3 id="orgcfcb755"><a href="#orgcfcb755"><span class="done DONE">DONE</span> ファイルを埋め込む</a></h3>
+<div class="outline-text-3" id="text-orgcfcb755">
 <p>
 デプロイで扱いやすいように。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb684628" class="outline-3">
-<h3 id="orgb684628"><a href="#orgb684628"><span class="done DONE">DONE</span> CI設定</a></h3>
-<div class="outline-text-3" id="text-orgb684628">
+<div id="outline-container-org4e178b5" class="outline-3">
+<h3 id="org4e178b5"><a href="#org4e178b5"><span class="done DONE">DONE</span> CI設定</a></h3>
+<div class="outline-text-3" id="text-org4e178b5">
 <p>
 テストとビルドとデプロイする。
 </p>
@@ -417,9 +498,9 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org51164dd" class="outline-3">
-<h3 id="org51164dd"><a href="#org51164dd"><span class="done DONE">DONE</span> フィールドで動けるようにする</a></h3>
-<div class="outline-text-3" id="text-org51164dd">
+<div id="outline-container-org0b4ddd1" class="outline-3">
+<h3 id="org0b4ddd1"><a href="#org0b4ddd1"><span class="done DONE">DONE</span> フィールドで動けるようにする</a></h3>
+<div class="outline-text-3" id="text-org0b4ddd1">
 <ul class="org-ul">
 <li>テキストで地図を読み込む</li>
 <li>コンポーネントを作る</li>
@@ -443,17 +524,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgde6be7f" class="outline-3">
-<h3 id="orgde6be7f"><a href="#orgde6be7f"><span class="done DONE">DONE</span> マップを表示できるようにする</a></h3>
-<div class="outline-text-3" id="text-orgde6be7f">
+<div id="outline-container-org66064bf" class="outline-3">
+<h3 id="org66064bf"><a href="#org66064bf"><span class="done DONE">DONE</span> マップを表示できるようにする</a></h3>
+<div class="outline-text-3" id="text-org66064bf">
 <p>
 表示する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc5e3fc6" class="outline-3">
-<h3 id="orgc5e3fc6"><a href="#orgc5e3fc6"><span class="done DONE">DONE</span> 階数を移動できるようにする</a></h3>
-<div class="outline-text-3" id="text-orgc5e3fc6">
+<div id="outline-container-orgb02ec58" class="outline-3">
+<h3 id="orgb02ec58"><a href="#orgb02ec58"><span class="done DONE">DONE</span> 階数を移動できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgb02ec58">
 <p>
 1階からはじまって、次の階層に移動する。
 </p>
@@ -463,57 +544,57 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org5797083" class="outline-3">
-<h3 id="org5797083"><a href="#org5797083"><span class="done DONE">DONE</span> クロスコンパイルする</a></h3>
-<div class="outline-text-3" id="text-org5797083">
+<div id="outline-container-org3398ba9" class="outline-3">
+<h3 id="org3398ba9"><a href="#org3398ba9"><span class="done DONE">DONE</span> クロスコンパイルする</a></h3>
+<div class="outline-text-3" id="text-org3398ba9">
 <p>
 一応CIに設定して保証しておく。
 </p>
 </div>
 </div>
-<div id="outline-container-org295ca00" class="outline-3">
-<h3 id="org295ca00"><a href="#org295ca00"><span class="done DONE">DONE</span> メッセージが飛び出すのを直す</a></h3>
-<div class="outline-text-3" id="text-org295ca00">
+<div id="outline-container-org0a588da" class="outline-3">
+<h3 id="org0a588da"><a href="#org0a588da"><span class="done DONE">DONE</span> メッセージが飛び出すのを直す</a></h3>
+<div class="outline-text-3" id="text-org0a588da">
 <p>
 ステート遷移イベントを作る。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbad11ce" class="outline-3">
-<h3 id="orgbad11ce"><a href="#orgbad11ce"><span class="done DONE">DONE</span> 次の階をランダムに選択する</a></h3>
-<div class="outline-text-3" id="text-orgbad11ce">
+<div id="outline-container-org0eca3fc" class="outline-3">
+<h3 id="org0eca3fc"><a href="#org0eca3fc"><span class="done DONE">DONE</span> 次の階をランダムに選択する</a></h3>
+<div class="outline-text-3" id="text-org0eca3fc">
 <p>
 一覧からランダムに選択する。
 </p>
 </div>
 </div>
-<div id="outline-container-org3d1a524" class="outline-3">
-<h3 id="org3d1a524"><a href="#org3d1a524"><span class="done DONE">DONE</span> HomeStateを作成する</a></h3>
-<div class="outline-text-3" id="text-org3d1a524">
+<div id="outline-container-orgac81f63" class="outline-3">
+<h3 id="orgac81f63"><a href="#orgac81f63"><span class="done DONE">DONE</span> HomeStateを作成する</a></h3>
+<div class="outline-text-3" id="text-orgac81f63">
 <p>
 ゲームプレイの基軸になるメニュー。
 </p>
 </div>
 </div>
-<div id="outline-container-org91a9ad8" class="outline-3">
-<h3 id="org91a9ad8"><a href="#org91a9ad8"><span class="done DONE">DONE</span> 脱出できるようにする</a></h3>
-<div class="outline-text-3" id="text-org91a9ad8">
+<div id="outline-container-orge3c499b" class="outline-3">
+<h3 id="orge3c499b"><a href="#orge3c499b"><span class="done DONE">DONE</span> 脱出できるようにする</a></h3>
+<div class="outline-text-3" id="text-orge3c499b">
 <p>
 脱出階層で脱出できるようにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org7a19181" class="outline-3">
-<h3 id="org7a19181"><a href="#org7a19181"><span class="done DONE">DONE</span> 背景を設定する</a></h3>
-<div class="outline-text-3" id="text-org7a19181">
+<div id="outline-container-org4947b82" class="outline-3">
+<h3 id="org4947b82"><a href="#org4947b82"><span class="done DONE">DONE</span> 背景を設定する</a></h3>
+<div class="outline-text-3" id="text-org4947b82">
 <p>
 背景を追加する。スプライトはあるけど、同じでいいのか。いや、スプライトは1枚の画像を分割するものだから、同じ感じでは扱えないな。変えるとsystemも変えないといけない。面倒なのでとりあえずいいか。
 </p>
 </div>
 </div>
-<div id="outline-container-org6c879f0" class="outline-3">
-<h3 id="org6c879f0"><a href="#org6c879f0"><span class="done DONE">DONE</span> サブメニュー追加</a></h3>
-<div class="outline-text-3" id="text-org6c879f0">
+<div id="outline-container-org9b6032a" class="outline-3">
+<h3 id="org9b6032a"><a href="#org9b6032a"><span class="done DONE">DONE</span> サブメニュー追加</a></h3>
+<div class="outline-text-3" id="text-org9b6032a">
 <p>
 拠点メニューにはサブメニューがある。どうやるか考える。
 </p>
@@ -530,17 +611,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org59e4908" class="outline-3">
-<h3 id="org59e4908"><a href="#org59e4908"><span class="done DONE">DONE</span> pauseステート作成</a></h3>
-<div class="outline-text-3" id="text-org59e4908">
+<div id="outline-container-orgd32e2cd" class="outline-3">
+<h3 id="orgd32e2cd"><a href="#orgd32e2cd"><span class="done DONE">DONE</span> pauseステート作成</a></h3>
+<div class="outline-text-3" id="text-orgd32e2cd">
 <p>
 デバッグで便利なので。
 </p>
 </div>
 </div>
-<div id="outline-container-org09d8479" class="outline-3">
-<h3 id="org09d8479"><a href="#org09d8479"><span class="done DONE">DONE</span> アイテムを生成する</a></h3>
-<div class="outline-text-3" id="text-org09d8479">
+<div id="outline-container-org28695ae" class="outline-3">
+<h3 id="org28695ae"><a href="#org28695ae"><span class="done DONE">DONE</span> アイテムを生成する</a></h3>
+<div class="outline-text-3" id="text-org28695ae">
 <p>
 アイテムを追加する。
 </p>
@@ -595,17 +676,17 @@ loader.AddEntities(world, componentList)
 </div>
 </div>
 </div>
-<div id="outline-container-orge890e5a" class="outline-3">
-<h3 id="orge890e5a"><a href="#orge890e5a"><span class="done DONE">DONE</span> UI設計</a></h3>
-<div class="outline-text-3" id="text-orge890e5a">
+<div id="outline-container-orgd78c8a3" class="outline-3">
+<h3 id="orgd78c8a3"><a href="#orgd78c8a3"><span class="done DONE">DONE</span> UI設計</a></h3>
+<div class="outline-text-3" id="text-orgd78c8a3">
 <p>
 いちいちゲーム画面見るのもアレなので、書いておく。
 </p>
 </div>
 </div>
-<div id="outline-container-orge08f290" class="outline-3">
-<h3 id="orge08f290"><a href="#orge08f290"><span class="done DONE">DONE</span> UIエンティティだけを消す</a></h3>
-<div class="outline-text-3" id="text-orge08f290">
+<div id="outline-container-orga46121b" class="outline-3">
+<h3 id="orga46121b"><a href="#orga46121b"><span class="done DONE">DONE</span> UIエンティティだけを消す</a></h3>
+<div class="outline-text-3" id="text-orga46121b">
 <p>
 DeleteAllEntitiesでステート切り替え時のUIリセットをしている。entitiesが全部消えるので、困る。ほとんどの場合、UIだけをリセットすればよさそう。
 </p>
@@ -615,17 +696,17 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </p>
 </div>
 </div>
-<div id="outline-container-org6bab971" class="outline-3">
-<h3 id="org6bab971"><a href="#org6bab971"><span class="done DONE">DONE</span> 各メニューを作成する</a></h3>
-<div class="outline-text-3" id="text-org6bab971">
+<div id="outline-container-orgb32534d" class="outline-3">
+<h3 id="orgb32534d"><a href="#orgb32534d"><span class="done DONE">DONE</span> 各メニューを作成する</a></h3>
+<div class="outline-text-3" id="text-orgb32534d">
 <p>
 仮の内容で全部作る。
 </p>
 </div>
 </div>
-<div id="outline-container-orga817cbf" class="outline-3">
-<h3 id="orga817cbf"><a href="#orga817cbf"><span class="done DONE">DONE</span> アイテムを使う</a></h3>
-<div class="outline-text-3" id="text-orga817cbf">
+<div id="outline-container-orgbb9265d" class="outline-3">
+<h3 id="orgbb9265d"><a href="#orgbb9265d"><span class="done DONE">DONE</span> アイテムを使う</a></h3>
+<div class="outline-text-3" id="text-orgbb9265d">
 <ul class="org-ul">
 <li>キャラクタを作る</li>
 <li>ステータスを作る</li>
@@ -644,25 +725,25 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </ul>
 </div>
 </div>
-<div id="outline-container-org5ae0c65" class="outline-3">
-<h3 id="org5ae0c65"><a href="#org5ae0c65"><span class="done DONE">DONE</span> アイテムを選択して使えるようにする</a></h3>
-<div class="outline-text-3" id="text-org5ae0c65">
+<div id="outline-container-org41e887b" class="outline-3">
+<h3 id="org41e887b"><a href="#org41e887b"><span class="done DONE">DONE</span> アイテムを選択して使えるようにする</a></h3>
+<div class="outline-text-3" id="text-org41e887b">
 <p>
 今は固定にしている。
 </p>
 </div>
 </div>
-<div id="outline-container-org7de015a" class="outline-3">
-<h3 id="org7de015a"><a href="#org7de015a"><span class="done DONE">DONE</span> アイテムリストをebitenUIで作る</a></h3>
-<div class="outline-text-3" id="text-org7de015a">
+<div id="outline-container-org8bd9f0b" class="outline-3">
+<h3 id="org8bd9f0b"><a href="#org8bd9f0b"><span class="done DONE">DONE</span> アイテムリストをebitenUIで作る</a></h3>
+<div class="outline-text-3" id="text-org8bd9f0b">
 <p>
 いい感じに、スクロールできるようにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org8bfbfc4" class="outline-3">
-<h3 id="org8bfbfc4"><a href="#org8bfbfc4"><span class="done DONE">DONE</span> サイドメニューを表示する</a></h3>
-<div class="outline-text-3" id="text-org8bfbfc4">
+<div id="outline-container-orgf745e69" class="outline-3">
+<h3 id="orgf745e69"><a href="#orgf745e69"><span class="done DONE">DONE</span> サイドメニューを表示する</a></h3>
+<div class="outline-text-3" id="text-orgf745e69">
 <p>
 性能を表示するサイドパネル。
 </p>
@@ -672,9 +753,9 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </ul>
 </div>
 </div>
-<div id="outline-container-orga4a5464" class="outline-3">
-<h3 id="orga4a5464"><a href="#orga4a5464"><span class="done DONE">DONE</span> UIをリロードせずに反映できるようにする</a></h3>
-<div class="outline-text-3" id="text-orga4a5464">
+<div id="outline-container-orgb069a0e" class="outline-3">
+<h3 id="orgb069a0e"><a href="#orgb069a0e"><span class="done DONE">DONE</span> UIをリロードせずに反映できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgb069a0e">
 <p>
 アイテムを使用したときにUIをリロードしているが、スクロール位置が元へ戻ってしまうのでリロードしないようにする。
 </p>
@@ -684,17 +765,17 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </p>
 </div>
 </div>
-<div id="outline-container-orgb5029cf" class="outline-3">
-<h3 id="orgb5029cf"><a href="#orgb5029cf"><span class="done DONE">DONE</span> ebitenUIを使う</a></h3>
-<div class="outline-text-3" id="text-orgb5029cf">
+<div id="outline-container-org80b72df" class="outline-3">
+<h3 id="org80b72df"><a href="#org80b72df"><span class="done DONE">DONE</span> ebitenUIを使う</a></h3>
+<div class="outline-text-3" id="text-org80b72df">
 <p>
 使う。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb65536c" class="outline-3">
-<h3 id="orgb65536c"><a href="#orgb65536c"><span class="done DONE">DONE</span> アイテムに対するアクションを選べるようにする</a></h3>
-<div class="outline-text-3" id="text-orgb65536c">
+<div id="outline-container-org6987617" class="outline-3">
+<h3 id="org6987617"><a href="#org6987617"><span class="done DONE">DONE</span> アイテムに対するアクションを選べるようにする</a></h3>
+<div class="outline-text-3" id="text-org6987617">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> 使う</li>
 <li class="on"><input type='checkbox' checked='checked' /> 捨てる</li>
@@ -715,9 +796,9 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </ul>
 </div>
 </div>
-<div id="outline-container-org315fdee" class="outline-3">
-<h3 id="org315fdee"><a href="#org315fdee"><span class="done DONE">DONE</span> メッセージシステムの命令追加</a></h3>
-<div class="outline-text-3" id="text-org315fdee">
+<div id="outline-container-orgeff6656" class="outline-3">
+<h3 id="orgeff6656"><a href="#orgeff6656"><span class="done DONE">DONE</span> メッセージシステムの命令追加</a></h3>
+<div class="outline-text-3" id="text-orgeff6656">
 <p>
 背景とか。
 </p>
@@ -732,9 +813,9 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </ul>
 </div>
 </div>
-<div id="outline-container-org8ee296f" class="outline-3">
-<h3 id="org8ee296f"><a href="#org8ee296f"><span class="done DONE">DONE</span> インベントリメニューでpanicになる</a></h3>
-<div class="outline-text-3" id="text-org8ee296f">
+<div id="outline-container-orgcbdd45d" class="outline-3">
+<h3 id="orgcbdd45d"><a href="#orgcbdd45d"><span class="done DONE">DONE</span> インベントリメニューでpanicになる</a></h3>
+<div class="outline-text-3" id="text-orgcbdd45d">
 <p>
 別のステートに遷移したあと、再び戻ってクリックするとエラーになる。
 </p>
@@ -747,9 +828,9 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </ul>
 </div>
 </div>
-<div id="outline-container-org6d09451" class="outline-3">
-<h3 id="org6d09451"><a href="#org6d09451"><span class="done DONE">DONE</span> アイテムを使う対象を選べるようにする</a></h3>
-<div class="outline-text-3" id="text-org6d09451">
+<div id="outline-container-orgdf1da76" class="outline-3">
+<h3 id="orgdf1da76"><a href="#orgdf1da76"><span class="done DONE">DONE</span> アイテムを使う対象を選べるようにする</a></h3>
+<div class="outline-text-3" id="text-orgdf1da76">
 <ul class="org-ul">
 <li>回復薬の場合は1人の味方を選ぶ</li>
 <li>回復スプレーの場合は全員を選択している画面になる</li>
@@ -781,17 +862,17 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </ul>
 </div>
 </div>
-<div id="outline-container-org5c0c7a5" class="outline-3">
-<h3 id="org5c0c7a5"><a href="#org5c0c7a5"><span class="done DONE">DONE</span> ゲーム設計</a></h3>
-<div class="outline-text-3" id="text-org5c0c7a5">
+<div id="outline-container-orgc7684fe" class="outline-3">
+<h3 id="orgc7684fe"><a href="#orgc7684fe"><span class="done DONE">DONE</span> ゲーム設計</a></h3>
+<div class="outline-text-3" id="text-orgc7684fe">
 <p>
 どうするか。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc7c1263" class="outline-3">
-<h3 id="orgc7c1263"><a href="#orgc7c1263"><span class="done DONE">DONE</span> UIのリファクタ</a></h3>
-<div class="outline-text-3" id="text-orgc7c1263">
+<div id="outline-container-org281cab9" class="outline-3">
+<h3 id="org281cab9"><a href="#org281cab9"><span class="done DONE">DONE</span> UIのリファクタ</a></h3>
+<div class="outline-text-3" id="text-org281cab9">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> 統一感をもって扱えるようにする</li>
 <li class="on"><input type='checkbox' checked='checked' /> 説明文とメニューの間隔を空ける</li>
@@ -803,9 +884,9 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc513848" class="outline-3">
-<h3 id="orgc513848"><a href="#orgc513848"><span class="done DONE">DONE</span> 武器を追加する</a></h3>
-<div class="outline-text-3" id="text-orgc513848">
+<div id="outline-container-org0d62b31" class="outline-3">
+<h3 id="org0d62b31"><a href="#org0d62b31"><span class="done DONE">DONE</span> 武器を追加する</a></h3>
+<div class="outline-text-3" id="text-org0d62b31">
 <p>
 使うアイテムとは別枠で表示できる。
 </p>
@@ -833,9 +914,9 @@ UIコンポーネントと、UIコンポーネントを消す関数を作れば�
 </p>
 </div>
 </div>
-<div id="outline-container-orgea763c9" class="outline-3">
-<h3 id="orgea763c9"><a href="#orgea763c9"><span class="done DONE">DONE</span> 素材を追加する</a></h3>
-<div class="outline-text-3" id="text-orgea763c9">
+<div id="outline-container-orgb833712" class="outline-3">
+<h3 id="orgb833712"><a href="#orgb833712"><span class="done DONE">DONE</span> 素材を追加する</a></h3>
+<div class="outline-text-3" id="text-orgb833712">
 <ul class="org-ul">
 <li>素材は表示が違う。個数を表示することになっている。どうするか</li>
 <li>素材はグローバルに個数カウントできればよい。そのへんはほかのエンティティと事情が違う</li>
@@ -864,9 +945,9 @@ material.DeclCount("小さな花", 1)
 </div>
 </div>
 </div>
-<div id="outline-container-org3b17816" class="outline-3">
-<h3 id="org3b17816"><a href="#org3b17816"><span class="done DONE">DONE</span> 合成画面を作る</a></h3>
-<div class="outline-text-3" id="text-org3b17816">
+<div id="outline-container-org4dfdc87" class="outline-3">
+<h3 id="org4dfdc87"><a href="#org4dfdc87"><span class="done DONE">DONE</span> 合成画面を作る</a></h3>
+<div class="outline-text-3" id="text-org4dfdc87">
 <p>
 まず画面を作って、そこから共通化していけばいいか。
 </p>
@@ -925,9 +1006,9 @@ Spawn(gc, spawntype.OnBackpack)
 </div>
 </div>
 </div>
-<div id="outline-container-org6989d01" class="outline-3">
-<h3 id="org6989d01"><a href="#org6989d01"><span class="done DONE">DONE</span> アイテムUIまわりをリファクタする</a></h3>
-<div class="outline-text-3" id="text-org6989d01">
+<div id="outline-container-org931dab9" class="outline-3">
+<h3 id="org931dab9"><a href="#org931dab9"><span class="done DONE">DONE</span> アイテムUIまわりをリファクタする</a></h3>
+<div class="outline-text-3" id="text-org931dab9">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> グローバル変数を構造体のフィールドに移す</li>
 </ul>
@@ -937,9 +1018,9 @@ Spawn(gc, spawntype.OnBackpack)
 </p>
 </div>
 </div>
-<div id="outline-container-orgea35e20" class="outline-3">
-<h3 id="orgea35e20"><a href="#orgea35e20"><span class="done DONE">DONE</span> 乗り物をどうするか</a></h3>
-<div class="outline-text-3" id="text-orgea35e20">
+<div id="outline-container-org79c983c" class="outline-3">
+<h3 id="org79c983c"><a href="#org79c983c"><span class="done DONE">DONE</span> 乗り物をどうするか</a></h3>
+<div class="outline-text-3" id="text-org79c983c">
 <p>
 結論、小さなSFチックな機械を導入する。戦闘には参加しないがサポートする。知能は持たない。
 </p>
@@ -961,9 +1042,9 @@ Spawn(gc, spawntype.OnBackpack)
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf5a3f1a" class="outline-3">
-<h3 id="orgf5a3f1a"><a href="#orgf5a3f1a"><span class="done DONE">DONE</span> タイル移動でなくするか</a></h3>
-<div class="outline-text-3" id="text-orgf5a3f1a">
+<div id="outline-container-org0e1f482" class="outline-3">
+<h3 id="org0e1f482"><a href="#org0e1f482"><span class="done DONE">DONE</span> タイル移動でなくするか</a></h3>
+<div class="outline-text-3" id="text-org0e1f482">
 <p>
 いやでもアニメーションやリアルタイムとなると大変そうだから、タイル移動のままがよさそう。
 </p>
@@ -973,9 +1054,9 @@ Spawn(gc, spawntype.OnBackpack)
 </p>
 </div>
 </div>
-<div id="outline-container-org59bff14" class="outline-3">
-<h3 id="org59bff14"><a href="#org59bff14"><span class="done DONE">DONE</span> 一貫させるためインターフェースを定義する</a></h3>
-<div class="outline-text-3" id="text-org59bff14">
+<div id="outline-container-orga623272" class="outline-3">
+<h3 id="orga623272"><a href="#orga623272"><span class="done DONE">DONE</span> 一貫させるためインターフェースを定義する</a></h3>
+<div class="outline-text-3" id="text-orga623272">
 <p>
 stateごとにコードがバラバラで、直していくのが辛い。
 </p>
@@ -989,9 +1070,9 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </p>
 </div>
 </div>
-<div id="outline-container-org44cc016" class="outline-3">
-<h3 id="org44cc016"><a href="#org44cc016"><span class="done DONE">DONE</span> 武器コンポーネントに属性を追加する</a></h3>
-<div class="outline-text-3" id="text-org44cc016">
+<div id="outline-container-org1c569d0" class="outline-3">
+<h3 id="org1c569d0"><a href="#org1c569d0"><span class="done DONE">DONE</span> 武器コンポーネントに属性を追加する</a></h3>
+<div class="outline-text-3" id="text-org1c569d0">
 <ul class="org-ul">
 <li>火炎(耐火)</li>
 <li>電気(耐電)</li>
@@ -1007,9 +1088,9 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </p>
 </div>
 </div>
-<div id="outline-container-orge308980" class="outline-3">
-<h3 id="orge308980"><a href="#orge308980"><span class="done DONE">DONE</span> アイテム種別に防具を追加する</a></h3>
-<div class="outline-text-3" id="text-orge308980">
+<div id="outline-container-orgabb0028" class="outline-3">
+<h3 id="orgabb0028"><a href="#orgabb0028"><span class="done DONE">DONE</span> アイテム種別に防具を追加する</a></h3>
+<div class="outline-text-3" id="text-orgabb0028">
 <ul class="org-ul">
 <li>消耗品</li>
 <li>武器</li>
@@ -1022,25 +1103,25 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </p>
 </div>
 </div>
-<div id="outline-container-org4bdc009" class="outline-3">
-<h3 id="org4bdc009"><a href="#org4bdc009"><span class="done DONE">DONE</span> 武器種別を追加する</a></h3>
-<div class="outline-text-3" id="text-org4bdc009">
+<div id="outline-container-org9c9a4d5" class="outline-3">
+<h3 id="org9c9a4d5"><a href="#org9c9a4d5"><span class="done DONE">DONE</span> 武器種別を追加する</a></h3>
+<div class="outline-text-3" id="text-org9c9a4d5">
 <p>
 剣とか銃とか。
 </p>
 </div>
 </div>
-<div id="outline-container-org1fe50a1" class="outline-3">
-<h3 id="org1fe50a1"><a href="#org1fe50a1"><span class="done DONE">DONE</span> 合成画面をリファクタする</a></h3>
-<div class="outline-text-3" id="text-org1fe50a1">
+<div id="outline-container-org835c481" class="outline-3">
+<h3 id="org835c481"><a href="#org835c481"><span class="done DONE">DONE</span> 合成画面をリファクタする</a></h3>
+<div class="outline-text-3" id="text-org835c481">
 <p>
 書き直す。
 </p>
 </div>
 </div>
-<div id="outline-container-org5b34333" class="outline-3">
-<h3 id="org5b34333"><a href="#org5b34333"><span class="done DONE">DONE</span> 装備画面を作る</a></h3>
-<div class="outline-text-3" id="text-org5b34333">
+<div id="outline-container-org7b30cb2" class="outline-3">
+<h3 id="org7b30cb2"><a href="#org7b30cb2"><span class="done DONE">DONE</span> 装備画面を作る</a></h3>
+<div class="outline-text-3" id="text-org7b30cb2">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> スロットを作成する
 <ul class="org-ul">
@@ -1060,17 +1141,17 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc4f2a54" class="outline-3">
-<h3 id="orgc4f2a54"><a href="#orgc4f2a54"><span class="done DONE">DONE</span> enumのバリデーション</a></h3>
-<div class="outline-text-3" id="text-orgc4f2a54">
+<div id="outline-container-org8baafc9" class="outline-3">
+<h3 id="org8baafc9"><a href="#org8baafc9"><span class="done DONE">DONE</span> enumのバリデーション</a></h3>
+<div class="outline-text-3" id="text-org8baafc9">
 <p>
 楽にバリデーションできる書き方にする。
 </p>
 </div>
 </div>
-<div id="outline-container-org2ebcb87" class="outline-3">
-<h3 id="org2ebcb87"><a href="#org2ebcb87"><span class="done DONE">DONE</span> カメラ追加</a></h3>
-<div class="outline-text-3" id="text-org2ebcb87">
+<div id="outline-container-org84ce73e" class="outline-3">
+<h3 id="org84ce73e"><a href="#org84ce73e"><span class="done DONE">DONE</span> カメラ追加</a></h3>
+<div class="outline-text-3" id="text-org84ce73e">
 <p>
 今はそのまま表示してる。プレイヤーの位置に追従してステージの一部だけを表示したい。
 </p>
@@ -1080,9 +1161,9 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd8ae3cd" class="outline-3">
-<h3 id="orgd8ae3cd"><a href="#orgd8ae3cd"><span class="done CLOSE">CLOSE</span> UIと分離したい</a></h3>
-<div class="outline-text-3" id="text-orgd8ae3cd">
+<div id="outline-container-orge65da93" class="outline-3">
+<h3 id="orge65da93"><a href="#orge65da93"><span class="done CLOSE">CLOSE</span> UIと分離したい</a></h3>
+<div class="outline-text-3" id="text-orge65da93">
 <p>
 完全にUIと一体化しているのでよくわからなくなる。
 </p>
@@ -1095,9 +1176,9 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </ul>
 </div>
 </div>
-<div id="outline-container-org46b1551" class="outline-3">
-<h3 id="org46b1551"><a href="#org46b1551"><span class="done DONE">DONE</span> 装備画面のリファクタ</a></h3>
-<div class="outline-text-3" id="text-org46b1551">
+<div id="outline-container-org16cf33d" class="outline-3">
+<h3 id="org16cf33d"><a href="#org16cf33d"><span class="done DONE">DONE</span> 装備画面のリファクタ</a></h3>
+<div class="outline-text-3" id="text-org16cf33d">
 <p>
 汚いので直す。
 </p>
@@ -1107,17 +1188,17 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </p>
 </div>
 </div>
-<div id="outline-container-org17d7ea1" class="outline-3">
-<h3 id="org17d7ea1"><a href="#org17d7ea1"><span class="done DONE">DONE</span> ステータスを追加する</a></h3>
-<div class="outline-text-3" id="text-org17d7ea1">
+<div id="outline-container-orge1c71fe" class="outline-3">
+<h3 id="orge1c71fe"><a href="#orge1c71fe"><span class="done DONE">DONE</span> ステータスを追加する</a></h3>
+<div class="outline-text-3" id="text-orge1c71fe">
 <p>
 生命力とか、力とか。
 </p>
 </div>
 </div>
-<div id="outline-container-org931435c" class="outline-3">
-<h3 id="org931435c"><a href="#org931435c"><span class="done DONE">DONE</span> 装備でステータスを変更する</a></h3>
-<div class="outline-text-3" id="text-org931435c">
+<div id="outline-container-org57e822d" class="outline-3">
+<h3 id="org57e822d"><a href="#org57e822d"><span class="done DONE">DONE</span> 装備でステータスを変更する</a></h3>
+<div class="outline-text-3" id="text-org57e822d">
 <p>
 防具を装備すると防御力が上がるなど。
 </p>
@@ -1142,17 +1223,17 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </ul>
 </div>
 </div>
-<div id="outline-container-org4aab90d" class="outline-3">
-<h3 id="org4aab90d"><a href="#org4aab90d"><span class="done DONE">DONE</span> 説明図を書く</a></h3>
-<div class="outline-text-3" id="text-org4aab90d">
+<div id="outline-container-org4cc0e6c" class="outline-3">
+<h3 id="org4cc0e6c"><a href="#org4cc0e6c"><span class="done DONE">DONE</span> 説明図を書く</a></h3>
+<div class="outline-text-3" id="text-org4cc0e6c">
 <p>
 見返してみるとけっこういい図がある。概念整理する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf0a022a" class="outline-3">
-<h3 id="orgf0a022a"><a href="#orgf0a022a"><span class="done DONE">DONE</span> 回復薬を割合回復にする</a></h3>
-<div class="outline-text-3" id="text-orgf0a022a">
+<div id="outline-container-orga2922a2" class="outline-3">
+<h3 id="orga2922a2"><a href="#orga2922a2"><span class="done DONE">DONE</span> 回復薬を割合回復にする</a></h3>
+<div class="outline-text-3" id="text-orga2922a2">
 <ul class="org-ul">
 <li>固定値ではないようにする</li>
 <li>割合回復の仕組みは作ったので、回復薬に適用する</li>
@@ -1161,9 +1242,9 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </ul>
 </div>
 </div>
-<div id="outline-container-org1d4ff37" class="outline-3">
-<h3 id="org1d4ff37"><a href="#org1d4ff37"><span class="done DONE">DONE</span> 戦闘部分の設計</a></h3>
-<div class="outline-text-3" id="text-org1d4ff37">
+<div id="outline-container-org33be53f" class="outline-3">
+<h3 id="org33be53f"><a href="#org33be53f"><span class="done DONE">DONE</span> 戦闘部分の設計</a></h3>
+<div class="outline-text-3" id="text-org33be53f">
 <p>
 未知の部分。どうするか。
 </p>
@@ -1282,9 +1363,9 @@ stateごとにコードがバラバラで、直していくのが辛い。
 </ul>
 </div>
 </div>
-<div id="outline-container-org2d205e0" class="outline-3">
-<h3 id="org2d205e0"><a href="#org2d205e0"><span class="done DONE">DONE</span> UpdateSpecに渡すComponentsの更新を忘れる</a></h3>
-<div class="outline-text-3" id="text-org2d205e0">
+<div id="outline-container-org1b0aac1" class="outline-3">
+<h3 id="org1b0aac1"><a href="#org1b0aac1"><span class="done DONE">DONE</span> UpdateSpecに渡すComponentsの更新を忘れる</a></h3>
+<div class="outline-text-3" id="text-org1b0aac1">
 <p>
 オートで全コンポーネントを対象にすればよさそう。
 </p>
@@ -1294,9 +1375,9 @@ componentListに渡せばよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org77fb228" class="outline-3">
-<h3 id="org77fb228"><a href="#org77fb228"><span class="done DONE">DONE</span> 防具ジャンルを消す</a></h3>
-<div class="outline-text-3" id="text-org77fb228">
+<div id="outline-container-orgf48671e" class="outline-3">
+<h3 id="orgf48671e"><a href="#orgf48671e"><span class="done DONE">DONE</span> 防具ジャンルを消す</a></h3>
+<div class="outline-text-3" id="text-orgf48671e">
 <p>
 あまり区分けする必要はなさそうか。あの正方形のUIにすれば、混ざって入っていてもあまり違和感はない。
 </p>
@@ -1331,9 +1412,9 @@ componentListに渡せばよい。
 </ul>
 </div>
 </div>
-<div id="outline-container-org22b5749" class="outline-3">
-<h3 id="org22b5749"><a href="#org22b5749"><span class="done CLOSE">CLOSE</span> アイテム以外でeffectをトリガーする方法</a></h3>
-<div class="outline-text-3" id="text-org22b5749">
+<div id="outline-container-org67de52a" class="outline-3">
+<h3 id="org67de52a"><a href="#org67de52a"><span class="done CLOSE">CLOSE</span> アイテム以外でeffectをトリガーする方法</a></h3>
+<div class="outline-text-3" id="text-org67de52a">
 <p>
 今はまだ、アイテムトリガーしかない。AddItemで、コンポーネントに分解されてそれぞれEffectのキューに入り、実行される。
 </p>
@@ -1343,9 +1424,9 @@ componentListに渡せばよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org60dd45e" class="outline-3">
-<h3 id="org60dd45e"><a href="#org60dd45e"><span class="done DONE">DONE</span> メインメニューを開いているとCPU使用率が爆増する</a></h3>
-<div class="outline-text-3" id="text-org60dd45e">
+<div id="outline-container-org8c49ed6" class="outline-3">
+<h3 id="org8c49ed6"><a href="#org8c49ed6"><span class="done DONE">DONE</span> メインメニューを開いているとCPU使用率が爆増する</a></h3>
+<div class="outline-text-3" id="text-org8c49ed6">
 <p>
 リークしている。
 </p>
@@ -1377,17 +1458,17 @@ componentListに渡せばよい。
 </ul>
 </div>
 </div>
-<div id="outline-container-org364748b" class="outline-3">
-<h3 id="org364748b"><a href="#org364748b"><span class="done DONE">DONE</span> 画像回帰テスト</a></h3>
-<div class="outline-text-3" id="text-org364748b">
+<div id="outline-container-orge86fdf3" class="outline-3">
+<h3 id="orge86fdf3"><a href="#orge86fdf3"><span class="done DONE">DONE</span> 画像回帰テスト</a></h3>
+<div class="outline-text-3" id="text-orge86fdf3">
 <p>
 コマンドで各ステートの画像を取れるようにする。
 </p>
 </div>
 </div>
-<div id="outline-container-orge97c619" class="outline-3">
-<h3 id="orge97c619"><a href="#orge97c619"><span class="done DONE">DONE</span> メモリリークをCIで検知したい</a></h3>
-<div class="outline-text-3" id="text-orge97c619">
+<div id="outline-container-orge6736d8" class="outline-3">
+<h3 id="orge6736d8"><a href="#orge6736d8"><span class="done DONE">DONE</span> メモリリークをCIで検知したい</a></h3>
+<div class="outline-text-3" id="text-orge6736d8">
 <p>
 まあパフォーマンスを画面表示してるし、わかるだろう。
 </p>
@@ -1397,9 +1478,9 @@ componentListに渡せばよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org732a5c9" class="outline-3">
-<h3 id="org732a5c9"><a href="#org732a5c9"><span class="done DONE">DONE</span> ホーム画面をクリック対応する</a></h3>
-<div class="outline-text-3" id="text-org732a5c9">
+<div id="outline-container-orgfc75bc2" class="outline-3">
+<h3 id="orgfc75bc2"><a href="#orgfc75bc2"><span class="done DONE">DONE</span> ホーム画面をクリック対応する</a></h3>
+<div class="outline-text-3" id="text-orgfc75bc2">
 <p>
 キーボードはとりあえずなくした。
 </p>
@@ -1413,9 +1494,9 @@ componentListに渡せばよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org81ff139" class="outline-3">
-<h3 id="org81ff139"><a href="#org81ff139"><span class="done DONE">DONE</span> Ray Castingを参考にしてフィールドの原型を作る</a></h3>
-<div class="outline-text-3" id="text-org81ff139">
+<div id="outline-container-org49ef83c" class="outline-3">
+<h3 id="org49ef83c"><a href="#org49ef83c"><span class="done DONE">DONE</span> Ray Castingを参考にしてフィールドの原型を作る</a></h3>
+<div class="outline-text-3" id="text-org49ef83c">
 <ul class="org-ul">
 <li>Ray Castingを原型に動くものを作る</li>
 <li>やりたいことに近い。<a href="https://al-ro.github.io/projects/raycasting/">2D Ray Casting</a></li>
@@ -1466,9 +1547,9 @@ ECSとの兼ね合い。
 </ul>
 </div>
 </div>
-<div id="outline-container-org6d66b3a" class="outline-3">
-<h3 id="org6d66b3a"><a href="#org6d66b3a"><span class="done DONE">DONE</span> フィールドの背景を全体に設定する</a></h3>
-<div class="outline-text-3" id="text-org6d66b3a">
+<div id="outline-container-org8ee3e18" class="outline-3">
+<h3 id="org8ee3e18"><a href="#org8ee3e18"><span class="done DONE">DONE</span> フィールドの背景を全体に設定する</a></h3>
+<div class="outline-text-3" id="text-org8ee3e18">
 <p>
 敷き詰めたい。
 </p>
@@ -1479,9 +1560,9 @@ ECSとの兼ね合い。
 </ul>
 </div>
 </div>
-<div id="outline-container-orge7be336" class="outline-3">
-<h3 id="orge7be336"><a href="#orge7be336"><span class="done DONE">DONE</span> コンポーネントを移動する</a></h3>
-<div class="outline-text-3" id="text-orge7be336">
+<div id="outline-container-org585f2fa" class="outline-3">
+<h3 id="org585f2fa"><a href="#org585f2fa"><span class="done DONE">DONE</span> コンポーネントを移動する</a></h3>
+<div class="outline-text-3" id="text-org585f2fa">
 <p>
 移動する。
 </p>
@@ -1495,9 +1576,9 @@ ECSとの兼ね合い。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf3266a1" class="outline-3">
-<h3 id="orgf3266a1"><a href="#orgf3266a1"><span class="done DONE">DONE</span> 影描画をsystemでやる</a></h3>
-<div class="outline-text-3" id="text-orgf3266a1">
+<div id="outline-container-orgcf1f4ea" class="outline-3">
+<h3 id="orgcf1f4ea"><a href="#orgcf1f4ea"><span class="done DONE">DONE</span> 影描画をsystemでやる</a></h3>
+<div class="outline-text-3" id="text-orgcf1f4ea">
 <p>
 元の仕組みとは異なるため、調整が必要。
 </p>
@@ -1514,9 +1595,9 @@ ECSとの兼ね合い。
 </ul>
 </div>
 </div>
-<div id="outline-container-orga386850" class="outline-3">
-<h3 id="orga386850"><a href="#orga386850"><span class="done DONE">DONE</span> フィールド描画をECS化する</a></h3>
-<div class="outline-text-3" id="text-orga386850">
+<div id="outline-container-org832bfbe" class="outline-3">
+<h3 id="org832bfbe"><a href="#org832bfbe"><span class="done DONE">DONE</span> フィールド描画をECS化する</a></h3>
+<div class="outline-text-3" id="text-org832bfbe">
 <ul class="org-ul">
 <li>まず影は置いておく</li>
 <li>プレイヤー部分を色塗りできた</li>
@@ -1545,17 +1626,17 @@ ECSとの兼ね合い。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc85bf20" class="outline-3">
-<h3 id="orgc85bf20"><a href="#orgc85bf20"><span class="done DONE">DONE</span> とりあえずの背景を設定する</a></h3>
-<div class="outline-text-3" id="text-orgc85bf20">
+<div id="outline-container-org6e00a25" class="outline-3">
+<h3 id="org6e00a25"><a href="#org6e00a25"><span class="done DONE">DONE</span> とりあえずの背景を設定する</a></h3>
+<div class="outline-text-3" id="text-org6e00a25">
 <p>
 Menuをなくしたとき、非表示にしてた。戻す。
 </p>
 </div>
 </div>
-<div id="outline-container-org9e43f24" class="outline-3">
-<h3 id="org9e43f24"><a href="#org9e43f24"><span class="done DONE">DONE</span> 壁を通過できないようにする</a></h3>
-<div class="outline-text-3" id="text-org9e43f24">
+<div id="outline-container-org024377d" class="outline-3">
+<h3 id="org024377d"><a href="#org024377d"><span class="done DONE">DONE</span> 壁を通過できないようにする</a></h3>
+<div class="outline-text-3" id="text-org024377d">
 <ul class="org-ul">
 <li>rectの中に入れないようにする。</li>
 <li>線として持っておく必要はなくて、点4つだけを持っていればいい</li>
@@ -1595,9 +1676,9 @@ spawnWarp(40, 50)
 </ul>
 </div>
 </div>
-<div id="outline-container-orge6a58e3" class="outline-3">
-<h3 id="orge6a58e3"><a href="#orge6a58e3"><span class="done DONE">DONE</span> 壁テクスチャが影で隠れないようにする</a></h3>
-<div class="outline-text-3" id="text-orge6a58e3">
+<div id="outline-container-org038e7a2" class="outline-3">
+<h3 id="org038e7a2"><a href="#org038e7a2"><span class="done DONE">DONE</span> 壁テクスチャが影で隠れないようにする</a></h3>
+<div class="outline-text-3" id="text-org038e7a2">
 <p>
 今は影に隠されている。影側で表示しようとすると、影の中にあるときもテクスチャが表示されてしまって微妙。
 </p>
@@ -1652,9 +1733,9 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-org4f660ae" class="outline-3">
-<h3 id="org4f660ae"><a href="#org4f660ae"><span class="done DONE">DONE</span> 旧フィールドまわりを消す</a></h3>
-<div class="outline-text-3" id="text-org4f660ae">
+<div id="outline-container-orgac3e3d1" class="outline-3">
+<h3 id="orgac3e3d1"><a href="#orgac3e3d1"><span class="done DONE">DONE</span> 旧フィールドまわりを消す</a></h3>
+<div class="outline-text-3" id="text-orgac3e3d1">
 <ul class="org-ul">
 <li>componentsもいらないものがある</li>
 <li>prefabもいらなくなる</li>
@@ -1662,17 +1743,17 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc02f1ec" class="outline-3">
-<h3 id="orgc02f1ec"><a href="#orgc02f1ec"><span class="done DONE">DONE</span> state名のフィールドという名前をリネームする</a></h3>
-<div class="outline-text-3" id="text-orgc02f1ec">
+<div id="outline-container-orgb1623c2" class="outline-3">
+<h3 id="orgb1623c2"><a href="#orgb1623c2"><span class="done DONE">DONE</span> state名のフィールドという名前をリネームする</a></h3>
+<div class="outline-text-3" id="text-orgb1623c2">
 <p>
 構造体のフィールドとかと同じになるので、あまりよくない命名に思えてきた。dungeonとかだろうか。
 </p>
 </div>
 </div>
-<div id="outline-container-org1fc8a0e" class="outline-3">
-<h3 id="org1fc8a0e"><a href="#org1fc8a0e"><span class="done DONE">DONE</span> カメラ移動を追加する</a></h3>
-<div class="outline-text-3" id="text-org1fc8a0e">
+<div id="outline-container-org3080b8d" class="outline-3">
+<h3 id="org3080b8d"><a href="#org3080b8d"><span class="done DONE">DONE</span> カメラ移動を追加する</a></h3>
+<div class="outline-text-3" id="text-org3080b8d">
 <p>
 後からやると大変そうなので今のうちにやっておく。
 </p>
@@ -1692,17 +1773,17 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orge13ba1c" class="outline-3">
-<h3 id="orge13ba1c"><a href="#orge13ba1c"><span class="done DONE">DONE</span> ズームを追加する</a></h3>
-<div class="outline-text-3" id="text-orge13ba1c">
+<div id="outline-container-org593f586" class="outline-3">
+<h3 id="org593f586"><a href="#org593f586"><span class="done DONE">DONE</span> ズームを追加する</a></h3>
+<div class="outline-text-3" id="text-org593f586">
 <p>
 追加する。
 </p>
 </div>
 </div>
-<div id="outline-container-orga8c1077" class="outline-3">
-<h3 id="orga8c1077"><a href="#orga8c1077"><span class="done DONE">DONE</span> 方向を追加する</a></h3>
-<div class="outline-text-3" id="text-orga8c1077">
+<div id="outline-container-orgd4b8e06" class="outline-3">
+<h3 id="orgd4b8e06"><a href="#orgd4b8e06"><span class="done DONE">DONE</span> 方向を追加する</a></h3>
+<div class="outline-text-3" id="text-orgd4b8e06">
 <p>
 追加する。
 </p>
@@ -1713,9 +1794,9 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orga940b86" class="outline-3">
-<h3 id="orga940b86"><a href="#orga940b86"><span class="done DONE">DONE</span> 描画の優先順を指定できるようにする</a></h3>
-<div class="outline-text-3" id="text-orga940b86">
+<div id="outline-container-org779bc67" class="outline-3">
+<h3 id="org779bc67"><a href="#org779bc67"><span class="done DONE">DONE</span> 描画の優先順を指定できるようにする</a></h3>
+<div class="outline-text-3" id="text-org779bc67">
 <p>
 ワープパッドとキャラでは、キャラを上に表示する。
 </p>
@@ -1740,25 +1821,25 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orgbeca8b2" class="outline-3">
-<h3 id="orgbeca8b2"><a href="#orgbeca8b2"><span class="done DONE">DONE</span> フィードバックをもらうためにどうするか</a></h3>
-<div class="outline-text-3" id="text-orgbeca8b2">
+<div id="outline-container-orgf53067d" class="outline-3">
+<h3 id="orgf53067d"><a href="#orgf53067d"><span class="done DONE">DONE</span> フィードバックをもらうためにどうするか</a></h3>
+<div class="outline-text-3" id="text-orgf53067d">
 <p>
 いったん最低限で完成させて、フィードバックをもらうのを優先する。
 </p>
 </div>
 </div>
-<div id="outline-container-org915d209" class="outline-3">
-<h3 id="org915d209"><a href="#org915d209"><span class="done DONE">DONE</span> 視界範囲外を描画しない</a></h3>
-<div class="outline-text-3" id="text-org915d209">
+<div id="outline-container-org4ea1703" class="outline-3">
+<h3 id="org4ea1703"><a href="#org4ea1703"><span class="done DONE">DONE</span> 視界範囲外を描画しない</a></h3>
+<div class="outline-text-3" id="text-org4ea1703">
 <p>
 カメラ外も描画して重くなっている。と考えて描画しないようにしたら、逆に重くなった。キャッシュされているのだろうか。まだ別に必要ではなさそうなので、必要なときにやる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc89eaee" class="outline-3">
-<h3 id="orgc89eaee"><a href="#orgc89eaee"><span class="done DONE">DONE</span> 階層を追加する</a></h3>
-<div class="outline-text-3" id="text-orgc89eaee">
+<div id="outline-container-org59becdf" class="outline-3">
+<h3 id="org59becdf"><a href="#org59becdf"><span class="done DONE">DONE</span> 階層を追加する</a></h3>
+<div class="outline-text-3" id="text-org59becdf">
 <p>
 ステージの初期化と、階層移動できるようにする。
 </p>
@@ -1796,9 +1877,9 @@ world.Manager.Join(
 </div>
 </div>
 </div>
-<div id="outline-container-orgda8b782" class="outline-3">
-<h3 id="orgda8b782"><a href="#orgda8b782"><span class="done DONE">DONE</span> タイル位置と座標位置の変換が煩雑</a></h3>
-<div class="outline-text-3" id="text-orgda8b782">
+<div id="outline-container-orgaec4bfb" class="outline-3">
+<h3 id="orgaec4bfb"><a href="#orgaec4bfb"><span class="done DONE">DONE</span> タイル位置と座標位置の変換が煩雑</a></h3>
+<div class="outline-text-3" id="text-orgaec4bfb">
 <p>
 これが全部コンポーネントであれば楽なのだが。まあ、タイルだと衝突判定とかは楽になるから&#x2026;。
 </p>
@@ -1817,17 +1898,17 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orgddf6722" class="outline-3">
-<h3 id="orgddf6722"><a href="#orgddf6722"><span class="done DONE">DONE</span> levelを消す</a></h3>
-<div class="outline-text-3" id="text-orgddf6722">
+<div id="outline-container-org9782512" class="outline-3">
+<h3 id="org9782512"><a href="#org9782512"><span class="done DONE">DONE</span> levelを消す</a></h3>
+<div class="outline-text-3" id="text-org9782512">
 <p>
 普通のgameComponent(engineではないほう)でlevelを実装してから、消す感じでいいか。参考になりそうだから消してない。
 </p>
 </div>
 </div>
-<div id="outline-container-org53cdd4c" class="outline-3">
-<h3 id="org53cdd4c"><a href="#org53cdd4c"><span class="done DONE">DONE</span> レイキャスト範囲を狭くする</a></h3>
-<div class="outline-text-3" id="text-org53cdd4c">
+<div id="outline-container-orgc3c12a5" class="outline-3">
+<h3 id="orgc3c12a5"><a href="#orgc3c12a5"><span class="done DONE">DONE</span> レイキャスト範囲を狭くする</a></h3>
+<div class="outline-text-3" id="text-orgc3c12a5">
 <p>
 今後オブジェクトを増やすたびに重くなるので。
 </p>
@@ -1844,9 +1925,9 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb4fbe24" class="outline-3">
-<h3 id="orgb4fbe24"><a href="#orgb4fbe24"><span class="done DONE">DONE</span> 階層設計</a></h3>
-<div class="outline-text-3" id="text-orgb4fbe24">
+<div id="outline-container-org8b25c6c" class="outline-3">
+<h3 id="org8b25c6c"><a href="#org8b25c6c"><span class="done DONE">DONE</span> 階層設計</a></h3>
+<div class="outline-text-3" id="text-org8b25c6c">
 <p>
 ランダムだと難しそうなのでとりあえずは手動か。
 </p>
@@ -1856,9 +1937,9 @@ world.Manager.Join(
 </p>
 </div>
 </div>
-<div id="outline-container-org07bb874" class="outline-3">
-<h3 id="org07bb874"><a href="#org07bb874"><span class="done DONE">DONE</span> タイルを追加する</a></h3>
-<div class="outline-text-3" id="text-org07bb874">
+<div id="outline-container-orge4ea3d2" class="outline-3">
+<h3 id="orge4ea3d2"><a href="#orge4ea3d2"><span class="done DONE">DONE</span> タイルを追加する</a></h3>
+<div class="outline-text-3" id="text-orge4ea3d2">
 <ul class="org-ul">
 <li>まだタイルがない。壁はタイルにしたい</li>
 <li>タイルで視界判定をするには</li>
@@ -1877,9 +1958,9 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orgbac971c" class="outline-3">
-<h3 id="orgbac971c"><a href="#orgbac971c"><span class="done CLOSE">CLOSE</span> engine コンポーネントを移す</a></h3>
-<div class="outline-text-3" id="text-orgbac971c">
+<div id="outline-container-org0549ce2" class="outline-3">
+<h3 id="org0549ce2"><a href="#org0549ce2"><span class="done CLOSE">CLOSE</span> engine コンポーネントを移す</a></h3>
+<div class="outline-text-3" id="text-org0549ce2">
 <p>
 分かれてるのがやりづらい。分け方が利用側からすると不明瞭。ただloaderまわりが大変そう。
 </p>
@@ -1894,9 +1975,9 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orgeb87e84" class="outline-3">
-<h3 id="orgeb87e84"><a href="#orgeb87e84"><span class="done CLOSE">CLOSE</span> いったんクリアできるようにする</a></h3>
-<div class="outline-text-3" id="text-orgeb87e84">
+<div id="outline-container-org72ebb28" class="outline-3">
+<h3 id="org72ebb28"><a href="#org72ebb28"><span class="done CLOSE">CLOSE</span> いったんクリアできるようにする</a></h3>
+<div class="outline-text-3" id="text-org72ebb28">
 <p>
 戦闘抜きで、全体を作る。
 </p>
@@ -1916,17 +1997,17 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb71a9ea" class="outline-3">
-<h3 id="orgb71a9ea"><a href="#orgb71a9ea"><span class="done CLOSE">CLOSE</span> キャラクタを生成する</a></h3>
-<div class="outline-text-3" id="text-orgb71a9ea">
+<div id="outline-container-org1328664" class="outline-3">
+<h3 id="org1328664"><a href="#org1328664"><span class="done CLOSE">CLOSE</span> キャラクタを生成する</a></h3>
+<div class="outline-text-3" id="text-org1328664">
 <p>
 味方/敵を生成する。
 </p>
 </div>
 </div>
-<div id="outline-container-org3227369" class="outline-3">
-<h3 id="org3227369"><a href="#org3227369"><span class="done CLOSE">CLOSE</span> 階の生成方法を考える</a></h3>
-<div class="outline-text-3" id="text-org3227369">
+<div id="outline-container-orgc817b36" class="outline-3">
+<h3 id="orgc817b36"><a href="#orgc817b36"><span class="done CLOSE">CLOSE</span> 階の生成方法を考える</a></h3>
+<div class="outline-text-3" id="text-orgc817b36">
 <ul class="org-ul">
 <li>ランダム選択の一般階層
 <ul class="org-ul">
@@ -1942,17 +2023,17 @@ world.Manager.Join(
 </ul>
 </div>
 </div>
-<div id="outline-container-org87dc062" class="outline-3">
-<h3 id="org87dc062"><a href="#org87dc062"><span class="done DONE">DONE</span> 書き換え</a></h3>
-<div class="outline-text-3" id="text-org87dc062">
+<div id="outline-container-org2e19c97" class="outline-3">
+<h3 id="org2e19c97"><a href="#org2e19c97"><span class="done DONE">DONE</span> 書き換え</a></h3>
+<div class="outline-text-3" id="text-org2e19c97">
 <p>
 <code>gameComponents != nil</code> で検索して、HasComponentで書き換える。
 </p>
 </div>
 </div>
-<div id="outline-container-org9e6239e" class="outline-3">
-<h3 id="org9e6239e"><a href="#org9e6239e"><span class="done DONE">DONE</span> 階層移動できるようにする</a></h3>
-<div class="outline-text-3" id="text-org9e6239e">
+<div id="outline-container-org5d68ace" class="outline-3">
+<h3 id="org5d68ace"><a href="#org5d68ace"><span class="done DONE">DONE</span> 階層移動できるようにする</a></h3>
+<div class="outline-text-3" id="text-org5d68ace">
 <ul class="org-ul">
 <li>触れた判定できるようにする</li>
 <li>触れたときにイベントを発火する
@@ -2065,9 +2146,9 @@ case resources.StateEventWarpEscape:
 </ul>
 </div>
 </div>
-<div id="outline-container-org4740f49" class="outline-3">
-<h3 id="org4740f49"><a href="#org4740f49"><span class="done DONE">DONE</span> 階数をどこに保持するか</a></h3>
-<div class="outline-text-3" id="text-org4740f49">
+<div id="outline-container-org0fbc406" class="outline-3">
+<h3 id="org0fbc406"><a href="#org0fbc406"><span class="done DONE">DONE</span> 階数をどこに保持するか</a></h3>
+<div class="outline-text-3" id="text-org0fbc406">
 <ul class="org-ul">
 <li>階層移動したときに、階数までリセットされてしまう</li>
 <li>便利なのでResourceに保存しておきたい</li>
@@ -2078,17 +2159,17 @@ case resources.StateEventWarpEscape:
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb900812" class="outline-3">
-<h3 id="orgb900812"><a href="#orgb900812"><span class="done DONE">DONE</span> WASMローディング表示がほしい</a></h3>
-<div class="outline-text-3" id="text-orgb900812">
+<div id="outline-container-org658711e" class="outline-3">
+<h3 id="org658711e"><a href="#org658711e"><span class="done DONE">DONE</span> WASMローディング表示がほしい</a></h3>
+<div class="outline-text-3" id="text-org658711e">
 <p>
 3秒くらい真っ白画面になるのがよくない。
 </p>
 </div>
 </div>
-<div id="outline-container-org70d6cb6" class="outline-3">
-<h3 id="org70d6cb6"><a href="#org70d6cb6"><span class="done DONE">DONE</span> ランダムに部屋を生成する</a></h3>
-<div class="outline-text-3" id="text-org70d6cb6">
+<div id="outline-container-orgca45640" class="outline-3">
+<h3 id="orgca45640"><a href="#orgca45640"><span class="done DONE">DONE</span> ランダムに部屋を生成する</a></h3>
+<div class="outline-text-3" id="text-orgca45640">
 <div class="org-src-container">
 <pre class="src src-git-permalink">https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/rect.rs#L4-L9
 </pre>
@@ -2187,9 +2268,9 @@ case resources.StateEventWarpEscape:
 </ul>
 </div>
 </div>
-<div id="outline-container-orgcebfe24" class="outline-3">
-<h3 id="orgcebfe24"><a href="#orgcebfe24"><span class="done DONE">DONE</span> 生成を部屋化する</a></h3>
-<div class="outline-text-3" id="text-orgcebfe24">
+<div id="outline-container-orgb0e093b" class="outline-3">
+<h3 id="orgb0e093b"><a href="#orgb0e093b"><span class="done DONE">DONE</span> 生成を部屋化する</a></h3>
+<div class="outline-text-3" id="text-orgb0e093b">
 <p>
 廊下、道に分けて作る。
 </p>
@@ -2268,17 +2349,17 @@ case resources.StateEventWarpEscape:
 </div>
 </div>
 </div>
-<div id="outline-container-org6b5c7af" class="outline-3">
-<h3 id="org6b5c7af"><a href="#org6b5c7af"><span class="done DONE">DONE</span> 廊下を追加する</a></h3>
-<div class="outline-text-3" id="text-org6b5c7af">
+<div id="outline-container-org2731803" class="outline-3">
+<h3 id="org2731803"><a href="#org2731803"><span class="done DONE">DONE</span> 廊下を追加する</a></h3>
+<div class="outline-text-3" id="text-org2731803">
 <p>
 廊下をつなぐ。
 </p>
 </div>
 </div>
-<div id="outline-container-orged0baa2" class="outline-3">
-<h3 id="orged0baa2"><a href="#orged0baa2"><span class="done DONE">DONE</span> 衝突判定を軽量化する</a></h3>
-<div class="outline-text-3" id="text-orged0baa2">
+<div id="outline-container-orgf62098f" class="outline-3">
+<h3 id="orgf62098f"><a href="#orgf62098f"><span class="done DONE">DONE</span> 衝突判定を軽量化する</a></h3>
+<div class="outline-text-3" id="text-orgf62098f">
 <ul class="org-ul">
 <li>中心距離の近いものだけを接触判定するようにするとよさそう</li>
 <li>フロアを50x50にすると、激しく重くなった</li>
@@ -2286,25 +2367,25 @@ case resources.StateEventWarpEscape:
 </ul>
 </div>
 </div>
-<div id="outline-container-orga3bfa64" class="outline-3">
-<h3 id="orga3bfa64"><a href="#orga3bfa64"><span class="done DONE">DONE</span> 脱出ワープホールを配置する</a></h3>
-<div class="outline-text-3" id="text-orga3bfa64">
+<div id="outline-container-orgcda6a15" class="outline-3">
+<h3 id="orgcda6a15"><a href="#orgcda6a15"><span class="done DONE">DONE</span> 脱出ワープホールを配置する</a></h3>
+<div class="outline-text-3" id="text-orgcda6a15">
 <p>
 今は次の階層しかない。
 </p>
 </div>
 </div>
-<div id="outline-container-org0ac035d" class="outline-3">
-<h3 id="org0ac035d"><a href="#org0ac035d"><span class="done DONE">DONE</span> 壁の影を軽量化する</a></h3>
-<div class="outline-text-3" id="text-org0ac035d">
+<div id="outline-container-org332dd95" class="outline-3">
+<h3 id="org332dd95"><a href="#org332dd95"><span class="done DONE">DONE</span> 壁の影を軽量化する</a></h3>
+<div class="outline-text-3" id="text-org332dd95">
 <p>
 先に影画像を生成しておいて、軽くする。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc9d6299" class="outline-3">
-<h3 id="orgc9d6299"><a href="#orgc9d6299"><span class="done DONE">DONE</span> シナリオジャンプを実装する</a></h3>
-<div class="outline-text-3" id="text-orgc9d6299">
+<div id="outline-container-org0919dc2" class="outline-3">
+<h3 id="org0919dc2"><a href="#org0919dc2"><span class="done DONE">DONE</span> シナリオジャンプを実装する</a></h3>
+<div class="outline-text-3" id="text-org0919dc2">
 <p>
 <a href="https://krkrz.github.io/krkr2doc/kag3doc/contents/Tags.html#jump">吉里吉里タグリファレンス</a>を調べた。
 </p>
@@ -2422,9 +2503,9 @@ events2 := e("sample2")
 </div>
 </div>
 </div>
-<div id="outline-container-org1af6f1f" class="outline-3">
-<h3 id="org1af6f1f"><a href="#org1af6f1f"><span class="done DONE">DONE</span> 改行とか直す</a></h3>
-<div class="outline-text-3" id="text-org1af6f1f">
+<div id="outline-container-org664b2bc" class="outline-3">
+<h3 id="org664b2bc"><a href="#org664b2bc"><span class="done DONE">DONE</span> 改行とか直す</a></h3>
+<div class="outline-text-3" id="text-org664b2bc">
 <ul class="org-ul">
 <li>現状、改行があるたびに別イベントとなっている。なのでクリックが必要である。これを1つにまとめてしまう
 <ul class="org-ul">
@@ -2449,17 +2530,17 @@ events2 := e("sample2")
 </ul>
 </div>
 </div>
-<div id="outline-container-org06afcf4" class="outline-3">
-<h3 id="org06afcf4"><a href="#org06afcf4"><span class="done DONE">DONE</span> メッセージエンジンのサンプル実装を作る</a></h3>
-<div class="outline-text-3" id="text-org06afcf4">
+<div id="outline-container-org2c48edc" class="outline-3">
+<h3 id="org2c48edc"><a href="#org2c48edc"><span class="done DONE">DONE</span> メッセージエンジンのサンプル実装を作る</a></h3>
+<div class="outline-text-3" id="text-org2c48edc">
 <p>
 まだGUIで見られないのでよくわからないため。
 </p>
 </div>
 </div>
-<div id="outline-container-orgda4e5a6" class="outline-3">
-<h3 id="orgda4e5a6"><a href="#orgda4e5a6"><span class="done DONE">DONE</span> メッセージシステムのパッケージを切り出す</a></h3>
-<div class="outline-text-3" id="text-orgda4e5a6">
+<div id="outline-container-org7b225b5" class="outline-3">
+<h3 id="org7b225b5"><a href="#org7b225b5"><span class="done DONE">DONE</span> メッセージシステムのパッケージを切り出す</a></h3>
+<div class="outline-text-3" id="text-org7b225b5">
 <p>
 今は1パッケージに入っていてわかりにくい。
 </p>
@@ -2517,17 +2598,17 @@ events2 := e("sample2")
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc861580" class="outline-3">
-<h3 id="orgc861580"><a href="#orgc861580"><span class="done DONE">DONE</span> クリック待ち状態を表示できるようにする</a></h3>
-<div class="outline-text-3" id="text-orgc861580">
+<div id="outline-container-orgf837960" class="outline-3">
+<h3 id="orgf837960"><a href="#orgf837960"><span class="done DONE">DONE</span> クリック待ち状態を表示できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgf837960">
 <ul class="org-ul">
 <li>待ち</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd82d973" class="outline-3">
-<h3 id="orgd82d973"><a href="#orgd82d973"><span class="done DONE">DONE</span> 戻れるようにする</a></h3>
-<div class="outline-text-3" id="text-orgd82d973">
+<div id="outline-container-orgbcb1752" class="outline-3">
+<h3 id="orgbcb1752"><a href="#orgbcb1752"><span class="done DONE">DONE</span> 戻れるようにする</a></h3>
+<div class="outline-text-3" id="text-orgbcb1752">
 <p>
 popの逆を辿れるようにしたい。今消しちゃってるのをインデックスにすればよいだろう。
 </p>
@@ -2537,9 +2618,9 @@ popの逆を辿れるようにしたい。今消しちゃってるのをイン�
 </p>
 </div>
 </div>
-<div id="outline-container-org4bccc78" class="outline-3">
-<h3 id="org4bccc78"><a href="#org4bccc78"><span class="done DONE">DONE</span> イベント捕捉</a></h3>
-<div class="outline-text-3" id="text-org4bccc78">
+<div id="outline-container-org2415817" class="outline-3">
+<h3 id="org2415817"><a href="#org2415817"><span class="done DONE">DONE</span> イベント捕捉</a></h3>
+<div class="outline-text-3" id="text-org2415817">
 <p>
 今のところテキストだけで、背景変更などを捕捉できていない。
 </p>
@@ -2550,9 +2631,9 @@ popの逆を辿れるようにしたい。今消しちゃってるのをイン�
 </ul>
 </div>
 </div>
-<div id="outline-container-org8eb9e65" class="outline-3">
-<h3 id="org8eb9e65"><a href="#org8eb9e65"><span class="done DONE">DONE</span> 『坊っちゃん』でサンプルを作る</a></h3>
-<div class="outline-text-3" id="text-org8eb9e65">
+<div id="outline-container-orgbe7ab68" class="outline-3">
+<h3 id="orgbe7ab68"><a href="#orgbe7ab68"><span class="done DONE">DONE</span> 『坊っちゃん』でサンプルを作る</a></h3>
+<div class="outline-text-3" id="text-orgbe7ab68">
 <p>
 作る。
 </p>
@@ -2588,17 +2669,17 @@ popの逆を辿れるようにしたい。今消しちゃってるのをイン�
 </p>
 </div>
 </div>
-<div id="outline-container-orga4a0319" class="outline-3">
-<h3 id="orga4a0319"><a href="#orga4a0319"><span class="done DONE">DONE</span> シナリオを一覧できるようにする</a></h3>
-<div class="outline-text-3" id="text-orga4a0319">
+<div id="outline-container-org403be64" class="outline-3">
+<h3 id="org403be64"><a href="#org403be64"><span class="done DONE">DONE</span> シナリオを一覧できるようにする</a></h3>
+<div class="outline-text-3" id="text-org403be64">
 <ul class="org-ul">
 <li>一覧すれば、ジャンプは簡単にできる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org5f9aa97" class="outline-3">
-<h3 id="org5f9aa97"><a href="#org5f9aa97"><span class="done CLOSE">CLOSE</span> 視覚影でスプライトが隠れているのを直す</a></h3>
-<div class="outline-text-3" id="text-org5f9aa97">
+<div id="outline-container-org2476f8c" class="outline-3">
+<h3 id="org2476f8c"><a href="#org2476f8c"><span class="done CLOSE">CLOSE</span> 視覚影でスプライトが隠れているのを直す</a></h3>
+<div class="outline-text-3" id="text-org2476f8c">
 <p>
 近くのライトで見られるようにしたが、微妙だ。
 </p>
@@ -2617,34 +2698,34 @@ popの逆を辿れるようにしたい。今消しちゃってるのをイン�
 </ul>
 </div>
 </div>
-<div id="outline-container-org4aafad1" class="outline-3">
-<h3 id="org4aafad1"><a href="#org4aafad1"><span class="done CLOSE">CLOSE</span> raycastを高速化する</a></h3>
-<div class="outline-text-3" id="text-org4aafad1">
+<div id="outline-container-orgf7fc63e" class="outline-3">
+<h3 id="orgf7fc63e"><a href="#orgf7fc63e"><span class="done CLOSE">CLOSE</span> raycastを高速化する</a></h3>
+<div class="outline-text-3" id="text-orgf7fc63e">
 <ul class="org-ul">
 <li>もっとも近い壁を記憶することで、高速化できるという</li>
 <li><a href="https://www.redblobgames.com/articles/visibility/#wall-tracking">https://www.redblobgames.com/articles/visibility/#wall-tracking</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org2fa0861" class="outline-3">
-<h3 id="org2fa0861"><a href="#org2fa0861"><span class="done DONE">DONE</span> 移動時に画像を回転させる</a></h3>
-<div class="outline-text-3" id="text-org2fa0861">
+<div id="outline-container-org136c61a" class="outline-3">
+<h3 id="org136c61a"><a href="#org136c61a"><span class="done DONE">DONE</span> 移動時に画像を回転させる</a></h3>
+<div class="outline-text-3" id="text-org136c61a">
 <p>
 Angleを設定すればよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org3dc17bf" class="outline-3">
-<h3 id="org3dc17bf"><a href="#org3dc17bf"><span class="done DONE">DONE</span> カードを装備できるようにする</a></h3>
-<div class="outline-text-3" id="text-org3dc17bf">
+<div id="outline-container-org3d51f3f" class="outline-3">
+<h3 id="org3d51f3f"><a href="#org3d51f3f"><span class="done DONE">DONE</span> カードを装備できるようにする</a></h3>
+<div class="outline-text-3" id="text-org3d51f3f">
 <p>
 防具だけが対象なのを直す。
 </p>
 </div>
 </div>
-<div id="outline-container-org87b76b7" class="outline-3">
-<h3 id="org87b76b7"><a href="#org87b76b7"><span class="done CLOSE">CLOSE</span> リアルタイムなローグライクがよさそう</a></h3>
-<div class="outline-text-3" id="text-org87b76b7">
+<div id="outline-container-org5ed8e0c" class="outline-3">
+<h3 id="org5ed8e0c"><a href="#org5ed8e0c"><span class="done CLOSE">CLOSE</span> リアルタイムなローグライクがよさそう</a></h3>
+<div class="outline-text-3" id="text-org5ed8e0c">
 <ul class="org-ul">
 <li>フィールドは<a href="https://ebitengine.org/en/examples/raycasting.html">Ray Casting - Ebitengine</a>という感じ</li>
 <li>タイルごとにターン制で動くという感じでない。細かく移動できる</li>
@@ -2658,9 +2739,9 @@ Angleを設定すればよい。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd6fd815" class="outline-3">
-<h3 id="orgd6fd815"><a href="#orgd6fd815"><span class="done DONE">DONE</span> 排反コンポーネントを作る</a></h3>
-<div class="outline-text-3" id="text-orgd6fd815">
+<div id="outline-container-org21e1659" class="outline-3">
+<h3 id="org21e1659"><a href="#org21e1659"><span class="done DONE">DONE</span> 排反コンポーネントを作る</a></h3>
+<div class="outline-text-3" id="text-org21e1659">
 <p>
 排反を表現する。
 </p>
@@ -2700,9 +2781,9 @@ Joinのときに指定するのはComponentsで、ecs.NullComponentなどの溜�
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf4efcde" class="outline-3">
-<h3 id="orgf4efcde"><a href="#orgf4efcde"><span class="done DONE">DONE</span> 戦闘追加する</a></h3>
-<div class="outline-text-3" id="text-orgf4efcde">
+<div id="outline-container-orgef9a41e" class="outline-3">
+<h3 id="orgef9a41e"><a href="#orgef9a41e"><span class="done DONE">DONE</span> 戦闘追加する</a></h3>
+<div class="outline-text-3" id="text-orgef9a41e">
 <div class="org-src-container">
 <pre class="src src-go"> // デッキ
 type Deck struct {
@@ -2852,9 +2933,9 @@ func Toggle() {}
 </ul>
 </div>
 </div>
-<div id="outline-container-org5275d12" class="outline-3">
-<h3 id="org5275d12"><a href="#org5275d12"><span class="done DONE">DONE</span> メッセージログ追加</a></h3>
-<div class="outline-text-3" id="text-org5275d12">
+<div id="outline-container-org709a90a" class="outline-3">
+<h3 id="org709a90a"><a href="#org709a90a"><span class="done DONE">DONE</span> メッセージログ追加</a></h3>
+<div class="outline-text-3" id="text-org709a90a">
 <p>
 汎用なメッセージを表示できるようにする。メッセージパートの仕組みとは別でよい。
 </p>
@@ -2877,9 +2958,9 @@ msglog.BattleLog.Get(10)
 </ul>
 </div>
 </div>
-<div id="outline-container-org3c893f0" class="outline-3">
-<h3 id="org3c893f0"><a href="#org3c893f0"><span class="done DONE">DONE</span> 汎用の選択コンテナを作成する</a></h3>
-<div class="outline-text-3" id="text-org3c893f0">
+<div id="outline-container-org9069ae7" class="outline-3">
+<h3 id="org9069ae7"><a href="#org9069ae7"><span class="done DONE">DONE</span> 汎用の選択コンテナを作成する</a></h3>
+<div class="outline-text-3" id="text-org9069ae7">
 <p>
 メニューなど、なにかを一覧して選択するのは多く使うので、作っておきたい。
 </p>
@@ -2926,17 +3007,17 @@ func (aa *aa) assemble {
 </div>
 </div>
 </div>
-<div id="outline-container-orge575274" class="outline-3">
-<h3 id="orge575274"><a href="#orge575274"><span class="done DONE">DONE</span> 似たようなUI関数を統合する</a></h3>
-<div class="outline-text-3" id="text-orge575274">
+<div id="outline-container-orgfcb440c" class="outline-3">
+<h3 id="orgfcb440c"><a href="#orgfcb440c"><span class="done DONE">DONE</span> 似たようなUI関数を統合する</a></h3>
+<div class="outline-text-3" id="text-orgfcb440c">
 <p>
 オプションをちゃんと使ってないのを直す。
 </p>
 </div>
 </div>
-<div id="outline-container-org0cfff4d" class="outline-3">
-<h3 id="org0cfff4d"><a href="#org0cfff4d"><span class="done DONE">DONE</span> UIをまともにする</a></h3>
-<div class="outline-text-3" id="text-org0cfff4d">
+<div id="outline-container-org198191d" class="outline-3">
+<h3 id="org198191d"><a href="#org198191d"><span class="done DONE">DONE</span> UIをまともにする</a></h3>
+<div class="outline-text-3" id="text-org198191d">
 <p>
 凝る必要はないが、あまりにデバッグ感がある。
 </p>
@@ -2947,25 +3028,25 @@ func (aa *aa) assemble {
 </ul>
 </div>
 </div>
-<div id="outline-container-org567b0bc" class="outline-3">
-<h3 id="org567b0bc"><a href="#org567b0bc"><span class="done DONE">DONE</span> スクロールコンテナをListコンテナに置き換える</a></h3>
-<div class="outline-text-3" id="text-org567b0bc">
+<div id="outline-container-org715c95c" class="outline-3">
+<h3 id="org715c95c"><a href="#org715c95c"><span class="done DONE">DONE</span> スクロールコンテナをListコンテナに置き換える</a></h3>
+<div class="outline-text-3" id="text-org715c95c">
 <p>
 わかりやすくなる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbf71616" class="outline-3">
-<h3 id="orgbf71616"><a href="#orgbf71616"><span class="done DONE">DONE</span> スポーン時は自動で全回復する</a></h3>
-<div class="outline-text-3" id="text-orgbf71616">
+<div id="outline-container-org0667346" class="outline-3">
+<h3 id="org0667346"><a href="#org0667346"><span class="done DONE">DONE</span> スポーン時は自動で全回復する</a></h3>
+<div class="outline-text-3" id="text-org0667346">
 <p>
 いちいち回復させないといけないのが面倒なので。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbd9ac21" class="outline-3">
-<h3 id="orgbd9ac21"><a href="#orgbd9ac21"><span class="done DONE">DONE</span> 戦闘できるようにする</a></h3>
-<div class="outline-text-3" id="text-orgbd9ac21">
+<div id="outline-container-orgc4e11f8" class="outline-3">
+<h3 id="orgc4e11f8"><a href="#orgc4e11f8"><span class="done DONE">DONE</span> 戦闘できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgc4e11f8">
 <ul class="org-ul">
 <li>敵にもコマンドを選ばせる</li>
 <li>SPが足りない場合は不活性にする</li>
@@ -2993,9 +3074,9 @@ func (aa *aa) assemble {
 </ul>
 </div>
 </div>
-<div id="outline-container-orgbb4ecc8" class="outline-3">
-<h3 id="orgbb4ecc8"><a href="#orgbb4ecc8"><span class="done DONE">DONE</span> フィールドに敵シンボルを作る</a></h3>
-<div class="outline-text-3" id="text-orgbb4ecc8">
+<div id="outline-container-orgdf78f2a" class="outline-3">
+<h3 id="orgdf78f2a"><a href="#orgdf78f2a"><span class="done DONE">DONE</span> フィールドに敵シンボルを作る</a></h3>
+<div class="outline-text-3" id="text-orgdf78f2a">
 <ul class="org-ul">
 <li>とりあえず動かないやつ</li>
 <li>ランダムに動くやつ</li>
@@ -3018,9 +3099,9 @@ func (aa *aa) assemble {
 </ul>
 </div>
 </div>
-<div id="outline-container-org6cb8434" class="outline-3">
-<h3 id="org6cb8434"><a href="#org6cb8434"><span class="done DONE">DONE</span> 敵や味方を倒せるようにする</a></h3>
-<div class="outline-text-3" id="text-org6cb8434">
+<div id="outline-container-orgbeb951f" class="outline-3">
+<h3 id="orgbeb951f"><a href="#orgbeb951f"><span class="done DONE">DONE</span> 敵や味方を倒せるようにする</a></h3>
+<div class="outline-text-3" id="text-orgbeb951f">
 <ul class="org-ul">
 <li>死んでいる判定をする</li>
 <li>味方でも敵でもすぐに削除はしない。フラグを立てるだけ</li>
@@ -3057,9 +3138,9 @@ func (aa *aa) assemble {
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc636d66" class="outline-3">
-<h3 id="orgc636d66"><a href="#orgc636d66"><span class="done DONE">DONE</span> 戦闘勝利時に獲得できるようにする</a></h3>
-<div class="outline-text-3" id="text-orgc636d66">
+<div id="outline-container-orge1e05d3" class="outline-3">
+<h3 id="orge1e05d3"><a href="#orge1e05d3"><span class="done DONE">DONE</span> 戦闘勝利時に獲得できるようにする</a></h3>
+<div class="outline-text-3" id="text-orge1e05d3">
 <ul class="org-ul">
 <li>経験値</li>
 <li>素材</li>
@@ -3078,17 +3159,17 @@ func (aa *aa) assemble {
 </ul>
 </div>
 </div>
-<div id="outline-container-org8971e87" class="outline-3">
-<h3 id="org8971e87"><a href="#org8971e87"><span class="done DONE">DONE</span> VRTを自動コミットさせる</a></h3>
-<div class="outline-text-3" id="text-org8971e87">
+<div id="outline-container-org356febe" class="outline-3">
+<h3 id="org356febe"><a href="#org356febe"><span class="done DONE">DONE</span> VRTを自動コミットさせる</a></h3>
+<div class="outline-text-3" id="text-org356febe">
 <p>
 なぜか手元とCIで数バイトレベルの差分が出るようになっている。一度CIでダウンロードしてからコミットしている。面倒なのでコミットまでしてもらう。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd05c02e" class="outline-3">
-<h3 id="orgd05c02e"><a href="#orgd05c02e"><span class="done DONE">DONE</span> 移動を回転方式にする</a></h3>
-<div class="outline-text-3" id="text-orgd05c02e">
+<div id="outline-container-orgf2f31ca" class="outline-3">
+<h3 id="orgf2f31ca"><a href="#orgf2f31ca"><span class="done DONE">DONE</span> 移動を回転方式にする</a></h3>
+<div class="outline-text-3" id="text-orgf2f31ca">
 <ul class="org-ul">
 <li>w,sでアクセル</li>
 <li>a,dで回転</li>
@@ -3096,9 +3177,9 @@ func (aa *aa) assemble {
 </ul>
 </div>
 </div>
-<div id="outline-container-org73daad4" class="outline-3">
-<h3 id="org73daad4"><a href="#org73daad4"><span class="done DONE">DONE</span> 敵を移動させる</a></h3>
-<div class="outline-text-3" id="text-org73daad4">
+<div id="outline-container-org54b553a" class="outline-3">
+<h3 id="org54b553a"><a href="#org54b553a"><span class="done DONE">DONE</span> 敵を移動させる</a></h3>
+<div class="outline-text-3" id="text-org54b553a">
 <ul class="org-ul">
 <li>状態遷移させる</li>
 <li>chase
@@ -3163,49 +3244,49 @@ movepattern.Update()
 </ul>
 </div>
 </div>
-<div id="outline-container-orgea9831b" class="outline-3">
-<h3 id="orgea9831b"><a href="#orgea9831b"><span class="done DONE">DONE</span> キーボード操作対応する</a></h3>
-<div class="outline-text-3" id="text-orgea9831b">
+<div id="outline-container-org40fdc64" class="outline-3">
+<h3 id="org40fdc64"><a href="#org40fdc64"><span class="done DONE">DONE</span> キーボード操作対応する</a></h3>
+<div class="outline-text-3" id="text-org40fdc64">
 <p>
 する。
 </p>
 </div>
 </div>
-<div id="outline-container-org39708a1" class="outline-3">
-<h3 id="org39708a1"><a href="#org39708a1"><span class="done DONE">DONE</span> CIまわり強化する</a></h3>
-<div class="outline-text-3" id="text-org39708a1">
+<div id="outline-container-org2ad4ab8" class="outline-3">
+<h3 id="org2ad4ab8"><a href="#org2ad4ab8"><span class="done DONE">DONE</span> CIまわり強化する</a></h3>
+<div class="outline-text-3" id="text-org2ad4ab8">
 <p>
 linterなども設定する。
 </p>
 </div>
 </div>
-<div id="outline-container-orga8ec581" class="outline-3">
-<h3 id="orga8ec581"><a href="#orga8ec581"><span class="done DONE">DONE</span> componentsを型安全にする</a></h3>
-<div class="outline-text-3" id="text-orga8ec581">
+<div id="outline-container-org555ca05" class="outline-3">
+<h3 id="org555ca05"><a href="#org555ca05"><span class="done DONE">DONE</span> componentsを型安全にする</a></h3>
+<div class="outline-text-3" id="text-org555ca05">
 <p>
 する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb9c92b1" class="outline-3">
-<h3 id="orgb9c92b1"><a href="#orgb9c92b1"><span class="done DONE">DONE</span> 構造化ログを整備する</a></h3>
-<div class="outline-text-3" id="text-orgb9c92b1">
+<div id="outline-container-orgd1726e4" class="outline-3">
+<h3 id="orgd1726e4"><a href="#orgd1726e4"><span class="done DONE">DONE</span> 構造化ログを整備する</a></h3>
+<div class="outline-text-3" id="text-orgd1726e4">
 <p>
 デバッグしやすくする。
 </p>
 </div>
 </div>
-<div id="outline-container-orga552b71" class="outline-3">
-<h3 id="orga552b71"><a href="#orga552b71"><span class="done DONE">DONE</span> 企画書を書く</a></h3>
-<div class="outline-text-3" id="text-orga552b71">
+<div id="outline-container-org3f80769" class="outline-3">
+<h3 id="org3f80769"><a href="#org3f80769"><span class="done DONE">DONE</span> 企画書を書く</a></h3>
+<div class="outline-text-3" id="text-org3f80769">
 <p>
 曖昧なままやっているので、そろそろやる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgefbcbc3" class="outline-3">
-<h3 id="orgefbcbc3"><a href="#orgefbcbc3"><span class="done DONE">DONE</span> 参考になりそうな実装を調べる</a></h3>
-<div class="outline-text-3" id="text-orgefbcbc3">
+<div id="outline-container-org490af68" class="outline-3">
+<h3 id="org490af68"><a href="#org490af68"><span class="done DONE">DONE</span> 参考になりそうな実装を調べる</a></h3>
+<div class="outline-text-3" id="text-org490af68">
 <p>
 フィールドがパフォーマンスの問題があったり、これからどうすればいいのかがわからない。参考になりそうな実装を探す。
 </p>
@@ -3242,17 +3323,17 @@ linterなども設定する。
 </ul>
 </div>
 </div>
-<div id="outline-container-org08423d9" class="outline-3">
-<h3 id="org08423d9"><a href="#org08423d9"><span class="done DONE">DONE</span> 味方一覧表示を共通化する</a></h3>
-<div class="outline-text-3" id="text-org08423d9">
+<div id="outline-container-org8024d3d" class="outline-3">
+<h3 id="org8024d3d"><a href="#org8024d3d"><span class="done DONE">DONE</span> 味方一覧表示を共通化する</a></h3>
+<div class="outline-text-3" id="text-org8024d3d">
 <p>
 いろんなところで使いそうかつ、複数のパーツで構成されているので作成が面倒なので。
 </p>
 </div>
 </div>
-<div id="outline-container-orgced0c98" class="outline-3">
-<h3 id="orgced0c98"><a href="#orgced0c98"><span class="done DONE">DONE</span> ステート切り替えが怪しい部分がある</a></h3>
-<div class="outline-text-3" id="text-orgced0c98">
+<div id="outline-container-orgb713cf0" class="outline-3">
+<h3 id="orgb713cf0"><a href="#orgb713cf0"><span class="done DONE">DONE</span> ステート切り替えが怪しい部分がある</a></h3>
+<div class="outline-text-3" id="text-orgb713cf0">
 <p>
 特にpopしている部分。
 </p>
@@ -3263,17 +3344,17 @@ linterなども設定する。
 </ul>
 </div>
 </div>
-<div id="outline-container-org0cda9d2" class="outline-3">
-<h3 id="org0cda9d2"><a href="#org0cda9d2"><span class="done DONE">DONE</span> 図形 or 画像描画の方法を考える</a></h3>
-<div class="outline-text-3" id="text-org0cda9d2">
+<div id="outline-container-orgc48552d" class="outline-3">
+<h3 id="orgc48552d"><a href="#orgc48552d"><span class="done DONE">DONE</span> 図形 or 画像描画の方法を考える</a></h3>
+<div class="outline-text-3" id="text-orgc48552d">
 <p>
 UIのために図形描画したい。どうするか。画像を用意すればよいが、いい感じにやるためにはどうすればいいか。
 </p>
 </div>
 </div>
-<div id="outline-container-orgddf8712" class="outline-3">
-<h3 id="orgddf8712"><a href="#orgddf8712"><span class="done DONE">DONE</span> モジュール分けする</a></h3>
-<div class="outline-text-3" id="text-orgddf8712">
+<div id="outline-container-org0588533" class="outline-3">
+<h3 id="org0588533"><a href="#org0588533"><span class="done DONE">DONE</span> モジュール分けする</a></h3>
+<div class="outline-text-3" id="text-org0588533">
 <p>
 名前がかぶってややこしいものは分ける。
 </p>
@@ -3285,17 +3366,17 @@ UIのために図形描画したい。どうするか。画像を用意すれば
 </ul>
 </div>
 </div>
-<div id="outline-container-org34cc977" class="outline-3">
-<h3 id="org34cc977"><a href="#org34cc977"><span class="done DONE">DONE</span> タイプライター表示する</a></h3>
-<div class="outline-text-3" id="text-org34cc977">
+<div id="outline-container-org65eb51c" class="outline-3">
+<h3 id="org65eb51c"><a href="#org65eb51c"><span class="done DONE">DONE</span> タイプライター表示する</a></h3>
+<div class="outline-text-3" id="text-org65eb51c">
 <p>
 テキストはアニメーション表示したい。多くの場所で使えるので共通化する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgfbd48f9" class="outline-3">
-<h3 id="orgfbd48f9"><a href="#orgfbd48f9"><span class="done DONE">DONE</span> 敵とエンカウントする</a></h3>
-<div class="outline-text-3" id="text-orgfbd48f9">
+<div id="outline-container-orgca465a9" class="outline-3">
+<h3 id="orgca465a9"><a href="#orgca465a9"><span class="done DONE">DONE</span> 敵とエンカウントする</a></h3>
+<div class="outline-text-3" id="text-orgca465a9">
 <ul class="org-ul">
 <li>敵シンボルと接触すると、シンボルに応じて戦闘を開始する</li>
 <li>敵を移動させるのが先か</li>
@@ -3319,9 +3400,9 @@ UIのために図形描画したい。どうするか。画像を用意すれば
 </ul>
 </div>
 </div>
-<div id="outline-container-org7533a0d" class="outline-3">
-<h3 id="org7533a0d"><a href="#org7533a0d"><span class="done DONE">DONE</span> stateEventとeffectの違いがわかりにくい</a></h3>
-<div class="outline-text-3" id="text-org7533a0d">
+<div id="outline-container-orgdf0dd3c" class="outline-3">
+<h3 id="orgdf0dd3c"><a href="#orgdf0dd3c"><span class="done DONE">DONE</span> stateEventとeffectの違いがわかりにくい</a></h3>
+<div class="outline-text-3" id="text-orgdf0dd3c">
 <ul class="org-ul">
 <li>stateEventはそういうのとしてまとめたほうがいい説。今、battle stateでstateEventチェックしている</li>
 <li>systemでstate遷移は相互依存になるのでできない</li>
@@ -3329,18 +3410,18 @@ UIのために図形描画したい。どうするか。画像を用意すれば
 </ul>
 </div>
 </div>
-<div id="outline-container-orge3f2dfe" class="outline-3">
-<h3 id="orge3f2dfe"><a href="#orge3f2dfe"><span class="done DONE">DONE</span> メインメニューをきれいにする</a></h3>
-<div class="outline-text-3" id="text-orge3f2dfe">
+<div id="outline-container-org5a46cbe" class="outline-3">
+<h3 id="org5a46cbe"><a href="#org5a46cbe"><span class="done DONE">DONE</span> メインメニューをきれいにする</a></h3>
+<div class="outline-text-3" id="text-org5a46cbe">
 <ul class="org-ul">
 <li>真ん中寄せする</li>
 <li>横を広くする</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org9ef5e50" class="outline-3">
-<h3 id="org9ef5e50"><a href="#org9ef5e50"><span class="done DONE">DONE</span> 階層移動をEffectでやる</a></h3>
-<div class="outline-text-3" id="text-org9ef5e50">
+<div id="outline-container-org4d59b6a" class="outline-3">
+<h3 id="org4d59b6a"><a href="#org4d59b6a"><span class="done DONE">DONE</span> 階層移動をEffectでやる</a></h3>
+<div class="outline-text-3" id="text-org4d59b6a">
 <p>
 階層移動をイベントとして、ほかの箇所で使いやすくする。
 </p>
@@ -3351,9 +3432,9 @@ UIのために図形描画したい。どうするか。画像を用意すれば
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb636ce7" class="outline-3">
-<h3 id="orgb636ce7"><a href="#orgb636ce7"><span class="done DONE">DONE</span> イベント部分の設計</a></h3>
-<div class="outline-text-3" id="text-orgb636ce7">
+<div id="outline-container-org37be9fc" class="outline-3">
+<h3 id="org37be9fc"><a href="#org37be9fc"><span class="done DONE">DONE</span> イベント部分の設計</a></h3>
+<div class="outline-text-3" id="text-org37be9fc">
 <p>
 1章のうろつきをどうするか考える。
 </p>
@@ -3384,9 +3465,9 @@ UIのために図形描画したい。どうするか。画像を用意すれば
 </ul>
 </div>
 </div>
-<div id="outline-container-org8b233b8" class="outline-3">
-<h3 id="org8b233b8"><a href="#org8b233b8"><span class="done DONE">DONE</span> アイテム使用・削除をsystem化する</a></h3>
-<div class="outline-text-3" id="text-org8b233b8">
+<div id="outline-container-org800b158" class="outline-3">
+<h3 id="org800b158"><a href="#org800b158"><span class="done DONE">DONE</span> アイテム使用・削除をsystem化する</a></h3>
+<div class="outline-text-3" id="text-org800b158">
 <p>
 wantsToUseエンティティを生成して、そのエンティティをsystemでキャッチする。
 </p>
@@ -3400,17 +3481,17 @@ wantsToUseエンティティを生成して、そのエンティティをsystem�
 </p>
 </div>
 </div>
-<div id="outline-container-org1420805" class="outline-3">
-<h3 id="org1420805"><a href="#org1420805"><span class="done DONE">DONE</span> コメントアウト記法をサポートする</a></h3>
-<div class="outline-text-3" id="text-org1420805">
+<div id="outline-container-org1f7c72b" class="outline-3">
+<h3 id="org1f7c72b"><a href="#org1f7c72b"><span class="done DONE">DONE</span> コメントアウト記法をサポートする</a></h3>
+<div class="outline-text-3" id="text-org1f7c72b">
 <p>
 無視する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb220817" class="outline-3">
-<h3 id="orgb220817"><a href="#orgb220817"><span class="done DONE">DONE</span> 固定敵を指定できるようにする</a></h3>
-<div class="outline-text-3" id="text-orgb220817">
+<div id="outline-container-orgfe80d77" class="outline-3">
+<h3 id="orgfe80d77"><a href="#orgfe80d77"><span class="done DONE">DONE</span> 固定敵を指定できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgfe80d77">
 <p>
 仕様。
 </p>
@@ -3437,27 +3518,27 @@ wantsToUseエンティティを生成して、そのエンティティをsystem�
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd901bf8" class="outline-3">
-<h3 id="orgd901bf8"><a href="#orgd901bf8"><span class="done DONE">DONE</span> 設定を導入する</a></h3>
-<div class="outline-text-3" id="text-orgd901bf8">
+<div id="outline-container-org6f7b5b3" class="outline-3">
+<h3 id="org6f7b5b3"><a href="#org6f7b5b3"><span class="done DONE">DONE</span> 設定を導入する</a></h3>
+<div class="outline-text-3" id="text-org6f7b5b3">
 <ul class="org-ul">
 <li>開発用と本番用のデフォルト設定を分ける</li>
 <li>環境変数で個別に変更できる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org3a66a92" class="outline-3">
-<h3 id="org3a66a92"><a href="#org3a66a92"><span class="done DONE">DONE</span> キーボード説明を追加する</a></h3>
-<div class="outline-text-3" id="text-org3a66a92">
+<div id="outline-container-org8e37dc7" class="outline-3">
+<h3 id="org8e37dc7"><a href="#org8e37dc7"><span class="done DONE">DONE</span> キーボード説明を追加する</a></h3>
+<div class="outline-text-3" id="text-org8e37dc7">
 <ul class="org-ul">
 <li>使用キーが散逸している</li>
 <li>開発するうえでの管理ドキュメントになる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org8870bb9" class="outline-3">
-<h3 id="org8870bb9"><a href="#org8870bb9"><span class="done DONE">DONE</span> 未探索の暗闇を追加する</a></h3>
-<div class="outline-text-3" id="text-org8870bb9">
+<div id="outline-container-org99067e4" class="outline-3">
+<h3 id="org99067e4"><a href="#org99067e4"><span class="done DONE">DONE</span> 未探索の暗闇を追加する</a></h3>
+<div class="outline-text-3" id="text-org99067e4">
 <p>
 結局、ミニマップを作成していけばいいかということになった。
 </p>
@@ -3471,41 +3552,41 @@ wantsToUseエンティティを生成して、そのエンティティをsystem�
 </p>
 </div>
 </div>
-<div id="outline-container-org4e06c2a" class="outline-3">
-<h3 id="org4e06c2a"><a href="#org4e06c2a"><span class="done DONE">DONE</span> コミットフックを設定する</a></h3>
-<div class="outline-text-3" id="text-org4e06c2a">
+<div id="outline-container-org982f803" class="outline-3">
+<h3 id="org982f803"><a href="#org982f803"><span class="done DONE">DONE</span> コミットフックを設定する</a></h3>
+<div class="outline-text-3" id="text-org982f803">
 <ul class="org-ul">
 <li>コミット前にフォーマットさせる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org9f96d16" class="outline-3">
-<h3 id="org9f96d16"><a href="#org9f96d16"><span class="done DONE">DONE</span> WASM版でもセーブできるようにする</a></h3>
-<div class="outline-text-3" id="text-org9f96d16">
+<div id="outline-container-org854e4f8" class="outline-3">
+<h3 id="org854e4f8"><a href="#org854e4f8"><span class="done DONE">DONE</span> WASM版でもセーブできるようにする</a></h3>
+<div class="outline-text-3" id="text-org854e4f8">
 <p>
 ローカルストレージに保存する。
 </p>
 </div>
 </div>
-<div id="outline-container-orge84bbcc" class="outline-3">
-<h3 id="orge84bbcc"><a href="#orge84bbcc"><span class="done DONE">DONE</span> セーブ&amp;ロードできるようにする</a></h3>
-<div class="outline-text-3" id="text-orge84bbcc">
+<div id="outline-container-org695d81c" class="outline-3">
+<h3 id="org695d81c"><a href="#org695d81c"><span class="done DONE">DONE</span> セーブ&amp;ロードできるようにする</a></h3>
+<div class="outline-text-3" id="text-org695d81c">
 <p>
 セーブする。
 </p>
 </div>
 </div>
-<div id="outline-container-orgba2067a" class="outline-3">
-<h3 id="orgba2067a"><a href="#orgba2067a"><span class="done DONE">DONE</span> バージョン表示する</a></h3>
-<div class="outline-text-3" id="text-orgba2067a">
+<div id="outline-container-orgfc17333" class="outline-3">
+<h3 id="orgfc17333"><a href="#orgfc17333"><span class="done DONE">DONE</span> バージョン表示する</a></h3>
+<div class="outline-text-3" id="text-orgfc17333">
 <p>
 ビルド時にバージョンを注入しているので、それをメインメニューに表示する。
 </p>
 </div>
 </div>
-<div id="outline-container-org42b9906" class="outline-3">
-<h3 id="org42b9906"><a href="#org42b9906"><span class="done DONE">DONE</span> 仲間入れ替え画面を追加する</a></h3>
-<div class="outline-text-3" id="text-org42b9906">
+<div id="outline-container-orgeb8dd4e" class="outline-3">
+<h3 id="orgeb8dd4e"><a href="#orgeb8dd4e"><span class="done DONE">DONE</span> 仲間入れ替え画面を追加する</a></h3>
+<div class="outline-text-3" id="text-orgeb8dd4e">
 <p>
 入れ替えられるようにする。
 </p>
@@ -3521,9 +3602,9 @@ wantsToUseエンティティを生成して、そのエンティティをsystem�
 </ul>
 </div>
 </div>
-<div id="outline-container-org5bc2d23" class="outline-3">
-<h3 id="org5bc2d23"><a href="#org5bc2d23"><span class="done DONE">DONE</span> 接触でイベント発火させる</a></h3>
-<div class="outline-text-3" id="text-org5bc2d23">
+<div id="outline-container-org5718cc0" class="outline-3">
+<h3 id="org5718cc0"><a href="#org5718cc0"><span class="done DONE">DONE</span> 接触でイベント発火させる</a></h3>
+<div class="outline-text-3" id="text-org5718cc0">
 <p>
 敵シンボルとのエンカウントとは異なる。
 </p>
@@ -3656,57 +3737,57 @@ State{event}
 </ul>
 </div>
 </div>
-<div id="outline-container-orgff0dda3" class="outline-3">
-<h3 id="orgff0dda3"><a href="#orgff0dda3"><span class="done DONE">DONE</span> ダンジョンステートが重い</a></h3>
-<div class="outline-text-3" id="text-orgff0dda3">
+<div id="outline-container-org50ab684" class="outline-3">
+<h3 id="org50ab684"><a href="#org50ab684"><span class="done DONE">DONE</span> ダンジョンステートが重い</a></h3>
+<div class="outline-text-3" id="text-org50ab684">
 <p>
 いつのまにかWASM版でFPSが10くらいしか出ないことに気づいた。
 </p>
 </div>
 </div>
-<div id="outline-container-orgcdb62ef" class="outline-3">
-<h3 id="orgcdb62ef"><a href="#orgcdb62ef"><span class="done DONE">DONE</span> 角の壁がないとレイが抜ける</a></h3>
-<div class="outline-text-3" id="text-orgcdb62ef">
+<div id="outline-container-org8fe8681" class="outline-3">
+<h3 id="org8fe8681"><a href="#org8fe8681"><span class="done DONE">DONE</span> 角の壁がないとレイが抜ける</a></h3>
+<div class="outline-text-3" id="text-org8fe8681">
 <p>
 角も埋めるようにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org640fcbc" class="outline-3">
-<h3 id="org640fcbc"><a href="#org640fcbc"><span class="done DONE">DONE</span> フロアの枠をどうするか考える</a></h3>
-<div class="outline-text-3" id="text-org640fcbc">
+<div id="outline-container-org42c9657" class="outline-3">
+<h3 id="org42c9657"><a href="#org42c9657"><span class="done DONE">DONE</span> フロアの枠をどうするか考える</a></h3>
+<div class="outline-text-3" id="text-org42c9657">
 <p>
 端が真っ黒なので、わかりづらい。壁で囲うか、色を変えてわかりやすくする。
 </p>
 </div>
 </div>
-<div id="outline-container-org39a13f3" class="outline-3">
-<h3 id="org39a13f3"><a href="#org39a13f3"><span class="done DONE">DONE</span> ステージをシード指定で生成できるようにする</a></h3>
-<div class="outline-text-3" id="text-org39a13f3">
+<div id="outline-container-orgacaedf2" class="outline-3">
+<h3 id="orgacaedf2"><a href="#orgacaedf2"><span class="done DONE">DONE</span> ステージをシード指定で生成できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgacaedf2">
 <p>
 現在はダンジョンステートでのVRTは毎回差分が出るのでオフにしている。
 </p>
 </div>
 </div>
-<div id="outline-container-orgdc64fa3" class="outline-3">
-<h3 id="orgdc64fa3"><a href="#orgdc64fa3"><span class="done DONE">DONE</span> 部屋ビルダーのバリエーションを増やす</a></h3>
-<div class="outline-text-3" id="text-orgdc64fa3">
+<div id="outline-container-org0742fd4" class="outline-3">
+<h3 id="org0742fd4"><a href="#org0742fd4"><span class="done DONE">DONE</span> 部屋ビルダーのバリエーションを増やす</a></h3>
+<div class="outline-text-3" id="text-org0742fd4">
 <p>
 大部屋を作る。
 </p>
 </div>
 </div>
-<div id="outline-container-org3c9eae6" class="outline-3">
-<h3 id="org3c9eae6"><a href="#org3c9eae6"><span class="done DONE">DONE</span> 戦闘でのミスを直す</a></h3>
-<div class="outline-text-3" id="text-org3c9eae6">
+<div id="outline-container-org7ecab2b" class="outline-3">
+<h3 id="org7ecab2b"><a href="#org7ecab2b"><span class="done DONE">DONE</span> 戦闘でのミスを直す</a></h3>
+<div class="outline-text-3" id="text-org7ecab2b">
 <p>
 パーティにいないメンバーもコマンドが出るので直す。
 </p>
 </div>
 </div>
-<div id="outline-container-org9d527e0" class="outline-3">
-<h3 id="org9d527e0"><a href="#org9d527e0"><span class="done DONE">DONE</span> デバッグ用のステージデバッグメニュー項目を追加する</a></h3>
-<div class="outline-text-3" id="text-org9d527e0">
+<div id="outline-container-org3e035c4" class="outline-3">
+<h3 id="org3e035c4"><a href="#org3e035c4"><span class="done DONE">DONE</span> デバッグ用のステージデバッグメニュー項目を追加する</a></h3>
+<div class="outline-text-3" id="text-org3e035c4">
 <p>
 すぐ生成できるようにする。項目が多いから、スクロールできないといけないだろうな。
 </p>
@@ -3716,33 +3797,33 @@ State{event}
 </ul>
 </div>
 </div>
-<div id="outline-container-org7bf5902" class="outline-3">
-<h3 id="org7bf5902"><a href="#org7bf5902"><span class="done DONE">DONE</span> アイテムを配置する</a></h3>
-<div class="outline-text-3" id="text-org7bf5902">
+<div id="outline-container-org9ed5e1d" class="outline-3">
+<h3 id="org9ed5e1d"><a href="#org9ed5e1d"><span class="done DONE">DONE</span> アイテムを配置する</a></h3>
+<div class="outline-text-3" id="text-org9ed5e1d">
 <p>
 ステージ初期化時にアイテムを配置する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb34f8a1" class="outline-3">
-<h3 id="orgb34f8a1"><a href="#orgb34f8a1"><span class="done DONE">DONE</span> フィールドログを表示する</a></h3>
-<div class="outline-text-3" id="text-orgb34f8a1">
+<div id="outline-container-org8c71ec2" class="outline-3">
+<h3 id="org8c71ec2"><a href="#org8c71ec2"><span class="done DONE">DONE</span> フィールドログを表示する</a></h3>
+<div class="outline-text-3" id="text-org8c71ec2">
 <ul class="org-ul">
 <li>文字を表示する</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org6c6ca1e" class="outline-3">
-<h3 id="org6c6ca1e"><a href="#org6c6ca1e"><span class="done DONE">DONE</span> systemのUI関数を移動する</a></h3>
-<div class="outline-text-3" id="text-org6c6ca1e">
+<div id="outline-container-orgd34d053" class="outline-3">
+<h3 id="orgd34d053"><a href="#orgd34d053"><span class="done DONE">DONE</span> systemのUI関数を移動する</a></h3>
+<div class="outline-text-3" id="text-orgd34d053">
 <p>
 UIを別のpackageに移動する。
 </p>
 </div>
 </div>
-<div id="outline-container-org84cfc37" class="outline-3">
-<h3 id="org84cfc37"><a href="#org84cfc37"><span class="done DONE">DONE</span> ローグライクで必要なくなった箇所を削除する</a></h3>
-<div class="outline-text-3" id="text-org84cfc37">
+<div id="outline-container-org8278c8f" class="outline-3">
+<h3 id="org8278c8f"><a href="#org8278c8f"><span class="done DONE">DONE</span> ローグライクで必要なくなった箇所を削除する</a></h3>
+<div class="outline-text-3" id="text-org8278c8f">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> 既存の戦闘を削除する</li>
 <li class="on"><input type='checkbox' checked='checked' /> Positionを削除する</li>
@@ -3756,9 +3837,9 @@ UIを別のpackageに移動する。
 </ul>
 </div>
 </div>
-<div id="outline-container-org34b1332" class="outline-3">
-<h3 id="org34b1332"><a href="#org34b1332"><span class="done DONE">DONE</span> HPゼロでゲームオーバー画面に遷移する</a></h3>
-<div class="outline-text-3" id="text-org34b1332">
+<div id="outline-container-orgc03432c" class="outline-3">
+<h3 id="orgc03432c"><a href="#orgc03432c"><span class="done DONE">DONE</span> HPゼロでゲームオーバー画面に遷移する</a></h3>
+<div class="outline-text-3" id="text-orgc03432c">
 <p>
 止まっているので。
 </p>
@@ -3768,9 +3849,9 @@ keyboardInputはグローバルに保持したほうがよくないか。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf3f0616" class="outline-3">
-<h3 id="orgf3f0616"><a href="#orgf3f0616"><span class="done DONE">DONE</span> ターン世界を導入する</a></h3>
-<div class="outline-text-3" id="text-orgf3f0616">
+<div id="outline-container-orga133d74" class="outline-3">
+<h3 id="orga133d74"><a href="#orga133d74"><span class="done DONE">DONE</span> ターン世界を導入する</a></h3>
+<div class="outline-text-3" id="text-orga133d74">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> ターンベースシステムを導入する</li>
 <li class="on"><input type='checkbox' checked='checked' /> 移動などを対応させる</li>
@@ -3789,9 +3870,9 @@ keyboardInputはグローバルに保持したほうがよくないか。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgbf7f434" class="outline-3">
-<h3 id="orgbf7f434"><a href="#orgbf7f434"><span class="done DONE">DONE</span> パラメータ設計</a></h3>
-<div class="outline-text-3" id="text-orgbf7f434">
+<div id="outline-container-org9a74f2d" class="outline-3">
+<h3 id="org9a74f2d"><a href="#org9a74f2d"><span class="done DONE">DONE</span> パラメータ設計</a></h3>
+<div class="outline-text-3" id="text-org9a74f2d">
 <ul class="org-ul">
 <li>HP(体力)</li>
 <li>EP(電気) &#x2013; 特殊行動。装備によって回復方法が異なる</li>
@@ -3800,9 +3881,9 @@ keyboardInputはグローバルに保持したほうがよくないか。
 </ul>
 </div>
 </div>
-<div id="outline-container-org18f4f9b" class="outline-3">
-<h3 id="org18f4f9b"><a href="#org18f4f9b"><span class="done DONE">DONE</span> engineの再設計・リファクタリング</a></h3>
-<div class="outline-text-3" id="text-org18f4f9b">
+<div id="outline-container-org2e82fc2" class="outline-3">
+<h3 id="org2e82fc2"><a href="#org2e82fc2"><span class="done DONE">DONE</span> engineの再設計・リファクタリング</a></h3>
+<div class="outline-text-3" id="text-org2e82fc2">
 <ul class="org-ul">
 <li>使いにくい</li>
 <li>使い分けが不明瞭</li>
@@ -3824,26 +3905,26 @@ keyboardInputはグローバルに保持したほうがよくないか。
 </ul>
 </div>
 </div>
-<div id="outline-container-org691f92c" class="outline-3">
-<h3 id="org691f92c"><a href="#org691f92c"><span class="done DONE">DONE</span> セーブデータJSONをソートする</a></h3>
-<div class="outline-text-3" id="text-org691f92c">
+<div id="outline-container-org03a3f7d" class="outline-3">
+<h3 id="org03a3f7d"><a href="#org03a3f7d"><span class="done DONE">DONE</span> セーブデータJSONをソートする</a></h3>
+<div class="outline-text-3" id="text-org03a3f7d">
 <p>
 毎回差分が出て何が変わったかわかりにくいのでソートして保存する。
 </p>
 </div>
 </div>
-<div id="outline-container-org4ed9ec1" class="outline-3">
-<h3 id="org4ed9ec1"><a href="#org4ed9ec1"><span class="done DONE">DONE</span> タイプライターを使うように置き換える</a></h3>
-<div class="outline-text-3" id="text-org4ed9ec1">
+<div id="outline-container-org12eff5b" class="outline-3">
+<h3 id="org12eff5b"><a href="#org12eff5b"><span class="done DONE">DONE</span> タイプライターを使うように置き換える</a></h3>
+<div class="outline-text-3" id="text-org12eff5b">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> intro</li>
 <li>battle</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgcde6ed6" class="outline-3">
-<h3 id="orgcde6ed6"><a href="#orgcde6ed6"><span class="done DONE">DONE</span> メッセージページ表示を追加する</a></h3>
-<div class="outline-text-3" id="text-orgcde6ed6">
+<div id="outline-container-org1a6c963" class="outline-3">
+<h3 id="org1a6c963"><a href="#org1a6c963"><span class="done DONE">DONE</span> メッセージページ表示を追加する</a></h3>
+<div class="outline-text-3" id="text-org1a6c963">
 <ul class="org-ul">
 <li>ストーリーメッセージはスキップ可能なメッセージページに表示する(Elona風)
 <ul class="org-ul">
@@ -3870,17 +3951,17 @@ new.Message("この中から選べ。").Choice(a, b, c) # aに選択肢文字、
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfe277c7" class="outline-3">
-<h3 id="orgfe277c7"><a href="#orgfe277c7"><span class="done DONE">DONE</span> 単純なstateを置き換える</a></h3>
-<div class="outline-text-3" id="text-orgfe277c7">
+<div id="outline-container-org6bf4904" class="outline-3">
+<h3 id="org6bf4904"><a href="#org6bf4904"><span class="done DONE">DONE</span> 単純なstateを置き換える</a></h3>
+<div class="outline-text-3" id="text-org6bf4904">
 <p>
 メニューやゲームオーバーなど、単純なstateはわざわざ専用のstateではなく、処理だけ渡して共通のステートで処理できるのではないか。
 </p>
 </div>
 </div>
-<div id="outline-container-org7c1d7ff" class="outline-3">
-<h3 id="org7c1d7ff"><a href="#org7c1d7ff"><span class="done CLOSE">CLOSE</span> 戦闘ステートをテスタブルにする</a></h3>
-<div class="outline-text-3" id="text-org7c1d7ff">
+<div id="outline-container-orgcc4986b" class="outline-3">
+<h3 id="orgcc4986b"><a href="#orgcc4986b"><span class="done CLOSE">CLOSE</span> 戦闘ステートをテスタブルにする</a></h3>
+<div class="outline-text-3" id="text-orgcc4986b">
 <ul class="org-ul">
 <li>テストカバー率が低い</li>
 <li>ステップが多く手動での検証が面倒である</li>
@@ -3892,50 +3973,50 @@ new.Message("この中から選べ。").Choice(a, b, c) # aに選択肢文字、
 </p>
 </div>
 </div>
-<div id="outline-container-org1bbcae7" class="outline-3">
-<h3 id="org1bbcae7"><a href="#org1bbcae7"><span class="done CLOSE">CLOSE</span> 全体的にテストヘルパーは専用のファイルにまとめる</a></h3>
-<div class="outline-text-3" id="text-org1bbcae7">
+<div id="outline-container-org2c4df9b" class="outline-3">
+<h3 id="org2c4df9b"><a href="#org2c4df9b"><span class="done CLOSE">CLOSE</span> 全体的にテストヘルパーは専用のファイルにまとめる</a></h3>
+<div class="outline-text-3" id="text-org2c4df9b">
 <p>
 重複が多いように見える。わかりやすいようにまとめておく。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf510d15" class="outline-3">
-<h3 id="orgf510d15"><a href="#orgf510d15"><span class="done DONE">DONE</span> アイテム等をソートする</a></h3>
-<div class="outline-text-3" id="text-orgf510d15">
+<div id="outline-container-orga12aaea" class="outline-3">
+<h3 id="orga12aaea"><a href="#orga12aaea"><span class="done DONE">DONE</span> アイテム等をソートする</a></h3>
+<div class="outline-text-3" id="text-orga12aaea">
 <p>
 まだアイテムは固定の並びになるが、レシピなど一括生成系はmapを経由するため生成順序がずれてVRTが失敗している。
 </p>
 </div>
 </div>
-<div id="outline-container-orgcd50de2" class="outline-3">
-<h3 id="orgcd50de2"><a href="#orgcd50de2"><span class="done DONE">DONE</span> フィールドにアイテムを生成する</a></h3>
-<div class="outline-text-3" id="text-orgcd50de2">
+<div id="outline-container-org48ce83f" class="outline-3">
+<h3 id="org48ce83f"><a href="#org48ce83f"><span class="done DONE">DONE</span> フィールドにアイテムを生成する</a></h3>
+<div class="outline-text-3" id="text-org48ce83f">
 <ul class="org-ul">
 <li>アイテムを生成する</li>
 <li>拾える</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org5704c4f" class="outline-3">
-<h3 id="org5704c4f"><a href="#org5704c4f"><span class="done DONE">DONE</span> 死亡を状態化する</a></h3>
-<div class="outline-text-3" id="text-org5704c4f">
+<div id="outline-container-orge05a41e" class="outline-3">
+<h3 id="orge05a41e"><a href="#orge05a41e"><span class="done DONE">DONE</span> 死亡を状態化する</a></h3>
+<div class="outline-text-3" id="text-orge05a41e">
 <p>
 今はHP0で判定している。しかし、死亡状態は特殊で、回復薬で回復させられなかったり、行動できるかのフラグとして使ったりする。なので、コンポーネント化したほうがよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org9d24823" class="outline-3">
-<h3 id="org9d24823"><a href="#org9d24823"><span class="done DONE">DONE</span> 生成をランダム化する</a></h3>
-<div class="outline-text-3" id="text-org9d24823">
+<div id="outline-container-org7947aa8" class="outline-3">
+<h3 id="org7947aa8"><a href="#org7947aa8"><span class="done DONE">DONE</span> 生成をランダム化する</a></h3>
+<div class="outline-text-3" id="text-org7947aa8">
 <p>
 ある程度ランダム化したい。プレイヤー、モンスター、ワープゲートの出る位置をバラけさせる。
 </p>
 </div>
 </div>
-<div id="outline-container-org4138260" class="outline-3">
-<h3 id="org4138260"><a href="#org4138260"><span class="done DONE">DONE</span> 街マップを作成する</a></h3>
-<div class="outline-text-3" id="text-org4138260">
+<div id="outline-container-org08a3cb9" class="outline-3">
+<h3 id="org08a3cb9"><a href="#org08a3cb9"><span class="done DONE">DONE</span> 街マップを作成する</a></h3>
+<div class="outline-text-3" id="text-org08a3cb9">
 <ul class="org-ul">
 <li>タイルの種類を増やす</li>
 <li>置物を増やす(家具など)</li>
@@ -3943,17 +4024,17 @@ new.Message("この中から選べ。").Choice(a, b, c) # aに選択肢文字、
 </ul>
 </div>
 </div>
-<div id="outline-container-orge5e4b82" class="outline-3">
-<h3 id="orge5e4b82"><a href="#orge5e4b82"><span class="done DONE">DONE</span> タイルをraw管理にする</a></h3>
-<div class="outline-text-3" id="text-orge5e4b82">
+<div id="outline-container-org4ad9ef8" class="outline-3">
+<h3 id="org4ad9ef8"><a href="#org4ad9ef8"><span class="done DONE">DONE</span> タイルをraw管理にする</a></h3>
+<div class="outline-text-3" id="text-org4ad9ef8">
 <p>
 追加しやすくする。型名で判断させず、プロパティ判断させる。
 </p>
 </div>
 </div>
-<div id="outline-container-org251fa91" class="outline-3">
-<h3 id="org251fa91"><a href="#org251fa91"><span class="done DONE">DONE</span> タイルの種類を増やす</a></h3>
-<div class="outline-text-3" id="text-org251fa91">
+<div id="outline-container-org36e3972" class="outline-3">
+<h3 id="org36e3972"><a href="#org36e3972"><span class="done DONE">DONE</span> タイルの種類を増やす</a></h3>
+<div class="outline-text-3" id="text-org36e3972">
 <p>
 とりあえず土だけ追加した。
 </p>
@@ -3971,9 +4052,9 @@ new.Message("この中から選べ。").Choice(a, b, c) # aに選択肢文字、
 </ul>
 </div>
 </div>
-<div id="outline-container-org651f502" class="outline-3">
-<h3 id="org651f502"><a href="#org651f502"><span class="done DONE">DONE</span> map作成系をSpecに一本化する</a></h3>
-<div class="outline-text-3" id="text-org651f502">
+<div id="outline-container-org18e21db" class="outline-3">
+<h3 id="org18e21db"><a href="#org18e21db"><span class="done DONE">DONE</span> map作成系をSpecに一本化する</a></h3>
+<div class="outline-text-3" id="text-org18e21db">
 <p>
 TileSpecのように、EntitySpecでスポーンに必要な情報を一本化する。
 </p>
@@ -3989,41 +4070,41 @@ tile, propをrawで生成するようにしたい。それを使ってSpecにす
 </ul>
 </div>
 </div>
-<div id="outline-container-orgaccc203" class="outline-3">
-<h3 id="orgaccc203"><a href="#orgaccc203"><span class="done DONE">DONE</span> スプライトシートの読み込みを改善する</a></h3>
-<div class="outline-text-3" id="text-orgaccc203">
+<div id="outline-container-orgbbea6b0" class="outline-3">
+<h3 id="orgbbea6b0"><a href="#orgbbea6b0"><span class="done DONE">DONE</span> スプライトシートの読み込みを改善する</a></h3>
+<div class="outline-text-3" id="text-orgbbea6b0">
 <p>
 現状、追加しにくい。キー指定できるようにした。
 </p>
 </div>
 </div>
-<div id="outline-container-org5f33b7d" class="outline-3">
-<h3 id="org5f33b7d"><a href="#org5f33b7d"><span class="done DONE">DONE</span> rawで未定義フィールドがあった場合はエラーにする</a></h3>
-<div class="outline-text-3" id="text-org5f33b7d">
+<div id="outline-container-org3094ecd" class="outline-3">
+<h3 id="org3094ecd"><a href="#org3094ecd"><span class="done DONE">DONE</span> rawで未定義フィールドがあった場合はエラーにする</a></h3>
+<div class="outline-text-3" id="text-org3094ecd">
 <p>
 漏れが起こるので。
 </p>
 </div>
 </div>
-<div id="outline-container-orge7f38bd" class="outline-3">
-<h3 id="orge7f38bd"><a href="#orge7f38bd"><span class="done DONE">DONE</span> オートタイルを実装する</a></h3>
-<div class="outline-text-3" id="text-orge7f38bd">
+<div id="outline-container-orgac94ba6" class="outline-3">
+<h3 id="orgac94ba6"><a href="#orgac94ba6"><span class="done DONE">DONE</span> オートタイルを実装する</a></h3>
+<div class="outline-text-3" id="text-orgac94ba6">
 <p>
 素材はあるので、それを使えるようにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org1851200" class="outline-3">
-<h3 id="org1851200"><a href="#org1851200"><span class="done DONE">DONE</span> ロードが壊れている</a></h3>
-<div class="outline-text-3" id="text-org1851200">
+<div id="outline-container-org6091ed9" class="outline-3">
+<h3 id="org6091ed9"><a href="#org6091ed9"><span class="done DONE">DONE</span> ロードが壊れている</a></h3>
+<div class="outline-text-3" id="text-org6091ed9">
 <p>
 タイルが表示されない。セーブデータ的に、タイルは保存されているのだが。
 </p>
 </div>
 </div>
-<div id="outline-container-org727f06b" class="outline-3">
-<h3 id="org727f06b"><a href="#org727f06b"><span class="done DONE">DONE</span> ステート遷移がおかしい</a></h3>
-<div class="outline-text-3" id="text-org727f06b">
+<div id="outline-container-org57be601" class="outline-3">
+<h3 id="org57be601"><a href="#org57be601"><span class="done DONE">DONE</span> ステート遷移がおかしい</a></h3>
+<div class="outline-text-3" id="text-org57be601">
 <ul class="org-ul">
 <li>戻ると真っ黒になる組み合わせがある
 <ul class="org-ul">
@@ -4033,9 +4114,9 @@ tile, propをrawで生成するようにしたい。それを使ってSpecにす
 </ul>
 </div>
 </div>
-<div id="outline-container-orgec4cd81" class="outline-3">
-<h3 id="orgec4cd81"><a href="#orgec4cd81"><span class="done DONE">DONE</span> 置物をraw化する</a></h3>
-<div class="outline-text-3" id="text-orgec4cd81">
+<div id="outline-container-orgd45f6ed" class="outline-3">
+<h3 id="orgd45f6ed"><a href="#orgd45f6ed"><span class="done DONE">DONE</span> 置物をraw化する</a></h3>
+<div class="outline-text-3" id="text-orgd45f6ed">
 <p>
 ハードコードされている。
 </p>
@@ -4047,9 +4128,9 @@ tile, propをrawで生成するようにしたい。それを使ってSpecにす
 </ul>
 </div>
 </div>
-<div id="outline-container-org39ce362" class="outline-3">
-<h3 id="org39ce362"><a href="#org39ce362"><span class="done DONE">DONE</span> 無意味なコンストラクタを削除する</a></h3>
-<div class="outline-text-3" id="text-org39ce362">
+<div id="outline-container-org3a9be03" class="outline-3">
+<h3 id="org3a9be03"><a href="#org3a9be03"><span class="done DONE">DONE</span> 無意味なコンストラクタを削除する</a></h3>
+<div class="outline-text-3" id="text-org3a9be03">
 <div class="org-src-container">
 <pre class="src src-go">NewDungeonStateWithDepth は指定されたDepthでDungeonStateインスタンスを作成するファクトリー関数
 func NewDungeonStateWithDepth(depth int) es.StateFactory[w.World] {
@@ -4075,9 +4156,9 @@ func NewDungeonStateWithBuilder(depth int, builderType mapplanner.PlannerType) e
 </div>
 </div>
 </div>
-<div id="outline-container-orga2a207d" class="outline-3">
-<h3 id="orga2a207d"><a href="#orga2a207d"><span class="done DONE">DONE</span> effectsの立ち位置を明確にする</a></h3>
-<div class="outline-text-3" id="text-orga2a207d">
+<div id="outline-container-orgbc4f2e4" class="outline-3">
+<h3 id="orgbc4f2e4"><a href="#orgbc4f2e4"><span class="done DONE">DONE</span> effectsの立ち位置を明確にする</a></h3>
+<div class="outline-text-3" id="text-orgbc4f2e4">
 <ul class="org-ul">
 <li>現状のattack activityでは直接ダメージ計算して、ログを出している</li>
 <li>いろいろな共通化など考えるとeffectを発行するべきにも思える</li>
@@ -4085,9 +4166,9 @@ func NewDungeonStateWithBuilder(depth int, builderType mapplanner.PlannerType) e
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf3b4faf" class="outline-3">
-<h3 id="orgf3b4faf"><a href="#orgf3b4faf"><span class="done DONE">DONE</span> 光源を追加する</a></h3>
-<div class="outline-text-3" id="text-orgf3b4faf">
+<div id="outline-container-orgcfefe83" class="outline-3">
+<h3 id="orgcfefe83"><a href="#orgcfefe83"><span class="done DONE">DONE</span> 光源を追加する</a></h3>
+<div class="outline-text-3" id="text-orgcfefe83">
 <p>
 光源がある部分は色が変わる。
 </p>
@@ -4097,17 +4178,17 @@ func NewDungeonStateWithBuilder(depth int, builderType mapplanner.PlannerType) e
 </p>
 </div>
 </div>
-<div id="outline-container-org2b020cc" class="outline-3">
-<h3 id="org2b020cc"><a href="#org2b020cc"><span class="done DONE">DONE</span> 倒れてから攻撃してくる</a></h3>
-<div class="outline-text-3" id="text-org2b020cc">
+<div id="outline-container-org2bf04b7" class="outline-3">
+<h3 id="org2bf04b7"><a href="#org2bf04b7"><span class="done DONE">DONE</span> 倒れてから攻撃してくる</a></h3>
+<div class="outline-text-3" id="text-org2bf04b7">
 <p>
 死亡判定をターンごとに行っているために、プレイヤーが先に倒していても敵が攻撃してくる。
 </p>
 </div>
 </div>
-<div id="outline-container-org89c934e" class="outline-3">
-<h3 id="org89c934e"><a href="#org89c934e"><span class="done DONE">DONE</span> Stackable Itemにする</a></h3>
-<div class="outline-text-3" id="text-org89c934e">
+<div id="outline-container-orgb828917" class="outline-3">
+<h3 id="orgb828917"><a href="#orgb828917"><span class="done DONE">DONE</span> Stackable Itemにする</a></h3>
+<div class="outline-text-3" id="text-orgb828917">
 <p>
 Material componentのなかで数量を持っているが、仕様として読み取りにくいのと、ほかにもスタッキングしたいものはあるので別コンポーネントにする。
 </p>
@@ -4126,9 +4207,9 @@ Material componentのなかで数量を持っているが、仕様として読�
 </ul>
 </div>
 </div>
-<div id="outline-container-org9a91d2f" class="outline-3">
-<h3 id="org9a91d2f"><a href="#org9a91d2f"><span class="done DONE">DONE</span> キャラクターもrawで光源付与する</a></h3>
-<div class="outline-text-3" id="text-org9a91d2f">
+<div id="outline-container-org441a75a" class="outline-3">
+<h3 id="org441a75a"><a href="#org441a75a"><span class="done DONE">DONE</span> キャラクターもrawで光源付与する</a></h3>
+<div class="outline-text-3" id="text-org441a75a">
 <ul class="org-ul">
 <li>プレイヤー</li>
 <li>敵(火の玉)</li>
@@ -4136,34 +4217,34 @@ Material componentのなかで数量を持っているが、仕様として読�
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf21cce3" class="outline-3">
-<h3 id="orgf21cce3"><a href="#orgf21cce3"><span class="done DONE">DONE</span> raw.tomlをフォーマットする</a></h3>
-<div class="outline-text-3" id="text-orgf21cce3">
+<div id="outline-container-org9b64fbb" class="outline-3">
+<h3 id="org9b64fbb"><a href="#org9b64fbb"><span class="done DONE">DONE</span> raw.tomlをフォーマットする</a></h3>
+<div class="outline-text-3" id="text-org9b64fbb">
 <p>
 書き戻せば並び順も統一できそう。
 </p>
 </div>
 </div>
-<div id="outline-container-org64a804b" class="outline-3">
-<h3 id="org64a804b"><a href="#org64a804b"><span class="done DONE">DONE</span> 売買を導入する</a></h3>
-<div class="outline-text-3" id="text-org64a804b">
+<div id="outline-container-org38c0103" class="outline-3">
+<h3 id="org38c0103"><a href="#org38c0103"><span class="done DONE">DONE</span> 売買を導入する</a></h3>
+<div class="outline-text-3" id="text-org38c0103">
 <ul class="org-ul">
 <li>プレイヤーは所持金を持つ</li>
 <li>売買できる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf31ae1d" class="outline-3">
-<h3 id="orgf31ae1d"><a href="#orgf31ae1d"><span class="done DONE">DONE</span> stateでエラーハンドリングする</a></h3>
-<div class="outline-text-3" id="text-orgf31ae1d">
+<div id="outline-container-org30c9bd2" class="outline-3">
+<h3 id="org30c9bd2"><a href="#org30c9bd2"><span class="done DONE">DONE</span> stateでエラーハンドリングする</a></h3>
+<div class="outline-text-3" id="text-org30c9bd2">
 <p>
 エラーフィールドを作成する。Updateループでerrorがあれば終了させる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbddd477" class="outline-3">
-<h3 id="orgbddd477"><a href="#orgbddd477"><span class="done DONE">DONE</span> コマンドパターンを導入する</a></h3>
-<div class="outline-text-3" id="text-orgbddd477">
+<div id="outline-container-org2b9bd11" class="outline-3">
+<h3 id="org2b9bd11"><a href="#org2b9bd11"><span class="done DONE">DONE</span> コマンドパターンを導入する</a></h3>
+<div class="outline-text-3" id="text-org2b9bd11">
 <p>
 課題。現状、stateに直に入力キーボード分岐していて、テストが難しいのとUIと融合していてわかりにくい。
 </p>
@@ -4187,9 +4268,9 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd7e2e68" class="outline-3">
-<h3 id="orgd7e2e68"><a href="#orgd7e2e68"><span class="done DONE">DONE</span> 共通のエラーハンドリング方式を定める</a></h3>
-<div class="outline-text-3" id="text-orgd7e2e68">
+<div id="outline-container-org31865f4" class="outline-3">
+<h3 id="org31865f4"><a href="#org31865f4"><span class="done DONE">DONE</span> 共通のエラーハンドリング方式を定める</a></h3>
+<div class="outline-text-3" id="text-org31865f4">
 <ul class="org-ul">
 <li>stateでerrorを変えさせるようにして改善した。ほかは後でいいだろう</li>
 <li>ゲームなのでpanicさせたくない。が、検知はしたい</li>
@@ -4199,9 +4280,9 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-org3692501" class="outline-3">
-<h3 id="org3692501"><a href="#org3692501"><span class="done DONE">DONE</span> ドアを追加する</a></h3>
-<div class="outline-text-3" id="text-org3692501">
+<div id="outline-container-orge62b62e" class="outline-3">
+<h3 id="orge62b62e"><a href="#orge62b62e"><span class="done DONE">DONE</span> ドアを追加する</a></h3>
+<div class="outline-text-3" id="text-orge62b62e">
 <ul class="org-ul">
 <li>開閉状態を持つ</li>
 <li>隣接して移動キーを押すと開閉して進めるようになる</li>
@@ -4209,9 +4290,9 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-orga963c4a" class="outline-3">
-<h3 id="orga963c4a"><a href="#orga963c4a"><span class="done DONE">DONE</span> cardをweaponにする</a></h3>
-<div class="outline-text-3" id="text-orga963c4a">
+<div id="outline-container-org0866051" class="outline-3">
+<h3 id="org0866051"><a href="#org0866051"><span class="done DONE">DONE</span> cardをweaponにする</a></h3>
+<div class="outline-text-3" id="text-org0866051">
 <ul class="org-ul">
 <li>リネーム</li>
 <li>近距離武器は1つだけ装備できるようにする</li>
@@ -4220,9 +4301,9 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-org45e0c20" class="outline-3">
-<h3 id="org45e0c20"><a href="#org45e0c20"><span class="done DONE">DONE</span> window表示でカーソルが動く</a></h3>
-<div class="outline-text-3" id="text-org45e0c20">
+<div id="outline-container-org743fcfb" class="outline-3">
+<h3 id="org743fcfb"><a href="#org743fcfb"><span class="done DONE">DONE</span> window表示でカーソルが動く</a></h3>
+<div class="outline-text-3" id="text-org743fcfb">
 <ul class="org-ul">
 <li>window表示していると後ろのカーソルも動いてしまう
 <ul class="org-ul">
@@ -4232,42 +4313,42 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-org6c33c41" class="outline-3">
-<h3 id="org6c33c41"><a href="#org6c33c41"><span class="done DONE">DONE</span> codecovでカバー率をトラッキングする</a></h3>
-<div class="outline-text-3" id="text-org6c33c41">
+<div id="outline-container-org83a6f8f" class="outline-3">
+<h3 id="org83a6f8f"><a href="#org83a6f8f"><span class="done DONE">DONE</span> codecovでカバー率をトラッキングする</a></h3>
+<div class="outline-text-3" id="text-org83a6f8f">
 <ul class="org-ul">
 <li>カバレッジ率</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org2739f61" class="outline-3">
-<h3 id="org2739f61"><a href="#org2739f61"><span class="done DONE">DONE</span> 会話可能NPCを配置する</a></h3>
-<div class="outline-text-3" id="text-org2739f61">
+<div id="outline-container-org991943b" class="outline-3">
+<h3 id="org991943b"><a href="#org991943b"><span class="done DONE">DONE</span> 会話可能NPCを配置する</a></h3>
+<div class="outline-text-3" id="text-org991943b">
 <ul class="org-ul">
 <li>接触すると会話ウィンドウを出す</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org1c351c0" class="outline-3">
-<h3 id="org1c351c0"><a href="#org1c351c0"><span class="done DONE">DONE</span> イントロダクションを作成する</a></h3>
-<div class="outline-text-3" id="text-org1c351c0">
+<div id="outline-container-orgf86ee35" class="outline-3">
+<h3 id="orgf86ee35"><a href="#orgf86ee35"><span class="done DONE">DONE</span> イントロダクションを作成する</a></h3>
+<div class="outline-text-3" id="text-orgf86ee35">
 <ul class="org-ul">
 <li>目的</li>
 <li>街の説明</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org9ad9791" class="outline-3">
-<h3 id="org9ad9791"><a href="#org9ad9791"><span class="done DONE">DONE</span> entity == 0 で非存在判定している箇所を修正する</a></h3>
-<div class="outline-text-3" id="text-org9ad9791">
+<div id="outline-container-orgba93cbb" class="outline-3">
+<h3 id="orgba93cbb"><a href="#orgba93cbb"><span class="done DONE">DONE</span> entity == 0 で非存在判定している箇所を修正する</a></h3>
+<div class="outline-text-3" id="text-orgba93cbb">
 <p>
 ポインタにするべきである。
 </p>
 </div>
 </div>
-<div id="outline-container-org509fd54" class="outline-3">
-<h3 id="org509fd54"><a href="#org509fd54"><span class="done DONE">DONE</span> トリガーでまとめる</a></h3>
-<div class="outline-text-3" id="text-org509fd54">
+<div id="outline-container-org9f42f71" class="outline-3">
+<h3 id="org9f42f71"><a href="#org9f42f71"><span class="done DONE">DONE</span> トリガーでまとめる</a></h3>
+<div class="outline-text-3" id="text-org9f42f71">
 <ul class="org-ul">
 <li>ワープ</li>
 <li>罠</li>
@@ -4312,9 +4393,9 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-org6ed85cc" class="outline-3">
-<h3 id="org6ed85cc"><a href="#org6ed85cc"><span class="done DONE">DONE</span> ゲームクリアイベントを追加する</a></h3>
-<div class="outline-text-3" id="text-org6ed85cc">
+<div id="outline-container-org57c2d6f" class="outline-3">
+<h3 id="org57c2d6f"><a href="#org57c2d6f"><span class="done DONE">DONE</span> ゲームクリアイベントを追加する</a></h3>
+<div class="outline-text-3" id="text-org57c2d6f">
 <ul class="org-ul">
 <li>クリア条件
 <ul class="org-ul">
@@ -4328,9 +4409,9 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-org5b9aee5" class="outline-3">
-<h3 id="org5b9aee5"><a href="#org5b9aee5"><span class="done DONE">DONE</span> ゲームのキー概念を確定する</a></h3>
-<div class="outline-text-3" id="text-org5b9aee5">
+<div id="outline-container-orgebd35dd" class="outline-3">
+<h3 id="orgebd35dd"><a href="#orgebd35dd"><span class="done DONE">DONE</span> ゲームのキー概念を確定する</a></h3>
+<div class="outline-text-3" id="text-orgebd35dd">
 <p>
 参考。
 </p>
@@ -4442,33 +4523,33 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </ul>
 </div>
 </div>
-<div id="outline-container-org023ac81" class="outline-3">
-<h3 id="org023ac81"><a href="#org023ac81"><span class="done DONE">DONE</span> 1000万集めたときのテキストを用意する</a></h3>
-<div class="outline-text-3" id="text-org023ac81">
+<div id="outline-container-org5370073" class="outline-3">
+<h3 id="org5370073"><a href="#org5370073"><span class="done DONE">DONE</span> 1000万集めたときのテキストを用意する</a></h3>
+<div class="outline-text-3" id="text-org5370073">
 <p>
 エンディングを追加する。
 </p>
 </div>
 </div>
-<div id="outline-container-org1ec121b" class="outline-3">
-<h3 id="org1ec121b"><a href="#org1ec121b"><span class="done DONE">DONE</span> 街NPCに機能をもたせる</a></h3>
-<div class="outline-text-3" id="text-org1ec121b">
+<div id="outline-container-org8fbb25a" class="outline-3">
+<h3 id="org8fbb25a"><a href="#org8fbb25a"><span class="done DONE">DONE</span> 街NPCに機能をもたせる</a></h3>
+<div class="outline-text-3" id="text-org8fbb25a">
 <p>
 いくつかを街でのみ実行できるようにして戦略の制約を与える。
 </p>
 </div>
 </div>
-<div id="outline-container-orgefbcfee" class="outline-3">
-<h3 id="orgefbcfee"><a href="#orgefbcfee"><span class="done DONE">DONE</span> データ定義が重複しているのを直す</a></h3>
-<div class="outline-text-3" id="text-orgefbcfee">
+<div id="outline-container-org952a7c7" class="outline-3">
+<h3 id="org952a7c7"><a href="#org952a7c7"><span class="done DONE">DONE</span> データ定義が重複しているのを直す</a></h3>
+<div class="outline-text-3" id="text-org952a7c7">
 <p>
 <code>test_helper_test</code> は、重複管理しているので消す。
 </p>
 </div>
 </div>
-<div id="outline-container-org3e3c20d" class="outline-3">
-<h3 id="org3e3c20d"><a href="#org3e3c20d"><span class="done DONE">DONE</span> アイテム配置テーブルを実装する</a></h3>
-<div class="outline-text-3" id="text-org3e3c20d">
+<div id="outline-container-org78f2207" class="outline-3">
+<h3 id="org78f2207"><a href="#org78f2207"><span class="done DONE">DONE</span> アイテム配置テーブルを実装する</a></h3>
+<div class="outline-text-3" id="text-org78f2207">
 <ul class="org-ul">
 <li>どういうロジックでアイテムを配置するか</li>
 <li>固まって配置する</li>
@@ -4510,25 +4591,25 @@ CDDA のようにactionコマンドパターンを適用してテストしやす
 </p>
 </div>
 </div>
-<div id="outline-container-orgfb62c23" class="outline-3">
-<h3 id="orgfb62c23"><a href="#orgfb62c23"><span class="done DONE">DONE</span> 敵生成テーブルを実装する</a></h3>
-<div class="outline-text-3" id="text-orgfb62c23">
+<div id="outline-container-orgdd30ecf" class="outline-3">
+<h3 id="orgdd30ecf"><a href="#orgdd30ecf"><span class="done DONE">DONE</span> 敵生成テーブルを実装する</a></h3>
+<div class="outline-text-3" id="text-orgdd30ecf">
 <p>
 アイテム生成と同様にやる。
 </p>
 </div>
 </div>
-<div id="outline-container-org2829d79" class="outline-3">
-<h3 id="org2829d79"><a href="#org2829d79"><span class="done DONE">DONE</span> urfavecliのバージョンを上げる</a></h3>
-<div class="outline-text-3" id="text-org2829d79">
+<div id="outline-container-org7748be3" class="outline-3">
+<h3 id="org7748be3"><a href="#org7748be3"><span class="done DONE">DONE</span> urfavecliのバージョンを上げる</a></h3>
+<div class="outline-text-3" id="text-org7748be3">
 <p>
 v2のままなので新しくする。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd48064a" class="outline-3">
-<h3 id="orgd48064a"><a href="#orgd48064a"><span class="done DONE">DONE</span> 食料アイテムを追加する</a></h3>
-<div class="outline-text-3" id="text-orgd48064a">
+<div id="outline-container-org1b5a25e" class="outline-3">
+<h3 id="org1b5a25e"><a href="#org1b5a25e"><span class="done DONE">DONE</span> 食料アイテムを追加する</a></h3>
+<div class="outline-text-3" id="text-org1b5a25e">
 <p>
 どういうテイストにするか。CDDAだと家にありそうな食料で自然だが。
 </p>
@@ -4561,17 +4642,17 @@ v2のままなので新しくする。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgcc8ec24" class="outline-3">
-<h3 id="orgcc8ec24"><a href="#orgcc8ec24"><span class="done DONE">DONE</span> パッキング方式を整理する</a></h3>
-<div class="outline-text-3" id="text-orgcc8ec24">
+<div id="outline-container-org5ad3932" class="outline-3">
+<h3 id="org5ad3932"><a href="#org5ad3932"><span class="done DONE">DONE</span> パッキング方式を整理する</a></h3>
+<div class="outline-text-3" id="text-org5ad3932">
 <p>
 画像の用意とピクセル対応を手動でやってるが、非効率なので方法を整理する。
 </p>
 </div>
 </div>
-<div id="outline-container-org0b8a3fe" class="outline-3">
-<h3 id="org0b8a3fe"><a href="#org0b8a3fe"><span class="done DONE">DONE</span> 物によってアイテムスプライトを変える</a></h3>
-<div class="outline-text-3" id="text-org0b8a3fe">
+<div id="outline-container-orgbf9e140" class="outline-3">
+<h3 id="orgbf9e140"><a href="#orgbf9e140"><span class="done DONE">DONE</span> 物によってアイテムスプライトを変える</a></h3>
+<div class="outline-text-3" id="text-orgbf9e140">
 <ul class="org-ul">
 <li>アイテムに「カテゴリ」を導入する
 <ul class="org-ul">
@@ -4583,25 +4664,25 @@ v2のままなので新しくする。
 </ul>
 </div>
 </div>
-<div id="outline-container-orge295f1f" class="outline-3">
-<h3 id="orge295f1f"><a href="#orge295f1f"><span class="done DONE">DONE</span> HUDで日本語を使えるようにする</a></h3>
-<div class="outline-text-3" id="text-orge295f1f">
+<div id="outline-container-orgad65467" class="outline-3">
+<h3 id="orgad65467"><a href="#orgad65467"><span class="done DONE">DONE</span> HUDで日本語を使えるようにする</a></h3>
+<div class="outline-text-3" id="text-orgad65467">
 <p>
 現状デバッグ用プリントを使っているので、フォントが指定できない。日本語が表示できない。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb4a4bc4" class="outline-3">
-<h3 id="orgb4a4bc4"><a href="#orgb4a4bc4"><span class="done DONE">DONE</span> UIを整理する</a></h3>
-<div class="outline-text-3" id="text-orgb4a4bc4">
+<div id="outline-container-org0d0a257" class="outline-3">
+<h3 id="org0d0a257"><a href="#org0d0a257"><span class="done DONE">DONE</span> UIを整理する</a></h3>
+<div class="outline-text-3" id="text-org0d0a257">
 <ul class="org-ul">
 <li>整合性がない</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb7a9043" class="outline-3">
-<h3 id="orgb7a9043"><a href="#orgb7a9043"><span class="done DONE">DONE</span> インタラクティブ可能なオブジェクトはアニメーションさせる</a></h3>
-<div class="outline-text-3" id="text-orgb7a9043">
+<div id="outline-container-org0f4ae32" class="outline-3">
+<h3 id="org0f4ae32"><a href="#org0f4ae32"><span class="done DONE">DONE</span> インタラクティブ可能なオブジェクトはアニメーションさせる</a></h3>
+<div class="outline-text-3" id="text-org0f4ae32">
 <p>
 溶け込んでわかりにくい。自動でできないか。
 </p>
@@ -4611,43 +4692,169 @@ v2のままなので新しくする。
 </ul>
 </div>
 </div>
-<div id="outline-container-org5b19b6e" class="outline-3">
-<h3 id="org5b19b6e"><a href="#org5b19b6e"><span class="done DONE">DONE</span> 2階開始になっている</a></h3>
-<div class="outline-text-3" id="text-org5b19b6e">
+<div id="outline-container-org7d0b300" class="outline-3">
+<h3 id="org7d0b300"><a href="#org7d0b300"><span class="done DONE">DONE</span> 2階開始になっている</a></h3>
+<div class="outline-text-3" id="text-org7d0b300">
 <ul class="org-ul">
 <li>ダンジョンは1階から始める</li>
 <li>街を0階にするかnullにする。</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgaa70f1d" class="outline-3">
-<h3 id="orgaa70f1d"><a href="#orgaa70f1d"><span class="done DONE">DONE</span> 階数表示のUIをいい感じにする</a></h3>
-<div class="outline-text-3" id="text-orgaa70f1d">
+<div id="outline-container-orge9a9a9a" class="outline-3">
+<h3 id="orge9a9a9a"><a href="#orge9a9a9a"><span class="done DONE">DONE</span> 階数表示のUIをいい感じにする</a></h3>
+<div class="outline-text-3" id="text-orge9a9a9a">
 <p>
 表示しているがあまり外観がよくない。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb76c9a0" class="outline-3">
-<h3 id="orgb76c9a0"><a href="#orgb76c9a0"><span class="done DONE">DONE</span> todoを解消する</a></h3>
-<div class="outline-text-3" id="text-orgb76c9a0">
+<div id="outline-container-orgaee6798" class="outline-3">
+<h3 id="orgaee6798"><a href="#orgaee6798"><span class="done DONE">DONE</span> todoを解消する</a></h3>
+<div class="outline-text-3" id="text-orgaee6798">
 <p>
 たくさんあるので、対応しておく。
 </p>
 </div>
 </div>
+<div id="outline-container-org78bcc7c" class="outline-3">
+<h3 id="org78bcc7c"><a href="#org78bcc7c"><span class="done CLOSE">CLOSE</span> enum対策する</a></h3>
+<div class="outline-text-3" id="text-org78bcc7c">
+<p>
+いらなそう。
+</p>
+
+<ul class="org-ul">
+<li>exhaustive linter導入</li>
+<li>外部から不正な値を作れないようにする</li>
+</ul>
 </div>
-<div id="outline-container-orgef09204" class="outline-2">
-<h2 id="orgef09204"><a href="#orgef09204">関連</a></h2>
-<div class="outline-text-2" id="text-orgef09204">
+</div>
+<div id="outline-container-org62ff49b" class="outline-3">
+<h3 id="org62ff49b"><a href="#org62ff49b"><span class="done DONE">DONE</span> 一度置くと再度拾ったときに消える問題</a></h3>
+<div class="outline-text-3" id="text-org62ff49b">
+<ul class="org-ul">
+<li>Consumable だけで発生する</li>
+<li>拾ったときに個数は保持できている</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org4f4602f" class="outline-3">
+<h3 id="org4f4602f"><a href="#org4f4602f"><span class="done DONE">DONE</span> internal下に移動する</a></h3>
+<div class="outline-text-3" id="text-org4f4602f">
+<p>
+未使用関数を検知するため。internal下でないと、ライブラリとして呼ばれる可能性があるので検知できない。
+</p>
+</div>
+</div>
+<div id="outline-container-orgc3bcde6" class="outline-3">
+<h3 id="orgc3bcde6"><a href="#orgc3bcde6"><span class="done DONE">DONE</span> 重さを追加する</a></h3>
+<div class="outline-text-3" id="text-orgc3bcde6">
+<p>
+所持重量を制約してトレードオフをもたせる。
+</p>
+</div>
+</div>
+<div id="outline-container-org71ae607" class="outline-3">
+<h3 id="org71ae607"><a href="#org71ae607"><span class="done CLOSE">CLOSE</span> LocationInventoryにownerを追加する</a></h3>
+<div class="outline-text-3" id="text-org71ae607">
+<p>
+ownerは追加しないことにした。
+</p>
+
+<ul class="org-ul">
+<li>暗黙でPlayerEntityになっているのがわかりにくいし、今後の拡張性に問題になる感じがする。</li>
+<li>ownerにすると明らかにユーザしかやらないような操作&#x2026;.合成や売買&#x2026;にもすべてownerが必要になる
+<ul class="org-ul">
+<li>そもそも今の時点で、NPCのインベントリを使う予定もあまりない。あるとしても一部なので、そう重要ではない。きれいではあるが</li>
+</ul></li>
+<li>LocationPlayerInventory, LocationNPCInventory にすることで問題が少なさそう</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org89288a1" class="outline-3">
+<h3 id="org89288a1"><a href="#org89288a1"><span class="done DONE">DONE</span> ItemのLocation移動をヘルパー化する</a></h3>
+<div class="outline-text-3" id="text-org89288a1">
+<ul class="org-ul">
+<li>多くの場所で出てくるのでまとめる</li>
+<li>InventoryChanged は移動発生箇所で書くべきか、アクティビティで書くべきか</li>
+<li>背反なLocation Componentは、別Componentにせず型で変えたほうがよさそうにも見える
+<ul class="org-ul">
+<li>パフォーマンスの悪化を考えたが、Itemで絞れれば、大して多くもないので分岐でもよい</li>
+</ul></li>
+<li>SpawnではLocation設定せずに分離する</li>
+<li>worldhelper以外で、AddComponentなどを禁止できるか</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgdfe3883" class="outline-3">
+<h3 id="orgdfe3883"><a href="#orgdfe3883"><span class="done DONE">DONE</span> 関数使用を保証する</a></h3>
+<div class="outline-text-3" id="text-orgdfe3883">
+<ul class="org-ul">
+<li>外部packageから呼ばれてない場合はprivateにする</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org9a89c11" class="outline-3">
+<h3 id="org9a89c11"><a href="#org9a89c11"><span class="done DONE">DONE</span> EquipmentChangedをプレイヤーに付与するように修正する</a></h3>
+<div class="outline-text-3" id="text-org9a89c11">
+<p>
+現状全員分更新していて、効率が悪い。
+</p>
+</div>
+</div>
+<div id="outline-container-org99318e7" class="outline-3">
+<h3 id="org99318e7"><a href="#org99318e7"><span class="done DONE">DONE</span> ホットバーを使えるようにする</a></h3>
+<div class="outline-text-3" id="text-org99318e7">
+<p>
+アイテム重視なので、切り替えやすくする。
+</p>
+</div>
+</div>
+<div id="outline-container-org8e68ca2" class="outline-3">
+<h3 id="org8e68ca2"><a href="#org8e68ca2"><span class="done DONE">DONE</span> 画像を用意する</a></h3>
+<div class="outline-text-3" id="text-org8e68ca2">
+<p>
+用意する。
+</p>
+
+<ul class="org-ul">
+<li>タイトル画像</li>
+<li>(480, 360)</li>
+<li>(240, 180)</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org0b9a28d" class="outline-3">
+<h3 id="org0b9a28d"><a href="#org0b9a28d"><span class="done DONE">DONE</span> rawファイルの必須属性をチェックできるようにする</a></h3>
+<div class="outline-text-3" id="text-org0b9a28d">
+<p>
+漏れがないようにする。
+</p>
+</div>
+</div>
+<div id="outline-container-org7933eef" class="outline-3">
+<h3 id="org7933eef"><a href="#org7933eef"><span class="done DONE">DONE</span> セーブが壊れてるのを直す</a></h3>
+<div class="outline-text-3" id="text-org7933eef">
+<ul class="org-ul">
+<li>遷移が正しくない</li>
+<li>死んだときにECSをリセットする</li>
+<li>元/先がメインメニューの遷移は置き換え遷移にしてクリーンにする</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-org89a7cd0" class="outline-2">
+<h2 id="org89a7cd0"><a href="#org89a7cd0">関連</a></h2>
+<div class="outline-text-2" id="text-org89a7cd0">
 <ul class="org-ul">
 <li>参照: <a href="20231116T225938--kdoc-57-sokoban-goを読む__project.html#ID-20231116T225938">KDOC 57: sokoban-goを読む</a>。参考にした</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org6e3323d" class="outline-2">
-<h2 id="org6e3323d"><a href="#org6e3323d">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org6e3323d">
+<div id="outline-container-org84b9d7c" class="outline-2">
+<h2 id="org84b9d7c"><a href="#org84b9d7c">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org84b9d7c">
 <ul class="org-ul">
 <li><a href="./20240106T092116--kdoc-64-バトルディッガー編のゲームデザインを考える__essay.html">KDOC 64: バトルディッガー編のゲームデザインを考える</a></li>
 <li><a href="./20240212T104959--kdoc-90-『ゲームシナリオ入門』__book.html">KDOC 90: 『ゲームシナリオ入門』</a></li>
@@ -4658,7 +4865,8 @@ v2のままなので新しくする。
 <li><a href="./20240504T102310--kdoc-160-見下ろし型2dゲームにおけるレイキャティングの例を見る__permanent.html">KDOC 160: 見下ろし型2Dゲームにおけるレイキャティングの例を見る</a></li>
 <li><a href="./20241010T004623--kdoc-253-goでn段階に可変長引数を渡す__permanent.html">KDOC 253: GoでN段階に可変長引数を渡す</a></li>
 <li><a href="./20241211T011547--kdoc-323-ノベルゲームバンドルを作る__project.html">KDOC 323: ノベルゲームバンドルを作る</a></li>
-<li><a href="./20251221T163444--kdoc-516-2025年をまとめる__draft_essay.html">KDOC 516: 2025年をまとめる</a></li>
+<li><a href="./20251221T163444--kdoc-516-2025年をまとめる__essay.html">KDOC 516: 2025年をまとめる</a></li>
+<li><a href="./20260114T085151--kdoc-529-状態を示すcomponentはどう表現するのがよいか__draft_permanent.html">KDOC 529: 状態を示すComponentはどう表現するのがよいか</a></li>
 </ul>
 </div>
 </div>
