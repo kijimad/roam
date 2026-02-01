@@ -1,0 +1,30 @@
+:properties:
+:ID: 20251224T090149
+:end:
+#+title:      KDOC 520: Goコンパイラは定数除算を乗算に変換する
+#+date:       [2025-12-24 Wed 09:01]
+#+filetags:   :permanent:
+#+identifier: 20251224T090149
+
+* この文書のステータス
+- 作成
+  - [X] 2026-02-01 貴島
+- レビュー
+  - [X] 2026-02-01 貴島
+
+* 概要
+
+変数で除算する場合と、定数で除算する場合のアセンブリを比較する。
+
+#+begin_export html
+<iframe width="800px" height="200px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:2,endLineNumber:16,positionColumn:2,positionLineNumber:16,selectionStartColumn:2,selectionStartLineNumber:16,startColumn:2,startLineNumber:16),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A++++_+%3D+div1(1,+2)%0A++++_+%3D+div2(1,+2)%0A%7D%0A%0Afunc+div1(a,+b+int)+int+%7B%0A++++return+a+/+b%0A%7D%0A%0Afunc+div2(a,+_+int)+int%7B%0A+++return+a+/+3%0A%7D'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gltip,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:15,endLineNumber:22,positionColumn:15,positionLineNumber:22,selectionStartColumn:15,selectionStartLineNumber:22,startColumn:15,startLineNumber:22),source:1),l:'5',n:'0',o:'+x86-64+gc+(tip)+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+- 変数で除算するコードでは除算命令 ~IDIVQ~ を使っている
+- 定数で除算するコードでは除算命令は登場せず乗算命令 ~IMULQ~ を使っている
+
+また、変数で除算する場合はゼロ除算時のチェック ~CALL runtime.panicdivide(SB)~ が入っていたりする。
+
+* 関連
+
+- 動機(追加調査): [[id:20251218T232745][KDOC 508: 除算の実行速度を計測する]]。調べているとき、変数か定数かで速度に違いがあることから命令に違いがありそうなことに気づいた

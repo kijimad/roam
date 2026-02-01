@@ -1,0 +1,100 @@
+:properties:
+:ID: 20260110T194239
+:end:
+#+title:      KDOC 523: PTRレコードを見る
+#+date:       [2026-01-10 Sat 19:42]
+#+filetags:   :permanent:
+#+identifier: 20260110T194239
+
+* この文書のステータス
+- 作成
+  - [X] 2026-01-10 貴島
+- レビュー
+  - [X] 2026-02-01 貴島
+
+* 概要
+
+DNSのPTRレコードはIPアドレスからドメイン名の逆引きに使う。逆引きすることでメールの送信元が正当かを判断したりするのだという。
+
+#+begin_quote
+DNSのAレコードは与えられたドメイン名の下に格納されますが、DNSのPTRレコードはIPアドレスの下に格納されます — 反転して、「.in-addr.arpa」が追加されます。たとえば、IPアドレス192.0.2.255のPTRレコードは、「255.2.0.192.in-addr.arpa」の下に格納されます。
+
+[[https://www.cloudflare.com/ja-jp/learning/dns/dns-records/dns-ptr-record/][DNS PTRレコードとは？ | Cloudflare]]
+#+end_quote
+
+#+caption: -x は逆引き形式に変換する
+#+begin_src shell
+dig -x 8.8.8.8
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> -x 8.8.8.8
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 60423
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;8.8.8.8.in-addr.arpa.		IN	PTR
+
+;; ANSWER SECTION:
+8.8.8.8.in-addr.arpa.	5273	IN	PTR	dns.google. 👈
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sat Jan 10 20:14:24 JST 2026
+;; MSG SIZE  rcvd: 73
+
+#+end_src
+
+#+caption: オプションの説明
+#+begin_src shell
+  dig -h | grep "\-x"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+                 -x dot-notation     (shortcut for reverse lookups)
+                 -x dot-notation     (shortcut for reverse lookups)
+                 +[no]identify       (ID responders in short answers)
+                 +[no]short          (Display nothing except short
+#+end_src
+
+#+caption: -x オプションを使わずに同じ意味で書く
+#+begin_src shell
+  dig PTR 8.8.8.8.in-addr.arpa.
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> PTR 8.8.8.8.in-addr.arpa.
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 24668
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;8.8.8.8.in-addr.arpa.		IN	PTR
+
+;; ANSWER SECTION:
+8.8.8.8.in-addr.arpa.	6739	IN	PTR	dns.google. 👈
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sat Jan 10 19:49:58 JST 2026
+;; MSG SIZE  rcvd: 73
+
+#+end_src
+
+* 関連
+
+- 追加調査: PTRレコードはどうやって追加するのか
+- 追加調査: IPアドレスの所有はどうやって決まっているのか
+- 追加調査: in-addr.arpaはどうなっているのか。通常のドメインとは違うのか
