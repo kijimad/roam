@@ -68,6 +68,135 @@
 
 Go言語のtestingライブラリには、testing.TBとtesting.Tがあるが、違いは何かを見る。
 
+testing.TBはインターフェースである。
+
+#+caption: TBはインターフェースである
+#+begin_src git-permalink
+https://github.com/golang/go/blob/041f564b3e6fa3f4af13a01b94db14c1ee8a42e0/src/testing/testing.go#L888-L918
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// TB is the interface common to [T], [B], and [F].
+type TB interface {
+	ArtifactDir() string
+	Attr(key, value string)
+	Cleanup(func())
+	Error(args ...any)
+	Errorf(format string, args ...any)
+	Fail()
+	FailNow()
+	Failed() bool
+	Fatal(args ...any)
+	Fatalf(format string, args ...any)
+	Helper()
+	Log(args ...any)
+	Logf(format string, args ...any)
+	Name() string
+	Setenv(key, value string)
+	Chdir(dir string)
+	Skip(args ...any)
+	SkipNow()
+	Skipf(format string, args ...any)
+	Skipped() bool
+	TempDir() string
+	Context() context.Context
+	Output() io.Writer
+
+	// A private method to prevent users implementing the
+	// interface and so future additions to it will not
+	// violate Go 1 compatibility.
+	private()
+}
+#+end_src
+
+testing.Tは構造体である。テスト関数用。
+
+#+begin_src git-permalink
+https://github.com/golang/go/blob/041f564b3e6fa3f4af13a01b94db14c1ee8a42e0/src/testing/testing.go#L925-L938
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// T is a type passed to Test functions to manage test state and support formatted test logs.
+//
+// A test ends when its Test function returns or calls any of the methods
+// [T.FailNow], [T.Fatal], [T.Fatalf], [T.SkipNow], [T.Skip], or [T.Skipf]. Those methods, as well as
+// the [T.Parallel] method, must be called only from the goroutine running the
+// Test function.
+//
+// The other reporting methods, such as the variations of [T.Log] and [T.Error],
+// may be called simultaneously from multiple goroutines.
+type T struct {
+	common
+	denyParallel bool
+	tstate       *testState // For running tests and subtests.
+}
+#+end_src
+
+testing.Bは構造体である。ベンチマーク用。
+
+#+begin_src git-permalink
+https://github.com/golang/go/blob/041f564b3e6fa3f4af13a01b94db14c1ee8a42e0/src/testing/benchmark.go#L81-L133
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// B is a type passed to [Benchmark] functions to manage benchmark
+// timing and control the number of iterations.
+//
+// A benchmark ends when its Benchmark function returns or calls any of the methods
+// [B.FailNow], [B.Fatal], [B.Fatalf], [B.SkipNow], [B.Skip], or [B.Skipf].
+// Those methods must be called only from the goroutine running the Benchmark function.
+// The other reporting methods, such as the variations of [B.Log] and [B.Error],
+// may be called simultaneously from multiple goroutines.
+//
+// Like in tests, benchmark logs are accumulated during execution
+// and dumped to standard output when done. Unlike in tests, benchmark logs
+// are always printed, so as not to hide output whose existence may be
+// affecting benchmark results.
+type B struct {
+	common
+	importPath       string // import path of the package containing the benchmark
+	bstate           *benchState
+	N                int
+	previousN        int           // number of iterations in the previous run
+	previousDuration time.Duration // total duration of the previous run
+	benchFunc        func(b *B)
+	benchTime        durationOrCountFlag
+	bytes            int64
+	missingBytes     bool // one of the subbenchmarks does not have bytes set.
+	timerOn          bool
+	showAllocResult  bool
+	result           BenchmarkResult
+	parallelism      int // RunParallel creates parallelism*GOMAXPROCS goroutines
+	// The initial states of memStats.Mallocs and memStats.TotalAlloc.
+	startAllocs uint64
+	startBytes  uint64
+	// The net total of this test after being run.
+	netAllocs uint64
+	netBytes  uint64
+	// Extra metrics collected by ReportMetric.
+	extra map[string]float64
+
+	// loop tracks the state of B.Loop
+	loop struct {
+		// n is the target number of iterations. It gets bumped up as we go.
+		// When the benchmark loop is done, we commit this to b.N so users can
+		// do reporting based on it, but we avoid exposing it until then.
+		n uint64
+		// i is the current Loop iteration. It's strictly monotonically
+		// increasing toward n.
+		//
+		// The high bit is used to poison the Loop fast path and fall back to
+		// the slow path.
+		i uint64
+
+		done bool // set when B.Loop return false
+	}
+}
+#+end_src
+
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
 # [引用、整合性、どう説明できるか、矛盾、補っているか、以前聞いたこと、対立、修正、補足、付け加え、組み合わせ、疑問]

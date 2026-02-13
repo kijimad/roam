@@ -81,11 +81,15 @@ Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接�
 sudo modprobe -r hid_nintendo
 #+end_src
 
-再起動すると、Bluetooth接続できた。しかしantimicroxで認識しなかった。 ~sudo antimicrox~ するか、inputグループを追加する。
+再起動すると、Bluetooth接続できた。しかしantimicroxで認識しなかった。 ~sudo antimicrox~ するか、設定する。
 
-#+caption: 現在ユーザをinputグループに追加して見えるようにする
+...が、うまくいかなかった。ジャイロスコープと加速度計しか認識してない。
+
+#+caption: antimicroxが/dev/uinputにアクセスできるようにする。自分がinput groupに属するようにしてから、uinputの groupをinputにしてアクセスできるようにする
 #+begin_src shell
-sudo usermod -aG input $USER
+  sudo usermod -aG input $USER
+echo 'KERNEL=="uinput", GROUP="input", MODE="0660"' | sudo tee /etc/udev/rules.d/99-uinput.rules
+  sudo udevadm control --reload-rules && sudo udevadm trigger
 #+end_src
 
 * 関連
