@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-02-02T21:09:01Z -->
+<!-- 2026-02-13T22:33:44Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 388: 『仕事ですぐに使えるTypeScript』</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 388: 『仕事ですぐに使えるTypeScript』</h1>
-<div id="outline-container-orge5e0913" class="outline-2">
-<h2 id="orge5e0913"><a href="#orge5e0913">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orge5e0913">
+<div id="outline-container-org38a9424" class="outline-2">
+<h2 id="org38a9424"><a href="#org38a9424">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org38a9424">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,17 +33,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc7fa668" class="outline-2">
-<h2 id="orgc7fa668"><a href="#orgc7fa668">概要</a></h2>
-<div class="outline-text-2" id="text-orgc7fa668">
+<div id="outline-container-org83b7f37" class="outline-2">
+<h2 id="org83b7f37"><a href="#org83b7f37">概要</a></h2>
+<div class="outline-text-2" id="text-org83b7f37">
 <p>
 <a href="https://future-architect.github.io/typescript-guide/typescript-guide.pdf">仕事ですぐに使えるTypeScript</a>は、TypeScriptの入門本。
 </p>
 </div>
 </div>
-<div id="outline-container-org467fb46" class="outline-2">
-<h2 id="org467fb46"><a href="#org467fb46">メモ</a></h2>
-<div class="outline-text-2" id="text-org467fb46">
+<div id="outline-container-org127a018" class="outline-2">
+<h2 id="org127a018"><a href="#org127a018">メモ</a></h2>
+<div class="outline-text-2" id="text-org127a018">
 <ul class="org-ul">
 <li>Babelを使用して最新のJavaScriptから互換性の高いJavaScriptへの変換を行う(p5)</li>
 <li>(疑問)型定義 <b>ファイル</b> が同時生成できて無駄がない、とあるが、別個のファイルなのだろうか(p5)
@@ -73,20 +73,37 @@
 <li>(感想)どういうことなのだろう</li>
 </ul></li>
 <li>ブラウザはユーザインターフェースであるため、ユーザの利用環境のタイムゾーン情報を持っている。しかし多くのユーザの情報を同時に扱うサーバではタイムゾーン情報も含めて扱うのは手間がかかる。なので、サーバーでは常にエポック時刻で扱うようにする。クライアントがサーバに送信するときはエポック時刻にして送信する。クライアント側でローカル時刻化する。を指針にするとよい(p89)</li>
+<li>スリープのような、実行を行の途中で止めるような処理は基本的にもっていなかった。10秒後に実行される関数を登録する、といった処理が提供され、「10秒止める」という処理を書く機能は提供されなかった。JavaScriptは伝統的に、ホストとなる環境(ブラウザ)のなかで実行される、アプリケーション言語として使われることが多かった。ホスト側のアプリケーションから見て長時間ブロックされるなどの行儀の悪い動きをするのが忌避されてきた(p123)</li>
+<li>ブラウザでは数々のHTMLのインタラクション、タイマーなどのイベントに対してあらかじめ登録しておいたイベントハンドラの関数が呼ばれる、というモデルを採用している(p123)</li>
+<li>現在見かける非同期処理の書き方は3種類ある(p123)
+<ul class="org-ul">
+<li>コールバック</li>
+<li>Promise</li>
+<li>async / await</li>
+</ul></li>
+<li>基本的にループ内のawaitは警戒すべきコードである。ループごとに待つから(p128)
+<ul class="org-ul">
+<li>Promise.all()を使うと、同時実行して引数の配列すべての処理が終わるのを待つ、を表現できる</li>
+</ul></li>
+<li>以前のJavaScriptは公式には複数のファイルに分割してコーディングする方法を提供していなかった。当初はClosure Compiler、ライブラリごとの固有のファイル結合ツール、require.jsなどを使っていた。そのあとNode.jsが登場しCommonJSというサーバーサイドJavaScriptのための仕様から取り込まれたモジュールシステムがデファクトスタンダードとなった。ブラウザからは利用しにくい仕様だったため、ブラウザからも利用できるES2015 modulesが仕様化された(p143)</li>
+<li>ES2015 modules が仕様化されたといっても、これだけでは完結しない。通常はダウンロードをまとめて行うために事前にバンドラーツールで1ファイルにまとめつつ最適化する。ライブラリの流通の仕組みがNode.jsのエコシステムであるnpmjs.orgで行われることもあって、ライブラリの多くがCommonJS形式で提供されている。なのでCommonJSとも連携が必要である(p151)</li>
+<li>TypeScriptはインポートしたものが型だけの場合に、出力からそのインポート文を丸ごと排除する。なので副作用のコードは実行されない(p152)</li>
+<li>副作用なく型のインポートのみを許容する構文がある(p153)</li>
+<li>型による実装の分岐はできない。JavaScriptにないことはできない(p162)</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc3fc1e8" class="outline-2">
-<h2 id="orgc3fc1e8"><a href="#orgc3fc1e8">関連</a></h2>
-<div class="outline-text-2" id="text-orgc3fc1e8">
+<div id="outline-container-orgc7d2359" class="outline-2">
+<h2 id="orgc7d2359"><a href="#orgc7d2359">関連</a></h2>
+<div class="outline-text-2" id="text-orgc7d2359">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbe16826" class="outline-2">
-<h2 id="orgbe16826"><a href="#orgbe16826">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgbe16826">
+<div id="outline-container-org206cb93" class="outline-2">
+<h2 id="org206cb93"><a href="#org206cb93">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org206cb93">
 <ul class="org-ul">
 <li><a href="./20250603T215644--kdoc-383-javascriptはブラウザの組み込み言語でありランタイムの更新は難しい__permanent.html">KDOC 383: JavaScriptはブラウザの組み込み言語でありランタイムの更新は難しい</a></li>
 </ul>

@@ -5,15 +5,15 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-02-02T21:09:24+09:00</updated>
+<updated>2026-02-13T22:34:44+09:00</updated>
 <entry>
-  <title>KDOC 541: 地図サービス会社を退職した</title>
+  <title>KDOC 532: deadcode(Go公式のほう)を使って未使用の公開関数を検知する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgc202c7f" class="outline-2">
- <h2 id="orgc202c7f"> <a href="#orgc202c7f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc202c7f">
+ <div id="outline-container-org9de5862" class="outline-2">
+ <h2 id="org9de5862"> <a href="#org9de5862">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9de5862">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -22,45 +22,272 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgd801a13" class="outline-2">
- <h2 id="orgd801a13"> <a href="#orgd801a13">概要</a></h2>
- <div class="outline-text-2" id="text-orgd801a13">
+ <div id="outline-container-org7355211" class="outline-2">
+ <h2 id="org7355211"> <a href="#org7355211">概要</a></h2>
+ <div class="outline-text-2" id="text-org7355211">
+ <p>
+生成AIを使ってGo言語で開発している。早く進むわけであるが、未使用の機能や関数が生まれていることが多い。プロンプトで指定してもこぼれがあって、そのたびに手直ししたり、あとから気づいたりした。検知したい、と考えた。
+</p>
+
+ <p>
+golanglint-ciには  <code>unused</code> ルールがあるが、これは未使用のprivateの項目限定であり、公開していると未使用でも検知されない。
+</p>
+
+ <p>
+Goチーム公式が出している、  <code>deadcode</code> CLIツールを使うと、検知できる。同じ名前のツールやルールがほかにもあったりするのだが、Goチームが出しているものである。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>使用例</label> <pre class="src src-shell">deadcode -test ./...
+</pre>
+</div>
+
+ <p>
+golanglint-ciには含まれていない。 <a href="https://speakerdeck.com/kuro_kurorrr/deep-dive-into-deadcode">deadcode超解剖 - Speaker Deck</a>によると、それは検知方式に由来していて、静的解析ではないということで却下されているのだという。
+</p>
+</div>
+</div>
+ <div id="outline-container-org4a6205a" class="outline-2">
+ <h2 id="org4a6205a"> <a href="#org4a6205a">関連</a></h2>
+ <div class="outline-text-2" id="text-org4a6205a">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260117T190135--kdoc-532-deadcodego公式のほうを使って未使用の公開関数を検知する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260117T190135--kdoc-532-deadcodego公式のほうを使って未使用の公開関数を検知する__draft_permanent.html</id>
+  <updated>2026-02-14T07:34:43+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 537: スタックできる/できないアイテムが混在する場合を設計する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org5aeac3f" class="outline-2">
+ <h2 id="org5aeac3f"> <a href="#org5aeac3f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org5aeac3f">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org0141bac" class="outline-2">
+ <h2 id="org0141bac"> <a href="#org0141bac">概要</a></h2>
+ <div class="outline-text-2" id="text-org0141bac">
+ <p>
+ECSを使ったゲーム開発において、アイテムをどう設計するか考える。
+</p>
+
+ <p>
+要件はこうだ。
+</p>
+
+ <ul class="org-ul"> <li>武器や防具はスタック(個数をまとめる)できない。武器や防具は同じ種類のものでもそれぞれパラメータが異なる設定にしているため、まとめられない</li>
+ <li>拾ったときに、スタック可能アイテムであれば自動的にまとめられて個数が増える</li>
+ <li>アイテムの状態には、フィールド上に存在、インベントリ内があり、それぞれのアクション(拾う、捨てる、投げる、使う、売買する…)で変化する</li>
+</ul> <pre class="example" id="org3b5a814">
+--インベントリ内--
+
+- 薬草 x4
+- 鉄の剣
+  - 品質: C
+  - 攻撃力: 4
+- 鉄の剣
+  - 品質: A
+  - 攻撃力: 6
+</pre>
+</div>
+</div>
+ <div id="outline-container-org1657487" class="outline-2">
+ <h2 id="org1657487"> <a href="#org1657487">関連</a></h2>
+ <div class="outline-text-2" id="text-org1657487">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260126T093907--kdoc-537-スタックできるできないアイテムが混在する場合を設計する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260126T093907--kdoc-537-スタックできるできないアイテムが混在する場合を設計する__draft_permanent.html</id>
+  <updated>2026-02-14T07:34:40+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 545: 『GraphQLスキーマ設計ガイド』</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgc9a5d16" class="outline-2">
+ <h2 id="orgc9a5d16"> <a href="#orgc9a5d16">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgc9a5d16">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org1939134" class="outline-2">
+ <h2 id="org1939134"> <a href="#org1939134">概要</a></h2>
+ <div class="outline-text-2" id="text-org1939134">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgc7579e8" class="outline-2">
+ <h2 id="orgc7579e8"> <a href="#orgc7579e8">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgc7579e8">
+ <ul class="org-ul"> <li>GraphQLは状態データに対して効率的にビューを作りパッチを当てるためのシステムである。GraphQLのキャッシュは、1つの状態データとイコールの存在である。よってよいスキーマというのは状態データへのパッチ作業、言い換えるとサーバ上のデータを不足なくキャッシュに反映しやすいものを指す(p10)</li>
+ <li>GitHub v4 APIを丹念に調べることでRelay向けの仕様をどのように組み込み、それを踏襲したうえで拡張するかを学べる(p12)</li>
+ <li>ID設計という観点がある。クライアント側でIDを生成可能にしておくと楽(p12)</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgc5ccddc" class="outline-2">
+ <h2 id="orgc5ccddc"> <a href="#orgc5ccddc">関連</a></h2>
+ <div class="outline-text-2" id="text-orgc5ccddc">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260207T224938--kdoc-545-『graphqlスキーマ設計ガイド』__draft_book.html"/>
+  <id>https://kijimad.github.io/roam/20260207T224938--kdoc-545-『graphqlスキーマ設計ガイド』__draft_book.html</id>
+  <updated>2026-02-14T07:34:15+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 531: SIGINTとSIGTERMの違い</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org8a4e01d" class="outline-2">
+ <h2 id="org8a4e01d"> <a href="#org8a4e01d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8a4e01d">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org22568b8" class="outline-2">
+ <h2 id="org22568b8"> <a href="#org22568b8">概要</a></h2>
+ <div class="outline-text-2" id="text-org22568b8">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org501d3b3" class="outline-2">
+ <h2 id="org501d3b3"> <a href="#org501d3b3">関連</a></h2>
+ <div class="outline-text-2" id="text-org501d3b3">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260116T085457--kdoc-531-sigintとsigtermの違い__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260116T085457--kdoc-531-sigintとsigtermの違い__draft_permanent.html</id>
+  <updated>2026-02-14T07:34:15+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 543: 出来の悪いゲームのほうが参考になる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org5c7fcae" class="outline-2">
+ <h2 id="org5c7fcae"> <a href="#org5c7fcae">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org5c7fcae">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org66e2a9b" class="outline-2">
+ <h2 id="org66e2a9b"> <a href="#org66e2a9b">概要</a></h2>
+ <div class="outline-text-2" id="text-org66e2a9b">
+ <p>
+出来の悪いゲームはプレイする価値がある。よいゲームよりも出来のゲームの悪いゲームを遊ぶほうがずっと役立つ。自分ならどう向上させるか考えられるから。
+</p>
+
+ <p>
+この考え方は、あらゆるメディアに適用できるように見える。漫画、映画、小説…。
+</p>
+</div>
+</div>
+ <div id="outline-container-orga32eba5" class="outline-2">
+ <h2 id="orga32eba5"> <a href="#orga32eba5">関連</a></h2>
+ <div class="outline-text-2" id="text-orga32eba5">
+ <ul class="org-ul"> <li>引用:  <a href="20260129T213544--kdoc-539-『「レベルアップ」のゲームデザイン』__draft_book.html#ID-20260129T213544">KDOC 539: 『「レベルアップ」のゲームデザイン』</a>の26ページから</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260203T224157--kdoc-543-出来の悪いゲームのほうが参考になる__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260203T224157--kdoc-543-出来の悪いゲームのほうが参考になる__draft_essay.html</id>
+  <updated>2026-02-14T07:34:11+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 541: 地図サービス会社を退職した</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org12d3840" class="outline-2">
+ <h2 id="org12d3840"> <a href="#org12d3840">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org12d3840">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org5cf311b" class="outline-2">
+ <h2 id="org5cf311b"> <a href="#org5cf311b">概要</a></h2>
+ <div class="outline-text-2" id="text-org5cf311b">
  <p>
 3年間働いた会社を辞めた。
 </p>
 
  <p>
-入社前に聞いていたのと仕事内容や開発環境、そもそも  <b>配属会社が違った</b> のでそこから不満はあった。明らかに虚偽だった。IT企業ですらない別の会社に配属されて遥か遠い勤務地に通わされるのは文字通りホラーだった。ベンチャー企業の皮をかぶった人身売買が行われていた。「東大ベンチャー」という言葉は、もっとも信用してはいけない言葉だと知った。
+入社前に聞いていたのと仕事内容や開発スタック、そもそも  <b>配属会社すら違った</b> のでそこから不満はあった。明らかに虚偽だった。IT企業ですらない別の会社に配属されて遥か遠い勤務地に通わされるのは文字通りホラーだった。ベンチャー企業の皮をかぶった人身売買が行われていた。「東大ベンチャー」という言葉は、もっとも信用してはいけない言葉だと知った。
 </p>
 
  <p>
-不思議と、入ったことに対する後悔はそこまでない。
-</p>
-
- <p>
-失敗作のほうが学べることは多い。
+不思議と、入ったことに対する後悔はそれほどない。3年続いたのはそういうことで、人に恵まれていたということに尽きる。
 </p>
 </div>
 </div>
- <div id="outline-container-org8a013a3" class="outline-2">
- <h2 id="org8a013a3"> <a href="#org8a013a3">関連</a></h2>
- <div class="outline-text-2" id="text-org8a013a3">
+ <div id="outline-container-org712281b" class="outline-2">
+ <h2 id="org712281b"> <a href="#org712281b">関連</a></h2>
+ <div class="outline-text-2" id="text-org712281b">
  <ul class="org-ul"> <li>類推:  <a href="20221119T014132--kdoc-6-教育サービス会社を退職した__essay.html#ID-20221119T014132">KDOC 6: 教育サービス会社を退職した</a>。同様に退職したメモ</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260131T101412--kdoc-541-地図サービス会社を退職した__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20260131T101412--kdoc-541-地図サービス会社を退職した__draft_essay.html</id>
-  <updated>2026-02-03T06:09:17+09:00</updated>
+  <updated>2026-02-14T07:34:06+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 539: 『「レベルアップ」のゲームデザイン』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org732e67e" class="outline-2">
- <h2 id="org732e67e"> <a href="#org732e67e">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org732e67e">
+ <div id="outline-container-orgc17ebdc" class="outline-2">
+ <h2 id="orgc17ebdc"> <a href="#orgc17ebdc">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgc17ebdc">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -69,17 +296,17 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org5e65520" class="outline-2">
- <h2 id="org5e65520"> <a href="#org5e65520">概要</a></h2>
- <div class="outline-text-2" id="text-org5e65520">
+ <div id="outline-container-org36bfe48" class="outline-2">
+ <h2 id="org36bfe48"> <a href="#org36bfe48">概要</a></h2>
+ <div class="outline-text-2" id="text-org36bfe48">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org8784954" class="outline-2">
- <h2 id="org8784954"> <a href="#org8784954">メモ</a></h2>
- <div class="outline-text-2" id="text-org8784954">
+ <div id="outline-container-org60c70d1" class="outline-2">
+ <h2 id="org60c70d1"> <a href="#org60c70d1">メモ</a></h2>
+ <div class="outline-text-2" id="text-org60c70d1">
  <ul class="org-ul"> <li>音を経由してプレイヤーに届く情報はとても多い。1度サウンドが加わるとゲームに命が吹き込まれるので、仮のサウンドエフェクトでもまず入れておくことが重要である(p19)</li>
  <li>アイデアを仕入れたいときにすること(p26)
  <ul class="org-ul"> <li>いつもなら絶対に読まないものを読む</li>
@@ -128,145 +355,98 @@
  <li>サウンドには近距離音、遠距離音、優先音を用意して不協和音を防ぐ(p401)</li>
 </ul></div>
 </div>
- <div id="outline-container-orgb193908" class="outline-2">
- <h2 id="orgb193908"> <a href="#orgb193908">関連</a></h2>
- <div class="outline-text-2" id="text-orgb193908">
+ <div id="outline-container-orgdf67124" class="outline-2">
+ <h2 id="orgdf67124"> <a href="#orgdf67124">関連</a></h2>
+ <div class="outline-text-2" id="text-orgdf67124">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-orga8837a3" class="outline-2">
+ <h2 id="orga8837a3"> <a href="#orga8837a3">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orga8837a3">
+ <ul class="org-ul"> <li> <a href="./20260203T224157--kdoc-543-出来の悪いゲームのほうが参考になる__draft_essay.html">KDOC 543: 出来の悪いゲームのほうが参考になる</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260129T213544--kdoc-539-『「レベルアップ」のゲームデザイン』__draft_book.html"/>
+  <id>https://kijimad.github.io/roam/20260129T213544--kdoc-539-『「レベルアップ」のゲームデザイン』__draft_book.html</id>
+  <updated>2026-02-14T07:34:06+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 544: 使っているChrome拡張を列挙する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org671d5c5" class="outline-2">
+ <h2 id="org671d5c5"> <a href="#org671d5c5">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org671d5c5">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgf5fb0f2" class="outline-2">
+ <h2 id="orgf5fb0f2"> <a href="#orgf5fb0f2">概要</a></h2>
+ <div class="outline-text-2" id="text-orgf5fb0f2">
+ <p>
+仕事などで新しくPCを設定するときには、Chrome拡張を手動でインストールしている。一覧をメモしておく。
+</p>
+
+ <ul class="org-ul"> <li>Auto Copy
+ <ul class="org-ul"> <li>ドラッグして選択したら自動でコピーされる。現在のディスプレイマネージャーだとChromeのコピーがキーボードでしづらいので必要</li>
+</ul></li>
+ <li>Chrome Capture - Screenshot & GIF
+ <ul class="org-ul"> <li>GIFで撮影できる。ファイルをローカルにダウンロードしないといけないのが不満。ファイルをコピー&ペーストしたい</li>
+</ul></li>
+ <li>Create Link
+ <ul class="org-ul"> <li>各ページをMarkdownやOrgのリンク記法でコピーできる</li>
+</ul></li>
+ <li>DeepL: translate and write with AI
+ <ul class="org-ul"> <li>ドラッグして日本語訳できる</li>
+</ul></li>
+ <li>MaxFocus: Link Preview & AI Assistant
+ <ul class="org-ul"> <li>タブ内で別のページを開ける。Notionで大量のドキュメントを漁るときに必須</li>
+</ul></li>
+ <li>Reader Line
+ <ul class="org-ul"> <li>しっかり注意深く読みたいとき、カーソル周辺を隠して流し読みしないようにしている</li>
+</ul></li>
+ <li>Screenshot Tool - Screen Capture & Editor
+ <ul class="org-ul"> <li>たくさんあるキャプチャツールのなかでもっとも使いやすい。撮ったあとフリーハンドで少し図を入れて、クリップボードにコピーして貼る、が統合されておりスムーズにできる</li>
+</ul></li>
+ <li>Unhook - Remove YouTube Recommended & Shorts
+ <ul class="org-ul"> <li>不必要な情報が目に入らないようにしている</li>
+</ul></li>
+ <li>uBlacklist
+ <ul class="org-ul"> <li>不必要な情報が目に入らないようにしている</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org099e0fe" class="outline-2">
+ <h2 id="org099e0fe"> <a href="#org099e0fe">関連</a></h2>
+ <div class="outline-text-2" id="text-org099e0fe">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260129T213544--kdoc-539-『「レベルアップ」のゲームデザイン』__draft_book.html"/>
-  <id>https://kijimad.github.io/roam/20260129T213544--kdoc-539-『「レベルアップ」のゲームデザイン』__draft_book.html</id>
-  <updated>2026-02-03T06:09:14+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260206T084149--kdoc-544-使っているchrome拡張を列挙する__essay.html"/>
+  <id>https://kijimad.github.io/roam/20260206T084149--kdoc-544-使っているchrome拡張を列挙する__essay.html</id>
+  <updated>2026-02-14T07:34:05+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 523: PTRレコードを見る</title>
+  <title>KDOC 538: なぜダークソウルシリーズは人々を救うのか</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org2be1506" class="outline-2">
- <h2 id="org2be1506"> <a href="#org2be1506">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2be1506">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-01-10 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-01 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org674f656" class="outline-2">
- <h2 id="org674f656"> <a href="#org674f656">概要</a></h2>
- <div class="outline-text-2" id="text-org674f656">
- <p>
-DNSのPTRレコードはIPアドレスからドメイン名の逆引きに使う。逆引きすることでメールの送信元が正当かを判断したりするのだという。
-</p>
-
- <blockquote>
- <p>
-DNSのAレコードは与えられたドメイン名の下に格納されますが、DNSのPTRレコードはIPアドレスの下に格納されます — 反転して、「.in-addr.arpa」が追加されます。たとえば、IPアドレス192.0.2.255のPTRレコードは、「255.2.0.192.in-addr.arpa」の下に格納されます。
-</p>
-
- <p>
- <a href="https://www.cloudflare.com/ja-jp/learning/dns/dns-records/dns-ptr-record/">DNS PTRレコードとは？ | Cloudflare</a>
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>-x は逆引き形式に変換する</label> <pre class="src src-shell">dig -x 8.8.8.8
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> -x 8.8.8.8
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 60423
-;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;8.8.8.8.in-addr.arpa.		IN	PTR
-
-;; ANSWER SECTION:
-8.8.8.8.in-addr.arpa.	5273	IN	PTR	dns.google. 👈
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sat Jan 10 20:14:24 JST 2026
-;; MSG SIZE  rcvd: 73
-
-</pre>
-</div>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>オプションの説明</label> <pre class="src src-shell">dig -h | grep  <span class="org-string">"\-x"</span>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">-x dot-notation     (shortcut for reverse lookups)
--x dot-notation     (shortcut for reverse lookups)
-+[no]identify       (ID responders in short answers)
-+[no]short          (Display nothing except short
-</pre>
-</div>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 3: </span>-x オプションを使わずに同じ意味で書く</label> <pre class="src src-shell">dig PTR 8.8.8.8.in-addr.arpa.
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">
-; <<>> DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu <<>> PTR 8.8.8.8.in-addr.arpa.
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 24668
-;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 65494
-;; QUESTION SECTION:
-;8.8.8.8.in-addr.arpa.		IN	PTR
-
-;; ANSWER SECTION:
-8.8.8.8.in-addr.arpa.	6739	IN	PTR	dns.google. 👈
-
-;; Query time: 0 msec
-;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
-;; WHEN: Sat Jan 10 19:49:58 JST 2026
-;; MSG SIZE  rcvd: 73
-
-</pre>
-</div>
-</div>
-</div>
- <div id="outline-container-org76debf0" class="outline-2">
- <h2 id="org76debf0"> <a href="#org76debf0">関連</a></h2>
- <div class="outline-text-2" id="text-org76debf0">
- <ul class="org-ul"> <li>追加調査: PTRレコードはどうやって追加するのか</li>
- <li>追加調査: IPアドレスの所有はどうやって決まっているのか</li>
- <li>追加調査: in-addr.arpaはどうなっているのか。通常のドメインとは違うのか</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260110T194239--kdoc-523-ptrレコードを見る__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260110T194239--kdoc-523-ptrレコードを見る__permanent.html</id>
-  <updated>2026-02-03T06:09:14+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 530: インディーゲーム開発とサービス開発は同じプロセスである</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org774444f" class="outline-2">
- <h2 id="org774444f"> <a href="#org774444f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org774444f">
+ <div id="outline-container-org326b824" class="outline-2">
+ <h2 id="org326b824"> <a href="#org326b824">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org326b824">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -275,51 +455,35 @@ DNSのAレコードは与えられたドメイン名の下に格納されます�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org84d6123" class="outline-2">
- <h2 id="org84d6123"> <a href="#org84d6123">概要</a></h2>
- <div class="outline-text-2" id="text-org84d6123">
+ <div id="outline-container-org7433a51" class="outline-2">
+ <h2 id="org7433a51"> <a href="#org7433a51">概要</a></h2>
+ <div class="outline-text-2" id="text-org7433a51">
  <p>
-複数の超有名インディーゲーム開発に関する動画を見た。サービス開発と共通性を感じた。
+YouTube には、“Dark Souls Save me”のようなタイトルの動画が溢れていることに気づいた。
 </p>
-
- <p>
-感想。
-</p>
-
- <ul class="org-ul"> <li>とても長い期間開発されていることに驚く</li>
- <li>インディーゲームと、通常のゲーム開発会社が作るタイトルの作り方やキャッシュフローは違う。ゲーム開発会社は完成品を売るが、インディーゲームは開発中を売る</li>
- <li>従来のゲームのありかたの違い</li>
- <li>最初の数週間でコアアイデアを検証している。他人もプレイさせて楽しいか確かめてから開発に進む</li>
-</ul> <iframe width="560" height="315" src="https://www.youtube.com/embed/xGtUjTM6hd0?si=m2aI3uPI9sTuRj5y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-
- <iframe width="560" height="315" src="https://www.youtube.com/embed/ClRSddW6_bE?si=XZC2m5sDImzXqQB2" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-
- <iframe width="560" height="315" src="https://www.youtube.com/embed/l7HA2HneXU4?si=Ws2AJq-wMsVy9QCN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-
- <iframe width="560" height="315" src="https://www.youtube.com/embed/TPc0JOIN6kk?si=B5BRxOm1ekzN5HcV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 </div>
 </div>
- <div id="outline-container-org7c4956b" class="outline-2">
- <h2 id="org7c4956b"> <a href="#org7c4956b">関連</a></h2>
- <div class="outline-text-2" id="text-org7c4956b">
+ <div id="outline-container-org55b94f3" class="outline-2">
+ <h2 id="org55b94f3"> <a href="#org55b94f3">関連</a></h2>
+ <div class="outline-text-2" id="text-org55b94f3">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260115T103637--kdoc-530-インディーゲーム開発とサービス開発は同じプロセスである__draft_essay.html"/>
-  <id>https://kijimad.github.io/roam/20260115T103637--kdoc-530-インディーゲーム開発とサービス開発は同じプロセスである__draft_essay.html</id>
-  <updated>2026-02-03T06:09:06+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260127T093439--kdoc-538-なぜダークソウルシリーズは人々を救うのか__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260127T093439--kdoc-538-なぜダークソウルシリーズは人々を救うのか__draft_essay.html</id>
+  <updated>2026-02-14T07:34:04+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 529: 状態を示すComponentはどう表現するのがよいか</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orga143efb" class="outline-2">
- <h2 id="orga143efb"> <a href="#orga143efb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga143efb">
+ <div id="outline-container-orgc990af5" class="outline-2">
+ <h2 id="orgc990af5"> <a href="#orgc990af5">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgc990af5">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -328,9 +492,9 @@ DNSのAレコードは与えられたドメイン名の下に格納されます�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org543bc65" class="outline-2">
- <h2 id="org543bc65"> <a href="#org543bc65">概要</a></h2>
- <div class="outline-text-2" id="text-org543bc65">
+ <div id="outline-container-org3a15aa9" class="outline-2">
+ <h2 id="org3a15aa9"> <a href="#org3a15aa9">概要</a></h2>
+ <div class="outline-text-2" id="text-org3a15aa9">
  <p>
 ECS(Entity Component System)において、状態を示すコンポーネントをどのように設計するかを考える。
 </p>
@@ -373,25 +537,25 @@ ECS(Entity Component System)において、状態を示すコンポーネント�
 </p>
 </div>
 </div>
- <div id="outline-container-orgf9ed3f4" class="outline-2">
- <h2 id="orgf9ed3f4"> <a href="#orgf9ed3f4">関連</a></h2>
- <div class="outline-text-2" id="text-orgf9ed3f4">
+ <div id="outline-container-orgb71110f" class="outline-2">
+ <h2 id="orgb71110f"> <a href="#orgb71110f">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb71110f">
  <ul class="org-ul"> <li>動機:  <a href="20231128T074518--kdoc-59-ecsを使ってrpgを作る__project.html#ID-20231128T074518">KDOC 59: ECSを使ってRPGを作る</a>。で考えた</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260114T085151--kdoc-529-状態を示すcomponentはどう表現するのがよいか__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20260114T085151--kdoc-529-状態を示すcomponentはどう表現するのがよいか__draft_permanent.html</id>
-  <updated>2026-02-03T06:09:06+09:00</updated>
+  <updated>2026-02-14T07:34:04+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 542: Joy-Conを読書デバイスとして使う</title>
+  <title>KDOC 540: Promiseとasync/awaitの関係はなにか?</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgd4a9991" class="outline-2">
- <h2 id="orgd4a9991"> <a href="#orgd4a9991">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd4a9991">
+ <div id="outline-container-orgd51fc6a" class="outline-2">
+ <h2 id="orgd51fc6a"> <a href="#orgd51fc6a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd51fc6a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -400,17 +564,551 @@ ECS(Entity Component System)において、状態を示すコンポーネント�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org015234d" class="outline-2">
- <h2 id="org015234d"> <a href="#org015234d">概要</a></h2>
- <div class="outline-text-2" id="text-org015234d">
+ <div id="outline-container-orgdb751c2" class="outline-2">
+ <h2 id="orgdb751c2"> <a href="#orgdb751c2">概要</a></h2>
+ <div class="outline-text-2" id="text-orgdb751c2">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgee84110" class="outline-2">
+ <h2 id="orgee84110"> <a href="#orgee84110">関連</a></h2>
+ <div class="outline-text-2" id="text-orgee84110">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260130T090458--kdoc-540-promiseとasyncawaitの関係はなにか__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260130T090458--kdoc-540-promiseとasyncawaitの関係はなにか__draft_permanent.html</id>
+  <updated>2026-02-14T07:33:50+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 527: 新宿御苑ミュージアムを観察する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org2d78321" class="outline-2">
+ <h2 id="org2d78321"> <a href="#org2d78321">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2d78321">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-08 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-08 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org99debf0" class="outline-2">
+ <h2 id="org99debf0"> <a href="#org99debf0">概要</a></h2>
+ <div class="outline-text-2" id="text-org99debf0">
+ <p>
+新宿御苑ミュージアムは、東京都新宿区にある博物館である。新宿御苑の歴史について説明している。
+</p>
+
+ <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7527.720087290759!2d139.71022461186868!3d35.686038672471476!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188d28df7514e5%3A0xb1d950665140e34f!2sShinjuku%20Gyoen%20Museum!5e1!3m2!1sen!2sjp!4v1769954054025!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+</div>
+ <div id="outline-container-org9409115" class="outline-2">
+ <h2 id="org9409115"> <a href="#org9409115">メモ</a></h2>
+ <div class="outline-text-2" id="text-org9409115">
+ <ul class="org-ul"> <li>建物のガラス面が多く、開放感がある。周囲の芝生のリラックスした雰囲気と調和している</li>
+ <li>通路の壁2面、床にも投影される解説映像がある。1度に全体を視界にいれることはできない迫力がある
+ <ul class="org-ul"> <li>足を止めて見ている人は多かった。映像の内容は普通の歴史的解説なのだが、非日常感だろうか</li>
+</ul></li>
+ <li>最初から市民に開放された公園だったわけではない。時代の権力者たちによるさまざまな変遷を経ての来歴が興味深い</li>
+ <li>新宿御苑は社交場だった時代もあるという。座って撮影できる、皇族が使ったデザインの家具があり、当時を想像した</li>
+</ul></div>
+</div>
+ <div id="outline-container-orge1c5be9" class="outline-2">
+ <h2 id="orge1c5be9"> <a href="#orge1c5be9">関連</a></h2>
+ <div class="outline-text-2" id="text-orge1c5be9">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgd47cf57" class="outline-2">
+ <h2 id="orgd47cf57"> <a href="#orgd47cf57">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgd47cf57">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260112T142204--kdoc-527-新宿御苑ミュージアムを観察する__essay.html"/>
+  <id>https://kijimad.github.io/roam/20260112T142204--kdoc-527-新宿御苑ミュージアムを観察する__essay.html</id>
+  <updated>2026-02-14T07:33:50+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 530: インディーゲーム開発とサービス開発は同じプロセスである</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org00d64a6" class="outline-2">
+ <h2 id="org00d64a6"> <a href="#org00d64a6">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org00d64a6">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org3d48e3c" class="outline-2">
+ <h2 id="org3d48e3c"> <a href="#org3d48e3c">概要</a></h2>
+ <div class="outline-text-2" id="text-org3d48e3c">
+ <p>
+複数の超有名インディーゲーム開発に関する動画を見た。サービス開発と共通性を感じた。
+</p>
+
+ <p>
+感想。
+</p>
+
+ <ul class="org-ul"> <li>とても長い期間開発されていることに驚く</li>
+ <li>インディーゲームと、通常のゲーム開発会社が作るタイトルの作り方やキャッシュフローは違う。ゲーム開発会社は完成品を売るが、インディーゲームは開発中を売る</li>
+ <li>従来のゲームのありかたの違い</li>
+ <li>最初の数週間でコアアイデアを検証している。他人もプレイさせて楽しいか確かめてから開発に進む</li>
+</ul> <iframe width="560" height="315" src="https://www.youtube.com/embed/xGtUjTM6hd0?si=m2aI3uPI9sTuRj5y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+
+ <iframe width="560" height="315" src="https://www.youtube.com/embed/ClRSddW6_bE?si=XZC2m5sDImzXqQB2" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+
+ <iframe width="560" height="315" src="https://www.youtube.com/embed/l7HA2HneXU4?si=Ws2AJq-wMsVy9QCN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+
+ <iframe width="560" height="315" src="https://www.youtube.com/embed/TPc0JOIN6kk?si=B5BRxOm1ekzN5HcV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+</div>
+</div>
+ <div id="outline-container-org9aa5508" class="outline-2">
+ <h2 id="org9aa5508"> <a href="#org9aa5508">関連</a></h2>
+ <div class="outline-text-2" id="text-org9aa5508">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260115T103637--kdoc-530-インディーゲーム開発とサービス開発は同じプロセスである__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260115T103637--kdoc-530-インディーゲーム開発とサービス開発は同じプロセスである__draft_essay.html</id>
+  <updated>2026-02-14T07:33:48+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 528: testing.TB と testing.T の違い</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org052b0da" class="outline-2">
+ <h2 id="org052b0da"> <a href="#org052b0da">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org052b0da">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgd256f95" class="outline-2">
+ <h2 id="orgd256f95"> <a href="#orgd256f95">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd256f95">
+ <p>
+Go言語のtestingライブラリには、testing.TBとtesting.Tがあるが、違いは何かを見る。
+</p>
+
+ <p>
+testing.TBはインターフェースである。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>TBはインターフェースである</label> <pre class="src src-git-permalink">https://github.com/golang/go/blob/041f564b3e6fa3f4af13a01b94db14c1ee8a42e0/src/testing/testing.go#L888-L918
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">// TB is the interface common to [T], [B], and [F].
+type TB interface {
+	ArtifactDir() string
+	Attr(key, value string)
+	Cleanup(func())
+	Error(args ...any)
+	Errorf(format string, args ...any)
+	Fail()
+	FailNow()
+	Failed() bool
+	Fatal(args ...any)
+	Fatalf(format string, args ...any)
+	Helper()
+	Log(args ...any)
+	Logf(format string, args ...any)
+	Name() string
+	Setenv(key, value string)
+	Chdir(dir string)
+	Skip(args ...any)
+	SkipNow()
+	Skipf(format string, args ...any)
+	Skipped() bool
+	TempDir() string
+	Context() context.Context
+	Output() io.Writer
+
+	// A private method to prevent users implementing the
+	// interface and so future additions to it will not
+	// violate Go 1 compatibility.
+	private()
+}
+</pre>
+</div>
+
+ <p>
+testing.Tは構造体である。テスト関数用。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-git-permalink">https://github.com/golang/go/blob/041f564b3e6fa3f4af13a01b94db14c1ee8a42e0/src/testing/testing.go#L925-L938
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">// T is a type passed to Test functions to manage test state and support formatted test logs.
+//
+// A test ends when its Test function returns or calls any of the methods
+// [T.FailNow], [T.Fatal], [T.Fatalf], [T.SkipNow], [T.Skip], or [T.Skipf]. Those methods, as well as
+// the [T.Parallel] method, must be called only from the goroutine running the
+// Test function.
+//
+// The other reporting methods, such as the variations of [T.Log] and [T.Error],
+// may be called simultaneously from multiple goroutines.
+type T struct {
+	common
+	denyParallel bool
+	tstate       *testState // For running tests and subtests.
+}
+</pre>
+</div>
+
+ <p>
+testing.Bは構造体である。ベンチマーク用。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-git-permalink">https://github.com/golang/go/blob/041f564b3e6fa3f4af13a01b94db14c1ee8a42e0/src/testing/benchmark.go#L81-L133
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">// B is a type passed to [Benchmark] functions to manage benchmark
+// timing and control the number of iterations.
+//
+// A benchmark ends when its Benchmark function returns or calls any of the methods
+// [B.FailNow], [B.Fatal], [B.Fatalf], [B.SkipNow], [B.Skip], or [B.Skipf].
+// Those methods must be called only from the goroutine running the Benchmark function.
+// The other reporting methods, such as the variations of [B.Log] and [B.Error],
+// may be called simultaneously from multiple goroutines.
+//
+// Like in tests, benchmark logs are accumulated during execution
+// and dumped to standard output when done. Unlike in tests, benchmark logs
+// are always printed, so as not to hide output whose existence may be
+// affecting benchmark results.
+type B struct {
+	common
+	importPath       string // import path of the package containing the benchmark
+	bstate           *benchState
+	N                int
+	previousN        int           // number of iterations in the previous run
+	previousDuration time.Duration // total duration of the previous run
+	benchFunc        func(b *B)
+	benchTime        durationOrCountFlag
+	bytes            int64
+	missingBytes     bool // one of the subbenchmarks does not have bytes set.
+	timerOn          bool
+	showAllocResult  bool
+	result           BenchmarkResult
+	parallelism      int // RunParallel creates parallelism*GOMAXPROCS goroutines
+	// The initial states of memStats.Mallocs and memStats.TotalAlloc.
+	startAllocs uint64
+	startBytes  uint64
+	// The net total of this test after being run.
+	netAllocs uint64
+	netBytes  uint64
+	// Extra metrics collected by ReportMetric.
+	extra map[string]float64
+
+	// loop tracks the state of B.Loop
+	loop struct {
+		// n is the target number of iterations. It gets bumped up as we go.
+		// When the benchmark loop is done, we commit this to b.N so users can
+		// do reporting based on it, but we avoid exposing it until then.
+		n uint64
+		// i is the current Loop iteration. It's strictly monotonically
+		// increasing toward n.
+		//
+		// The high bit is used to poison the Loop fast path and fall back to
+		// the slow path.
+		i uint64
+
+		done bool // set when B.Loop return false
+	}
+}
+</pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-orgb81f5ba" class="outline-2">
+ <h2 id="orgb81f5ba"> <a href="#orgb81f5ba">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb81f5ba">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260113T091632--kdoc-528-testingtb-と-testingt-の違い__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260113T091632--kdoc-528-testingtb-と-testingt-の違い__draft_permanent.html</id>
+  <updated>2026-02-14T07:33:48+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 535: CommonJSとESMはモジュールシステムである</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org660bf69" class="outline-2">
+ <h2 id="org660bf69"> <a href="#org660bf69">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org660bf69">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org757211a" class="outline-2">
+ <h2 id="org757211a"> <a href="#org757211a">概要</a></h2>
+ <div class="outline-text-2" id="text-org757211a">
+ <p>
+commonjs と esm がなにかわからなかった。モジュールシステムなのだという。ほかのファイルからコードを読み込む方法が異なる。
+</p>
+
+ <p>
+ひとくちに JavaScript といっても、使う組み合わせには多くの選択肢がある。
+</p>
+</div>
+</div>
+ <div id="outline-container-org92d5641" class="outline-2">
+ <h2 id="org92d5641"> <a href="#org92d5641">関連</a></h2>
+ <div class="outline-text-2" id="text-org92d5641">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260122T084216--kdoc-535-commonjsとesmはモジュールシステムである__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260122T084216--kdoc-535-commonjsとesmはモジュールシステムである__draft_permanent.html</id>
+  <updated>2026-02-14T07:33:21+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 536: なぜJavaScriptが難しく感じるか</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org1decbf9" class="outline-2">
+ <h2 id="org1decbf9"> <a href="#org1decbf9">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1decbf9">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org17cc726" class="outline-2">
+ <h2 id="org17cc726"> <a href="#org17cc726">概要</a></h2>
+ <div class="outline-text-2" id="text-org17cc726">
+ <p>
+これは向き合って学ぶ前の感想である。未来この気持ちがわからなくなると信じたい。
+</p>
+
+ <p>
+何が妨げているか明らかにすれば対応もできると考えている。さまざまな感覚の集合からくる「難しい」であって、「難易度が高い」とは異なる可能性もある。ほとんど印象のケースに見える。難易度が高い、にかかるほど熟達はしていない。
+</p>
+
+ <p>
+プロ登山家が「山登りは難しい」というのと、山に登ったことのない人が「山登りは難しい」というのは全然違う。プロは特定のケースや具体的な知識を思い浮かべているが、そうでない人は漠然とした知識のなさから「難しい」といっている。あまりに知らないことが多いと、難しい、と雑に判断するようになっているようである。
+</p>
+
+ <p>
+職業人生のなかで、常に2割くらいはJavaScriptを触れてきた。プライベートでもJavaScriptを使っていくつか作ったことがある。の割には親しみのない感覚がある。わからずにそのまま使ってきた感覚が強い。
+</p>
+
+ <ul class="org-ul"> <li>使うまでの設定、エコシステムが多い。拡張文法、モジュールシステム、トランスパイルターゲット、…。他言語だと選択する機会のないものも、多く選択肢がある。目に入るたびに圧倒されて、「難しい」と感じる</li>
+ <li>関数型</li>
+</ul> <p>
+ほかの物事と同じく、背後にある概念をつかめば、一気に理解や親しみが増えると信じている。
+</p>
+</div>
+</div>
+ <div id="outline-container-org134048b" class="outline-2">
+ <h2 id="org134048b"> <a href="#org134048b">関連</a></h2>
+ <div class="outline-text-2" id="text-org134048b">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260124T095842--kdoc-536-なぜjavascriptが難しく感じるか__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260124T095842--kdoc-536-なぜjavascriptが難しく感じるか__draft_essay.html</id>
+  <updated>2026-02-14T07:33:19+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 526: TypeScriptがどのようにJavaScriptに変換されるかを見る</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orga2e76a5" class="outline-2">
+ <h2 id="orga2e76a5"> <a href="#orga2e76a5">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orga2e76a5">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-01-20 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-01 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org5259ec1" class="outline-2">
+ <h2 id="org5259ec1"> <a href="#org5259ec1">概要</a></h2>
+ <div class="outline-text-2" id="text-org5259ec1">
+ <p>
+TypeScriptがJavaScriptに変換される様子を見る。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>TypeScriptをJavaScriptに変換してみる。型の記載はなくなっているのを確認できる</label> <pre class="src src-shell">cat <<  <span class="org-string">'EOF'</span> | npx -y esbuild --loader=ts --format=cjs 2>&1 <span class="org-sh-heredoc">
+/* 変数定義 */
+let color: string = "red";
+
+/* 関数定義と呼び出し */
+function greet1(name: string) {}
+greet1("hello")
+
+/* 三項演算子 */
+1 ? "a" : "b"
+
+/* 型定義 */
+type animal = "dog" | "cat"
+
+EOF</span>
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">let color = "red";
+function greet1(name) {
+}
+greet1("hello");
+1 ? "a" : "b";
+</pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org519007c" class="outline-2">
+ <h2 id="org519007c"> <a href="#org519007c">関連</a></h2>
+ <div class="outline-text-2" id="text-org519007c">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260112T105937--kdoc-526-typescriptがどのようにjavascriptに変換されるかを見る__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260112T105937--kdoc-526-typescriptがどのようにjavascriptに変換されるかを見る__permanent.html</id>
+  <updated>2026-02-14T07:33:17+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 533: 東京都水道歴史館を観察する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orge378e8b" class="outline-2">
+ <h2 id="orge378e8b"> <a href="#orge378e8b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orge378e8b">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgaf15283" class="outline-2">
+ <h2 id="orgaf15283"> <a href="#orgaf15283">概要</a></h2>
+ <div class="outline-text-2" id="text-orgaf15283">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org2ca6994" class="outline-2">
+ <h2 id="org2ca6994"> <a href="#org2ca6994">メモ</a></h2>
+ <div class="outline-text-2" id="text-org2ca6994">
+ <ul class="org-ul"> <li>水道があまりにも普通にあり、問題になることがないほど安定しているので忘れがちなのだが、何度かの危機や技術革新があってここまで来ている</li>
+ <li>老朽化した水道インフラをどうするかは現代でも深刻な問題だが、すでに明治時代のころからそれはあった。明治時代の新聞に、江戸時代に引かれた水道を更新するべき、という記事があった</li>
+ <li>江戸時代の水道について実物大の展示があって想像が膨らんだ</li>
+ <li>時代ごとに水運が開発され、使用されている水源は異なる。その変遷について理解しやすい大地図とランプがあり、直感的にわかりやすい展示に見えた</li>
+ <li>江戸時代は中世イメージで遅れている印象があったのだが、すでに都市として洗練されていた部分が多くあった</li>
+ <li>発掘された木製の水道管が多く展示されている。そのサイズ、重量感を体感して、当時を想像した</li>
+ <li>明治~昭和にかけてつくられた石造の公衆蛇口は豪華で重厚なつくりで美しい。ライオンの口から水が出ているようなもの。東京ではたまに、駅や公共施設で見ることがある。あれはなんなのだろうと考えたこともなかったが、知って納得した</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgd694242" class="outline-2">
+ <h2 id="orgd694242"> <a href="#orgd694242">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd694242">
+ <ul class="org-ul"> <li> <a href="20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html#ID-20240908T180537">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
+ <div id="outline-container-org861aed2" class="outline-2">
+ <h2 id="org861aed2"> <a href="#org861aed2">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org861aed2">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260118T162153--kdoc-533-東京都水道歴史館を観察する__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260118T162153--kdoc-533-東京都水道歴史館を観察する__draft_essay.html</id>
+  <updated>2026-02-14T07:33:16+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 542: Joy-Conを読書デバイスとして使う</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgda56df1" class="outline-2">
+ <h2 id="orgda56df1"> <a href="#orgda56df1">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgda56df1">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgb4addd7" class="outline-2">
+ <h2 id="orgb4addd7"> <a href="#orgb4addd7">概要</a></h2>
+ <div class="outline-text-2" id="text-orgb4addd7">
  <p>
 任天堂のJoy-ConをPC(Ubuntu)の読書デバイスとして使っている。片手・ワイヤレスでページ送りできて便利である。
 </p>
 </div>
 </div>
- <div id="outline-container-org08f25a4" class="outline-2">
- <h2 id="org08f25a4"> <a href="#org08f25a4">手順</a></h2>
- <div class="outline-text-2" id="text-org08f25a4">
+ <div id="outline-container-orge18c98d" class="outline-2">
+ <h2 id="orge18c98d"> <a href="#orge18c98d">手順</a></h2>
+ <div class="outline-text-2" id="text-orge18c98d">
  <p>
 Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接続しても一瞬で切断された。
 </p>
@@ -429,18 +1127,24 @@ Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接�
 </div>
 
  <p>
-再起動すると、Bluetooth接続できた。しかしantimicroxで認識しなかった。  <code>sudo antimicrox</code> するか、inputグループを追加する。
+再起動すると、Bluetooth接続できた。しかしantimicroxで認識しなかった。  <code>sudo antimicrox</code> するか、設定する。
+</p>
+
+ <p>
+…が、うまくいかなかった。ジャイロスコープと加速度計しか認識してない。
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>現在ユーザをinputグループに追加して見えるようにする</label> <pre class="src src-shell">sudo usermod -aG input $ <span class="org-variable-name">USER</span>
+ <label class="org-src-name"> <span class="listing-number">Listing 2: </span>antimicroxが/dev/uinputにアクセスできるようにする。自分がinput groupに属するようにしてから、uinputの groupをinputにしてアクセスできるようにする</label> <pre class="src src-shell">  sudo usermod -aG input $ <span class="org-variable-name">USER</span>
+ <span class="org-builtin">echo</span>  <span class="org-string">'KERNEL=="uinput", GROUP="input", MODE="0660"'</span> | sudo tee /etc/udev/rules.d/99-uinput.rules
+  sudo udevadm control --reload-rules && sudo udevadm trigger
 </pre>
 </div>
 </div>
 </div>
- <div id="outline-container-org0c13253" class="outline-2">
- <h2 id="org0c13253"> <a href="#org0c13253">関連</a></h2>
- <div class="outline-text-2" id="text-org0c13253">
+ <div id="outline-container-orgba3d5af" class="outline-2">
+ <h2 id="orgba3d5af"> <a href="#orgba3d5af">関連</a></h2>
+ <div class="outline-text-2" id="text-orgba3d5af">
  <p>
 なし。
 </p>
@@ -449,88 +1153,35 @@ Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260201T211024--kdoc-542-joy-conを読書デバイスとして使う__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20260201T211024--kdoc-542-joy-conを読書デバイスとして使う__draft_permanent.html</id>
-  <updated>2026-02-03T06:09:03+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 533: 東京都水道歴史館を観察する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org3f26049" class="outline-2">
- <h2 id="org3f26049"> <a href="#org3f26049">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org3f26049">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org0806de5" class="outline-2">
- <h2 id="org0806de5"> <a href="#org0806de5">概要</a></h2>
- <div class="outline-text-2" id="text-org0806de5">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org3072414" class="outline-2">
- <h2 id="org3072414"> <a href="#org3072414">メモ</a></h2>
- <div class="outline-text-2" id="text-org3072414">
- <ul class="org-ul"> <li>水道があまりにも普通にあり、問題になることがないほど安定しているので忘れがちなのだが、何度かの危機や技術革新があってここまで来ている</li>
- <li>老朽化した水道インフラをどうするかは現代でも深刻な問題だが、すでに明治時代のころからそれはあった。明治時代の新聞に、江戸時代に引かれた水道を更新するべき、という記事があった</li>
- <li>江戸時代の水道について実物大の展示があって想像が膨らんだ</li>
- <li>時代ごとに水運が開発され、使用されている水源は異なる。その変遷について理解しやすい大地図とランプがあり、直感的にわかりやすい展示に見えた</li>
- <li>江戸時代は中世イメージで遅れている印象があったのだが、すでに都市として洗練されていた部分が多くあった</li>
- <li>発掘された木製の水道管が多く展示されている。そのサイズ、重量感を体感して、当時を想像した</li>
- <li>明治~昭和にかけてつくられた石造の公衆蛇口は豪華で重厚なつくりで美しい。ライオンの口から水が出ているようなもの。東京ではたまに、駅や公共施設で見ることがある。あれはなんなのだろうと考えたこともなかったが、知って納得した</li>
-</ul></div>
-</div>
- <div id="outline-container-orgd50d12d" class="outline-2">
- <h2 id="orgd50d12d"> <a href="#orgd50d12d">関連</a></h2>
- <div class="outline-text-2" id="text-orgd50d12d">
- <ul class="org-ul"> <li> <a href="20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html#ID-20240908T180537">KDOC 238: 他人の博物館を観察して参考にする</a></li>
-</ul></div>
-</div>
- <div id="outline-container-org4e1746a" class="outline-2">
- <h2 id="org4e1746a"> <a href="#org4e1746a">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org4e1746a">
- <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260118T162153--kdoc-533-東京都水道歴史館を観察する__draft_essay.html"/>
-  <id>https://kijimad.github.io/roam/20260118T162153--kdoc-533-東京都水道歴史館を観察する__draft_essay.html</id>
-  <updated>2026-02-03T06:08:59+09:00</updated>
+  <updated>2026-02-14T07:33:15+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 534: 『不動産投資1年目の教科書』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org2633173" class="outline-2">
- <h2 id="org2633173"> <a href="#org2633173">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2633173">
+ <div id="outline-container-orgd9e3fb5" class="outline-2">
+ <h2 id="orgd9e3fb5"> <a href="#orgd9e3fb5">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd9e3fb5">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-02 貴島</li>
 </ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-02 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgfee7f3c" class="outline-2">
- <h2 id="orgfee7f3c"> <a href="#orgfee7f3c">概要</a></h2>
- <div class="outline-text-2" id="text-orgfee7f3c">
+ <div id="outline-container-org1b62163" class="outline-2">
+ <h2 id="org1b62163"> <a href="#org1b62163">概要</a></h2>
+ <div class="outline-text-2" id="text-org1b62163">
  <p>
 『不動産投資1年目の教科書』は、不動産投資についてQ&A形式で説明する本。
 </p>
 </div>
 </div>
- <div id="outline-container-org31dfb74" class="outline-2">
- <h2 id="org31dfb74"> <a href="#org31dfb74">メモ</a></h2>
- <div class="outline-text-2" id="text-org31dfb74">
+ <div id="outline-container-orgd3ad4df" class="outline-2">
+ <h2 id="orgd3ad4df"> <a href="#orgd3ad4df">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgd3ad4df">
  <ul class="org-ul"> <li>期待で上昇して事実で売られる株式とは違い、不動産は事実確定後にはじめて価格上昇に転じるという特徴がある。タイムラグがある(位置510)</li>
  <li>不動産価格は人口動態やGDP、賃貸需要など実需的な指標に連動していない。たとえば80年代のバブル、00年代のITバブル、2007年のファンドバブルのとき、人口は増えておらず、賃貸需要も物件価格の急上昇を説明できるほど増えていない。不動産価格の動きにもっとも寄与率の高い指標は世界経済の大波、金融機関の融資姿勢である(位置630)</li>
  <li>不動産ファンドが投資を考えるときには次のように投資対象を分類する(位置728)
@@ -569,681 +1220,21 @@ Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接�
  <li>世界の要人たちは、自分の子どもには「借金をしたら貿易黒字と増税で返せ」といいながら、自分たちは紙幣を印刷して金融政策で借金を返済している(位置2701)</li>
  <li>高成長の国はインフレ率も金利も高い。低成長の国でもインフレ率を下回る収益率低下と通貨価値の下落がない限り、将来的に少子化やGDP低下で国力が弱まっても、賃料収入を頼りにした生活の水準は変わらない可能性が高い。本業の給与も、リストラされない限り、生活必需品の価格下落よりも自分の給料の下落幅が大きくない限り、生活実感は変わらない(位置2805)</li>
  <li>地震保険の制度趣旨は、損壊した建物の再調達資金を確保するためではなく、生活再建のために当面必要となる資金を確保することである(位置2934)</li>
+ <li>不動産市況を知るには、業者へのヒアリングが有用である(位置3060)</li>
+ <li>体験談のアドバイスを鵜呑みにして真似るのではなく、「投資とはなにか」「経済はどう回っているか」「不動産市場の特徴はなにか」という大きな視点を持つことが重要である。アドバイスの理由や根拠、いまでも再現性があるか、という分析的な視点で話を聞き原理や構造を自分で理解するのが大切(位置3178)</li>
 </ul></div>
 </div>
- <div id="outline-container-org982194e" class="outline-2">
- <h2 id="org982194e"> <a href="#org982194e">関連</a></h2>
- <div class="outline-text-2" id="text-org982194e">
+ <div id="outline-container-orgac75f21" class="outline-2">
+ <h2 id="orgac75f21"> <a href="#orgac75f21">関連</a></h2>
+ <div class="outline-text-2" id="text-orgac75f21">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260121T094643--kdoc-534-『不動産投資1年目の教科書』__draft_book.html"/>
-  <id>https://kijimad.github.io/roam/20260121T094643--kdoc-534-『不動産投資1年目の教科書』__draft_book.html</id>
-  <updated>2026-02-03T06:08:13+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 537: スタックできる/できないアイテムが混在する場合を設計する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org1e8c28b" class="outline-2">
- <h2 id="org1e8c28b"> <a href="#org1e8c28b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org1e8c28b">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org4c76cec" class="outline-2">
- <h2 id="org4c76cec"> <a href="#org4c76cec">概要</a></h2>
- <div class="outline-text-2" id="text-org4c76cec">
- <p>
-ECSを使ったゲーム開発において、アイテムをどう設計するか考える。
-</p>
-
- <p>
-要件はこうだ。
-</p>
-
- <ul class="org-ul"> <li>武器や防具はスタック(個数をまとめる)できない。武器や防具は同じ種類のものでもそれぞれパラメータが異なる設定にしているため、まとめられない</li>
- <li>拾ったときに、スタック可能アイテムであれば自動的にまとめられて個数が増える</li>
- <li>アイテムの状態には、フィールド上に存在、インベントリ内があり、それぞれのアクション(拾う、捨てる、投げる、使う、売買する…)で変化する</li>
-</ul> <pre class="example" id="org9dcdad5">
---インベントリ内--
-
-- 薬草 x4
-- 鉄の剣
-  - 品質: C
-  - 攻撃力: 4
-- 鉄の剣
-  - 品質: A
-  - 攻撃力: 6
-</pre>
-</div>
-</div>
- <div id="outline-container-orgfcf17bd" class="outline-2">
- <h2 id="orgfcf17bd"> <a href="#orgfcf17bd">関連</a></h2>
- <div class="outline-text-2" id="text-orgfcf17bd">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260126T093907--kdoc-537-スタックできるできないアイテムが混在する場合を設計する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260126T093907--kdoc-537-スタックできるできないアイテムが混在する場合を設計する__draft_permanent.html</id>
-  <updated>2026-02-03T06:08:12+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 532: deadcode(Go公式のほう)を使って未使用の公開関数を検知する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org8517a21" class="outline-2">
- <h2 id="org8517a21"> <a href="#org8517a21">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org8517a21">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org5ba9f21" class="outline-2">
- <h2 id="org5ba9f21"> <a href="#org5ba9f21">概要</a></h2>
- <div class="outline-text-2" id="text-org5ba9f21">
- <p>
-生成AIを使ってGo言語で開発している。早く進むわけであるが、未使用の機能や関数が生まれていることが多い。プロンプトで指定してもこぼれがあって、そのたびに手直ししたり、あとから気づいたりした。検知したい、と考えた。
-</p>
-
- <p>
-golanglint-ciには  <code>unused</code> ルールがあるが、これは未使用のprivateの項目限定であり、公開していると未使用でも検知されない。
-</p>
-
- <p>
-Goチーム公式が出している、  <code>deadcode</code> CLIツールを使うと、検知できる。同じ名前のツールやルールがほかにもあったりするのだが、Goチームが出しているものである。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>使用例</label> <pre class="src src-shell">deadcode -test ./...
-</pre>
-</div>
-
- <p>
-golanglint-ciには含まれていない。 <a href="https://speakerdeck.com/kuro_kurorrr/deep-dive-into-deadcode">deadcode超解剖 - Speaker Deck</a>によると、それは検知方式に由来していて、静的解析ではないということで却下されているのだという。
-</p>
-</div>
-</div>
- <div id="outline-container-orga4e9bb9" class="outline-2">
- <h2 id="orga4e9bb9"> <a href="#orga4e9bb9">関連</a></h2>
- <div class="outline-text-2" id="text-orga4e9bb9">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260117T190135--kdoc-532-deadcodego公式のほうを使って未使用の公開関数を検知する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260117T190135--kdoc-532-deadcodego公式のほうを使って未使用の公開関数を検知する__draft_permanent.html</id>
-  <updated>2026-02-03T06:08:12+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 525: 0番ポートで動的に割当てられるのを見る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org60fab70" class="outline-2">
- <h2 id="org60fab70"> <a href="#org60fab70">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org60fab70">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-01 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-01 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgd5d9c2a" class="outline-2">
- <h2 id="orgd5d9c2a"> <a href="#orgd5d9c2a">概要</a></h2>
- <div class="outline-text-2" id="text-orgd5d9c2a">
- <p>
-0番ポートを指定すると動的にポートが割り当てられるのを確かめた。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-go-test">import (
-  "net"
-  "fmt"
-  "github.com/stretchr/testify/require"
-)
-
-func TestPort(t *testing.T) {
-  listenHelper(t)
-  listenHelper(t)
-  listenHelper(t)
-}
-
-func listenHelper(t *testing.T) {
-   t.Helper()
-
-   l, err := net.Listen("tcp", ":0")
-   require.NoError(t, err)
-
-   fmt.Println(l.Addr())
-}
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">=== RUN   TestPort
-[::]:34993
-[::]:36783
-[::]:35523
---- PASS: TestPort (0.00s)
-PASS
-ok  	test	0.002s
-</pre>
-</div>
-</div>
-</div>
- <div id="outline-container-orga1c8b94" class="outline-2">
- <h2 id="orga1c8b94"> <a href="#orga1c8b94">関連</a></h2>
- <div class="outline-text-2" id="text-orga1c8b94">
- <ul class="org-ul"> <li>動機:  <a href="20260112T023152--kdoc-525-0番ポートで動的に割当てられるのを見る__permanent.html#ID-20260112T023152">KDOC 499: 0番ポートは動的割当に利用される</a>。確かめた</li>
- <li>追加調査: OS側で処理されているのを確認する</li>
-</ul></div>
-</div>
- <div id="outline-container-org94543d6" class="outline-2">
- <h2 id="org94543d6"> <a href="#org94543d6">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org94543d6">
- <ul class="org-ul"> <li> <a href="./20260112T023152--kdoc-525-0番ポートで動的に割当てられるのを見る__permanent.html">KDOC 525: 0番ポートで動的に割当てられるのを見る</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260112T023152--kdoc-525-0番ポートで動的に割当てられるのを見る__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260112T023152--kdoc-525-0番ポートで動的に割当てられるのを見る__permanent.html</id>
-  <updated>2026-02-03T06:08:12+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 540: Promiseとasync/awaitの関係はなにか?</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org4ad5c0c" class="outline-2">
- <h2 id="org4ad5c0c"> <a href="#org4ad5c0c">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4ad5c0c">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org04e31af" class="outline-2">
- <h2 id="org04e31af"> <a href="#org04e31af">概要</a></h2>
- <div class="outline-text-2" id="text-org04e31af">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org34bc407" class="outline-2">
- <h2 id="org34bc407"> <a href="#org34bc407">関連</a></h2>
- <div class="outline-text-2" id="text-org34bc407">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260130T090458--kdoc-540-promiseとasyncawaitの関係はなにか__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260130T090458--kdoc-540-promiseとasyncawaitの関係はなにか__draft_permanent.html</id>
-  <updated>2026-02-03T06:08:09+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 527: 新宿御苑ミュージアムを観察する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org8116340" class="outline-2">
- <h2 id="org8116340"> <a href="#org8116340">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org8116340">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgb4ec449" class="outline-2">
- <h2 id="orgb4ec449"> <a href="#orgb4ec449">概要</a></h2>
- <div class="outline-text-2" id="text-orgb4ec449">
- <p>
-新宿御苑ミュージアムは、東京都新宿区にある博物館である。新宿御苑の歴史について説明している。
-</p>
-
- <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7527.720087290759!2d139.71022461186868!3d35.686038672471476!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188d28df7514e5%3A0xb1d950665140e34f!2sShinjuku%20Gyoen%20Museum!5e1!3m2!1sen!2sjp!4v1769954054025!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-</div>
-</div>
- <div id="outline-container-orgef38501" class="outline-2">
- <h2 id="orgef38501"> <a href="#orgef38501">メモ</a></h2>
- <div class="outline-text-2" id="text-orgef38501">
- <ul class="org-ul"> <li>建物のガラス面が多く、開放感がある。周囲の芝生のリラックスした雰囲気と調和している</li>
- <li>通路の壁2面、床にも投影される解説映像がある。1度に全体を視界にいれることはできない迫力がある
- <ul class="org-ul"> <li>足を止めて見ている人は多かった。映像の内容は普通の歴史的解説なのだが、非日常感だろうか</li>
-</ul></li>
- <li>最初から市民に開放された公園だったわけではない。時代の権力者たちによるさまざまな変遷を経ての来歴が興味深い</li>
- <li>社交場だった時代もあるという。座って撮影できる、皇族が使ったデザインの家具があり、当時を想像した</li>
-</ul></div>
-</div>
- <div id="outline-container-orge99b6ad" class="outline-2">
- <h2 id="orge99b6ad"> <a href="#orge99b6ad">関連</a></h2>
- <div class="outline-text-2" id="text-orge99b6ad">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org1943618" class="outline-2">
- <h2 id="org1943618"> <a href="#org1943618">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org1943618">
- <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260112T142204--kdoc-527-新宿御苑ミュージアムを観察する__draft_essay.html"/>
-  <id>https://kijimad.github.io/roam/20260112T142204--kdoc-527-新宿御苑ミュージアムを観察する__draft_essay.html</id>
-  <updated>2026-02-03T06:08:09+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 526: TypeScriptがどのようにJavaScriptに変換されるかを見る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org0944fc5" class="outline-2">
- <h2 id="org0944fc5"> <a href="#org0944fc5">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0944fc5">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-01-20 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-01 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orge28dab1" class="outline-2">
- <h2 id="orge28dab1"> <a href="#orge28dab1">概要</a></h2>
- <div class="outline-text-2" id="text-orge28dab1">
- <p>
-TypeScriptがJavaScriptに変換される様子を見る。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>TypeScriptをJavaScriptに変換してみる。型の記載はなくなっているのを確認できる</label> <pre class="src src-shell">cat <<  <span class="org-string">'EOF'</span> | npx -y esbuild --loader=ts --format=cjs 2>&1 <span class="org-sh-heredoc">
-/* 変数定義 */
-let color: string = "red";
-
-/* 関数定義と呼び出し */
-function greet1(name: string) {}
-greet1("hello")
-
-/* 三項演算子 */
-1 ? "a" : "b"
-
-/* 型定義 */
-type animal = "dog" | "cat"
-
-EOF</span>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">let color = "red";
-function greet1(name) {
-}
-greet1("hello");
-1 ? "a" : "b";
-</pre>
-</div>
-</div>
-</div>
- <div id="outline-container-org6f4b33e" class="outline-2">
- <h2 id="org6f4b33e"> <a href="#org6f4b33e">関連</a></h2>
- <div class="outline-text-2" id="text-org6f4b33e">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260112T105937--kdoc-526-typescriptがどのようにjavascriptに変換されるかを見る__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260112T105937--kdoc-526-typescriptがどのようにjavascriptに変換されるかを見る__permanent.html</id>
-  <updated>2026-02-03T06:08:08+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 531: SIGINTとSIGTERMの違い</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org4b07d97" class="outline-2">
- <h2 id="org4b07d97"> <a href="#org4b07d97">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4b07d97">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgdbf358a" class="outline-2">
- <h2 id="orgdbf358a"> <a href="#orgdbf358a">概要</a></h2>
- <div class="outline-text-2" id="text-orgdbf358a">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-orgcf2505b" class="outline-2">
- <h2 id="orgcf2505b"> <a href="#orgcf2505b">関連</a></h2>
- <div class="outline-text-2" id="text-orgcf2505b">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260116T085457--kdoc-531-sigintとsigtermの違い__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260116T085457--kdoc-531-sigintとsigtermの違い__draft_permanent.html</id>
-  <updated>2026-02-03T06:08:04+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 535: CommonJSとESMはモジュールシステムである</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgc335e16" class="outline-2">
- <h2 id="orgc335e16"> <a href="#orgc335e16">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc335e16">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org178df07" class="outline-2">
- <h2 id="org178df07"> <a href="#org178df07">概要</a></h2>
- <div class="outline-text-2" id="text-org178df07">
- <p>
-commonjs と esm がなにかわからなかった。モジュールシステムなのだという。ほかのファイルからコードを読み込む方法が異なる。
-</p>
-
- <p>
-ひとくちに JavaScript といっても、使う組み合わせには多くの選択肢がある。
-</p>
-</div>
-</div>
- <div id="outline-container-org11ad8e8" class="outline-2">
- <h2 id="org11ad8e8"> <a href="#org11ad8e8">関連</a></h2>
- <div class="outline-text-2" id="text-org11ad8e8">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260122T084216--kdoc-535-commonjsとesmはモジュールシステムである__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260122T084216--kdoc-535-commonjsとesmはモジュールシステムである__draft_permanent.html</id>
-  <updated>2026-02-03T06:08:02+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 538: なぜダークソウルシリーズは人々を救うのか</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org79ad5e6" class="outline-2">
- <h2 id="org79ad5e6"> <a href="#org79ad5e6">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org79ad5e6">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgdb1bf65" class="outline-2">
- <h2 id="orgdb1bf65"> <a href="#orgdb1bf65">概要</a></h2>
- <div class="outline-text-2" id="text-orgdb1bf65">
- <p>
-YouTube には、“Dark Souls Save me”のようなタイトルの動画が溢れていることに気づいた。
-</p>
-</div>
-</div>
- <div id="outline-container-org207432c" class="outline-2">
- <h2 id="org207432c"> <a href="#org207432c">関連</a></h2>
- <div class="outline-text-2" id="text-org207432c">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260127T093439--kdoc-538-なぜダークソウルシリーズは人々を救うのか__draft_essay.html"/>
-  <id>https://kijimad.github.io/roam/20260127T093439--kdoc-538-なぜダークソウルシリーズは人々を救うのか__draft_essay.html</id>
-  <updated>2026-02-03T06:07:57+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 524: JSXがどのようにJavaScriptに変換されるかを見る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org0f90639" class="outline-2">
- <h2 id="org0f90639"> <a href="#org0f90639">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0f90639">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-01-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-02-01 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org9c31d72" class="outline-2">
- <h2 id="org9c31d72"> <a href="#org9c31d72">概要</a></h2>
- <div class="outline-text-2" id="text-org9c31d72">
- <p>
-Reactに対して、いまいち使いこなせていない感覚を感じつづけてきた。その理由の1つは、JSXを理解してないことに見える。明らかにJavaScriptとは違うのだが、混在して存在している。よくわかっていないので、確認することにした。
-</p>
-
- <p>
-まず、JavaScriptとJSXの関係すら怪しかった。JSXは拡張構文である。
-</p>
-
- <blockquote>
- <p>
- <a href="https://ja.wikipedia.org/wiki/JSX_(JavaScript)">JSX (JavaScript) - Wikipedia</a>
-</p>
-
- <p>
-JSX (JavaScript XML, formally JavaScript Syntax eXtension) は、 JavaScript に XML のような文法が拡張された言語である。
-</p>
-</blockquote>
-
- <p>
-じっさいに変換してみて確認する。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>JavaScriptに変換してみる</label> <pre class="src src-shell">cat <<  <span class="org-string">'EOF'</span> | npx -y esbuild --loader=jsx --format=cjs 2>&1 <span class="org-sh-heredoc">
-/* HTMLタグ */
-<div>
-  <h1>hello</h1>
-</div>;
-
-/* コンポーネント */
-<Provider store={store}>
-  <App />
-</Provider>;
-
-/* JSXとJavaScriptの混在 */
-const jsx1 = <Component />;
-
-/* 三項演算子 */
-1 ? <p>a</p> : <p>b</p>
-
-/* 比較演算子とJSXが区別される */
-1<0>2;
-
-EOF</span>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">/* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "hello"));
-/* @__PURE__ */ React.createElement(Provider, { store }, /* @__PURE__ */ React.createElement(App, null));
-const jsx1 = /* @__PURE__ */ React.createElement(Component, null);
-1 ? /* @__PURE__ */ React.createElement("p", null, "a") : /* @__PURE__ */ React.createElement("p", null, "b");
-1 < 0 > 2;
-</pre>
-</div>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>loaderにjsxがない場合はJSXシンタックスのパースに失敗する</label> <pre class="src src-shell">cat <<  <span class="org-string">'EOF'</span> | npx -y esbuild --format=cjs 2>&1 <span class="org-sh-heredoc">
-<h1>hello</h1>
-
-EOF</span>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">✘ [ERROR] The JSX syntax extension is not currently enabled
-
-    <stdin>:1:0:
-      1 │ <h1>hello</h1>
-        ╵ ^
-
-  The esbuild loader for this file is currently set to "js" but it must be set to "jsx" to be able to parse JSX syntax. You can use "--loader:.js=jsx" to do that.
-
-1 error
-</pre>
-</div>
-</div>
-</div>
- <div id="outline-container-org5b095e0" class="outline-2">
- <h2 id="org5b095e0"> <a href="#org5b095e0">関連</a></h2>
- <div class="outline-text-2" id="text-org5b095e0">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260111T220149--kdoc-524-jsxがどのようにjavascriptに変換されるかを見る__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260111T220149--kdoc-524-jsxがどのようにjavascriptに変換されるかを見る__permanent.html</id>
-  <updated>2026-02-03T06:07:52+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 528: testing.TB と testing.T の違い</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgfae4174" class="outline-2">
- <h2 id="orgfae4174"> <a href="#orgfae4174">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgfae4174">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org3a34807" class="outline-2">
- <h2 id="org3a34807"> <a href="#org3a34807">概要</a></h2>
- <div class="outline-text-2" id="text-org3a34807">
- <p>
-Go言語のtestingライブラリには、testing.TBとtesting.Tがあるが、違いは何かを見る。
-</p>
-</div>
-</div>
- <div id="outline-container-org8c5069c" class="outline-2">
- <h2 id="org8c5069c"> <a href="#org8c5069c">関連</a></h2>
- <div class="outline-text-2" id="text-org8c5069c">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260113T091632--kdoc-528-testingtb-と-testingt-の違い__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260113T091632--kdoc-528-testingtb-と-testingt-の違い__draft_permanent.html</id>
-  <updated>2026-02-03T06:07:51+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 536: なぜJavaScriptが難しく感じるか</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org5233285" class="outline-2">
- <h2 id="org5233285"> <a href="#org5233285">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5233285">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgeb40a22" class="outline-2">
- <h2 id="orgeb40a22"> <a href="#orgeb40a22">概要</a></h2>
- <div class="outline-text-2" id="text-orgeb40a22">
- <p>
-これは向き合って学ぶ前の感想である。未来この気持ちがわからなくなると信じたい。
-</p>
-
- <p>
-何が妨げているか明らかにすれば対応もできると考えている。さまざまな感覚の集合からくる「難しい」であって、「難易度が高い」とは異なる可能性もある。ほとんど印象のケースに見える。難易度が高い、にかかるほど熟達はしていない。
-</p>
-
- <p>
-プロ登山家が「山登りは難しい」というのと、山に登ったことのない人が「山登りは難しい」というのは全然違う。プロは特定のケースや具体的な知識を思い浮かべているが、そうでない人は漠然とした知識のなさから「難しい」といっている。あまりに知らないことが多いと、難しい、と雑に判断するようになっているようである。
-</p>
-
- <p>
-職業人生のなかで、常に2割くらいはJavaScriptを触れてきた。プライベートでもJavaScriptを使っていくつか作ったことがある。の割には親しみのない感覚がある。わからずにそのまま使ってきた感覚が強い。
-</p>
-
- <ul class="org-ul"> <li>使うまでの設定、エコシステムが多い。拡張文法、モジュールシステム、トランスパイルターゲット、…。他言語だと選択する機会のないものも、多く選択肢がある。目に入るたびに圧倒されて、「難しい」と感じる</li>
- <li>関数型</li>
-</ul> <p>
-ほかの物事と同じく、背後にある概念をつかめば、一気に理解や親しみが増えると信じている。
-</p>
-</div>
-</div>
- <div id="outline-container-orgc3e7783" class="outline-2">
- <h2 id="orgc3e7783"> <a href="#orgc3e7783">関連</a></h2>
- <div class="outline-text-2" id="text-orgc3e7783">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260124T095842--kdoc-536-なぜjavascriptが難しく感じるか__draft_essay.html"/>
-  <id>https://kijimad.github.io/roam/20260124T095842--kdoc-536-なぜjavascriptが難しく感じるか__draft_essay.html</id>
-  <updated>2026-02-03T06:07:49+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260121T094643--kdoc-534-『不動産投資1年目の教科書』__book.html"/>
+  <id>https://kijimad.github.io/roam/20260121T094643--kdoc-534-『不動産投資1年目の教科書』__book.html</id>
+  <updated>2026-02-14T07:33:15+09:00</updated>
 </entry>
 </feed>

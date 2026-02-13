@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-02-02T21:09:03Z -->
+<!-- 2026-02-13T22:33:15Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 542: Joy-Conを読書デバイスとして使う</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 542: Joy-Conを読書デバイスとして使う</h1>
-<div id="outline-container-orgd4a9991" class="outline-2">
-<h2 id="orgd4a9991"><a href="#orgd4a9991">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgd4a9991">
+<div id="outline-container-orgda56df1" class="outline-2">
+<h2 id="orgda56df1"><a href="#orgda56df1">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgda56df1">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,17 +33,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org015234d" class="outline-2">
-<h2 id="org015234d"><a href="#org015234d">概要</a></h2>
-<div class="outline-text-2" id="text-org015234d">
+<div id="outline-container-orgb4addd7" class="outline-2">
+<h2 id="orgb4addd7"><a href="#orgb4addd7">概要</a></h2>
+<div class="outline-text-2" id="text-orgb4addd7">
 <p>
 任天堂のJoy-ConをPC(Ubuntu)の読書デバイスとして使っている。片手・ワイヤレスでページ送りできて便利である。
 </p>
 </div>
 </div>
-<div id="outline-container-org08f25a4" class="outline-2">
-<h2 id="org08f25a4"><a href="#org08f25a4">手順</a></h2>
-<div class="outline-text-2" id="text-org08f25a4">
+<div id="outline-container-orge18c98d" class="outline-2">
+<h2 id="orge18c98d"><a href="#orge18c98d">手順</a></h2>
+<div class="outline-text-2" id="text-orge18c98d">
 <p>
 Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接続しても一瞬で切断された。
 </p>
@@ -62,18 +62,24 @@ Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接�
 </div>
 
 <p>
-再起動すると、Bluetooth接続できた。しかしantimicroxで認識しなかった。 <code>sudo antimicrox</code> するか、inputグループを追加する。
+再起動すると、Bluetooth接続できた。しかしantimicroxで認識しなかった。 <code>sudo antimicrox</code> するか、設定する。
+</p>
+
+<p>
+&#x2026;が、うまくいかなかった。ジャイロスコープと加速度計しか認識してない。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>現在ユーザをinputグループに追加して見えるようにする</label><pre class="src src-shell">sudo usermod -aG input $<span class="org-variable-name">USER</span>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>antimicroxが/dev/uinputにアクセスできるようにする。自分がinput groupに属するようにしてから、uinputの groupをinputにしてアクセスできるようにする</label><pre class="src src-shell">  sudo usermod -aG input $<span class="org-variable-name">USER</span>
+<span class="org-builtin">echo</span> <span class="org-string">'KERNEL=="uinput", GROUP="input", MODE="0660"'</span> | sudo tee /etc/udev/rules.d/99-uinput.rules
+  sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org0c13253" class="outline-2">
-<h2 id="org0c13253"><a href="#org0c13253">関連</a></h2>
-<div class="outline-text-2" id="text-org0c13253">
+<div id="outline-container-orgba3d5af" class="outline-2">
+<h2 id="orgba3d5af"><a href="#orgba3d5af">関連</a></h2>
+<div class="outline-text-2" id="text-orgba3d5af">
 <p>
 なし。
 </p>
