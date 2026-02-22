@@ -48,8 +48,7 @@
 
 * この文書のステータス
 - 作成
-  - [ ] <署名>
-# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+  - [X] 2026-02-22 貴島
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -65,6 +64,33 @@
 # すべてのコメントを削除した。
 * 概要
 # 本文(見出しも設定する)
+
+型が違えば同じ値であっても違うものとして扱われる。当然にも見えるが、直感的ではない状況に見えることもある。
+
+#+begin_src go
+  package main
+
+  import "fmt"
+
+  type a string
+  type b string
+
+  func main() {
+  	m := map[any]any{}
+  	m[a("k")] = "v"
+  	m[b("k")] = "v"
+
+  	fmt.Printf("%#v", m)
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+map[interface {}]interface {}{"k":"v", "k":"v"}
+#+end_src
+
+出力した表示上は型が表示されていないので、キーがかぶって登録されているように見える。
+
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
 # [引用、整合性、どう説明できるか、矛盾、補っているか、以前聞いたこと、対立、修正、補足、付け加え、組み合わせ、疑問]

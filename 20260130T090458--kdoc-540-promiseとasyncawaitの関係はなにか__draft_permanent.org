@@ -66,7 +66,78 @@
 * 概要
 # 本文(見出しも設定する)
 
-なし。
+#+caption: Promise でresolveが実行される
+#+begin_src js :results output
+const promise = new Promise((resolve, reject) => {
+  resolve(123);
+})
+
+promise.then((res) => {
+  console.log(res)
+})
+promise.catch((err) => {
+  console.log("これは呼び出されない")
+})
+#+end_src
+
+#+RESULTS:
+#+begin_src
+123
+#+end_src
+
+#+caption: Promise でrejectが実行される
+#+begin_src js :results output
+const promise = new Promise((resolve, reject) => {
+  reject(new Error("エラー..."))
+})
+
+promise.then((res) => {
+  console.log("これは呼び出されない")
+})
+promise.catch((err) => {
+  console.log(err, "\nあああ")
+})
+#+end_src
+
+#+RESULTS:
+#+begin_src
+Error: エラー...
+at /tmp/babel-wzGCCp/js-script-JNAXQI:2:12
+at new Promise ()
+at Object. (/tmp/babel-wzGCCp/js-script-JNAXQI:1:17)
+at Module._compile (node:internal/modules/cjs/loader:1546:14)
+at Module._extensions..js (node:internal/modules/cjs/loader:1691:10)
+at Module.load (node:internal/modules/cjs/loader:1317:32)
+at Module._load (node:internal/modules/cjs/loader:1127:12)
+at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:166:5)
+あああ
+#+end_src
+
+#+caption: Promiseのチェーン
+#+begin_src js :results output
+Promise.resolve(123)
+.then((res) => {
+  console.log(res) // 123
+  return 456
+})
+.then((res) => {
+  console.log(res) // 456
+  return Promise.resolve(789)
+})
+.then((res) => {
+  console.log(res) // 789
+  return 123
+})
+#+end_src
+
+#+RESULTS:
+#+begin_src
+123
+456
+789
+#+end_src
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。

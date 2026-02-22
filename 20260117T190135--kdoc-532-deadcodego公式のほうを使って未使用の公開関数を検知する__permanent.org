@@ -1,0 +1,32 @@
+:properties:
+:ID: 20260117T190135
+:end:
+#+title:      KDOC 532: deadcode(Go公式のほう)を使って未使用の公開関数を検知する
+#+date:       [2026-01-17 Sat 19:01]
+#+filetags:   :permanent:
+#+identifier: 20260117T190135
+
+* この文書のステータス
+- 作成
+  - [X] 2026-02-19 貴島
+- レビュー
+  - [X] 2026-02-19 貴島
+
+* 概要
+
+生成AIを使ってGo言語で開発している。早く進むわけであるが、未使用の機能や関数が生まれていることが多い。プロンプトで指定してもこぼれがあって、そのたびに手直ししたり、あとから気づいたりした。検知したい、と考えた。
+
+golanglint-ciには ~unused~ ルールがあるが、これは未使用のprivateの項目限定であり、公開していると未使用でも検知されない。
+
+Goチーム公式が出している、 ~deadcode~ CLIツールを使うと、検知できる。同じ名前のツールやルールがほかにもあったりするのだが、Goチームが出しているものである。
+
+#+caption: 使用例
+#+begin_src shell
+deadcode -test ./...
+#+end_src
+
+golanglint-ciには含まれていない。[[https://speakerdeck.com/kuro_kurorrr/deep-dive-into-deadcode][deadcode超解剖 - Speaker Deck]]によると、それは検知方式に由来していて、静的解析ではないということで却下されているのだという。
+
+* 関連
+
+なし。
