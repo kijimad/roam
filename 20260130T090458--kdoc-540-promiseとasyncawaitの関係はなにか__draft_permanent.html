@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-02-19T21:49:35Z -->
+<!-- 2026-02-22T17:43:32Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 540: Promiseとasync/awaitの関係はなにか?</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 540: Promiseとasync/awaitの関係はなにか?</h1>
-<div id="outline-container-orgf34e2a0" class="outline-2">
-<h2 id="orgf34e2a0"><a href="#orgf34e2a0">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgf34e2a0">
+<div id="outline-container-org2a3f13d" class="outline-2">
+<h2 id="org2a3f13d"><a href="#org2a3f13d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org2a3f13d">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,17 +33,86 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfbce246" class="outline-2">
-<h2 id="orgfbce246"><a href="#orgfbce246">概要</a></h2>
-<div class="outline-text-2" id="text-orgfbce246">
-<p>
-なし。
-</p>
+<div id="outline-container-orgcce1d3c" class="outline-2">
+<h2 id="orgcce1d3c"><a href="#orgcce1d3c">概要</a></h2>
+<div class="outline-text-2" id="text-orgcce1d3c">
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Promise でresolveが実行される</label><pre class="src src-js"><span class="org-keyword">const</span> <span class="org-variable-name">promise</span> = <span class="org-keyword">new</span> <span class="org-type">Promise</span>((resolve, reject) =&gt; {
+  resolve(123);
+})
+
+promise.then((res) =&gt; {
+  console.log(res)
+})
+promise.<span class="org-keyword">catch</span>((err) =&gt; {
+  console.log(<span class="org-string">"&#12371;&#12428;&#12399;&#21628;&#12403;&#20986;&#12373;&#12428;&#12394;&#12356;"</span>)
+})
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">123
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>Promise でrejectが実行される</label><pre class="src src-js"><span class="org-keyword">const</span> <span class="org-variable-name">promise</span> = <span class="org-keyword">new</span> <span class="org-type">Promise</span>((resolve, reject) =&gt; {
+  reject(<span class="org-keyword">new</span> <span class="org-type">Error</span>(<span class="org-string">"&#12456;&#12521;&#12540;..."</span>))
+})
+
+promise.then((res) =&gt; {
+  console.log(<span class="org-string">"&#12371;&#12428;&#12399;&#21628;&#12403;&#20986;&#12373;&#12428;&#12394;&#12356;"</span>)
+})
+promise.<span class="org-keyword">catch</span>((err) =&gt; {
+  console.log(err, <span class="org-string">"\n&#12354;&#12354;&#12354;"</span>)
+})
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Error: エラー...
+at /tmp/babel-wzGCCp/js-script-JNAXQI:2:12
+at new Promise ()
+at Object. (/tmp/babel-wzGCCp/js-script-JNAXQI:1:17)
+at Module._compile (node:internal/modules/cjs/loader:1546:14)
+at Module._extensions..js (node:internal/modules/cjs/loader:1691:10)
+at Module.load (node:internal/modules/cjs/loader:1317:32)
+at Module._load (node:internal/modules/cjs/loader:1127:12)
+at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:166:5)
+あああ
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>Promiseのチェーン</label><pre class="src src-js">Promise.resolve(123)
+.then((res) =&gt; {
+  console.log(res) <span class="org-comment-delimiter">// </span><span class="org-comment">123
+</span>  <span class="org-keyword">return</span> 456
+})
+.then((res) =&gt; {
+  console.log(res) <span class="org-comment-delimiter">// </span><span class="org-comment">456
+</span>  <span class="org-keyword">return</span> Promise.resolve(789)
+})
+.then((res) =&gt; {
+  console.log(res) <span class="org-comment-delimiter">// </span><span class="org-comment">789
+</span>  <span class="org-keyword">return</span> 123
+})
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">123
+456
+789
+</pre>
 </div>
 </div>
-<div id="outline-container-orgeeb54f0" class="outline-2">
-<h2 id="orgeeb54f0"><a href="#orgeeb54f0">関連</a></h2>
-<div class="outline-text-2" id="text-orgeeb54f0">
+</div>
+<div id="outline-container-org3dcf483" class="outline-2">
+<h2 id="org3dcf483"><a href="#org3dcf483">関連</a></h2>
+<div class="outline-text-2" id="text-org3dcf483">
 <p>
 なし。
 </p>

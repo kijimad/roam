@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-02-19T21:49:37Z -->
+<!-- 2026-02-22T17:43:23Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 519: Goのmapではキーの値が同じでも型情報が違えば別のものとして扱われる</title>
@@ -15,17 +15,14 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 519: Goのmapではキーの値が同じでも型情報が違えば別のものとして扱われる</h1>
-<div id="outline-container-orgef653c1" class="outline-2">
-<h2 id="orgef653c1"><a href="#orgef653c1">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgef653c1">
+<div id="outline-container-orgbb471f8" class="outline-2">
+<h2 id="orgbb471f8"><a href="#orgbb471f8">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgbb471f8">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-02-22 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
 <li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
@@ -33,14 +30,44 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org8f9d801" class="outline-2">
-<h2 id="org8f9d801"><a href="#org8f9d801">概要</a></h2>
-<div class="outline-text-2" id="text-org8f9d801">
+<div id="outline-container-orgefa0d30" class="outline-2">
+<h2 id="orgefa0d30"><a href="#orgefa0d30">概要</a></h2>
+<div class="outline-text-2" id="text-orgefa0d30">
+<p>
+型が違えば同じ値であっても違うものとして扱われる。当然にも見えるが、直感的ではない状況に見えることもある。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-go">package main
+
+import "fmt"
+
+type a string
+type b string
+
+func main() {
+	m := map[any]any{}
+	m[a("k")] = "v"
+	m[b("k")] = "v"
+
+	fmt.Printf("%#v", m)
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">map[interface {}]interface {}{"k":"v", "k":"v"}
+</pre>
+</div>
+
+<p>
+出力した表示上は型が表示されていないので、キーがかぶって登録されているように見える。
+</p>
 </div>
 </div>
-<div id="outline-container-orgb59a065" class="outline-2">
-<h2 id="orgb59a065"><a href="#orgb59a065">関連</a></h2>
-<div class="outline-text-2" id="text-orgb59a065">
+<div id="outline-container-orgc6744fa" class="outline-2">
+<h2 id="orgc6744fa"><a href="#orgc6744fa">関連</a></h2>
+<div class="outline-text-2" id="text-orgc6744fa">
 <p>
 なし。
 </p>
