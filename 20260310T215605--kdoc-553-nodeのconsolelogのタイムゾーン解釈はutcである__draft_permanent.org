@@ -1,10 +1,10 @@
 :properties:
-:ID: 20260116T085457
+:ID: 20260310T215605
 :end:
-#+title:      KDOC 531: SIGINTとSIGTERMの違い
-#+date:       [2026-01-16 Fri 08:54]
+#+title:      KDOC 553: Nodeのconsole.logのタイムゾーン解釈はUTCである
+#+date:       [2026-03-10 Tue 21:56]
 #+filetags:   :draft:permanent:
-#+identifier: 20260116T085457
+#+identifier: 20260310T215605
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -66,32 +66,44 @@
 * 概要
 # 本文(見出しも設定する)
 
-シグナルをハンドルするようなプログラムを書いたときに、SIGINTとSIGTERMの扱いを間違っていて、終了しないことがあった。
+Nodeで動かすJavaScript上で、Dateのタイムゾーンが時刻フォーマットによって変わる奇妙な仕様を見た。確認するため ~console.log~ を使ったところ、出力がUTCなのに気づいた。ブラウザでは ~console.log~ はローカル時間で表示されるので、Nodeの仕様に見える。
 
-- SIGTERM は ~kill~ コマンドで送られる
-- SIGINT は Ctrl+C で送られる
-
-#+caption: Termination signal
 #+begin_src shell
-man 7 signal | grep SIGTERM
+  echo $TZ
 #+end_src
 
 #+RESULTS:
 #+begin_src
-       SIGTERM      P1990      Term    Termination signal
-       SIGTERM         15          15      15      15
+
 #+end_src
 
-#+caption: Interrupt from keyboard
-#+begin_src shell
-man 7 signal | grep SIGINT
+#+caption: 時間が変わる
+#+begin_src js
+console.log(new Date('2026-06-01')) // UTC -> UTC
+console.log(new Date('2026-06-01T00:00:00')) // local timezone(Asia/Tokyo) -> -9 -> UTC
 #+end_src
 
 #+RESULTS:
 #+begin_src
-       SIGINT       P1990      Term    Interrupt from keyboard
-       SIGINT           2           2       2       2
+2026-06-01T00:00:00.000Z
+2026-05-31T15:00:00.000Z
+undefined
 #+end_src
+
+より端的に示す。
+
+#+caption: 日本時間として解釈される
+#+begin_src js
+console.log(new Date(2026,0,1))
+#+end_src
+
+#+RESULTS:
+#+begin_src
+2025-12-31T15:00:00.000Z
+undefined
+#+end_src
+
+たくさんの落とし穴がありそうである。
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
