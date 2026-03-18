@@ -1,0 +1,46 @@
+:properties:
+:ID: 20260116T085457
+:end:
+#+title:      KDOC 531: SIGINTとSIGTERMの違い
+#+date:       [2026-01-16 Fri 08:54]
+#+filetags:   :permanent:
+#+identifier: 20260116T085457
+
+* この文書のステータス
+- 作成
+  - [X] 2026-03-11 貴島
+- レビュー
+  - [X] 2026-03-11 貴島
+
+* 概要
+
+シグナルをハンドルするようなプログラムを作ったときに、SIGINTとSIGTERMの扱いを間違っていて、終了しないことがあった。
+
+- SIGTERM は ~kill~ コマンドで送られるシグナル
+- SIGINT は Ctrl+C で送られるシグナル
+
+#+caption: Termination signal
+#+begin_src shell
+man 7 signal | grep SIGTERM
+#+end_src
+
+#+RESULTS:
+#+begin_src
+       SIGTERM      P1990      Term    Termination signal
+       SIGTERM         15          15      15      15
+#+end_src
+
+#+caption: Interrupt from keyboard
+#+begin_src shell
+man 7 signal | grep SIGINT
+#+end_src
+
+#+RESULTS:
+#+begin_src
+       SIGINT       P1990      Term    Interrupt from keyboard
+       SIGINT           2           2       2       2
+#+end_src
+
+* 関連
+
+- 追加調査: シグナルが送られる様子を見る

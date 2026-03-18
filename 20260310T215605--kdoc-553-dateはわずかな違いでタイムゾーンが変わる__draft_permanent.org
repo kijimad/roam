@@ -1,10 +1,10 @@
 :properties:
-:ID: 20260203T224157
+:ID: 20260310T215605
 :end:
-#+title:      KDOC 543: 出来の悪いゲームのほうが参考になる
-#+date:       [2026-02-03 Tue 22:41]
-#+filetags:   :draft:essay:
-#+identifier: 20260203T224157
+#+title:      KDOC 553: Dateはわずかな違いでタイムゾーンが変わる
+#+date:       [2026-03-10 Tue 21:56]
+#+filetags:   :draft:permanent:
+#+identifier: 20260310T215605
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -48,8 +48,7 @@
 
 * この文書のステータス
 - 作成
-  - [ ] <署名>
-# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+  - [X] 2026-03-15 貴島
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -66,9 +65,28 @@
 * 概要
 # 本文(見出しも設定する)
 
-出来の悪いゲームはプレイする価値がある。よいゲームよりも出来のゲームの悪いゲームを遊ぶほうがずっと役立つ。自分ならどう向上させるか考えられるから。
+JavaScript上で、Dateオブジェクトのタイムゾーンがコンストラクタの日時フォーマットによって変わるのにハマった。有名な落とし穴のようである。
 
-この考え方は、あらゆるメディアに適用できるように見える。漫画、映画、小説...。
+#+caption: 表す時間が変わる。console.logでUTCに変換されている
+#+begin_src js
+  // どちらもタイムゾーンオフセットがない
+  console.log(new Date('2026-06-01')) // UTC -> UTC
+  console.log(new Date('2026-06-01T00:00:00')) // local timezone(Asia/Tokyo) -> -9 -> UTC
+#+end_src
+
+#+RESULTS:
+#+begin_src
+2026-06-01T00:00:00.000Z
+2026-05-31T15:00:00.000Z
+undefined
+#+end_src
+
+仕様を見る。
+
+#+begin_quote
+タイムゾーンオフセットがない場合、日付のみの形式は UTC 時刻として解釈され、日時形式はローカル時刻として解釈されます。
+[[https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date][Date - JavaScript | MDN]]
+#+end_quote
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
@@ -77,4 +95,4 @@
 # [類推、未解決、具体例、追加調査、理由、動機、検証]
 # 横に類推するか、上に抽象化するか、下に具体化するか
 
-- 引用: [[id:20260129T213544][KDOC 539: 『「レベルアップ」のゲームデザイン』]]の26ページから
+なし。

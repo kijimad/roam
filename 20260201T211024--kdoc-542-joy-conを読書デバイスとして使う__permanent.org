@@ -1,0 +1,45 @@
+:properties:
+:ID: 20260201T211024
+:end:
+#+title:      KDOC 542: Joy-Conを読書デバイスとして使う
+#+date:       [2026-02-01 Sun 21:10]
+#+filetags:   :permanent:
+#+identifier: 20260201T211024
+
+* この文書のステータス
+- 作成
+  - [X] 2026-03-18 貴島
+- レビュー
+  - [X] 2026-03-18 貴島
+
+* 概要
+
+任天堂のJoy-ConをPC(Ubuntu)の読書デバイスとして使っている。片手・ワイヤレスでページ送りできて便利である。
+
+* 手順
+
+Ubuntuで設定する手順をメモした。初期状態では、Bluetooth接続しても一瞬で切断された。
+
+まず[[https://github.com/DanielOgorchock/joycond][DanielOgorchock/joycond]]をインストールする。手順はリポジトリに書いてあるとおり。
+
+つぎに、デフォルトのドライバを無効化する。
+
+#+caption: デフォルトの任天堂ドライバを無効化する
+#+begin_src shell
+sudo modprobe -r hid_nintendo
+#+end_src
+
+再起動すると、Bluetooth接続できた。しかし一般ユーザのantimicroxで認識しなかった。 ~sudo antimicrox~ するとできるのだが、起動が面倒なので、設定する。
+
+#+begin_src shell
+sudo usermod -aG input $USER
+
+sudo bash -c 'echo "SUBSYSTEM==\"input\", KERNEL==\"event*\", ATTRS{id/vendor}==\"057e\", MODE=\"0660\",
+GROUP=\"input\"" > /etc/udev/rules.d/99-joycon-override.rules'
+
+sudo udevadm control --reload-rules && sudo udevadm trigger
+#+end_src
+
+* 関連
+
+なし。
