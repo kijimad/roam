@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-03-11T08:59:22Z -->
+<!-- 2026-03-18T09:19:57Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 554: 『Effective JavaScript』</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 554: 『Effective JavaScript』</h1>
-<div id="outline-container-org41dd7eb" class="outline-2">
-<h2 id="org41dd7eb"><a href="#org41dd7eb">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org41dd7eb">
+<div id="outline-container-orgf92020c" class="outline-2">
+<h2 id="orgf92020c"><a href="#orgf92020c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf92020c">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,26 +33,96 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfd9edc5" class="outline-2">
-<h2 id="orgfd9edc5"><a href="#orgfd9edc5">概要</a></h2>
-<div class="outline-text-2" id="text-orgfd9edc5">
+<div id="outline-container-org7800684" class="outline-2">
+<h2 id="org7800684"><a href="#org7800684">概要</a></h2>
+<div class="outline-text-2" id="text-org7800684">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-org3281e35" class="outline-2">
-<h2 id="org3281e35"><a href="#org3281e35">メモ</a></h2>
-<div class="outline-text-2" id="text-org3281e35">
+<div id="outline-container-org7268d70" class="outline-2">
+<h2 id="org7268d70"><a href="#org7268d70">メモ</a></h2>
+<div class="outline-text-2" id="text-org7268d70">
 <ul class="org-ul">
 <li>すでに複数の異なるプログラミング言語を書き慣れている人にとっては新しい言語に取り組むさい、その言語特有の注意事項から学び始めるのは効果的である。それによって言語に対するメンタルモデルを鍛え上げるとともに言語の特徴を把握できる(まえがき)</li>
 <li>TwoslashはTypeScriptのマークアップフォーマット</li>
+<li><code>type Shape = Square | Rectangle</code> の Rectangle は型だが、 <code>shape instanceof Rectangle</code> は値で、この場合はコンストラクタ関数を指す。型空間のシンボルと値空間のシンボルがある(p15)
+<ul class="org-ul">
+<li>よくわからない</li>
+</ul></li>
+<li>型エラーのあるコードからも出力が生成される。ほかの言語と異なるところ(p15)</li>
+<li>型演算は実行時の値に影響しない(p16)</li>
+<li>実行時の型は「宣言された型」と異なる可能性がある(p17)
+<ul class="org-ul">
+<li>TypeScriptの型なので、実行時には削除される</li>
+</ul></li>
+<li>TypeScriptで実行時の型が宣言した型と一致しないと、混乱する。「不健全な型」という(p17)</li>
+<li>C++のような言語の同じ名前でシグネチャが異なる関数が定義できる機能をオーバーロードという。TypeScriptではできない(p18)</li>
+<li>1つの関数には複数の型シグネチャを指定できるが、実装は1つでなければならない。関数のオーバーロード機能は完全に型レベルで存在する(p18)
+<ul class="org-ul">
+<li>どういったケースで使えるのだろう</li>
+</ul></li>
+<li>型は実行時に利用できない。実行時に型をチェックするには型を再構築するなんらかの方法が必要で、一般的にタグ付きユニオンやプロパティのチェックなどの方法がある(p19)</li>
+<li>関数を書くとき宣言したプロパティを持ち、それ以外のプロパティは持たない引数で呼び出すことを想定してしまいがちである。これは「閉じた型」「シールされた型」と呼ばれ、TypeScriptの型システムでは表現できない。TypeScriptの型は「オープン」である(p21)</li>
+<li>Object.keys()が <code>string[]</code> で返ってくるのは「開いた型」であるから。オブジェクトのキーの一覧には、型宣言に明示的に列挙されていないフィールドが入っていることもありうるから、文字列で返る(p21)</li>
+<li>JavaScriptがダックタイピングを奨励しているから、TypeScriptはこれをモデリングするため構造的型付けを用いる(p24)</li>
+<li>エディタなどでTypeScriptがそれぞれの時点で変数の型をどのように捉えているかを見ることは、型の拡大と絞り込みに関する直感を養ううえで重要である。条件分岐のなかで変数の型が変化するのを確認することは型システムへの信頼を築くのにきわめて有効である(p30)</li>
+<li>JavaScriptでは歴史的経緯から <code>typeof null</code> は <code>object"</code> である(p32)</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-js">console.log(<span class="org-keyword">typeof</span> <span class="org-constant">null</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">object
+undefined
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>コードが実行される前にTypeScriptがエラーをチェックしているときには変数は型を持っているだけ。ありえる値の集合と考えられ、この集合は型のドメインと呼ぶ。number型はすべての数値の値の集合と考えられる。通常互換的に語られる「型」と「値の集合」は区別できる(p35)
+<ul class="org-ul">
+<li>never型は空集合。型階層の1番下に位置することから「ボトム型」と呼ばれることもある</li>
+<li>次に小さいのは単一の値を含む集合である。リテラル型が該当する</li>
+<li>2つまたは3つの値を持つ型はリテラル型のユニオンとして作れる</li>
+</ul></li>
+<li>型チェッカーが行っていることの多くは、ある集合が別の集合の部分集合であるかをテストすること(p36)</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-js"><span class="org-keyword">interface</span> Identified {
+  id: string;
+}
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>↑このインターフェースは、その型のドメインに含まれる値を説明している。どちらも満たすならそれはIdentified:
+<ul class="org-ul">
+<li>値はオブジェクトか</li>
+<li>stringに代入可能なidプロパティを持つか</li>
+</ul></li>
+<li>型を値の集合として考えると、型に対する演算を理解しやすくなる(p37)</li>
+<li>型演算は値の集合(型のドメイン)に適用されるのであって、インターフェースのプロパティに適用されるのではない(p37)
+<ul class="org-ul">
+<li><code>&amp;</code> のインターセクションは、プロパティではなく集合への交点である</li>
+</ul></li>
+<li><code>extends</code> は通常、interfaceにフィールドを追加するために使われるが、元の型の値の部分集合になっていればどんな使い方もできる(p38)
+<ul class="org-ul">
+<li>元の型のフィールドは <code>number | null</code> なのを <code>number</code> に上書きするなど</li>
+</ul></li>
+<li>「サブタイプ」とは、ある型のドメインが他の型のドメインの部分集合であることを表現するための別の言い方である(p39)</li>
+<li>TypeScriptは型の等価性をほとんどチェックしない。そのため型のテストを書くのが難しい(p42)</li>
+<li><code>never</code> (空の型)の対極にあるのは <code>unknown</code> である。この型のドメインにはJavaScriptのすべての値が含まれ、すべての型は <code>unknown</code> に代入可能である。型階層の最上位に位置するためトップ型と呼ばれる(p42)</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org3269b2f" class="outline-2">
-<h2 id="org3269b2f"><a href="#org3269b2f">関連</a></h2>
-<div class="outline-text-2" id="text-org3269b2f">
+<div id="outline-container-org6852c65" class="outline-2">
+<h2 id="org6852c65"><a href="#org6852c65">関連</a></h2>
+<div class="outline-text-2" id="text-org6852c65">
 <p>
 なし。
 </p>
