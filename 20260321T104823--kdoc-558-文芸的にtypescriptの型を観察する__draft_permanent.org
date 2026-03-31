@@ -1,10 +1,10 @@
 :properties:
-:ID: 20260127T093439
+:ID: 20260321T104823
 :end:
-#+title:      KDOC 538: なぜダークソウルシリーズは人々を救うのか
-#+date:       [2026-01-27 Tue 09:34]
-#+filetags:   :draft:essay:
-#+identifier: 20260127T093439
+#+title:      KDOC 558: 文芸的にTypeScriptの型を観察する
+#+date:       [2026-03-21 Sat 10:48]
+#+filetags:   :draft:permanent:
+#+identifier: 20260321T104823
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -66,10 +66,40 @@
 * 概要
 # 本文(見出しも設定する)
 
-YouTube に、"Dark Souls Save me"のようなタイトルの動画が溢れていることに気づいた。
+TypeScriptでは、エディタ上で、型が変動していく様子を観察できる。これを文芸的に表現したいと考えたとき、 ~twoslash~ 記法というものが使えるようである。
 
-- ゲームでキレることが多かったが、それがなくなった
-- クリアまで耐えられるようになった
+Emacsのorg-modeで使えるようにした。
+
+- [[https://github.com/kijimad/ob-twoslash][kijimad/ob-twoslash]]
+
+#+begin_src twoslash
+  const a: string | null = "a"
+  //    ^?
+  if (a !== null) {
+     a
+  // ^?
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const a: string | null (line 1)
+const a: string (line 3)
+#+end_src
+
+#+begin_src twoslash
+  type Vec3D = Record<'X' | 'Y' | 'Z', number>;
+  //   ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+type Vec3D = {
+    X: number;
+    Y: number;
+    Z: number;
+} (line 1)
+#+end_src
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。

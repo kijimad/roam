@@ -105,7 +105,7 @@ undefined
   - 2つまたは3つの値を持つ型はリテラル型のユニオンとして作れる
 - 型チェッカーが行っていることの多くは、ある集合が別の集合の部分集合であるかをテストすること(p36)
 
-#+begin_src js
+#+begin_src typescript
   interface Identified {
     id: string;
   }
@@ -122,6 +122,268 @@ undefined
 - 「サブタイプ」とは、ある型のドメインが他の型のドメインの部分集合であることを表現するための別の言い方である(p39)
 - TypeScriptは型の等価性をほとんどチェックしない。そのため型のテストを書くのが難しい(p42)
 - ~never~ (空の型)の対極にあるのは ~unknown~ である。この型のドメインにはJavaScriptのすべての値が含まれ、すべての型は ~unknown~ に代入可能である。型階層の最上位に位置するためトップ型と呼ばれる(p42)
+- 型アサーションも集合として考えられる。サブタイプであれば型アサーションできる。すべての型はunknown型のサブタイプであり、unknownを含む型アサーションは常に可能である(p52)
+- 型アサーションはいわゆる「キャスト」とは異なる。Cなどではキャストは実行時に値を変更できるが、型アサーションにはできない。型アサーションは型レベルの構文であり、実行時に消去される。値を変更するわけではない(p53)
+  - キャストすると情報が失われる、みたいなことがあるが、そういうことはないことか
+- プリミティブはイミュータブルである点とメソッドを持たない点で、オブジェクトと区別される(p53)
+- stringプリミティブはメソッドを持たないが、Stringオブジェクトが定義されていて、それが代わりに使われている(p54)
+
+#+caption: ラッパーオブジェクトへの暗黙的変換があるから、プリミティブにプロパティをセットしても消える
+#+begin_src js
+  x = "hello"
+  x.language = 'English'
+  console.log(x.language)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+undefined
+undefined
+#+end_src
+
+- TypeScriptのラッパーオブジェクト型を使用しない。代わりにプリミティブ型を使う(p56)
+
+#+caption: 代入可能性と余剰プロパティチェックは別々に考えるべきである(p57)
+#+begin_src typescript
+  interface A {
+    name: string;
+    count: number;
+  }
+  const r: A = {
+    name: 'a',
+    count: 1,
+    elephant: 1, // 余剰プロパティはエラー
+  }
+
+  const obj = {
+    name: 'a',
+    count: 1,
+    elephant: 1,
+  } // 推論される型の elephant は string
+  const r: A = obj; // OK. Aの elephant は any, obj の型のelephantは string. obj の型に含まれる値の集合はA型の値の部分集合である
+#+end_src
+
+#+begin_src twoslash
+  const a: string | null = "a"
+  //    ^?
+  if (a !== null) {
+     a
+  // ^?
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const a: string | null (line 1)
+const a: string (line 3)
+#+end_src
+
+#+caption: ミュータブルな配列(a)はreadonlyな配列(b)に代入できる
+#+begin_src twoslash
+  const a: number[] = [1, 2, 3]
+  //    ^?
+  const b: readonly number[] = a;
+  //    ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const a: number[] (line 1)
+const b: readonly number[] (line 2)
+#+end_src
+
+#+caption: 逆はそうではない
+#+begin_src twoslash
+  const b: readonly number[] = [1, 2, 3];
+  //    ^?
+  const c: number[] = b;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+## Errors were thrown in the sample, but not included in an error tag
+
+These errors were not marked as being expected: 4104.
+Expected: // @errors: 4104
+
+Compiler Errors:
+
+index.ts
+  [4104] 55 - The type 'readonly number[]' is 'readonly' and cannot be assigned to the mutable type 'number[]'.
+#+end_src
+
+- オブジェクトリテラルを既知の型を持つ変数に代入したり関数の引数として渡すと余剰プロパティチェックが行われる。エラーを見つける効果的な方法だが、型チェッカーが行う代入可能性チェックとは異なる(p60)
+- 「弱い型」とはオプションプロパティしか持たない型のことである。そのような型では代入可能性チェックをパスするためにプロパティが少なくとも1つ一致しなければならない(p60)
+- TypeScriptで関数式を使う利点は、パラメータや戻り値の型を個別指定する代わりに関数全体に対して1度に型宣言を適用できることである。ライブラリはよく使う関数シグネチャを型として提供する(p61)
+
+#+caption: 型宣言の再利用
+#+begin_src typescript
+  // 重複
+  function add1(a: number, b: number) { return a + b; }
+  function sub1(a: number, b: number) { return a - b; }
+  function mul1(a: number, b: number) { return a * b; }
+  function div1(a: number, b: number) { return a / b; }
+
+  // クリア
+  type BinaryFn = (a: number, b: number) => number;
+  const add2: BinaryFn = (a, b) => a + b;
+  const sub2: BinaryFn = (a, b) => a - b;
+  const mul2: BinaryFn = (a, b) => a * b;
+  const div2: BinaryFn = (a, b) => a / b;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// 重複
+function add1(a, b) { return a + b; }
+function sub1(a, b) { return a - b; }
+function mul1(a, b) { return a * b; }
+function div1(a, b) { return a / b; }
+var add2 = function (a, b) { return a + b; };
+var sub2 = function (a, b) { return a - b; };
+var mul2 = function (a, b) { return a * b; };
+var div2 = function (a, b) { return a / b; };
+#+end_src
+
+- type と interface のどちらを使うべきか。複雑な型の場合は type (型エイリアス) を使い、そうでない場合は interface を使うのがよい。interface には宣言のマージ、 type には型のインライン化がある(p71)
+- ~T[]~ は ~readonly T[]~ よりできることが多いので、 ~T[]~ は ~readonly T[]~ のサブタイプである。つまりミュータブルな配列はreadonlyな配列に代入できる。逆はできない(p75)
+- ざっくりとした型(~Map<string, string~)に対してデータ検証を行い、具体的な型を得るというパターンはTypeScriptではよくある(p90)
+- (感想)インデックスシグネチャがよくわからない。できるだけ避けたほうがよいのはわかった
+
+#+caption: Recordを使う
+#+begin_src twoslash
+  type Vec3D = Record<'X' | 'Y' | 'Z', number>;
+  //   ^?
+
+  type StringNumber = Record<string, number>;
+  //   ^?
+  const value: StringNumber = { a: 1, b: 2, c: 3 };
+#+end_src
+
+#+RESULTS:
+#+begin_src
+type Vec3D = {
+    X: number;
+    Y: number;
+    Z: number;
+} (line 1)
+type StringNumber = {
+    [x: string]: number;
+} (line 3)
+const value: StringNumber (line 4)
+#+end_src
+
+#+caption: const と let の型推論の違い。letで宣言された変数にプリミティブ値を代入するとその「基本型」に拡大される(p109)
+#+begin_src twoslash
+  const x = 'x';
+  //    ^?
+  let y = 'y';
+  //  ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const x: "x" (line 1)
+let y: string (line 2)
+#+end_src
+
+#+caption: 配列の型推論(p109)
+#+begin_src twoslash
+  const mixed = ['x', 1];
+  //    ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const mixed: (string | number)[] (line 1)
+#+end_src
+
+#+caption: as constと書くと、その値について可能なかぎり狭い型を推論する。型の拡大は起こらない(p111)
+#+begin_src twoslash
+  const arr1 = [1, 2, 3]
+  //    ^?
+  const arr2 = [1, 2, 3] as const
+  //    ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const arr1: number[] (line 1)
+const arr2: readonly [1, 2, 3] (line 2)
+#+end_src
+
+#+caption: これはOK。例は下に続く(p125)
+#+begin_src twoslash
+type Language = 'JavaScript' | 'TypeScript' | 'Python';
+function setLanguage(language: Language) {}
+setLanguage('JavaScript')
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+#+end_src
+
+#+caption: 初期化のタイミングで型を推論しなければならないのでstringが推論されるが、これはLanguageに代入できない(p126)
+#+begin_src twoslash
+type Language = 'JavaScript' | 'TypeScript' | 'Python';
+function setLanguage(language: Language) {}
+let language = 'JavaScript'
+setLanguage(language)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+
+## Errors were thrown in the sample, but not included in an error tag
+
+These errors were not marked as being expected: 2345.
+Expected: // @errors: 2345
+
+Compiler Errors:
+
+index.ts
+  [2345] 140 - Argument of type 'string' is not assignable to parameter of type 'Language'.
+#+end_src
+
+#+caption: constにすると変数は変更できないことが型チェッカーに伝わり、より正確な型を推論できる(p126)
+#+begin_src twoslash
+type Language = 'JavaScript' | 'TypeScript' | 'Python';
+function setLanguage(language: Language) {}
+const language = 'JavaScript'
+//    ^?
+setLanguage(language)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const language: "JavaScript" (line 3)
+#+end_src
+
+#+caption: async関数は常にPromiseを返す
+#+begin_src twoslash
+async function getNumber1() { return 42 }
+//             ^?
+const getNumber2 = async () => 42
+//    ^?
+const getNumber3 = () => Promise.resolve(42)
+//    ^?
+#+end_src
+
+- promiseにするのは重要なルールの強制のためである。関数には常に同期的に結果を返すか、常に非同期的に結果を返すかすべきで、状況によって同期的に結果を返したり非同期的に結果を返したりしてはいけない(p141)
+
+#+RESULTS:
+#+begin_src
+function getNumber1(): Promise<number> (line 1)
+const getNumber2: () => Promise<number> (line 2)
+const getNumber3: () => Promise<number> (line 3)
+#+end_src
+
+#+caption: x
+#+begin_src twoslash
+
+#+end_src
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
