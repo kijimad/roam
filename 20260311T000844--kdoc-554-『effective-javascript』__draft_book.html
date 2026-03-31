@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-03-31T23:00:54Z -->
+<!-- 2026-04-01T08:17:07Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 554: 『Effective JavaScript』</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 554: 『Effective JavaScript』</h1>
-<div id="outline-container-orga8a8d6b" class="outline-2">
-<h2 id="orga8a8d6b"><a href="#orga8a8d6b">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orga8a8d6b">
+<div id="outline-container-org59b5643" class="outline-2">
+<h2 id="org59b5643"><a href="#org59b5643">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org59b5643">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,17 +33,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orga334efe" class="outline-2">
-<h2 id="orga334efe"><a href="#orga334efe">概要</a></h2>
-<div class="outline-text-2" id="text-orga334efe">
+<div id="outline-container-orgfbe879b" class="outline-2">
+<h2 id="orgfbe879b"><a href="#orgfbe879b">概要</a></h2>
+<div class="outline-text-2" id="text-orgfbe879b">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-orge40be47" class="outline-2">
-<h2 id="orge40be47"><a href="#orge40be47">メモ</a></h2>
-<div class="outline-text-2" id="text-orge40be47">
+<div id="outline-container-org9369ccd" class="outline-2">
+<h2 id="org9369ccd"><a href="#org9369ccd">メモ</a></h2>
+<div class="outline-text-2" id="text-org9369ccd">
 <ul class="org-ul">
 <li>すでに複数の異なるプログラミング言語を書き慣れている人にとっては新しい言語に取り組むさい、その言語特有の注意事項から学び始めるのは効果的である。それによって言語に対するメンタルモデルを鍛え上げるとともに言語の特徴を把握できる(まえがき)</li>
 <li>TwoslashはTypeScriptのマークアップフォーマット</li>
@@ -93,7 +93,7 @@ undefined
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-js"><span class="org-keyword">interface</span> Identified {
+<pre class="src src-typescript">interface Identified {
   id: string;
 }
 </pre>
@@ -117,12 +117,285 @@ undefined
 <li>「サブタイプ」とは、ある型のドメインが他の型のドメインの部分集合であることを表現するための別の言い方である(p39)</li>
 <li>TypeScriptは型の等価性をほとんどチェックしない。そのため型のテストを書くのが難しい(p42)</li>
 <li><code>never</code> (空の型)の対極にあるのは <code>unknown</code> である。この型のドメインにはJavaScriptのすべての値が含まれ、すべての型は <code>unknown</code> に代入可能である。型階層の最上位に位置するためトップ型と呼ばれる(p42)</li>
+<li>型アサーションも集合として考えられる。サブタイプであれば型アサーションできる。すべての型はunknown型のサブタイプであり、unknownを含む型アサーションは常に可能である(p52)</li>
+<li>型アサーションはいわゆる「キャスト」とは異なる。Cなどではキャストは実行時に値を変更できるが、型アサーションにはできない。型アサーションは型レベルの構文であり、実行時に消去される。値を変更するわけではない(p53)
+<ul class="org-ul">
+<li>キャストすると情報が失われる、みたいなことがあるが、そういうことはないことか</li>
+</ul></li>
+<li>プリミティブはイミュータブルである点とメソッドを持たない点で、オブジェクトと区別される(p53)</li>
+<li>stringプリミティブはメソッドを持たないが、Stringオブジェクトが定義されていて、それが代わりに使われている(p54)</li>
 </ul>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>ラッパーオブジェクトへの暗黙的変換があるから、プリミティブにプロパティをセットしても消える</label><pre class="src src-js">x = <span class="org-string">"hello"</span>
+x.language = <span class="org-string">'English'</span>
+console.log(x.language)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">undefined
+undefined
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>TypeScriptのラッパーオブジェクト型を使用しない。代わりにプリミティブ型を使う(p56)</li>
+</ul>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>代入可能性と余剰プロパティチェックは別々に考えるべきである(p57)</label><pre class="src src-typescript">interface A {
+  name: string;
+  count: number;
+}
+const r: A = {
+  name: 'a',
+  count: 1,
+  elephant: 1, // 余剰プロパティはエラー
+}
+
+const obj = {
+  name: 'a',
+  count: 1,
+  elephant: 1,
+} // 推論される型の elephant は string
+const r: A = obj; // OK. Aの elephant は any, obj の型のelephantは string. obj の型に含まれる値の集合はA型の値の部分集合である
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-twoslash">const a: string | null = "a"
+//    ^?
+if (a !== null) {
+   a
+// ^?
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">const a: string | null (line 1)
+const a: string (line 3)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>ミュータブルな配列(a)はreadonlyな配列(b)に代入できる</label><pre class="src src-twoslash">const a: number[] = [1, 2, 3]
+//    ^?
+const b: readonly number[] = a;
+//    ^?
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">const a: number[] (line 1)
+const b: readonly number[] (line 2)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>逆はそうではない</label><pre class="src src-twoslash">const b: readonly number[] = [1, 2, 3];
+//    ^?
+const c: number[] = b;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">
+## Errors were thrown in the sample, but not included in an error tag
+
+These errors were not marked as being expected: 4104.
+Expected: // @errors: 4104
+
+Compiler Errors:
+
+index.ts
+  [4104] 55 - The type 'readonly number[]' is 'readonly' and cannot be assigned to the mutable type 'number[]'.
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>オブジェクトリテラルを既知の型を持つ変数に代入したり関数の引数として渡すと余剰プロパティチェックが行われる。エラーを見つける効果的な方法だが、型チェッカーが行う代入可能性チェックとは異なる(p60)</li>
+<li>「弱い型」とはオプションプロパティしか持たない型のことである。そのような型では代入可能性チェックをパスするためにプロパティが少なくとも1つ一致しなければならない(p60)</li>
+<li>TypeScriptで関数式を使う利点は、パラメータや戻り値の型を個別指定する代わりに関数全体に対して1度に型宣言を適用できることである。ライブラリはよく使う関数シグネチャを型として提供する(p61)</li>
+</ul>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>型宣言の再利用</label><pre class="src src-typescript">// 重複
+function add1(a: number, b: number) { return a + b; }
+function sub1(a: number, b: number) { return a - b; }
+function mul1(a: number, b: number) { return a * b; }
+function div1(a: number, b: number) { return a / b; }
+
+// クリア
+type BinaryFn = (a: number, b: number) =&gt; number;
+const add2: BinaryFn = (a, b) =&gt; a + b;
+const sub2: BinaryFn = (a, b) =&gt; a - b;
+const mul2: BinaryFn = (a, b) =&gt; a * b;
+const div2: BinaryFn = (a, b) =&gt; a / b;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">// 重複
+function add1(a, b) { return a + b; }
+function sub1(a, b) { return a - b; }
+function mul1(a, b) { return a * b; }
+function div1(a, b) { return a / b; }
+var add2 = function (a, b) { return a + b; };
+var sub2 = function (a, b) { return a - b; };
+var mul2 = function (a, b) { return a * b; };
+var div2 = function (a, b) { return a / b; };
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>type と interface のどちらを使うべきか。複雑な型の場合は type (型エイリアス) を使い、そうでない場合は interface を使うのがよい。interface には宣言のマージ、 type には型のインライン化がある(p71)</li>
+<li><code>T[]</code> は <code>readonly T[]</code> よりできることが多いので、 <code>T[]</code> は <code>readonly T[]</code> のサブタイプである。つまりミュータブルな配列はreadonlyな配列に代入できる。逆はできない(p75)</li>
+<li>ざっくりとした型(<code>Map&lt;string, string</code>)に対してデータ検証を行い、具体的な型を得るというパターンはTypeScriptではよくある(p90)</li>
+<li>(感想)インデックスシグネチャがよくわからない。できるだけ避けたほうがよいのはわかった</li>
+</ul>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>Recordを使う</label><pre class="src src-twoslash">type Vec3D = Record&lt;'X' | 'Y' | 'Z', number&gt;;
+//   ^?
+
+type StringNumber = Record&lt;string, number&gt;;
+//   ^?
+const value: StringNumber = { a: 1, b: 2, c: 3 };
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">type Vec3D = {
+    X: number;
+    Y: number;
+    Z: number;
+} (line 1)
+type StringNumber = {
+    [x: string]: number;
+} (line 3)
+const value: StringNumber (line 4)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 7: </span>const と let の型推論の違い。letで宣言された変数にプリミティブ値を代入するとその「基本型」に拡大される(p109)</label><pre class="src src-twoslash">const x = 'x';
+//    ^?
+let y = 'y';
+//  ^?
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">const x: "x" (line 1)
+let y: string (line 2)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>配列の型推論(p109)</label><pre class="src src-twoslash">const mixed = ['x', 1];
+//    ^?
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">const mixed: (string | number)[] (line 1)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 9: </span>as constと書くと、その値について可能なかぎり狭い型を推論する。型の拡大は起こらない(p111)</label><pre class="src src-twoslash">const arr1 = [1, 2, 3]
+//    ^?
+const arr2 = [1, 2, 3] as const
+//    ^?
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">const arr1: number[] (line 1)
+const arr2: readonly [1, 2, 3] (line 2)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 10: </span>これはOK。例は下に続く(p125)</label><pre class="src src-twoslash">type Language = 'JavaScript' | 'TypeScript' | 'Python';
+function setLanguage(language: Language) {}
+setLanguage('JavaScript')
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 11: </span>初期化のタイミングで型を推論しなければならないのでstringが推論されるが、これはLanguageに代入できない(p126)</label><pre class="src src-twoslash">type Language = 'JavaScript' | 'TypeScript' | 'Python';
+function setLanguage(language: Language) {}
+let language = 'JavaScript'
+setLanguage(language)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">
+## Errors were thrown in the sample, but not included in an error tag
+
+These errors were not marked as being expected: 2345.
+Expected: // @errors: 2345
+
+Compiler Errors:
+
+index.ts
+  [2345] 140 - Argument of type 'string' is not assignable to parameter of type 'Language'.
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 12: </span>constにすると変数は変更できないことが型チェッカーに伝わり、より正確な型を推論できる(p126)</label><pre class="src src-twoslash">type Language = 'JavaScript' | 'TypeScript' | 'Python';
+function setLanguage(language: Language) {}
+const language = 'JavaScript'
+//    ^?
+setLanguage(language)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">const language: "JavaScript" (line 3)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 13: </span>async関数は常にPromiseを返す</label><pre class="src src-twoslash">async function getNumber1() { return 42 }
+//             ^?
+const getNumber2 = async () =&gt; 42
+//    ^?
+const getNumber3 = () =&gt; Promise.resolve(42)
+//    ^?
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>promiseにするのは重要なルールの強制のためである。関数には常に同期的に結果を返すか、常に非同期的に結果を返すかすべきで、状況によって同期的に結果を返したり非同期的に結果を返したりしてはいけない(p141)</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-nil">function getNumber1(): Promise&lt;number&gt; (line 1)
+const getNumber2: () =&gt; Promise&lt;number&gt; (line 2)
+const getNumber3: () =&gt; Promise&lt;number&gt; (line 3)
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 14: </span>x</label><pre class="src src-twoslash">
+</pre>
 </div>
 </div>
-<div id="outline-container-org37d4d9b" class="outline-2">
-<h2 id="org37d4d9b"><a href="#org37d4d9b">関連</a></h2>
-<div class="outline-text-2" id="text-org37d4d9b">
+</div>
+<div id="outline-container-org12c1313" class="outline-2">
+<h2 id="org12c1313"><a href="#org12c1313">関連</a></h2>
+<div class="outline-text-2" id="text-org12c1313">
 <p>
 なし。
 </p>
