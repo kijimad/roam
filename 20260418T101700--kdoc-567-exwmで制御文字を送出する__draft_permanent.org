@@ -1,10 +1,10 @@
 :properties:
-:ID: 20260310T215605
+:ID: 20260418T101700
 :end:
-#+title:      KDOC 553: Dateはわずかな違いでタイムゾーンが変わる
-#+date:       [2026-03-10 Tue 21:56]
+#+title:      KDOC 567: EXWMで制御文字を送出する
+#+date:       [2026-04-18 Sat 10:17]
 #+filetags:   :draft:permanent:
-#+identifier: 20260310T215605
+#+identifier: 20260418T101700
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -48,7 +48,8 @@
 
 * この文書のステータス
 - 作成
-  - [X] 2026-03-15 貴島
+  - [ ] <署名>
+# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
 - レビュー
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -65,28 +66,12 @@
 * 概要
 # 本文(見出しも設定する)
 
-JavaScript上で、Dateオブジェクトのタイムゾーンがコンストラクタの日時フォーマットによって変わるのにハマった。有名な落とし穴のようである。
+EmacsでEXWMを使っていると、 ~C-c~ がEmacsに取られてしまって中断できないことが割とある。そういう場合の関数が用意されている。
 
-#+caption: 表す時間が変わる。console.logでUTCに変換されている
-#+begin_src js
-  // どちらもタイムゾーンオフセットがない
-  console.log(new Date('2026-06-01')) // UTC -> UTC
-  console.log(new Date('2026-06-01T00:00:00')) // local timezone(Asia/Tokyo) -> -9 -> UTC
+#+begin_src emacs-lisp
+  ;; → C-c C-q を押した後に C-c を押すとアプリに送られる
+  (global-set-key (kbd "C-c C-q") 'exwm-input-send-next-key)
 #+end_src
-
-#+RESULTS:
-#+begin_src
-2026-06-01T00:00:00.000Z
-2026-05-31T15:00:00.000Z
-undefined
-#+end_src
-
-仕様を見る。
-
-#+begin_quote
-タイムゾーンオフセットがない場合、日付のみの形式は UTC 時刻として解釈され、日時形式はローカル時刻として解釈されます。
-[[https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date][Date - JavaScript | MDN]]
-#+end_quote
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
