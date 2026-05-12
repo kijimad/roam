@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-05-13T00:56:38Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 580: 複合インデックスの条件の順番による差を見る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 580: 複合インデックスの条件の順番による差を見る</h1>
+<div id="outline-container-org7c79e8f" class="outline-2">
+<h2 id="org7c79e8f"><a href="#org7c79e8f">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7c79e8f">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+
+<ul class="org-ul">
+<li>レビュー
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org311a5ec" class="outline-2">
+<h2 id="org311a5ec"><a href="#org311a5ec">概要</a></h2>
+<div class="outline-text-2" id="text-org311a5ec">
+<ul class="org-ul">
+<li>日付範囲、外部キーの2つのフィールドで検索する</li>
+<li>その場合、複合インデックスにつけた順番がインデックス使用および速度に影響をもたらすか調べる</li>
+</ul>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>id、日付範囲の順でインデックスをつける</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">customers</span> (
+  id   <span class="org-type">INT</span> <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
+  <span class="org-keyword">name</span> TEXT
+);
+
+<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">orders</span> (
+  id          SERIAL <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
+  customer_id <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">REFERENCES</span> customers(id),
+  ordered_at  <span class="org-type">DATE</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>,
+  amount      <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>
+);
+
+<span class="org-keyword">CREATE</span> INDEX idx_cust_date <span class="org-keyword">ON</span> orders (customer_id, ordered_at);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#39015;&#23458;&#12434;1000&#20154;&#20316;&#25104;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> customers (id, <span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span> i, <span class="org-string">'customer_'</span> || i
+<span class="org-keyword">FROM</span> generate_series(1, 1000) <span class="org-keyword">AS</span> i;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#27880;&#25991;&#12434;100&#19975;&#34892;&#20316;&#25104;&#65288;&#39015;&#23458;1&#12316;1000&#12289;&#26085;&#20184;&#12399;2024-01-01&#12316;2026-05-11&#12398;&#31684;&#22258;&#65289;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> orders (customer_id, ordered_at, amount)
+<span class="org-keyword">SELECT</span>
+  (random() * 999 + 1)::<span class="org-type">int</span>,
+  <span class="org-string">'2024-01-01'</span>::<span class="org-type">date</span> + (random() * 860)::<span class="org-type">int</span>,
+  (random() * 10000 + 100)::<span class="org-type">int</span>
+<span class="org-keyword">FROM</span> generate_series(1, 1000000);
+
+EXPLAIN ANALYZE
+<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> orders
+<span class="org-keyword">WHERE</span> customer_id = 3
+<span class="org-keyword">AND</span> ordered_at <span class="org-keyword">BETWEEN</span> <span class="org-string">'2026-01-01'</span> <span class="org-keyword">AND</span> <span class="org-string">'2026-03-31'</span>;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                                                         |   |   |
+|-------------------------------------------------------------------------------------------------------------------------+---+---|
+| &gt; CREATE TABLE customers (                                                                                              |   |   |
+| &gt;   id   INT PRIMARY KEY,                                                                                               |   |   |
+| &gt;   name TEXT                                                                                                           |   |   |
+| &gt; );                                                                                                                    |   |   |
+| CREATE TABLE                                                                                                            |   |   |
+|                                                                                                                         |   |   |
+| &gt; CREATE TABLE orders (                                                                                                 |   |   |
+| &gt;   id          SERIAL PRIMARY KEY,                                                                                     |   |   |
+| &gt;   customer_id INT NOT NULL REFERENCES customers(id),                                                                  |   |   |
+| &gt;   ordered_at  DATE NOT NULL,                                                                                          |   |   |
+| &gt;   amount      INT NOT NULL                                                                                            |   |   |
+| &gt; );                                                                                                                    |   |   |
+| CREATE TABLE                                                                                                            |   |   |
+|                                                                                                                         |   |   |
+| &gt; CREATE INDEX idx_cust_date ON orders (customer_id, ordered_at);                                                       |   |   |
+| CREATE INDEX                                                                                                            |   |   |
+|                                                                                                                         |   |   |
+| &gt; INSERT INTO customers (id, name)                                                                                      |   |   |
+| &gt; SELECT i, 'customer_'                                                                                                 |   | i |
+| &gt; FROM generate_series(1, 1000) AS i;                                                                                   |   |   |
+| INSERT 0 1000                                                                                                           |   |   |
+|                                                                                                                         |   |   |
+| &gt; INSERT INTO orders (customer_id, ordered_at, amount)                                                                  |   |   |
+| &gt; SELECT                                                                                                                |   |   |
+| &gt;   (random() * 999 + 1)::int,                                                                                          |   |   |
+| &gt;   '2024-01-01'::date + (random() * 860)::int,                                                                         |   |   |
+| &gt;   (random() * 10000 + 100)::int                                                                                       |   |   |
+| &gt; FROM generate_series(1, 1000000);                                                                                     |   |   |
+| INSERT 0 1000000                                                                                                        |   |   |
+|                                                                                                                         |   |   |
+| &gt; EXPLAIN ANALYZE                                                                                                       |   |   |
+| &gt; SELECT * FROM orders                                                                                                  |   |   |
+| &gt; WHERE customer_id = 3                                                                                                 |   |   |
+| &gt; AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';                                                                 |   |   |
+| QUERY PLAN                                                                                                              |   |   |
+| Bitmap Heap Scan on orders  (cost=4.74..100.08 rows=25 width=16) (actual time=0.019..0.064 rows=86.00 loops=1)          |   |   |
+| Recheck Cond: ((customer_id = 3) AND (ordered_at &gt;= '2026-01-01'::date) AND (ordered_at &lt;= '2026-03-31'::date))         |   |   |
+| Heap Blocks: exact=86                                                                                                   |   |   |
+| Buffers: shared hit=89                                                                                                  |   |   |
+| -&gt;  Bitmap Index Scan on idx_cust_date  (cost=0.00..4.74 rows=25 width=0) (actual time=0.009..0.009 rows=86.00 loops=1) |   |   |
+| Index Cond: ((customer_id = 3) AND (ordered_at &gt;= '2026-01-01'::date) AND (ordered_at &lt;= '2026-03-31'::date))           |   |   |
+| Index Searches: 1                                                                                                       |   |   |
+| Buffers: shared hit=3                                                                                                   |   |   |
+| Planning:                                                                                                               |   |   |
+| Buffers: shared hit=8                                                                                                   |   |   |
+| Planning Time: 0.055 ms                                                                                                 |   |   |
+| Execution Time: 0.070 ms                                                                                                |   |   |
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>日付範囲、idの順でインデックスをつける</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">customers</span> (
+  id   <span class="org-type">INT</span> <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
+  <span class="org-keyword">name</span> TEXT
+);
+
+<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">orders</span> (
+  id          SERIAL <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
+  customer_id <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">REFERENCES</span> customers(id),
+  ordered_at  <span class="org-type">DATE</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>,
+  amount      <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>
+);
+
+<span class="org-keyword">CREATE</span> INDEX idx_date_cust <span class="org-keyword">ON</span> orders (ordered_at, customer_id);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#39015;&#23458;&#12434;1000&#20154;&#20316;&#25104;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> customers (id, <span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span> i, <span class="org-string">'customer_'</span> || i
+<span class="org-keyword">FROM</span> generate_series(1, 1000) <span class="org-keyword">AS</span> i;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#27880;&#25991;&#12434;100&#19975;&#34892;&#20316;&#25104;&#65288;&#39015;&#23458;1&#12316;1000&#12289;&#26085;&#20184;&#12399;2024-01-01&#12316;2026-05-11&#12398;&#31684;&#22258;&#65289;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> orders (customer_id, ordered_at, amount)
+<span class="org-keyword">SELECT</span>
+  (random() * 999 + 1)::<span class="org-type">int</span>,
+  <span class="org-string">'2024-01-01'</span>::<span class="org-type">date</span> + (random() * 860)::<span class="org-type">int</span>,
+  (random() * 10000 + 100)::<span class="org-type">int</span>
+<span class="org-keyword">FROM</span> generate_series(1, 1000000);
+
+EXPLAIN ANALYZE
+<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> orders
+<span class="org-keyword">WHERE</span> customer_id = 3
+<span class="org-keyword">AND</span> ordered_at <span class="org-keyword">BETWEEN</span> <span class="org-string">'2026-01-01'</span> <span class="org-keyword">AND</span> <span class="org-string">'2026-03-31'</span>;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                                                            |   |   |
+|----------------------------------------------------------------------------------------------------------------------------+---+---|
+| &gt; CREATE TABLE customers (                                                                                                 |   |   |
+| &gt;   id   INT PRIMARY KEY,                                                                                                  |   |   |
+| &gt;   name TEXT                                                                                                              |   |   |
+| &gt; );                                                                                                                       |   |   |
+| CREATE TABLE                                                                                                               |   |   |
+|                                                                                                                            |   |   |
+| &gt; CREATE TABLE orders (                                                                                                    |   |   |
+| &gt;   id          SERIAL PRIMARY KEY,                                                                                        |   |   |
+| &gt;   customer_id INT NOT NULL REFERENCES customers(id),                                                                     |   |   |
+| &gt;   ordered_at  DATE NOT NULL,                                                                                             |   |   |
+| &gt;   amount      INT NOT NULL                                                                                               |   |   |
+| &gt; );                                                                                                                       |   |   |
+| CREATE TABLE                                                                                                               |   |   |
+|                                                                                                                            |   |   |
+| &gt; CREATE INDEX idx_date_cust ON orders (ordered_at, customer_id);                                                          |   |   |
+| CREATE INDEX                                                                                                               |   |   |
+|                                                                                                                            |   |   |
+| &gt; INSERT INTO customers (id, name)                                                                                         |   |   |
+| &gt; SELECT i, 'customer_'                                                                                                    |   | i |
+| &gt; FROM generate_series(1, 1000) AS i;                                                                                      |   |   |
+| INSERT 0 1000                                                                                                              |   |   |
+|                                                                                                                            |   |   |
+| &gt; INSERT INTO orders (customer_id, ordered_at, amount)                                                                     |   |   |
+| &gt; SELECT                                                                                                                   |   |   |
+| &gt;   (random() * 999 + 1)::int,                                                                                             |   |   |
+| &gt;   '2024-01-01'::date + (random() * 860)::int,                                                                            |   |   |
+| &gt;   (random() * 10000 + 100)::int                                                                                          |   |   |
+| &gt; FROM generate_series(1, 1000000);                                                                                        |   |   |
+| INSERT 0 1000000                                                                                                           |   |   |
+|                                                                                                                            |   |   |
+| &gt; EXPLAIN ANALYZE                                                                                                          |   |   |
+| &gt; SELECT * FROM orders                                                                                                     |   |   |
+| &gt; WHERE customer_id = 3                                                                                                    |   |   |
+| &gt; AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';                                                                    |   |   |
+| QUERY PLAN                                                                                                                 |   |   |
+| Bitmap Heap Scan on orders  (cost=118.94..214.28 rows=25 width=16) (actual time=0.198..0.274 rows=120.00 loops=1)          |   |   |
+| Recheck Cond: ((ordered_at &gt;= '2026-01-01'::date) AND (ordered_at &lt;= '2026-03-31'::date) AND (customer_id = 3))            |   |   |
+| Heap Blocks: exact=118                                                                                                     |   |   |
+| Buffers: shared hit=397                                                                                                    |   |   |
+| -&gt;  Bitmap Index Scan on idx_date_cust  (cost=0.00..118.94 rows=25 width=0) (actual time=0.186..0.186 rows=120.00 loops=1) |   |   |
+| Index Cond: ((ordered_at &gt;= '2026-01-01'::date) AND (ordered_at &lt;= '2026-03-31'::date) AND (customer_id = 3))              |   |   |
+| Index Searches: 90                                                                                                         |   |   |
+| Buffers: shared hit=279                                                                                                    |   |   |
+| Planning:                                                                                                                  |   |   |
+| Buffers: shared hit=8                                                                                                      |   |   |
+| Planning Time: 0.055 ms                                                                                                    |   |   |
+| Execution Time: 0.281 ms                                                                                                   |   |   |
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>等価条件、範囲条件の順に複合インデックスを設定したほうが高速である</li>
+<li>顧客レコードの数が少なくして1顧客あたりの返却レコード数が多い場合、インデックスの効率差よりもヒープアクセスのほうが圧倒的に大きいので実行時間があまり変わらなかった</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb64a3d6" class="outline-2">
+<h2 id="orgb64a3d6"><a href="#orgb64a3d6">関連</a></h2>
+<div class="outline-text-2" id="text-orgb64a3d6">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
