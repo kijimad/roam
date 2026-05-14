@@ -1,0 +1,54 @@
+:properties:
+:ID: 20260321T104823
+:end:
+#+title:      KDOC 558: 文芸的にTypeScriptの型を観察する
+#+date:       [2026-03-21 Sat 10:48]
+#+filetags:   :permanent:
+#+identifier: 20260321T104823
+
+* この文書のステータス
+- 作成
+  - [X] 2026-05-13 貴島
+- レビュー
+  - [X] 2026-05-13 貴島
+
+* 概要
+
+TypeScriptでは、エディタ上で、型が変動していく(ナローイング)様子を観察できる。これを文芸的に表現したいと考えたとき、 ~twoslash~ 記法というものが使えるようである。
+
+Emacsのorg-modeで使えるようにした。
+
+- [[https://github.com/kijimad/ob-twoslash][kijimad/ob-twoslash]]
+
+#+begin_src twoslash
+  const a: string | null = "a"
+  //    ^?
+  if (a !== null) {
+     a
+  // ^?
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const a: string | null (line 1)
+const a: string (line 3)
+#+end_src
+
+#+begin_src twoslash
+  type Vec3D = Record<'X' | 'Y' | 'Z', number>;
+  //   ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+type Vec3D = {
+    X: number;
+    Y: number;
+    Z: number;
+} (line 1)
+#+end_src
+
+* 関連
+
+- 類推: [[id:20251206T184941][KDOC 495: 文芸的にDB動作を検証できるようにする]]。同様に文芸的に観察する
