@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-05-16T11:51:46Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 568: Cookieのリクエスト/レスポンスのHTTPヘッダを見る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 568: Cookieのリクエスト/レスポンスのHTTPヘッダを見る</h1>
+<div id="outline-container-org89cd880" class="outline-2">
+<h2 id="org89cd880"><a href="#org89cd880">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org89cd880">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-05-16 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-05-16 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org8bd6855" class="outline-2">
+<h2 id="org8bd6855"><a href="#org8bd6855">概要</a></h2>
+<div class="outline-text-2" id="text-org8bd6855">
+<p>
+HTTPレベルでCookieを観察する。
+</p>
+
+<ul class="org-ul">
+<li><code>Set-Cookie</code> レスポンスヘッダーは 1ヘッダーにつき1 Cookie が RFC 6265 の仕様である。複数 Cookie を1行にまとめることはできない
+<ul class="org-ul">
+<li><code>set-cookie: logged_in=no; expires=Sun, 16 May 2027 02:28:14 GMT; domain=.github.com; path=/; HttpOnly; secure; SameSite=Lax</code></li>
+</ul></li>
+<li><code>Cookie</code> リクエストヘッダーは逆に <code>Cookie: session_id=abc123; username=alice; theme=dark</code> のように1行にまとめて送信される。ディレクティブは含まれない
+<ul class="org-ul">
+<li><code>Cookie: logged_in=no; _gh_sess=u1ujyX2X%2BU%2FGa4EnTQFhxL%2F%2BklaLwX6noTNsGYK5Plp%2FxVC7kRx%2FxmOUZ5AjklWWK%2FrU9vOKN%2Bqlr89MllRTX9uE9eY2MFjAEIaf0bGt0lVYn8q7XtUriuldnYw4c5Rrtj%2FLqb4dDImCpLvmcX02o6jVUW%2BHMKZv7mKcJw5NMpe47Nt8kUgNG7f%2BUs5OvwiKG6inWgwYxpunXivY1wW6dVZgEQ%2B2cqRDu6iB5aqhU00azDA0AHR8LEpc6AlNQZ1BwStE9CszLLCG352bSzvV2w%3D%3D--zw2UQYwu4VlIOAAF--B5xOkPjqcwfLFtSHsSJvMQ%3D%3D; _octo=GH1.1.1186758791.1778898494</code></li>
+</ul></li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-shell">curl -sIv -c /tmp/cookies.txt https://github.com 2&gt;&amp;1
+<span class="org-builtin">echo</span> <span class="org-string">"================================"</span>
+cat /tmp/cookies.txt
+<span class="org-builtin">echo</span> <span class="org-string">"================================"</span>
+curl -sIv -b /tmp/cookies.txt https://github.com 2&gt;&amp;1
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">* Host github.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 20.27.177.113
+*   Trying 20.27.177.113:443...
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [1554 bytes data]
+* SSL Trust Anchors:
+*   OpenSSL default paths (fallback)
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122 bytes data]
+* TLSv1.3 (IN), TLS change cipher, Change cipher spec (1):
+{ [1 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [19 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [2742 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [79 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [36 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [36 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_128_GCM_SHA256 / x25519 / id-ecPublicKey
+* ALPN: server accepted h2
+* Server certificate:
+*   subject: CN=github.com
+*   start date: May  5 00:00:00 2026 GMT
+*   expire date: Aug  2 23:59:59 2026 GMT
+*   issuer: C=GB; O=Sectigo Limited; CN=Sectigo Public Server Authentication CA DV E36
+*   Certificate level 0: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA256
+*   Certificate level 1: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA384
+*   Certificate level 2: Public key type EC/secp384r1 (384/192 Bits/secBits), signed using ecdsa-with-SHA384
+*   subjectAltName: "github.com" matches cert's "github.com"
+* OpenSSL verify result: 0
+* SSL certificate verified via OpenSSL.
+* Established connection to github.com (20.27.177.113 port 443) from 192.168.0.197 port 60264
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://github.com/
+* [HTTP/2] [1] [:method: HEAD]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: github.com]
+* [HTTP/2] [1] [:path: /]
+* [HTTP/2] [1] [user-agent: curl/8.19.0]
+* [HTTP/2] [1] [accept: */*]
+} [5 bytes data]
+&gt; HEAD / HTTP/2
+&gt; Host: github.com
+&gt; User-Agent: curl/8.19.0
+&gt; Accept: */*
+&gt;
+* Request completely sent off
+} [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [57 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [57 bytes data]
+&lt; HTTP/2 200
+&lt; date: Sat, 16 May 2026 02:28:09 GMT
+&lt; content-type: text/html; charset=utf-8
+&lt; vary: X-PJAX, X-PJAX-Container, Turbo-Visit, Turbo-Frame, X-Requested-With, Accept-Language, Sec-Fetch-Site,Accept-Encoding, Accept, X-Requested-With
+&lt; content-language: en-US
+&lt; etag: W/"3960d39c8b3ce95daf7e33905ce8e9ef"
+&lt; cache-control: max-age=0, private, must-revalidate
+&lt; strict-transport-security: max-age=31536000; includeSubdomains; preload
+&lt; x-frame-options: deny
+&lt; x-content-type-options: nosniff
+&lt; x-xss-protection: 0
+&lt; referrer-policy: origin-when-cross-origin, strict-origin-when-cross-origin
+{ [5 bytes data]
+&lt; content-security-policy: default-src 'none'; base-uri 'self'; child-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/; connect-src 'self' uploads.github.com www.githubstatus.com collector.github.com raw.githubusercontent.com api.github.com github-cloud.s3.amazonaws.com github-production-repository-file-5c1aeb.s3.amazonaws.com github-production-upload-manifest-file-7fdce7.s3.amazonaws.com github-production-user-asset-6210df.s3.amazonaws.com *.rel.tunnels.api.visualstudio.com wss://*.rel.tunnels.api.visualstudio.com github.githubassets.com objects-origin.githubusercontent.com copilot-proxy.githubusercontent.com proxy.individual.githubcopilot.com proxy.business.githubcopilot.com proxy.enterprise.githubcopilot.com *.actions.githubusercontent.com wss://*.actions.githubusercontent.com productionresultssa0.blob.core.windows.net productionresultssa1.blob.core.windows.net productionresultssa2.blob.core.windows.net productionresultssa3.blob.core.windows.net productionresultssa4.blob.core.windows.net productionresultssa5.blob.core.windows.net productionresultssa6.blob.core.windows.net productionresultssa7.blob.core.windows.net productionresultssa8.blob.core.windows.net productionresultssa9.blob.core.windows.net productionresultssa10.blob.core.windows.net productionresultssa11.blob.core.windows.net productionresultssa12.blob.core.windows.net productionresultssa13.blob.core.windows.net productionresultssa14.blob.core.windows.net productionresultssa15.blob.core.windows.net productionresultssa16.blob.core.windows.net productionresultssa17.blob.core.windows.net productionresultssa18.blob.core.windows.net productionresultssa19.blob.core.windows.net github-production-repository-image-32fea6.s3.amazonaws.com github-production-release-asset-2e65be.s3.amazonaws.com insights.github.com wss://alive.github.com wss://alive-staging.github.com api.githubcopilot.com api.individual.githubcopilot.com api.business.githubcopilot.com api.enterprise.githubcopilot.com edge.fullstory.com rs.fullstory.com; font-src github.githubassets.com; form-action 'self' github.com gist.github.com copilot-workspace.githubnext.com objects-origin.githubusercontent.com; frame-ancestors 'none'; frame-src viewscreen.githubusercontent.com notebooks.githubusercontent.com www.youtube-nocookie.com; img-src 'self' data: blob: github.githubassets.com media.githubusercontent.com camo.githubusercontent.com identicons.github.com avatars.githubusercontent.com private-avatars.githubusercontent.com github-cloud.s3.amazonaws.com objects.githubusercontent.com release-assets.githubusercontent.com secured-user-images.githubusercontent.com user-images.githubusercontent.com private-user-images.githubusercontent.com opengraph.githubassets.com marketplace-screenshots.githubusercontent.com copilotprodattachments.blob.core.windows.net/github-production-copilot-attachments/ github-production-user-asset-6210df.s3.amazonaws.com customer-stories-feed.github.com spotlights-feed.github.com explore-feed.github.com objects-origin.githubusercontent.com *.githubusercontent.com images.ctfassets.net/8aevphvgewt8/; manifest-src 'self'; media-src github.com user-images.githubusercontent.com secured-user-images.githubusercontent.com private-user-images.githubusercontent.com github-production-user-asset-6210df.s3.amazonaws.com gist.github.com github.githubassets.com assets.ctfassets.net/8aevphvgewt8/ videos.ctfassets.net/8aevphvgewt8/; script-src github.githubassets.com; style-src 'unsafe-inline' github.githubassets.com; upgrade-insecure-requests; worker-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/
+HTTP/2 200
+date: Sat, 16 May 2026 02:28:09 GMT
+content-type: text/html; charset=utf-8
+vary: X-PJAX, X-PJAX-Container, Turbo-Visit, Turbo-Frame, X-Requested-With, Accept-Language, Sec-Fetch-Site,Accept-Encoding, Accept, X-Requested-With
+content-language: en-US
+etag: W/"3960d39c8b3ce95daf7e33905ce8e9ef"
+cache-control: max-age=0, private, must-revalidate
+strict-transport-security: max-age=31536000; includeSubdomains; preload
+x-frame-options: deny
+x-content-type-options: nosniff
+x-xss-protection: 0
+referrer-policy: origin-when-cross-origin, strict-origin-when-cross-origin
+content-security-policy: default-src 'none'; base-uri 'self'; child-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/; connect-src 'self' uploads.github.com www.githubstatus.com collector.github.com raw.githubusercontent.com api.github.com github-cloud.s3.amazonaws.com github-production-repository-file-5c1aeb.s3.amazonaws.com github-production-upload-manifest-file-7fdce7.s3.amazonaws.com github-production-user-asset-6210df.s3.amazonaws.com *.rel.tunnels.api.visualstudio.com wss://*.rel.tunnels.api.visualstudio.com github.githubassets.com objects-origin.githubusercontent.com copilot-proxy.githubusercontent.com proxy.individual.githubcopilot.com proxy.business.githubcopilot.com proxy.enterprise.githubcopilot.com *.actions.githubusercontent.com wss://*.actions.githubusercontent.com productionresultssa0.blob.core.windows.net productionresultssa1.blob.core.windows.net productionresultssa2.blob.core.windows.net productionresultssa3.blob.core.windows.net productionresultssa4.blob.core.windows.net productionresultssa5.blob.core.windows.net productionresultssa6.blob.core.windows.net productionresultssa7.blob.core.windows.net productionresultssa8.blob.core.windows.net productionresultssa9.blob.core.windows.net productionresultssa10.blob.core.windows.net productionresultssa11.blob.core.windows.net productionresultssa12.blob.core.windows.net productionresultssa13.blob.core.windows.net productionresultssa14.blob.core.windows.net productionresultssa15.blob.core.windows.net productionresultssa16.blob.core.windows.net productionresultssa17.blob.core.windows.net productionresultssa18.blob.core.windows.net productionresultssa19.blob.core.windows.net github-production-repository-image-32fea6.s3.amazonaws.com github-production-release-asset-2e65be.s3.amazonaws.com insights.github.com wss://alive.github.com wss://alive-staging.github.com api.githubcopilot.com api.individual.githubcopilot.com api.business.githubcopilot.com api.enterprise.githubcopilot.com edge.fullstory.com rs.fullstory.com; font-src github.githubassets.com; form-action 'self' github.com gist.github.com copilot-workspace.githubnext.com objects-origin.githubusercontent.com; frame-ancestors 'none'; frame-src viewscreen.githubusercontent.com notebooks.githubusercontent.com www.youtube-nocookie.com; img-src 'self' data: blob: github.githubassets.com media.githubusercontent.com camo.githubusercontent.com identicons.github.com avatars.githubusercontent.com private-avatars.githubusercontent.com github-cloud.s3.amazonaws.com objects.githubusercontent.com release-assets.githubusercontent.com secured-user-images.githubusercontent.com user-images.githubusercontent.com private-user-images.githubusercontent.com opengraph.githubassets.com marketplace-screenshots.githubusercontent.com copilotprodattachments.blob.core.windows.net/github-production-copilot-attachments/ github-production-user-asset-6210df.s3.amazonaws.com customer-stories-feed.github.com spotlights-feed.github.com explore-feed.github.com objects-origin.githubusercontent.com *.githubusercontent.com images.ctfassets.net/8aevphvgewt8/; manifest-src 'self'; media-src github.com user-images.githubusercontent.com secured-user-images.githubusercontent.com private-user-images.githubusercontent.com github-production-user-asset-6210df.s3.amazonaws.com gist.github.com github.githubassets.com assets.ctfassets.net/8aevphvgewt8/ videos.ctfassets.net/8aevphvgewt8/; script-src github.githubassets.com; sty&lt; server: github.com
+&lt; accept-ranges: bytes
+* Added cookie _gh_sess="u1ujyX2X%2BU%2FGa4EnTQFhxL%2F%2BklaLwX6noTNsGYK5Plp%2FxVC7kRx%2FxmOUZ5AjklWWK%2FrU9vOKN%2Bqlr89MllRTX9uE9eY2MFjAEIaf0bGt0lVYn8q7XtUriuldnYw4c5Rrtj%2FLqb4dDImCpLvmcX02o6jVUW%2BHMKZv7mKcJw5NMpe47Nt8kUgNG7f%2BUs5OvwiKG6inWgwYxpunXivY1wW6dVZgEQ%2B2cqRDu6iB5aqhU00azDA0AHR8LEpc6AlNQZ1BwStE9CszLLCG352bSzvV2w%3D%3D--zw2UQYwu4VlIOAAF--B5xOkPjqcwfLFtSHsSJvMQ%3D%3D" for domain github.com, path /, expire 0
+&lt; set-cookie: _gh_sess=u1ujyX2X%2BU%2FGa4EnTQFhxL%2F%2BklaLwX6noTNsGYK5Plp%2FxVC7kRx%2FxmOUZ5AjklWWK%2FrU9vOKN%2Bqlr89MllRTX9uE9eY2MFjAEIaf0bGt0lVYn8q7XtUriuldnYw4c5Rrtj%2FLqb4dDImCpLvmcX02o6jVUW%2BHMKZv7mKcJw5NMpe47Nt8kUgNG7f%2BUs5OvwiKG6inWgwYxpunXivY1wW6dVZgEQ%2B2cqRDu6iB5aqhU00azDA0AHR8LEpc6AlNQZ1BwStE9CszLLCG352bSzvV2w%3D%3D--zw2UQYwu4VlIOAAF--B5xOkPjqcwfLFtSHsSJvMQ%3D%3D; path=/; HttpOnly; secure; SameSite=Lax
+* Added cookie _octo="GH1.1.1186758791.1778898494" for domain github.com, path /, expire 1810434494
+&lt; set-cookie: _octo=GH1.1.1186758791.1778898494; expires=Sun, 16 May 2027 02:28:14 GMT; domain=.github.com; path=/; secure; SameSite=Lax
+* Added cookie logged_in="no" for domain github.com, path /, expire 1810434494
+&lt; set-cookie: logged_in=no; expires=Sun, 16 May 2027 02:28:14 GMT; domain=.github.com; path=/; HttpOnly; secure; SameSite=Lax
+&lt; x-github-request-id: EB68:33685F:3C0BC9:50F842:6A07D63E
+&lt;
+{ [0 bytes data]
+* Connection #0 to host github.com:443 left intact
+le-src 'unsafe-inline' github.githubassets.com; upgrade-insecure-requests; worker-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/
+server: github.com
+accept-ranges: bytes
+set-cookie: _gh_sess=u1ujyX2X%2BU%2FGa4EnTQFhxL%2F%2BklaLwX6noTNsGYK5Plp%2FxVC7kRx%2FxmOUZ5AjklWWK%2FrU9vOKN%2Bqlr89MllRTX9uE9eY2MFjAEIaf0bGt0lVYn8q7XtUriuldnYw4c5Rrtj%2FLqb4dDImCpLvmcX02o6jVUW%2BHMKZv7mKcJw5NMpe47Nt8kUgNG7f%2BUs5OvwiKG6inWgwYxpunXivY1wW6dVZgEQ%2B2cqRDu6iB5aqhU00azDA0AHR8LEpc6AlNQZ1BwStE9CszLLCG352bSzvV2w%3D%3D--zw2UQYwu4VlIOAAF--B5xOkPjqcwfLFtSHsSJvMQ%3D%3D; path=/; HttpOnly; secure; SameSite=Lax
+set-cookie: _octo=GH1.1.1186758791.1778898494; expires=Sun, 16 May 2027 02:28:14 GMT; domain=.github.com; path=/; secure; SameSite=Lax
+set-cookie: logged_in=no; expires=Sun, 16 May 2027 02:28:14 GMT; domain=.github.com; path=/; HttpOnly; secure; SameSite=Lax
+x-github-request-id: EB68:33685F:3C0BC9:50F842:6A07D63E
+
+================================
+
+#HttpOnly_.github.com	TRUE	/	TRUE	1810434494	logged_in	no
+.github.com	TRUE	/	TRUE	1810434494	_octo	GH1.1.1186758791.1778898494
+#HttpOnly_github.com	FALSE	/	TRUE	0	_gh_sess	u1ujyX2X%2BU%2FGa4EnTQFhxL%2F%2BklaLwX6noTNsGYK5Plp%2FxVC7kRx%2FxmOUZ5AjklWWK%2FrU9vOKN%2Bqlr89MllRTX9uE9eY2MFjAEIaf0bGt0lVYn8q7XtUriuldnYw4c5Rrtj%2FLqb4dDImCpLvmcX02o6jVUW%2BHMKZv7mKcJw5NMpe47Nt8kUgNG7f%2BUs5OvwiKG6inWgwYxpunXivY1wW6dVZgEQ%2B2cqRDu6iB5aqhU00azDA0AHR8LEpc6AlNQZ1BwStE9CszLLCG352bSzvV2w%3D%3D--zw2UQYwu4VlIOAAF--B5xOkPjqcwfLFtSHsSJvMQ%3D%3D
+================================
+* Host github.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 20.27.177.113
+*   Trying 20.27.177.113:443...
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [1554 bytes data]
+* SSL Trust Anchors:
+*   OpenSSL default paths (fallback)
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122 bytes data]
+* TLSv1.3 (IN), TLS change cipher, Change cipher spec (1):
+{ [1 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [19 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [2742 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [79 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [36 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [36 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_128_GCM_SHA256 / x25519 / id-ecPublicKey
+* ALPN: server accepted h2
+* Server certificate:
+*   subject: CN=github.com
+*   start date: May  5 00:00:00 2026 GMT
+*   expire date: Aug  2 23:59:59 2026 GMT
+*   issuer: C=GB; O=Sectigo Limited; CN=Sectigo Public Server Authentication CA DV E36
+*   Certificate level 0: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA256
+*   Certificate level 1: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA384
+*   Certificate level 2: Public key type EC/secp384r1 (384/192 Bits/secBits), signed using ecdsa-with-SHA384
+*   subjectAltName: "github.com" matches cert's "github.com"
+* OpenSSL verify result: 0
+* SSL certificate verified via OpenSSL.
+* Established connection to github.com (20.27.177.113 port 443) from 192.168.0.197 port 60270
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://github.com/
+* [HTTP/2] [1] [:method: HEAD]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: github.com]
+* [HTTP/2] [1] [:path: /]
+* [HTTP/2] [1] [user-agent: curl/8.19.0]
+* [HTTP/2] [1] [accept: */*]
+* [HTTP/2] [1] [cookie: logged_in=no; _gh_sess=u1ujyX2X%2BU%2FGa4EnTQFhxL%2F%2BklaLwX6noTNsGYK5Plp%2FxVC7kRx%2FxmOUZ5AjklWWK%2FrU9vOKN%2Bqlr89MllRTX9uE9eY2MFjAEIaf0bGt0lVYn8q7XtUriuldnYw4c5Rrtj%2FLqb4dDImCpLvmcX02o6jVUW%2BHMKZv7mKcJw5NMpe47Nt8kUgNG7f%2BUs5OvwiKG6inWgwYxpunXivY1wW6dVZgEQ%2B2cqRDu6iB5aqhU00azDA0AHR8LEpc6AlNQZ1BwStE9CszLLCG352bSzvV2w%3D%3D--zw2UQYwu4VlIOAAF--B5xOkPjqcwfLFtSHsSJvMQ%3D%3D; _octo=GH1.1.1186758791.1778898494]
+} [5 bytes data]
+&gt; HEAD / HTTP/2
+&gt; Host: github.com
+&gt; User-Agent: curl/8.19.0
+&gt; Accept: */*
+&gt; Cookie: logged_in=no; _gh_sess=u1ujyX2X%2BU%2FGa4EnTQFhxL%2F%2BklaLwX6noTNsGYK5Plp%2FxVC7kRx%2FxmOUZ5AjklWWK%2FrU9vOKN%2Bqlr89MllRTX9uE9eY2MFjAEIaf0bGt0lVYn8q7XtUriuldnYw4c5Rrtj%2FLqb4dDImCpLvmcX02o6jVUW%2BHMKZv7mKcJw5NMpe47Nt8kUgNG7f%2BUs5OvwiKG6inWgwYxpunXivY1wW6dVZgEQ%2B2cqRDu6iB5aqhU00azDA0AHR8LEpc6AlNQZ1BwStE9CszLLCG352bSzvV2w%3D%3D--zw2UQYwu4VlIOAAF--B5xOkPjqcwfLFtSHsSJvMQ%3D%3D; _octo=GH1.1.1186758791.1778898494
+&gt;
+* Request completely sent off
+} [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [57 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [57 bytes data]
+&lt; HTTP/2 200
+&lt; date: Sat, 16 May 2026 02:28:09 GMT
+&lt; content-type: text/html; charset=utf-8
+&lt; vary: X-PJAX, X-PJAX-Container, Turbo-Visit, Turbo-Frame, X-Requested-With, Accept-Language, Sec-Fetch-Site,Accept-Encoding, Accept, X-Requested-With
+&lt; content-language: en-US
+&lt; etag: W/"3960d39c8b3ce95daf7e33905ce8e9ef"
+&lt; cache-control: max-age=0, private, must-revalidate
+&lt; strict-transport-security: max-age=31536000; includeSubdomains; preload
+&lt; x-frame-options: deny
+&lt; x-content-type-options: nosniff
+&lt; x-xss-protection: 0
+&lt; referrer-policy: origin-when-cross-origin, strict-origin-when-cross-origin
+{ [5 bytes data]
+&lt; content-security-policy: default-src 'none'; base-uri 'self'; child-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/; connect-src 'self' uploads.github.com www.githubstatus.com collector.github.com raw.githubusercontent.com api.github.com github-cloud.s3.amazonaws.com github-production-repository-file-5c1aeb.s3.amazonaws.com github-production-upload-manifest-file-7fdce7.s3.amazonaws.com github-production-user-asset-6210df.s3.amazonaws.com *.rel.tunnels.api.visualstudio.com wss://*.rel.tunnels.api.visualstudio.com github.githubassets.com objects-origin.githubusercontent.com copilot-proxy.githubusercontent.com proxy.individual.githubcopilot.com proxy.business.githubcopilot.com proxy.enterprise.githubcopilot.com *.actions.githubusercontent.com wss://*.actions.githubusercontent.com productionresultssa0.blob.core.windows.net productionresultssa1.blob.core.windows.net productionresultssa2.blob.core.windows.net productionresultssa3.blob.core.windows.net productionresultssa4.blob.core.windows.net productionresultssa5.blob.core.windows.net productionresultssa6.blob.core.windows.net productionresultssa7.blob.core.windows.net productionresultssa8.blob.core.windows.net productionresultssa9.blob.core.windows.net productionresultssa10.blob.core.windows.net productionresultssa11.blob.core.windows.net productionresultssa12.blob.core.windows.net productionresultssa13.blob.core.windows.net productionresultssa14.blob.core.windows.net productionresultssa15.blob.core.windows.net productionresultssa16.blob.core.windows.net productionresultssa17.blob.core.windows.net productionresultssa18.blob.core.windows.net productionresultssa19.blob.core.windows.net github-production-repository-image-32fea6.s3.amazonaws.com github-production-release-asset-2e65be.s3.amazonaws.com insights.github.com wss://alive.github.com wss://alive-staging.github.com api.githubcopilot.com api.individual.githubcopilot.com api.business.githubcopilot.com api.enterprise.githubcopilot.com edge.fullstory.com rs.fullstory.com; font-src github.githubassets.com; form-action 'self' github.com gist.github.com copilot-workspace.githubnext.com objects-origin.githubusercontent.com; frame-ancestors 'none'; frame-src viewscreen.githubusercontent.com notebooks.githubusercontent.com www.youtube-nocookie.com; img-src 'self' data: blob: github.githubassets.com media.githubusercontent.com camo.githubusercontent.com identicons.github.com avatars.githubusercontent.com private-avatars.githubusercontent.com github-cloud.s3.amazonaws.com objects.githubusercontent.com release-assets.githubusercontent.com secured-user-images.githubusercontent.com user-images.githubusercontent.com private-user-images.githubusercontent.com opengraph.githubassets.com marketplace-screenshots.githubusercontent.com copilotprodattachments.blob.core.windows.net/github-production-copilot-attachments/ github-production-user-asset-6210df.s3.amazonaws.com customer-stories-feed.github.com spotlights-feed.github.com explore-feed.github.com objects-origin.githubusercontent.com *.githubusercontent.com images.ctfassets.net/8aevphvgewt8/; manifest-src 'self'; media-src github.com user-images.githubusercontent.com secured-user-images.githubusercontent.com private-user-images.githubusercontent.com github-production-user-asset-6210df.s3.amazonaws.com gist.github.com github.githubassets.com assets.ctfassets.net/8aevphvgewt8/ videos.ctfassets.net/8aevphvgewt8/; script-src github.githubassets.com; style-src 'unsafe-inline' github.githubassets.com; upgrade-insecure-requests; worker-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/
+HTTP/2 200
+date: Sat, 16 May 2026 02:28:09 GMT
+content-type: text/html; charset=utf-8
+vary: X-PJAX, X-PJAX-Container, Turbo-Visit, Turbo-Frame, X-Requested-With, Accept-Language, Sec-Fetch-Site,Accept-Encoding, Accept, X-Requested-With
+content-language: en-US
+etag: W/"3960d39c8b3ce95daf7e33905ce8e9ef"
+cache-control: max-age=0, private, must-revalidate
+strict-transport-security: max-age=31536000; includeSubdomains; preload
+x-frame-options: deny
+x-content-type-options: nosniff
+x-xss-protection: 0
+referrer-policy: origin-when-cross-origin, strict-origin-when-cross-origin
+content-security-policy: default-src 'none'; base-uri 'self'; child-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/; connect-src 'self' uploads.github.com www.githubstatus.com collector.github.com raw.githubusercontent.com api.github.com github-cloud.s3.amazonaws.com github-production-repository-file-5c1aeb.s3.amazonaws.com github-production-upload-manifest-file-7fdce7.s3.amazonaws.com github-production-user-asset-6210df.s3.amazonaws.com *.rel.tunnels.api.visualstudio.com wss://*.rel.tunnels.api.visualstudio.com github.githubassets.com objects-origin.githubusercontent.com copilot-proxy.githubusercontent.com proxy.individual.githubcopilot.com proxy.business.githubcopilot.com proxy.enterprise.githubcopilot.com *.actions.githubusercontent.com wss://*.actions.githubusercontent.com productionresultssa0.blob.core.windows.net productionresultssa1.blob.core.windows.net productionresultssa2.blob.core.windows.net productionresultssa3.blob.core.windows.net productionresultssa4.blob.core.windows.net productionresultssa5.blob.core.windows.net productionresultssa6.blob.core.windows.net productionresultssa7.blob.core.windows.net productionresultssa8.blob.core.windows.net productionresultssa9.blob.core.windows.net productionresultssa10.blob.core.windows.net productionresultssa11.blob.core.windows.net productionresultssa12.blob.core.windows.net productionresultssa13.blob.core.windows.net productionresultssa14.blob.core.windows.net productionresultssa15.blob.core.windows.net productionresultssa16.blob.core.windows.net productionresultssa17.blob.core.windows.net productionresultssa18.blob.core.windows.net productionresultssa19.blob.core.windows.net github-production-repository-image-32fea6.s3.amazonaws.com github-production-release-asset-2e65be.s3.amazonaws.com insights.github.com wss://alive.github.com wss://alive-staging.github.com api.githubcopilot.com api.individual.githubcopilot.com api.business.githubcopilot.com api.enterprise.githubcopilot.com edge.fullstory.com rs.fullstory.com; font-src github.githubassets.com; form-action 'self' github.com gist.github.com copilot-workspace.githubnext.com objects-origin.githubusercontent.com; frame-ancestors 'none'; frame-src viewscreen.githubusercontent.com notebooks.githubusercontent.com www.youtube-nocookie.com; img-src 'self' data: blob: github.githubassets.com media.githubusercontent.com camo.githubusercontent.com identicons.github.com avatars.githubusercontent.com private-avatars.githubusercontent.com github-cloud.s3.amazonaws.com objects.githubusercontent.com release-assets.githubusercontent.com secured-user-images.githubusercontent.com user-images.githubusercontent.com private-user-images.githubusercontent.com opengraph.githubassets.com marketplace-screenshots.githubusercontent.com copilotprodattachments.blob.core.windows.net/github-production-copilot-attachments/ github-production-user-asset-6210df.s3.amazonaws.com customer-stories-feed.github.com spotlights-feed.github.com explore-feed.github.com objects-origin.githubusercontent.com *.githubusercontent.com images.ctfassets.net/8aevphvgewt8/; manifest-src 'self'; media-src github.com user-images.githubusercontent.com secured-user-images.githubusercontent.com private-user-images.githubusercontent.com github-production-user-asset-6210df.s3.amazonaws.com gist.github.com github.githubassets.com assets.ctfassets.net/8aevphvgewt8/ videos.ctfassets.net/8aevphvgewt8/; script-src github.githubassets.com; sty&lt; server: github.com
+&lt; accept-ranges: bytes
+&lt; x-github-request-id: EB6E:1FF4B0:3C2E21:511DE3:6A07D63E
+&lt;
+{ [0 bytes data]
+* Connection #0 to host github.com:443 left intact
+le-src 'unsafe-inline' github.githubassets.com; upgrade-insecure-requests; worker-src github.githubassets.com github.com/assets-cdn/worker/ github.com/assets/ gist.github.com/assets-cdn/worker/
+server: github.com
+accept-ranges: bytes
+x-github-request-id: EB6E:1FF4B0:3C2E21:511DE3:6A07D63E
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org346c192" class="outline-2">
+<h2 id="org346c192"><a href="#org346c192">関連</a></h2>
+<div class="outline-text-2" id="text-org346c192">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
