@@ -1,7 +1,7 @@
 :properties:
 :ID: 20260311T000844
 :end:
-#+title:      KDOC 554: 『Effective JavaScript』
+#+title:      KDOC 554: 『Effective TypeScript』
 #+date:       [2026-03-11 Wed 00:08]
 #+filetags:   :draft:book:
 #+identifier: 20260311T000844
@@ -46,7 +46,15 @@
 
 #+end_comment
 
-* この文書のステータス
+* TODO この文書のステータス
+:LOGBOOK:
+CLOCK: [2026-05-17 Sun 23:31]--[2026-05-17 Sun 23:56] =>  0:25
+CLOCK: [2026-05-17 Sun 21:08]--[2026-05-17 Sun 21:33] =>  0:25
+CLOCK: [2026-05-17 Sun 20:07]--[2026-05-17 Sun 20:32] =>  0:25
+CLOCK: [2026-05-17 Sun 19:32]--[2026-05-17 Sun 19:57] =>  0:25
+CLOCK: [2026-05-17 Sun 01:06]--[2026-05-17 Sun 01:31] =>  0:25
+CLOCK: [2026-05-17 Sun 00:17]--[2026-05-17 Sun 00:42] =>  0:25
+:END:
 - 作成
   - [ ] <署名>
 # (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
@@ -66,7 +74,7 @@
 * 概要
 # 本文(見出しも設定する)
 
-なし。
+『Effective TypeScript』は、TypeScriptを解説する本である。
 
 * メモ
 
@@ -361,6 +369,27 @@ setLanguage(language)
 const language: "JavaScript" (line 3)
 #+end_src
 
+#+caption: 空の配列の型は、異なる要素を追加することで大きくできる(p131)
+#+begin_src twoslash
+  const result = [];
+  //    ^?
+  result.push('a');
+  result
+  // ^?
+  result.push(1);
+  result
+  // ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const result: any[] (line 1)
+const result: string[] (line 3)
+const result: (string | number)[] (line 5)
+#+end_src
+
+- TypeScriptによって拒否されたPromiseによって投げられる例外は型をもたない(p140)
+
 #+caption: async関数は常にPromiseを返す
 #+begin_src twoslash
 async function getNumber1() { return 42 }
@@ -371,8 +400,6 @@ const getNumber3 = () => Promise.resolve(42)
 //    ^?
 #+end_src
 
-- promiseにするのは重要なルールの強制のためである。関数には常に同期的に結果を返すか、常に非同期的に結果を返すかすべきで、状況によって同期的に結果を返したり非同期的に結果を返したりしてはいけない(p141)
-
 #+RESULTS:
 #+begin_src
 function getNumber1(): Promise<number> (line 1)
@@ -380,10 +407,7 @@ const getNumber2: () => Promise<number> (line 2)
 const getNumber3: () => Promise<number> (line 3)
 #+end_src
 
-#+caption: x
-#+begin_src twoslash
-
-#+end_src
+- promiseにするのは重要なルールの強制のためである。関数には常に同期的に結果を返すか、常に非同期的に結果を返すかすべきで、状況によって同期的に結果を返したり非同期的に結果を返したりしてはいけない(p141)
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
