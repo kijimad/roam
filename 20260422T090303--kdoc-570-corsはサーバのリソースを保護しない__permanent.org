@@ -1,0 +1,35 @@
+:properties:
+:ID: 20260422T090303
+:end:
+#+title:      KDOC 570: CORSはサーバのリソースを保護しない
+#+date:       [2026-04-22 Wed 09:03]
+#+filetags:   :permanent:
+#+identifier: 20260422T090303
+
+* この文書のステータス
+- 作成
+  - [X] 2026-05-19 貴島
+- レビュー
+  - [X] 2026-05-19 貴島
+
+* 概要
+
+CORSは *サーバ* のリソースを保護するものと誤って理解していた。正しくはブラウザを保護するものである。
+
+~Access-Control-Allow-Origin~ がサーバ側に設定されていても、ブラウザ以外のHTTPクライアントでは無視される。
+
+例を示す。
+
+#+begin_example
+GET /submit HTTP/1.1
+Host: example.com
+Origin: https://anywhere.com
+
+Access-Control-Allow-Origin: https://example.com
+#+end_example
+
+この場合、ブラウザは ~Origin~ が許可されていないため返ったレスポンスの読み取りを阻止する。しかし ~curl~ は同じリクエストでレスポンスをそのまま取得できる。
+
+* 関連
+
+- 追加調査: ではなんのためにあるのか。[[id:20260425T111716][KDOC 571: CORSはブラウザ側の仕組みでブラウザを保護するものであって、サーバを保護するものではない]]

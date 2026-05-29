@@ -48,6 +48,9 @@
 
 * TODO この文書のステータス
 :LOGBOOK:
+CLOCK: [2026-05-18 Mon 23:40]--[2026-05-19 Tue 00:05] =>  0:25
+CLOCK: [2026-05-18 Mon 22:49]--[2026-05-18 Mon 23:14] =>  0:25
+CLOCK: [2026-05-18 Mon 22:17]--[2026-05-18 Mon 22:42] =>  0:25
 CLOCK: [2026-05-17 Sun 23:31]--[2026-05-17 Sun 23:56] =>  0:25
 CLOCK: [2026-05-17 Sun 21:08]--[2026-05-17 Sun 21:33] =>  0:25
 CLOCK: [2026-05-17 Sun 20:07]--[2026-05-17 Sun 20:32] =>  0:25
@@ -408,6 +411,30 @@ const getNumber3: () => Promise<number> (line 3)
 #+end_src
 
 - promiseにするのは重要なルールの強制のためである。関数には常に同期的に結果を返すか、常に非同期的に結果を返すかすべきで、状況によって同期的に結果を返したり非同期的に結果を返したりしてはいけない(p141)
+
+#+caption: async関数からPromiseを返してもラップされない(p143)
+#+begin_src twoslash
+async function getJSON(url: string) {
+  const response = await fetch(url);
+  const jsonPromise = response.json();
+  return jsonPromise;
+//       ^?
+}
+getJSON
+// ^?
+#+end_src
+
+#+RESULTS:
+#+begin_src
+const jsonPromise: Promise<any> (line 4)
+function getJSON(url: string): Promise<any> (line 6)
+#+end_src
+
+- 有効な状態のみ表現する型を作る(p150)
+- 入力は寛容に、出力は厳密に型を設計する(p156)
+- 完全にnullか、完全に非nullか、にすると人間や型チェッカーにとってコードが明確になる(p163)
+- 扱っているドメインの用語を再利用する。長い期間をかけて洗練されたものが多い。気候区分だとケッペンなど(p193)
+- 内縁の妻に財産分与を請求する権利はあるが、相続権はない
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
