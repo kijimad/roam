@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-06-16T23:19:50Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<div id="outline-container-orgddb4574" class="outline-2">
+<h2 id="orgddb4574"><a href="#orgddb4574">Prisma</a></h2>
+<div class="outline-text-2" id="text-orgddb4574">
+<p>
+タイトル: Prisma の upsert でユニーク制約が出た日
+</p>
+
+<p>
+データベースの upsert, 便利ですよね。
+</p>
+
+<p>
+// emailのユーザーがいれば更新、いなければ作成
+await prisma.user.upsert({
+  where: { email: &ldquo;user@example.com&rdquo; },
+  update: { name: &ldquo;admin&rdquo; },
+  create: { email: &ldquo;user@example.com&rdquo;, name: &ldquo;admin&rdquo; },
+});
+</p>
+
+<p>
+問題になった事象
+</p>
+
+<ul class="org-ul">
+<li>たまにupsert部分でユニーク制約エラーが出る &#x2026;</li>
+<li>すでにレコードがあるのに insert しようとしている。??</li>
+<li>発行されるSQLを眺めると、SELECT + (INSERT or UPDATE) の2クエリになっていた</li>
+<li>同時に2つSELECTを通過すると、両方INSERTする(図)</li>
+</ul>
+
+<p>
+2クエリ
+&#x2013; 1. SELECT で存在確認
+SELECT * FROM users WHERE email = &rsquo;user@example.com&rsquo;;
+&#x2013; 2a. 見つかった → UPDATE
+UPDATE users SET name = &rsquo;admin&rsquo; WHERE email = &rsquo;user@example.com&rsquo;;
+&#x2013; 2b. 見つからなかった → INSERT
+INSERT INTO users (email, name) VALUES (&rsquo;user@example.com&rsquo;, &rsquo;admin&rsquo;);
+</p>
+
+<p>
+1クエリ
+INSERT INTO users (email, name)
+VALUES (&rsquo;user@example.com&rsquo;, &rsquo;admin&rsquo;)
+ON CONFLICT (email) DO UPDATE SET name = &rsquo;admin&rsquo;;
+</p>
+
+<p>
+なぜこうなる? &#x2013; Prisma の仕様
+</p>
+
+<ul class="org-ul">
+<li>条件付きでデータベースupsertを行うと書いてある</li>
+</ul>
+
+<blockquote>
+<p>
+Prisma Client uses a database upsert for an upsert query when the query meets the following criteria:
+</p>
+
+<p>
+There are no nested queries in the upsert’s create and update options
+The query does not include a selection that uses a nested read
+The query modifies only one model
+There is only one unique field in the upsert’s where option
+The unique field in the where option and the unique field in the create option have the same value
+</p>
+</blockquote>
+
+<p>
+なぜこの仕様? &#x2013; SQLの制限
+</p>
+
+<ul class="org-ul">
+<li>SQL(Postgres)の upsert 記法の限界</li>
+</ul>
+
+<blockquote>
+<p>
+The name of a column in the table named by table_name. The column name can be qualified with a subfield name or array subscript, if needed. (Inserting into only some fields of a composite column leaves the other fields null.) When referencing a column with ON CONFLICT DO UPDATE, do not include the table&rsquo;s name in the specification of a target column. For example, INSERT INTO table_name &#x2026; ON CONFLICT DO UPDATE SET table_name.col = 1 is invalid (this follows the general behavior for UPDATE).
+</p>
+</blockquote>
+
+<p>
+まとめ
+</p>
+
+<ul class="org-ul">
+<li>データベースレベルで把握していれば、ORMでの限界もわかる</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

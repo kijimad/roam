@@ -1,0 +1,59 @@
+* Prisma
+タイトル: Prisma の upsert でユニーク制約が出た日
+
+データベースの upsert, 便利ですよね。
+
+// emailのユーザーがいれば更新、いなければ作成
+await prisma.user.upsert({
+  where: { email: "user@example.com" },
+  update: { name: "admin" },
+  create: { email: "user@example.com", name: "admin" },
+});
+
+問題になった事象
+
+- たまにupsert部分でユニーク制約エラーが出る ...
+- すでにレコードがあるのに insert しようとしている。??
+- 発行されるSQLを眺めると、SELECT + (INSERT or UPDATE) の2クエリになっていた
+- 同時に2つSELECTを通過すると、両方INSERTする(図)
+
+2クエリ
+-- 1. SELECT で存在確認
+SELECT * FROM users WHERE email = 'user@example.com';
+-- 2a. 見つかった → UPDATE
+UPDATE users SET name = 'admin' WHERE email = 'user@example.com';
+-- 2b. 見つからなかった → INSERT
+INSERT INTO users (email, name) VALUES ('user@example.com', 'admin');
+
+1クエリ
+INSERT INTO users (email, name)
+VALUES ('user@example.com', 'admin')
+ON CONFLICT (email) DO UPDATE SET name = 'admin';
+
+なぜこうなる? -- Prisma の仕様
+
+- 条件付きでデータベースupsertを行うと書いてある
+
+#+caption: Prisma の 条件
+#+begin_quote
+Prisma Client uses a database upsert for an upsert query when the query meets the following criteria:
+
+There are no nested queries in the upsert’s create and update options
+The query does not include a selection that uses a nested read
+The query modifies only one model
+There is only one unique field in the upsert’s where option
+The unique field in the where option and the unique field in the create option have the same value
+#+end_quote
+
+なぜこの仕様? -- SQLの制限
+
+- SQL(Postgres)の upsert 記法の限界
+
+#+caption: DO UPDATE SET では同テーブルのカラムしか操作できない Postgresのドキュメント
+#+begin_quote
+The name of a column in the table named by table_name. The column name can be qualified with a subfield name or array subscript, if needed. (Inserting into only some fields of a composite column leaves the other fields null.) When referencing a column with ON CONFLICT DO UPDATE, do not include the table's name in the specification of a target column. For example, INSERT INTO table_name ... ON CONFLICT DO UPDATE SET table_name.col = 1 is invalid (this follows the general behavior for UPDATE).
+#+end_quote
+
+まとめ
+
+- データベースレベルで把握していれば、ORMでの限界もわかる
