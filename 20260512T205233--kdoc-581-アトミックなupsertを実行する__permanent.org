@@ -1,0 +1,31 @@
+:properties:
+:ID: 20260512T205233
+:end:
+#+title:      KDOC 581: アトミックなupsertを実行する
+#+date:       [2026-05-12 Tue 20:52]
+#+filetags:   :permanent:
+#+identifier: 20260512T205233
+
+* この文書のステータス
+- 作成
+  - [X] 2026-06-28 貴島
+- レビュー
+  - [X] 2026-06-28 貴島
+
+* 概要
+
+DBレベルのアトミックな ~upsert~ は、PostgreSQLでは ~ON CONFLICT~ を用いてこのように書く。
+
+#+begin_src sql
+INSERT INTO users (email, name)
+VALUES ('user@example.com', 'admin')
+ON CONFLICT (email) DO UPDATE SET name = 'admin';
+#+end_src
+
+2クエリ ~SELECT~ + (~INSERT~ or ~UPDATE~) にするなどでアトミックでなくなると、同時に実行したときに両方とも ~INSERT~ してしまうことになり安全ではない。
+
+ORMにあるような ~upsert~ はこのクエリを発行することが多いが、同じテーブル限定などの使用条件があり、2クエリにフォールバックするときがある。
+
+* 関連
+
+なし。
