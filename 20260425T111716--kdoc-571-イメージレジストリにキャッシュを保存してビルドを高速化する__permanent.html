@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-06-19T08:58:43Z -->
+<!-- 2026-07-20T08:57:05Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 571: イメージレジストリにキャッシュを保存してビルドを高速化する</title>
@@ -15,29 +15,26 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 571: イメージレジストリにキャッシュを保存してビルドを高速化する</h1>
-<div id="outline-container-org14653bb" class="outline-2">
-<h2 id="org14653bb"><a href="#org14653bb">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org14653bb">
+<div id="outline-container-org2583e95" class="outline-2">
+<h2 id="org2583e95"><a href="#org2583e95">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org2583e95">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-06-18 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-06-21 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc1ebdaa" class="outline-2">
-<h2 id="orgc1ebdaa"><a href="#orgc1ebdaa">概要</a></h2>
-<div class="outline-text-2" id="text-orgc1ebdaa">
+<div id="outline-container-org4babeeb" class="outline-2">
+<h2 id="org4babeeb"><a href="#org4babeeb">概要</a></h2>
+<div class="outline-text-2" id="text-org4babeeb">
 <p>
-CIでDockerイメージをビルドするとき、ビルドインスタンスはビルドごとに独立して作成され、自動ではキャッシュが残らない。そのため、キャッシュを外部に保存する必要がある。
+エフェメラルなCIランナーでDockerイメージをビルドするとき、ビルドインスタンスはビルドごとに独立して作成され、自動ではキャッシュが残らない。そのため、キャッシュを外部に保存する必要がある。
 </p>
 
 <p>
@@ -45,29 +42,25 @@ CIでDockerイメージをビルドするとき、ビルドインスタンスは
 </p>
 
 <p>
-このときのポイントは、buildxの <code>--cache-to=type=registry,ref=...,mode=max</code> オプションによって中間レイヤーも保存することである。通常のDockerイメージは最終ステージのレイヤーだけをキャッシュ保存しており、1行でも変わると中間ステージのキャッシュを利用できずすべてやり直しになってしまう。中間レイヤーを保存していると、変更が起きたビルドステージ以降だけの実行ですむ。
+このときのポイントは、buildxの <code>--cache-to=type=registry,ref=...,mode=max</code> オプションによって中間レイヤーも保存することである。通常のDockerイメージ(<code>mode=min</code>)は最終ステージのレイヤーだけをキャッシュ保存しており、前段ステージが1行でも変わると中間ステージのキャッシュを利用できずすべてやり直しになってしまう。中間レイヤーを保存していると、変更が起きたビルドステージ以降だけの実行ですむ。
 </p>
 
 <p>
-また、キャッシュはpull/pushですべて転送されるわけではないのでオーバーヘッドは少なくなる傾向がある。すでにレジストリに存在するレイヤーはスキップされる。
-</p>
-
-<p>
-キャッシュを含めることによって、イメージサイズは大きくなるので、各レイヤーサイズでのサイズを小さく保つのも重要になる。
+キャッシュはpull/pushですべて転送されるわけではないのでオーバーヘッドは少なくなる傾向がある。すでにレジストリに存在するレイヤーはスキップされる。
 </p>
 </div>
 </div>
-<div id="outline-container-orge69a5c4" class="outline-2">
-<h2 id="orge69a5c4"><a href="#orge69a5c4">関連</a></h2>
-<div class="outline-text-2" id="text-orge69a5c4">
-<p>
-なし。
-</p>
+<div id="outline-container-orgfd2d15f" class="outline-2">
+<h2 id="orgfd2d15f"><a href="#orgfd2d15f">関連</a></h2>
+<div class="outline-text-2" id="text-orgfd2d15f">
+<ul class="org-ul">
+<li><a href="https://matsuand.github.io/docs.docker.jp.onthefly/buildx/working-with-buildx/">Docker Buildx | Docker ドキュメント</a></li>
+</ul>
 </div>
 </div>
-<div id="outline-container-orge21f0d0" class="outline-2">
-<h2 id="orge21f0d0"><a href="#orge21f0d0">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orge21f0d0">
+<div id="outline-container-org64dbb97" class="outline-2">
+<h2 id="org64dbb97"><a href="#org64dbb97">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org64dbb97">
 <ul class="org-ul">
 <li><a href="./20260422T090303--kdoc-570-corsはサーバのリソースを保護しない__permanent.html">KDOC 570: CORSはサーバのリソースを保護しない</a></li>
 </ul>

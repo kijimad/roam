@@ -5,229 +5,15 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-06-19T09:00:04+09:00</updated>
+<updated>2026-07-20T08:57:33+09:00</updated>
 <entry>
-  <title>KDOC 580: 複合インデックスの順番による差を見る</title>
+  <title>KDOC 591: Discriminated Type で状態を表現する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org3a6e9c7" class="outline-2">
- <h2 id="org3a6e9c7"> <a href="#org3a6e9c7">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org3a6e9c7">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-06-06 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org20725ee" class="outline-2">
- <h2 id="org20725ee"> <a href="#org20725ee">概要</a></h2>
- <div class="outline-text-2" id="text-org20725ee">
- <ul class="org-ul"> <li>日付範囲、外部キーの2つのフィールドで検索する</li>
- <li>その場合、複合インデックスにつけた順番がインデックス使用および速度に影響をもたらすか調べる</li>
-</ul> <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>id、日付範囲の順でインデックスをつける</label> <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">customers</span> (
-  id    <span class="org-type">INT</span>  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,
-   <span class="org-keyword">name</span> TEXT
-);
-
- <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">orders</span> (
-  id          SERIAL  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,
-  customer_id  <span class="org-type">INT</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>  <span class="org-keyword">REFERENCES</span> customers(id),
-  ordered_at   <span class="org-type">DATE</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>,
-  amount       <span class="org-type">INT</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>
-);
-
- <span class="org-keyword">CREATE</span> INDEX idx_cust_date  <span class="org-keyword">ON</span> orders (customer_id, ordered_at);
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">顧客を1000人作成
-</span> <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> customers (id,  <span class="org-keyword">name</span>)
- <span class="org-keyword">SELECT</span> i,  <span class="org-string">'customer_'</span> || i
- <span class="org-keyword">FROM</span> generate_series(1, 1000)  <span class="org-keyword">AS</span> i;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">注文を100万行作成（顧客1〜1000、日付は2024-01-01〜2026-05-11の範囲）
-</span> <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> orders (customer_id, ordered_at, amount)
- <span class="org-keyword">SELECT</span>
-  (random() * 999 + 1):: <span class="org-type">int</span>,
-   <span class="org-string">'2024-01-01'</span>:: <span class="org-type">date</span> + (random() * 860):: <span class="org-type">int</span>,
-  (random() * 10000 + 100):: <span class="org-type">int</span>
- <span class="org-keyword">FROM</span> generate_series(1, 1000000);
-
-EXPLAIN ANALYZE
- <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> orders
- <span class="org-keyword">WHERE</span> customer_id = 3
- <span class="org-keyword">AND</span> ordered_at  <span class="org-keyword">BETWEEN</span>  <span class="org-string">'2026-01-01'</span>  <span class="org-keyword">AND</span>  <span class="org-string">'2026-03-31'</span>;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                                                                                         |   |   |
-|-------------------------------------------------------------------------------------------------------------------------+---+---|
-| > CREATE TABLE customers (                                                                                              |   |   |
-| >   id   INT PRIMARY KEY,                                                                                               |   |   |
-| >   name TEXT                                                                                                           |   |   |
-| > );                                                                                                                    |   |   |
-| CREATE TABLE                                                                                                            |   |   |
-|                                                                                                                         |   |   |
-| > CREATE TABLE orders (                                                                                                 |   |   |
-| >   id          SERIAL PRIMARY KEY,                                                                                     |   |   |
-| >   customer_id INT NOT NULL REFERENCES customers(id),                                                                  |   |   |
-| >   ordered_at  DATE NOT NULL,                                                                                          |   |   |
-| >   amount      INT NOT NULL                                                                                            |   |   |
-| > );                                                                                                                    |   |   |
-| CREATE TABLE                                                                                                            |   |   |
-|                                                                                                                         |   |   |
-| > CREATE INDEX idx_cust_date ON orders (customer_id, ordered_at);                                                       |   |   |
-| CREATE INDEX                                                                                                            |   |   |
-|                                                                                                                         |   |   |
-| > INSERT INTO customers (id, name)                                                                                      |   |   |
-| > SELECT i, 'customer_'                                                                                                 |   | i |
-| > FROM generate_series(1, 1000) AS i;                                                                                   |   |   |
-| INSERT 0 1000                                                                                                           |   |   |
-|                                                                                                                         |   |   |
-| > INSERT INTO orders (customer_id, ordered_at, amount)                                                                  |   |   |
-| > SELECT                                                                                                                |   |   |
-| >   (random() * 999 + 1)::int,                                                                                          |   |   |
-| >   '2024-01-01'::date + (random() * 860)::int,                                                                         |   |   |
-| >   (random() * 10000 + 100)::int                                                                                       |   |   |
-| > FROM generate_series(1, 1000000);                                                                                     |   |   |
-| INSERT 0 1000000                                                                                                        |   |   |
-|                                                                                                                         |   |   |
-| > EXPLAIN ANALYZE                                                                                                       |   |   |
-| > SELECT * FROM orders                                                                                                  |   |   |
-| > WHERE customer_id = 3                                                                                                 |   |   |
-| > AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';                                                                 |   |   |
-| QUERY PLAN                                                                                                              |   |   |
-| Bitmap Heap Scan on orders  (cost=4.74..100.08 rows=25 width=16) (actual time=0.019..0.064 rows=86.00 loops=1)          |   |   |
-| Recheck Cond: ((customer_id = 3) AND (ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date))         |   |   |
-| Heap Blocks: exact=86                                                                                                   |   |   |
-| Buffers: shared hit=89                                                                                                  |   |   |
-| ->  Bitmap Index Scan on idx_cust_date  (cost=0.00..4.74 rows=25 width=0) (actual time=0.009..0.009 rows=86.00 loops=1) |   |   |
-| Index Cond: ((customer_id = 3) AND (ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date))           |   |   |
-| Index Searches: 1                                                                                                       |   |   |
-| Buffers: shared hit=3                                                                                                   |   |   |
-| Planning:                                                                                                               |   |   |
-| Buffers: shared hit=8                                                                                                   |   |   |
-| Planning Time: 0.055 ms                                                                                                 |   |   |
-| Execution Time: 0.070 ms                                                                                                |   |   |
-</pre>
-</div>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>日付範囲、idの順でインデックスをつける</label> <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">customers</span> (
-  id    <span class="org-type">INT</span>  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,
-   <span class="org-keyword">name</span> TEXT
-);
-
- <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">orders</span> (
-  id          SERIAL  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,
-  customer_id  <span class="org-type">INT</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>  <span class="org-keyword">REFERENCES</span> customers(id),
-  ordered_at   <span class="org-type">DATE</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>,
-  amount       <span class="org-type">INT</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>
-);
-
- <span class="org-keyword">CREATE</span> INDEX idx_date_cust  <span class="org-keyword">ON</span> orders (ordered_at, customer_id);
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">顧客を1000人作成
-</span> <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> customers (id,  <span class="org-keyword">name</span>)
- <span class="org-keyword">SELECT</span> i,  <span class="org-string">'customer_'</span> || i
- <span class="org-keyword">FROM</span> generate_series(1, 1000)  <span class="org-keyword">AS</span> i;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">注文を100万行作成（顧客1〜1000、日付は2024-01-01〜2026-05-11の範囲）
-</span> <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> orders (customer_id, ordered_at, amount)
- <span class="org-keyword">SELECT</span>
-  (random() * 999 + 1):: <span class="org-type">int</span>,
-   <span class="org-string">'2024-01-01'</span>:: <span class="org-type">date</span> + (random() * 860):: <span class="org-type">int</span>,
-  (random() * 10000 + 100):: <span class="org-type">int</span>
- <span class="org-keyword">FROM</span> generate_series(1, 1000000);
-
-EXPLAIN ANALYZE
- <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> orders
- <span class="org-keyword">WHERE</span> customer_id = 3
- <span class="org-keyword">AND</span> ordered_at  <span class="org-keyword">BETWEEN</span>  <span class="org-string">'2026-01-01'</span>  <span class="org-keyword">AND</span>  <span class="org-string">'2026-03-31'</span>;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                                                                                            |   |   |
-|----------------------------------------------------------------------------------------------------------------------------+---+---|
-| > CREATE TABLE customers (                                                                                                 |   |   |
-| >   id   INT PRIMARY KEY,                                                                                                  |   |   |
-| >   name TEXT                                                                                                              |   |   |
-| > );                                                                                                                       |   |   |
-| CREATE TABLE                                                                                                               |   |   |
-|                                                                                                                            |   |   |
-| > CREATE TABLE orders (                                                                                                    |   |   |
-| >   id          SERIAL PRIMARY KEY,                                                                                        |   |   |
-| >   customer_id INT NOT NULL REFERENCES customers(id),                                                                     |   |   |
-| >   ordered_at  DATE NOT NULL,                                                                                             |   |   |
-| >   amount      INT NOT NULL                                                                                               |   |   |
-| > );                                                                                                                       |   |   |
-| CREATE TABLE                                                                                                               |   |   |
-|                                                                                                                            |   |   |
-| > CREATE INDEX idx_date_cust ON orders (ordered_at, customer_id);                                                          |   |   |
-| CREATE INDEX                                                                                                               |   |   |
-|                                                                                                                            |   |   |
-| > INSERT INTO customers (id, name)                                                                                         |   |   |
-| > SELECT i, 'customer_'                                                                                                    |   | i |
-| > FROM generate_series(1, 1000) AS i;                                                                                      |   |   |
-| INSERT 0 1000                                                                                                              |   |   |
-|                                                                                                                            |   |   |
-| > INSERT INTO orders (customer_id, ordered_at, amount)                                                                     |   |   |
-| > SELECT                                                                                                                   |   |   |
-| >   (random() * 999 + 1)::int,                                                                                             |   |   |
-| >   '2024-01-01'::date + (random() * 860)::int,                                                                            |   |   |
-| >   (random() * 10000 + 100)::int                                                                                          |   |   |
-| > FROM generate_series(1, 1000000);                                                                                        |   |   |
-| INSERT 0 1000000                                                                                                           |   |   |
-|                                                                                                                            |   |   |
-| > EXPLAIN ANALYZE                                                                                                          |   |   |
-| > SELECT * FROM orders                                                                                                     |   |   |
-| > WHERE customer_id = 3                                                                                                    |   |   |
-| > AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';                                                                    |   |   |
-| QUERY PLAN                                                                                                                 |   |   |
-| Bitmap Heap Scan on orders  (cost=118.94..214.28 rows=25 width=16) (actual time=0.198..0.274 rows=120.00 loops=1)          |   |   |
-| Recheck Cond: ((ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date) AND (customer_id = 3))            |   |   |
-| Heap Blocks: exact=118                                                                                                     |   |   |
-| Buffers: shared hit=397                                                                                                    |   |   |
-| ->  Bitmap Index Scan on idx_date_cust  (cost=0.00..118.94 rows=25 width=0) (actual time=0.186..0.186 rows=120.00 loops=1) |   |   |
-| Index Cond: ((ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date) AND (customer_id = 3))              |   |   |
-| Index Searches: 90                                                                                                         |   |   |
-| Buffers: shared hit=279                                                                                                    |   |   |
-| Planning:                                                                                                                  |   |   |
-| Buffers: shared hit=8                                                                                                      |   |   |
-| Planning Time: 0.055 ms                                                                                                    |   |   |
-| Execution Time: 0.281 ms                                                                                                   |   |   |
-</pre>
-</div>
-
- <ul class="org-ul"> <li>等価条件、範囲条件の順に複合インデックスを設定したほうが高速である</li>
- <li>顧客レコードの数が少なくして1顧客あたりの返却レコード数が多い場合、インデックスの効率差よりもヒープアクセスのほうが圧倒的に大きいので実行時間があまり変わらなかった</li>
-</ul></div>
-</div>
- <div id="outline-container-org88233c2" class="outline-2">
- <h2 id="org88233c2"> <a href="#org88233c2">関連</a></h2>
- <div class="outline-text-2" id="text-org88233c2">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260511T090725--kdoc-580-複合インデックスの順番による差を見る__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260511T090725--kdoc-580-複合インデックスの順番による差を見る__draft_permanent.html</id>
-  <updated>2026-06-19T18:00:02+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 593: なぜ定期的にコネクションを切断しているのか?</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org1cfccbd" class="outline-2">
- <h2 id="org1cfccbd"> <a href="#org1cfccbd">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org1cfccbd">
+ <div id="outline-container-org3f3aeb0" class="outline-2">
+ <h2 id="org3f3aeb0"> <a href="#org3f3aeb0">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org3f3aeb0">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -236,35 +22,300 @@ EXPLAIN ANALYZE
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org2a8e346" class="outline-2">
- <h2 id="org2a8e346"> <a href="#org2a8e346">概要</a></h2>
- <div class="outline-text-2" id="text-org2a8e346">
+ <div id="outline-container-org289a43d" class="outline-2">
+ <h2 id="org289a43d"> <a href="#org289a43d">概要</a></h2>
+ <div class="outline-text-2" id="text-org289a43d">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgad4f5ea" class="outline-2">
- <h2 id="orgad4f5ea"> <a href="#orgad4f5ea">関連</a></h2>
- <div class="outline-text-2" id="text-orgad4f5ea">
+ <div id="outline-container-org6cd06f7" class="outline-2">
+ <h2 id="org6cd06f7"> <a href="#org6cd06f7">関連</a></h2>
+ <div class="outline-text-2" id="text-org6cd06f7">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260529T091134--kdoc-593-なぜ定期的にコネクションを切断しているのか__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260529T091134--kdoc-593-なぜ定期的にコネクションを切断しているのか__draft_permanent.html</id>
-  <updated>2026-06-19T17:59:55+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260523T225507--kdoc-591-discriminated-type-で状態を表現する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260523T225507--kdoc-591-discriminated-type-で状態を表現する__draft_permanent.html</id>
+  <updated>2026-07-20T17:57:29+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 590: neverthrowでエラーをわかりやすくする</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgcf2dc18" class="outline-2">
+ <h2 id="orgcf2dc18"> <a href="#orgcf2dc18">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgcf2dc18">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgcee36c8" class="outline-2">
+ <h2 id="orgcee36c8"> <a href="#orgcee36c8">概要</a></h2>
+ <div class="outline-text-2" id="text-orgcee36c8">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgb43bc97" class="outline-2">
+ <h2 id="orgb43bc97"> <a href="#orgb43bc97">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb43bc97">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260523T225437--kdoc-590-neverthrowでエラーをわかりやすくする__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260523T225437--kdoc-590-neverthrowでエラーをわかりやすくする__draft_permanent.html</id>
+  <updated>2026-07-20T17:57:26+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 602: TSKaigi2026に参加した</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org5e49410" class="outline-2">
+ <h2 id="org5e49410"> <a href="#org5e49410">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org5e49410">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org0e42a06" class="outline-2">
+ <h2 id="org0e42a06"> <a href="#org0e42a06">概要</a></h2>
+ <div class="outline-text-2" id="text-org0e42a06">
+ <p>
+会社で参加し、テックブログを書いた。
+</p>
+
+ <ul class="org-ul"> <li> <a href="https://tech.stmn.co.jp/entry/2026/06/02/144626">TSKaigi 2026 に参加しました - stmn tech blog</a></li>
+</ul> <p>
+参加した時間とメモを書いた時間にはかなり時差がある。
+</p>
+</div>
+</div>
+ <div id="outline-container-org31ff9e3" class="outline-2">
+ <h2 id="org31ff9e3"> <a href="#org31ff9e3">関連</a></h2>
+ <div class="outline-text-2" id="text-org31ff9e3">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260712T093246--kdoc-602-tskaigi2026に参加した__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260712T093246--kdoc-602-tskaigi2026に参加した__draft_essay.html</id>
+  <updated>2026-07-20T17:57:24+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 604: 健康と医学の博物館を観察する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org1601bde" class="outline-2">
+ <h2 id="org1601bde"> <a href="#org1601bde">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1601bde">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org63db912" class="outline-2">
+ <h2 id="org63db912"> <a href="#org63db912">概要</a></h2>
+ <div class="outline-text-2" id="text-org63db912">
+ <p>
+健康と医学の博物館は、東京都文京区にある医学についての博物館である。
+</p>
+
+ <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3906.1497418982453!2d139.76184621198684!3d35.710038572463475!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c253a8573d3%3A0x95ec4400fb471832!2sMuseum%20of%20Health%20and%20Medicine!5e1!3m2!1sen!2sjp!4v1784504781107!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+</div>
+</div>
+ <div id="outline-container-orgfed44a3" class="outline-2">
+ <h2 id="orgfed44a3"> <a href="#orgfed44a3">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgfed44a3">
+ <ul class="org-ul"> <li>東大病院の広大な敷地の一角にある</li>
+ <li>中庭のあるレンガ造りの建物の一部が博物館になっていた。美しい</li>
+ <li>常設展では東大医学部が持つ長い歴史の解説、輩出した偉人たちを解説している</li>
+ <li>企画展には人体の各部位ごとの解説があって、普段見ることの少ない胃カメラなどの道具が展示されていた。詳しい解説で体がゾワゾワとする</li>
+ <li>ポスター展示がメインで、テーマごとにまとまっていた</li>
+ <li>当時の資格証書や出願書があって、実在性・リアリティを感じた</li>
+</ul></div>
+</div>
+ <div id="outline-container-org67341b6" class="outline-2">
+ <h2 id="org67341b6"> <a href="#org67341b6">関連</a></h2>
+ <div class="outline-text-2" id="text-org67341b6">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org34e9d82" class="outline-2">
+ <h2 id="org34e9d82"> <a href="#org34e9d82">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org34e9d82">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260719T183024--kdoc-604-健康と医学の博物館を観察する__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260719T183024--kdoc-604-健康と医学の博物館を観察する__draft_essay.html</id>
+  <updated>2026-07-20T17:57:21+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 598: 目黒寄生虫館を観察する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org180f5ef" class="outline-2">
+ <h2 id="org180f5ef"> <a href="#org180f5ef">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org180f5ef">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org03484cd" class="outline-2">
+ <h2 id="org03484cd"> <a href="#org03484cd">概要</a></h2>
+ <div class="outline-text-2" id="text-org03484cd">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org20fa08e" class="outline-2">
+ <h2 id="org20fa08e"> <a href="#org20fa08e">メモ</a></h2>
+ <div class="outline-text-2" id="text-org20fa08e">
+ <ul class="org-ul"> <li>個人が運営している</li>
+ <li>無料の博物館で、寄付を受け付けている</li>
+ <li>面積の割に盛況だった。家族やカップルが多く、賑やかだった</li>
+ <li>解説は難しかったが、寄生虫といってもさまざまな種類があることは理解した。ビジュアルで楽しんだ</li>
+</ul></div>
+</div>
+ <div id="outline-container-orge97147e" class="outline-2">
+ <h2 id="orge97147e"> <a href="#orge97147e">関連</a></h2>
+ <div class="outline-text-2" id="text-orge97147e">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org8c4d764" class="outline-2">
+ <h2 id="org8c4d764"> <a href="#org8c4d764">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org8c4d764">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260621T132705--kdoc-598-目黒寄生虫館を観察する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260621T132705--kdoc-598-目黒寄生虫館を観察する__draft_permanent.html</id>
+  <updated>2026-07-20T17:57:19+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 597: テストの行カバレッジが不正確になりやすい文法を持つ言語</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org9094e99" class="outline-2">
+ <h2 id="org9094e99"> <a href="#org9094e99">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9094e99">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orge6b734e" class="outline-2">
+ <h2 id="orge6b734e"> <a href="#orge6b734e">概要</a></h2>
+ <div class="outline-text-2" id="text-orge6b734e">
+ <p>
+Ruby や TypeScript など、三項演算子がある言語では1行に分岐があるため、テストの行カバレッジが状況を正しく反映しているとはいいにくい。
+</p>
+
+ <p>
+逆にGoでは三項演算子がないので、それらの言語より行カバレッジが状況を正確に反映しやすい。
+</p>
+</div>
+</div>
+ <div id="outline-container-org4c1ea80" class="outline-2">
+ <h2 id="org4c1ea80"> <a href="#org4c1ea80">関連</a></h2>
+ <div class="outline-text-2" id="text-org4c1ea80">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260621T084148--kdoc-597-テストの行カバレッジが不正確になりやすい文法を持つ言語__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260621T084148--kdoc-597-テストの行カバレッジが不正確になりやすい文法を持つ言語__draft_permanent.html</id>
+  <updated>2026-07-20T17:57:17+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 589: TypeScriptでなぜenumを使ってはいけないか?</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgcfb1cca" class="outline-2">
+ <h2 id="orgcfb1cca"> <a href="#orgcfb1cca">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgcfb1cca">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgb0eaa68" class="outline-2">
+ <h2 id="orgb0eaa68"> <a href="#orgb0eaa68">概要</a></h2>
+ <div class="outline-text-2" id="text-orgb0eaa68">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org19b5dd5" class="outline-2">
+ <h2 id="org19b5dd5"> <a href="#org19b5dd5">関連</a></h2>
+ <div class="outline-text-2" id="text-org19b5dd5">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260523T224830--kdoc-589-typescriptでなぜenumを使ってはいけないか__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260523T224830--kdoc-589-typescriptでなぜenumを使ってはいけないか__draft_permanent.html</id>
+  <updated>2026-07-20T17:57:10+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 594: ヨドバシフジサワカメラミュージアムを観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org5a405b0" class="outline-2">
- <h2 id="org5a405b0"> <a href="#org5a405b0">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5a405b0">
+ <div id="outline-container-org8e41f7b" class="outline-2">
+ <h2 id="org8e41f7b"> <a href="#org8e41f7b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8e41f7b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -273,17 +324,17 @@ EXPLAIN ANALYZE
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga022a05" class="outline-2">
- <h2 id="orga022a05"> <a href="#orga022a05">概要</a></h2>
- <div class="outline-text-2" id="text-orga022a05">
+ <div id="outline-container-org7022f1a" class="outline-2">
+ <h2 id="org7022f1a"> <a href="#org7022f1a">概要</a></h2>
+ <div class="outline-text-2" id="text-org7022f1a">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgf486eea" class="outline-2">
- <h2 id="orgf486eea"> <a href="#orgf486eea">メモ</a></h2>
- <div class="outline-text-2" id="text-orgf486eea">
+ <div id="outline-container-org9fd6e78" class="outline-2">
+ <h2 id="org9fd6e78"> <a href="#org9fd6e78">メモ</a></h2>
+ <div class="outline-text-2" id="text-org9fd6e78">
  <ul class="org-ul"> <li>収集品はいくつかのジャンルに分かれている
  <ul class="org-ul"> <li>ライカを製造しているライツ社の歴史</li>
  <li>日本や世界の歴史的カメラ</li>
@@ -306,27 +357,33 @@ EXPLAIN ANALYZE
  <li>見たあとの休憩ルームで遠くで小さくなっているピアノ</li>
 </ul></div>
 </div>
- <div id="outline-container-org45c7e05" class="outline-2">
- <h2 id="org45c7e05"> <a href="#org45c7e05">関連</a></h2>
- <div class="outline-text-2" id="text-org45c7e05">
+ <div id="outline-container-org557bd6c" class="outline-2">
+ <h2 id="org557bd6c"> <a href="#org557bd6c">関連</a></h2>
+ <div class="outline-text-2" id="text-org557bd6c">
  <p>
 なし。
 </p>
 </div>
+</div>
+ <div id="outline-container-org5e16e62" class="outline-2">
+ <h2 id="org5e16e62"> <a href="#org5e16e62">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org5e16e62">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260614T144034--kdoc-594-ヨドバシフジサワカメラミュージアムを観察する__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20260614T144034--kdoc-594-ヨドバシフジサワカメラミュージアムを観察する__draft_essay.html</id>
-  <updated>2026-06-19T17:59:52+09:00</updated>
+  <updated>2026-07-20T17:57:09+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 592: Branded Type で公称型を表現する</title>
+  <title>KDOC 596: セルフでストア画像を用意した方法</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6da7b4c" class="outline-2">
- <h2 id="org6da7b4c"> <a href="#org6da7b4c">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6da7b4c">
+ <div id="outline-container-org9b0e44e" class="outline-2">
+ <h2 id="org9b0e44e"> <a href="#org9b0e44e">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9b0e44e">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -335,97 +392,35 @@ EXPLAIN ANALYZE
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orged34f32" class="outline-2">
- <h2 id="orged34f32"> <a href="#orged34f32">概要</a></h2>
- <div class="outline-text-2" id="text-orged34f32">
+ <div id="outline-container-org04b3c8b" class="outline-2">
+ <h2 id="org04b3c8b"> <a href="#org04b3c8b">概要</a></h2>
+ <div class="outline-text-2" id="text-org04b3c8b">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org4a22a61" class="outline-2">
- <h2 id="org4a22a61"> <a href="#org4a22a61">関連</a></h2>
- <div class="outline-text-2" id="text-org4a22a61">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260523T225601--kdoc-592-branded-type-で公称型を表現する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260523T225601--kdoc-592-branded-type-で公称型を表現する__draft_permanent.html</id>
-  <updated>2026-06-19T17:59:42+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 578: よい個人プロジェクトの条件</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orge15a97a" class="outline-2">
- <h2 id="orge15a97a"> <a href="#orge15a97a">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge15a97a">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-09 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-06-06 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org9e0b2a9" class="outline-2">
- <h2 id="org9e0b2a9"> <a href="#org9e0b2a9">概要</a></h2>
- <div class="outline-text-2" id="text-org9e0b2a9">
- <p>
-個人のプロジェクトの条件に言及している文書のメモ。
-</p>
-
- <p>
- <a href="https://paulgraham.com/love.html">How to Do What You Love</a>の、よいプロジェクトの条件。
-</p>
-
- <ul class="org-ul"> <li>読むだけでなく、読んで得たもので何かすること</li>
- <li>自分や友達をすごいと唸らせるようなこと</li>
-</ul> <p>
- <a href="http://blog.livedoor.jp/lionfan/archives/52909819.html">らいおんの隠れ家 : ポール・グレアム「良い後回し、悪い後回し」</a>の、解くべき問題に取り組んでいるかのチェックリスト。
-</p>
-
- <blockquote>
- <ol class="org-ol"> <li>あなたの分野でいちばん重要な難問は何ですか。</li>
- <li>それに取り組んでいますか。</li>
- <li>なぜ取り組んでいないのですか。</li>
-</ol></blockquote>
-
- <p>
- <a href="http://www-comm.cs.shinshu-u.ac.jp/david/papers/stories/japanese/hamming.pdf">あなたとあなたの研究</a>の、自分に才能をもちながら成功しない大勢の人の特徴。
-</p>
-
- <ul class="org-ul"> <li>重要な問題に取り組まないこと</li>
- <li>問題に熱中しないこと</li>
- <li>難しい問題を状況を変え、簡単にできるがまだ重要な問題に代えないこと</li>
- <li>なぜしないか言い訳を捜し続けること</li>
-</ul></div>
-</div>
- <div id="outline-container-org38c8398" class="outline-2">
- <h2 id="org38c8398"> <a href="#org38c8398">関連</a></h2>
- <div class="outline-text-2" id="text-org38c8398">
+ <div id="outline-container-org518ec97" class="outline-2">
+ <h2 id="org518ec97"> <a href="#org518ec97">関連</a></h2>
+ <div class="outline-text-2" id="text-org518ec97">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260509T145327--kdoc-578-よい個人プロジェクトの条件__essay.html"/>
-  <id>https://kijimad.github.io/roam/20260509T145327--kdoc-578-よい個人プロジェクトの条件__essay.html</id>
-  <updated>2026-06-19T17:59:42+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260621T083854--kdoc-596-セルフでストア画像を用意した方法__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260621T083854--kdoc-596-セルフでストア画像を用意した方法__draft_permanent.html</id>
+  <updated>2026-07-20T17:57:05+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 584: なぜ型アノテーションは問題ないのに型アサーションは禁忌なのか?</title>
+  <title>KDOC 601: 物流博物館を観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org734cf50" class="outline-2">
- <h2 id="org734cf50"> <a href="#org734cf50">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org734cf50">
+ <div id="outline-container-orgc439657" class="outline-2">
+ <h2 id="orgc439657"> <a href="#orgc439657">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgc439657">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -434,40 +429,50 @@ EXPLAIN ANALYZE
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org8de240e" class="outline-2">
- <h2 id="org8de240e"> <a href="#org8de240e">概要</a></h2>
- <div class="outline-text-2" id="text-org8de240e">
- <p>
-TypeScriptで、なぜ型アノテーションは問題ないのに型アサーションは禁忌なのだろうか。
-</p>
-
- <ul class="org-ul"> <li>型アノテーションは型推論の制約を追加する。型推論に反しない範囲で指定できる
- <ul class="org-ul"> <li>推論にじゅうぶんな情報がないときに必要</li>
-</ul></li>
- <li>型アサーションは型推論の制約を外す</li>
-</ul></div>
-</div>
- <div id="outline-container-org2e0541d" class="outline-2">
- <h2 id="org2e0541d"> <a href="#org2e0541d">関連</a></h2>
- <div class="outline-text-2" id="text-org2e0541d">
+ <div id="outline-container-org022cd36" class="outline-2">
+ <h2 id="org022cd36"> <a href="#org022cd36">概要</a></h2>
+ <div class="outline-text-2" id="text-org022cd36">
  <p>
 なし。
 </p>
 </div>
 </div>
+ <div id="outline-container-org7324fbb" class="outline-2">
+ <h2 id="org7324fbb"> <a href="#org7324fbb">メモ</a></h2>
+ <div class="outline-text-2" id="text-org7324fbb">
+ <ul class="org-ul"> <li>地下に巨大な物流ターミナルの模型があって壮観だった。自動車、鉄道、飛行機、船舶。それぞれ乗り物が動く</li>
+ <li>江戸時代くらいの物流から現代までを解説している。技術の制約があるなかで、巧妙な仕組みによって大量輸送していた</li>
+ <li>物流に関する多くの古写真が展示されている。日常的な風景は、たしかに歴史が地続きであることを思い返させてくれる</li>
+ <li>1960年代に撮られた、隅田川駅の貨物センターの写真は圧巻だった。巨大な構内に貨物の山があふれていた。整頓さはなく、ごちゃごちゃと荷物が山になっているだけに見えた。人力でどうにかしていた時代があるのだ</li>
+</ul></div>
+</div>
+ <div id="outline-container-org58e1467" class="outline-2">
+ <h2 id="org58e1467"> <a href="#org58e1467">関連</a></h2>
+ <div class="outline-text-2" id="text-org58e1467">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org642f98d" class="outline-2">
+ <h2 id="org642f98d"> <a href="#org642f98d">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org642f98d">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260517T012528--kdoc-584-なぜ型アノテーションは問題ないのに型アサーションは禁忌なのか__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260517T012528--kdoc-584-なぜ型アノテーションは問題ないのに型アサーションは禁忌なのか__draft_permanent.html</id>
-  <updated>2026-06-19T17:59:38+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260704T171023--kdoc-601-物流博物館を観察する__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260704T171023--kdoc-601-物流博物館を観察する__draft_essay.html</id>
+  <updated>2026-07-20T17:57:03+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 581: アトミックなupsertを実行する</title>
+  <title>KDOC 593: 安全なマイグレーション手法をチームに導入する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgdde94f9" class="outline-2">
- <h2 id="orgdde94f9"> <a href="#orgdde94f9">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgdde94f9">
+ <div id="outline-container-org4203f6a" class="outline-2">
+ <h2 id="org4203f6a"> <a href="#org4203f6a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4203f6a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -476,147 +481,35 @@ TypeScriptで、なぜ型アノテーションは問題ないのに型アサー�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga24d3cb" class="outline-2">
- <h2 id="orga24d3cb"> <a href="#orga24d3cb">概要</a></h2>
- <div class="outline-text-2" id="text-orga24d3cb">
+ <div id="outline-container-orgd4468a1" class="outline-2">
+ <h2 id="orgd4468a1"> <a href="#orgd4468a1">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd4468a1">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org073d392" class="outline-2">
- <h2 id="org073d392"> <a href="#org073d392">関連</a></h2>
- <div class="outline-text-2" id="text-org073d392">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260512T205233--kdoc-581-アトミックなupsertを実行する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260512T205233--kdoc-581-アトミックなupsertを実行する__draft_permanent.html</id>
-  <updated>2026-06-19T17:59:38+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 582: Prismaでネイティブupsertが使われる条件を見る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgf71622d" class="outline-2">
- <h2 id="orgf71622d"> <a href="#orgf71622d">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgf71622d">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-14 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org11bd1a8" class="outline-2">
- <h2 id="org11bd1a8"> <a href="#org11bd1a8">概要</a></h2>
- <div class="outline-text-2" id="text-org11bd1a8">
- <p>
-JavaScriptのORMであるPrismaには  <code>upsert()</code> 関数がある。これがSQLレベルで upsert( <code>INSERT ... ON CONFLICT DO UPDATE</code>) になるには条件があり、満たされない場合は SELECT + INSERT/UPDATE になる。2クエリなので、並列実行したときにタイミングによって競合する可能性がある。2つの実行クエリの両方がSELECTを通過すると、どちらもINSERTになり、ユニーク制約があればエラーになる。
-</p>
-
- <blockquote>
- <p>
-Prisma Client uses a database upsert for an upsert query when the query meets the following criteria:
-</p>
-
- <ul class="org-ul"> <li>There are no nested queries in the upsert’s create and update options</li>
- <li>The query does not include a selection that uses a nested read</li>
- <li>The query modifies only one model</li>
- <li>There is only one unique field in the upsert’s where option</li>
- <li>The unique field in the where option and the unique field in the create option have the same value</li>
-</ul> <p>
- <a href="https://www.prisma.io/docs/orm/reference/prisma-client-reference#database-upserts">Prisma Client API | Prisma Documentation</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org481c0d2" class="outline-2">
- <h2 id="org481c0d2"> <a href="#org481c0d2">関連</a></h2>
- <div class="outline-text-2" id="text-org481c0d2">
+ <div id="outline-container-org55d2ca6" class="outline-2">
+ <h2 id="org55d2ca6"> <a href="#org55d2ca6">関連</a></h2>
+ <div class="outline-text-2" id="text-org55d2ca6">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260513T090856--kdoc-582-prismaでネイティブupsertが使われる条件を見る__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260513T090856--kdoc-582-prismaでネイティブupsertが使われる条件を見る__draft_permanent.html</id>
-  <updated>2026-06-19T17:59:37+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 577: 『ナニワ金融道』</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orga50e219" class="outline-2">
- <h2 id="orga50e219"> <a href="#orga50e219"> <span class="done DONE">DONE</span> この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga50e219">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-09 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-06-08 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org7a615e8" class="outline-2">
- <h2 id="org7a615e8"> <a href="#org7a615e8">概要</a></h2>
- <div class="outline-text-2" id="text-org7a615e8">
- <p>
-『ナニワ金融道』は、消費者金融会社を描いた漫画である。
-</p>
-</div>
-</div>
- <div id="outline-container-org16cb545" class="outline-2">
- <h2 id="org16cb545"> <a href="#org16cb545">メモ</a></h2>
- <div class="outline-text-2" id="text-org16cb545">
- <ul class="org-ul"> <li>金融は良心を売って金を儲ける商売</li>
- <li>市議
- <ul class="org-ul"> <li>公共工事で土建屋のキックバックして儲ける</li>
- <li>役所の人事に介入する</li>
- <li>公立学校の校長人事に介入する</li>
-</ul></li>
- <li>票を金で買うために、地域のボスに現金を渡して末端に行き渡らせる</li>
- <li>府会議員より市会議員のほうが儲かる。報酬や社会的地位は府会議員のほうが上だが、市会議員のほうが介入できるものが多い</li>
- <li>便宜を図った業者を後援会にして会費をとる</li>
- <li>病院を建てればその周辺は風俗営業禁止になる。また、ベッド1つでも病院になる</li>
- <li>所有権、貸借権、抵当権</li>
- <li>紹介もなく知らない人の懐に入り込むには家の前を掃除するのがいちばん</li>
- <li>儲かっている話に対する返し – 去年の税金はどれくらい払いましたか</li>
- <li>公務員には官名と職名がある</li>
-</ul></div>
-</div>
- <div id="outline-container-orgdef4f9a" class="outline-2">
- <h2 id="orgdef4f9a"> <a href="#orgdef4f9a">関連</a></h2>
- <div class="outline-text-2" id="text-orgdef4f9a">
- <ul class="org-ul"> <li>類推:  <a href="20260426T102149--kdoc-573-『ハイパーインフレーション』__book.html#ID-20260426T102149">KDOC 573: 『ハイパーインフレーション』</a>と <a href="20250427T175852--kdoc-350-『正直不動産』__book.html#ID-20250427T175852">KDOC 350: 『正直不動産』</a>。攻撃側からみた手口を物語形式で紹介することで、その分野についての興味を深めることができるシリーズ。自分で勉強して自衛していこうというモチベーションになる</li>
-</ul></div>
-</div>
- <div id="outline-container-orgb3dd566" class="outline-2">
- <h2 id="orgb3dd566"> <a href="#orgb3dd566">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgb3dd566">
- <ul class="org-ul"> <li> <a href="./20260509T225246--kdoc-579-『新ナニワ金融道』__book.html">KDOC 579: 『新ナニワ金融道』</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260505T151949--kdoc-577-『ナニワ金融道』__book.html"/>
-  <id>https://kijimad.github.io/roam/20260505T151949--kdoc-577-『ナニワ金融道』__book.html</id>
-  <updated>2026-06-19T17:59:37+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260529T091134--kdoc-593-安全なマイグレーション手法をチームに導入する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260529T091134--kdoc-593-安全なマイグレーション手法をチームに導入する__draft_permanent.html</id>
+  <updated>2026-07-20T17:56:57+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 587: 東京都庭園美術館を観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org21eade4" class="outline-2">
- <h2 id="org21eade4"> <a href="#org21eade4">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org21eade4">
+ <div id="outline-container-org0d83e15" class="outline-2">
+ <h2 id="org0d83e15"> <a href="#org0d83e15">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0d83e15">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -625,95 +518,41 @@ Prisma Client uses a database upsert for an upsert query when the query meets th
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc5e17be" class="outline-2">
- <h2 id="orgc5e17be"> <a href="#orgc5e17be">概要</a></h2>
- <div class="outline-text-2" id="text-orgc5e17be">
+ <div id="outline-container-org553f136" class="outline-2">
+ <h2 id="org553f136"> <a href="#org553f136">概要</a></h2>
+ <div class="outline-text-2" id="text-org553f136">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org2ae7c8b" class="outline-2">
- <h2 id="org2ae7c8b"> <a href="#org2ae7c8b">関連</a></h2>
- <div class="outline-text-2" id="text-org2ae7c8b">
+ <div id="outline-container-orgcda362e" class="outline-2">
+ <h2 id="orgcda362e"> <a href="#orgcda362e">関連</a></h2>
+ <div class="outline-text-2" id="text-orgcda362e">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org4a19625" class="outline-2">
- <h2 id="org4a19625"> <a href="#org4a19625">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org4a19625">
+ <div id="outline-container-orge2b36e2" class="outline-2">
+ <h2 id="orge2b36e2"> <a href="#orge2b36e2">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orge2b36e2">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260517T154743--kdoc-587-東京都庭園美術館を観察する__draft_essay.html"/>
   <id>https://kijimad.github.io/roam/20260517T154743--kdoc-587-東京都庭園美術館を観察する__draft_essay.html</id>
-  <updated>2026-06-19T17:58:45+09:00</updated>
+  <updated>2026-07-20T17:56:51+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 579: 『新ナニワ金融道』</title>
+  <title>KDOC 603: SRE NEXT 2026 に参加した</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgf12f598" class="outline-2">
- <h2 id="orgf12f598"> <a href="#orgf12f598"> <span class="done DONE">DONE</span> この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgf12f598">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org587d345" class="outline-2">
- <h2 id="org587d345"> <a href="#org587d345">概要</a></h2>
- <div class="outline-text-2" id="text-org587d345">
- <p>
-『ナニワ金融道』は、消費者金融会社を描いた漫画である。
-</p>
-</div>
-</div>
- <div id="outline-container-org23402f4" class="outline-2">
- <h2 id="org23402f4"> <a href="#org23402f4">メモ</a></h2>
- <div class="outline-text-2" id="text-org23402f4">
- <ul class="org-ul"> <li>600万を利息月3%で10回払いにしたとき、月々の返済額は利息18万+元金割賦額60万円となる。月3%なのは初回だけで、最終回は実質月30%の金利になる。返済によって元金が減るから、10回目は残元金60万円に対して支払い金利18万円で、月30%の金利となる
- <ul class="org-ul"> <li>追加調査: 普通のローンでは残債方式で、残っている元金×金利で計算する。返済が進むほど利息が減少し元金の割合が増加する</li>
-</ul></li>
- <li>商店街は一枚岩ではない。居住用として2階に住み、わざと賃料を高くして空きテナントにしている店もある。現役の店主たちからすれば迷惑な存在であり、出ていって喜ぶ人がいるということはビジネスチャンスである</li>
- <li>困っているタイミングつけこめば、土地を安く手に入れられる</li>
- <li>警察に届けても慰謝料は取れない</li>
- <li>カジノは資金洗浄に利用できる。前もって元締めに金を渡しておいて、当たったことにする</li>
- <li>教祖が海外で資金洗浄して回収できなくても、大量の脱会信者で稼ぐ</li>
- <li>返済期限を決めてない借用書は貸主の好きなときに一括返済を請求できる</li>
- <li>管財事件と同時廃止事件の違い</li>
- <li>日本の牛乳は乳成分規定があって、3.5%以上出せない農家は罰金を科せられる。放牧で飼ってもその数値は出ないから、規定を達成するために高い飼料を買って牛に与えるしかない。放牧の自然な状態で取れる牛乳のほうがおいしいという</li>
- <li>どの業界にも必要以上の規定を作って利権化するシステムが存在する</li>
- <li>パチンコは風営法のレジャー施設として容認されている。金を直接やりとりすると賭博にあたり、違法なので景品を経由している</li>
-</ul></div>
-</div>
- <div id="outline-container-org8a50d44" class="outline-2">
- <h2 id="org8a50d44"> <a href="#org8a50d44">関連</a></h2>
- <div class="outline-text-2" id="text-org8a50d44">
- <ul class="org-ul"> <li>補足:  <a href="20260505T151949--kdoc-577-『ナニワ金融道』__book.html#ID-20260505T151949">KDOC 577: 『ナニワ金融道』</a>の続編</li>
- <li>類推: 金融、法律を物語に落とし込む手法は、身近に感じにくい分野に対するモチベーションや学習フックになる。ほかに利用できる分野はないだろうか</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260509T225246--kdoc-579-『新ナニワ金融道』__book.html"/>
-  <id>https://kijimad.github.io/roam/20260509T225246--kdoc-579-『新ナニワ金融道』__book.html</id>
-  <updated>2026-06-19T17:58:44+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 585: Goにforしかない理由を知る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org5b2c49a" class="outline-2">
- <h2 id="org5b2c49a"> <a href="#org5b2c49a">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5b2c49a">
+ <div id="outline-container-org1dc4f01" class="outline-2">
+ <h2 id="org1dc4f01"> <a href="#org1dc4f01">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1dc4f01">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -722,70 +561,74 @@ Prisma Client uses a database upsert for an upsert query when the query meets th
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb9e79e6" class="outline-2">
- <h2 id="orgb9e79e6"> <a href="#orgb9e79e6">概要</a></h2>
- <div class="outline-text-2" id="text-orgb9e79e6">
+ <div id="outline-container-org494406a" class="outline-2">
+ <h2 id="org494406a"> <a href="#org494406a">概要</a></h2>
+ <div class="outline-text-2" id="text-org494406a">
  <p>
-Goにforしかない理由は、文法のシンプルさのためだと考えていたが、違うようだ。実行速度だと聞いた。速度とミニマルなインターフェースの両取りをしているのは美しく見える。
+なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org0d56be1" class="outline-2">
- <h2 id="org0d56be1"> <a href="#org0d56be1">関連</a></h2>
- <div class="outline-text-2" id="text-org0d56be1">
+ <div id="outline-container-orgd84cd6a" class="outline-2">
+ <h2 id="orgd84cd6a"> <a href="#orgd84cd6a">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd84cd6a">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260712T093259--kdoc-603-sre-next-2026-に参加した__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260712T093259--kdoc-603-sre-next-2026-に参加した__draft_essay.html</id>
+  <updated>2026-07-20T17:56:50+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 585: Goにforしかない理由は高速なため</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgd35075d" class="outline-2">
+ <h2 id="orgd35075d"> <a href="#orgd35075d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd35075d">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org044d624" class="outline-2">
+ <h2 id="org044d624"> <a href="#org044d624">概要</a></h2>
+ <div class="outline-text-2" id="text-org044d624">
+ <p>
+聞いた話。
+</p>
+
+ <p>
+Goにforしかない理由は、文法のシンプルさのためだと考えていたが、違うようだ。実行速度だという。
+</p>
+</div>
+</div>
+ <div id="outline-container-org9b3ec6b" class="outline-2">
+ <h2 id="org9b3ec6b"> <a href="#org9b3ec6b">関連</a></h2>
+ <div class="outline-text-2" id="text-org9b3ec6b">
  <ul class="org-ul"> <li>追加調査: 裏取りする</li>
 </ul></div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260517T013438--kdoc-585-goにforしかない理由を知る__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260517T013438--kdoc-585-goにforしかない理由を知る__draft_permanent.html</id>
-  <updated>2026-06-19T17:58:43+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 591: Discriminated Type で状態を表現する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org6c78a11" class="outline-2">
- <h2 id="org6c78a11"> <a href="#org6c78a11">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6c78a11">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org5baab7e" class="outline-2">
- <h2 id="org5baab7e"> <a href="#org5baab7e">概要</a></h2>
- <div class="outline-text-2" id="text-org5baab7e">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org935962f" class="outline-2">
- <h2 id="org935962f"> <a href="#org935962f">関連</a></h2>
- <div class="outline-text-2" id="text-org935962f">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260523T225507--kdoc-591-discriminated-type-で状態を表現する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260523T225507--kdoc-591-discriminated-type-で状態を表現する__draft_permanent.html</id>
-  <updated>2026-06-19T17:58:42+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260517T013438--kdoc-585-goにforしかない理由は高速なため__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260517T013438--kdoc-585-goにforしかない理由は高速なため__draft_permanent.html</id>
+  <updated>2026-07-20T17:56:30+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 588: なぜマルチバイトの文字エンコーディングが存在するのか?</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgc068f30" class="outline-2">
- <h2 id="orgc068f30"> <a href="#orgc068f30">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc068f30">
+ <div id="outline-container-orga196caf" class="outline-2">
+ <h2 id="orga196caf"> <a href="#orga196caf">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orga196caf">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -794,17 +637,17 @@ Goにforしかない理由は、文法のシンプルさのためだと考えて
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org6b8c97e" class="outline-2">
- <h2 id="org6b8c97e"> <a href="#org6b8c97e">概要</a></h2>
- <div class="outline-text-2" id="text-org6b8c97e">
+ <div id="outline-container-org60c50e9" class="outline-2">
+ <h2 id="org60c50e9"> <a href="#org60c50e9">概要</a></h2>
+ <div class="outline-text-2" id="text-org60c50e9">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgdb21fed" class="outline-2">
- <h2 id="orgdb21fed"> <a href="#orgdb21fed">関連</a></h2>
- <div class="outline-text-2" id="text-orgdb21fed">
+ <div id="outline-container-org0911b37" class="outline-2">
+ <h2 id="org0911b37"> <a href="#org0911b37">関連</a></h2>
+ <div class="outline-text-2" id="text-org0911b37">
  <p>
 なし。
 </p>
@@ -813,35 +656,35 @@ Goにforしかない理由は、文法のシンプルさのためだと考えて
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260518T225544--kdoc-588-なぜマルチバイトの文字エンコーディングが存在するのか__draft_permanent.html"/>
   <id>https://kijimad.github.io/roam/20260518T225544--kdoc-588-なぜマルチバイトの文字エンコーディングが存在するのか__draft_permanent.html</id>
-  <updated>2026-06-19T17:58:36+09:00</updated>
+  <updated>2026-07-20T17:56:28+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 586: 『ミナミの帝王』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org66d3ede" class="outline-2">
- <h2 id="org66d3ede"> <a href="#org66d3ede"> <span class="todo TODO">TODO</span> この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org66d3ede">
+ <div id="outline-container-org74275f1" class="outline-2">
+ <h2 id="org74275f1"> <a href="#org74275f1"> <span class="todo TODO">TODO</span> この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org74275f1">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-06-26 貴島</li>
 </ul></li>
-</ul> <ul class="org-ul"> <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-06-26 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org08691a2" class="outline-2">
- <h2 id="org08691a2"> <a href="#org08691a2">概要</a></h2>
- <div class="outline-text-2" id="text-org08691a2">
+ <div id="outline-container-org25189ef" class="outline-2">
+ <h2 id="org25189ef"> <a href="#org25189ef">概要</a></h2>
+ <div class="outline-text-2" id="text-org25189ef">
  <p>
 『ミナミの帝王』は、高金利の金融業を描いた漫画である。
 </p>
 </div>
 </div>
- <div id="outline-container-org43a84ff" class="outline-2">
- <h2 id="org43a84ff"> <a href="#org43a84ff">メモ</a></h2>
- <div class="outline-text-2" id="text-org43a84ff">
+ <div id="outline-container-org6ffd2df" class="outline-2">
+ <h2 id="org6ffd2df"> <a href="#org6ffd2df">メモ</a></h2>
+ <div class="outline-text-2" id="text-org6ffd2df">
  <ul class="org-ul"> <li>捨て印を押すというのは白紙に印鑑を押すというのと同じことで、あとから何を書かれても文句は言えない</li>
  <li>銀行は必ずしも土地の評価に合った金額を抵当権として設定するとは限らない。二束三文の土地であっても、取引する会社に信用があれば貸す</li>
  <li>返済期限を定めてない借金は貸した側がいつでも返済を請求できる</li>
@@ -880,7 +723,7 @@ Goにforしかない理由は、文法のシンプルさのためだと考えて
  <li>不動産屋のテクニック。悪い条件の見せ物件を先に見せて、最後に本命を持ってくる。ほかに客がいると即判断を迫る</li>
  <li>ゲーム会社の希少性の法則を利用したテクニック。広告で前人気を煽っておき、発売直後に売れるであろう予想本数よりはるかに少ない本数を発売する。そうすると買えない人が続出し希少性が演出され、広い層に購買欲が広がる。購買欲がピークに達してから大量に発売する</li>
  <li>「日本銀行法」には「銀行券は法貨として無制限に通用する」とある。「通貨の単位および貨幣の発行等に関する法律」には「貨幣は額面価格の20倍までを限り法貨として通用する」とある。だから1円玉だけでは20円以上は通用せず拒否できる</li>
- <li>大蔵省と銀行がハンゴ至上主義にこだわったのは、預かっている金を他人に支払ってもハンコだけ確認したら責任が問われないから</li>
+ <li>大蔵省と銀行がハンコ至上主義にこだわったのは、預かっている金を他人に支払ってもハンコだけ確認したら責任が問われないから</li>
  <li>ほとんどの裁判で印鑑が押してあればその契約書を本物と認定する、という判決がでている</li>
  <li>「被告」と「被告人」は全然違う。被告は民事訴訟で使われ、単に訴えられた人をさす。裁判所は明確に区別しているが、マスコミでは区別してないケースが多い</li>
  <li>病院指定の葬式業者はぼったくる可能性が高い</li>
@@ -899,74 +742,32 @@ Goにforしかない理由は、文法のシンプルさのためだと考えて
  <li>1度透析を受けると腎機能が弱まり、一生依存する</li>
  <li>2010年AKB48のコピー握手券を売った男に、東京地裁は握手券を有価証券と認定として有罪判決を下している</li>
  <li>どの段階で透析を受けるかの判断は医師によって大きく異なり、絶対の指針があるわけではない</li>
+ <li>離婚した場合に養育費を払っている父親の割合は20%。公正証書には裁判で確定した判決と同じ効力があり、差し押さえも可能である。離婚届を提出する前に公正証書を作成するべきである
+ <ul class="org-ul"> <li>学費として金額を決めていなかった場合、支払いされなくても強制執行できない</li>
+</ul></li>
+ <li>土地の開発中に遺跡が発掘された場合、その調査費用は土地の開発会社が負担する</li>
+ <li>家族ひとりの同意と指定医の診断があれば、本人の同意がなくても入院をさせられる(医療保護入院)</li>
 </ul></div>
 </div>
- <div id="outline-container-org0a4a432" class="outline-2">
- <h2 id="org0a4a432"> <a href="#org0a4a432">感想</a></h2>
- <div class="outline-text-2" id="text-org0a4a432">
- <ul class="org-ul"> <li>いくつかある裁判回がおもしろい</li>
+ <div id="outline-container-orgb0c66fe" class="outline-2">
+ <h2 id="orgb0c66fe"> <a href="#orgb0c66fe">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb0c66fe">
+ <ul class="org-ul"> <li>類推:  <a href="20260505T151949--kdoc-577-『ナニワ金融道』__book.html#ID-20260505T151949">KDOC 577: 『ナニワ金融道』</a>。同様に金貸しの話。『ミナミの帝王』はより扱うジャンルが幅広く、ビジネスや裁判などの回もある</li>
 </ul></div>
-</div>
- <div id="outline-container-org7f52332" class="outline-2">
- <h2 id="org7f52332"> <a href="#org7f52332">関連</a></h2>
- <div class="outline-text-2" id="text-org7f52332">
- <p>
-なし。
-</p>
-</div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260517T014342--kdoc-586-『ミナミの帝王』__draft_book.html"/>
   <id>https://kijimad.github.io/roam/20260517T014342--kdoc-586-『ミナミの帝王』__draft_book.html</id>
-  <updated>2026-06-19T17:58:28+09:00</updated>
+  <updated>2026-07-20T17:56:27+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 583: タスクのリードタイムを計測する</title>
+  <title>KDOC 595: GuardDutyはイベント数に対して課金する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6f8ec87" class="outline-2">
- <h2 id="org6f8ec87"> <a href="#org6f8ec87">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6f8ec87">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-31 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org2e98c59" class="outline-2">
- <h2 id="org2e98c59"> <a href="#org2e98c59">概要</a></h2>
- <div class="outline-text-2" id="text-org2e98c59">
- <p>
- <a href="20260505T111446--kdoc-576-『ザ・ゴール』__book.html#ID-20260505T111446">KDOC 576: 『ザ・ゴール』</a>で、工場生産におけるボトルネックやリードタイム把握の重要性について知った。
-</p>
-
- <p>
-考え方の一部は、タスク管理にも同様に使えるのではないかと考えた。
-</p>
-</div>
-</div>
- <div id="outline-container-orgce36909" class="outline-2">
- <h2 id="orgce36909"> <a href="#orgce36909">関連</a></h2>
- <div class="outline-text-2" id="text-orgce36909">
- <ul class="org-ul"> <li>動機:  <a href="20260505T111446--kdoc-576-『ザ・ゴール』__book.html#ID-20260505T111446">KDOC 576: 『ザ・ゴール』</a>。を読んでほかに応用したいと考えた</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260513T092828--kdoc-583-タスクのリードタイムを計測する__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260513T092828--kdoc-583-タスクのリードタイムを計測する__draft_permanent.html</id>
-  <updated>2026-06-19T17:58:28+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 589: TypeScriptでなぜenumを使ってはいけないか?</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org22ff46f" class="outline-2">
- <h2 id="org22ff46f"> <a href="#org22ff46f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org22ff46f">
+ <div id="outline-container-orgd0c5298" class="outline-2">
+ <h2 id="orgd0c5298"> <a href="#orgd0c5298">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd0c5298">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -975,35 +776,35 @@ Goにforしかない理由は、文法のシンプルさのためだと考えて
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org846d613" class="outline-2">
- <h2 id="org846d613"> <a href="#org846d613">概要</a></h2>
- <div class="outline-text-2" id="text-org846d613">
+ <div id="outline-container-org8581982" class="outline-2">
+ <h2 id="org8581982"> <a href="#org8581982">概要</a></h2>
+ <div class="outline-text-2" id="text-org8581982">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orga06af02" class="outline-2">
- <h2 id="orga06af02"> <a href="#orga06af02">関連</a></h2>
- <div class="outline-text-2" id="text-orga06af02">
+ <div id="outline-container-org46f629a" class="outline-2">
+ <h2 id="org46f629a"> <a href="#org46f629a">関連</a></h2>
+ <div class="outline-text-2" id="text-org46f629a">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260523T224830--kdoc-589-typescriptでなぜenumを使ってはいけないか__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260523T224830--kdoc-589-typescriptでなぜenumを使ってはいけないか__draft_permanent.html</id>
-  <updated>2026-06-19T17:58:27+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260620T084430--kdoc-595-guarddutyはイベント数に対して課金する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260620T084430--kdoc-595-guarddutyはイベント数に対して課金する__draft_permanent.html</id>
+  <updated>2026-07-20T17:56:25+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 590: neverthrowでエラーをわかりやすくする</title>
+  <title>KDOC 592: Branded Type で公称型を表現する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org8bd58e6" class="outline-2">
- <h2 id="org8bd58e6"> <a href="#org8bd58e6">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org8bd58e6">
+ <div id="outline-container-org2941e91" class="outline-2">
+ <h2 id="org2941e91"> <a href="#org2941e91">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2941e91">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
@@ -1012,150 +813,127 @@ Goにforしかない理由は、文法のシンプルさのためだと考えて
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc96d39c" class="outline-2">
- <h2 id="orgc96d39c"> <a href="#orgc96d39c">概要</a></h2>
- <div class="outline-text-2" id="text-orgc96d39c">
+ <div id="outline-container-org10d2327" class="outline-2">
+ <h2 id="org10d2327"> <a href="#org10d2327">概要</a></h2>
+ <div class="outline-text-2" id="text-org10d2327">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org4cd7a1c" class="outline-2">
- <h2 id="org4cd7a1c"> <a href="#org4cd7a1c">関連</a></h2>
- <div class="outline-text-2" id="text-org4cd7a1c">
+ <div id="outline-container-org09a4279" class="outline-2">
+ <h2 id="org09a4279"> <a href="#org09a4279">関連</a></h2>
+ <div class="outline-text-2" id="text-org09a4279">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260523T225437--kdoc-590-neverthrowでエラーをわかりやすくする__draft_permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260523T225437--kdoc-590-neverthrowでエラーをわかりやすくする__draft_permanent.html</id>
-  <updated>2026-06-19T17:58:15+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260523T225601--kdoc-592-branded-type-で公称型を表現する__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260523T225601--kdoc-592-branded-type-で公称型を表現する__draft_permanent.html</id>
+  <updated>2026-07-20T17:56:21+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 576: 『ザ・ゴール』</title>
+  <title>KDOC 600: 『極悪がんぼ』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgab45137" class="outline-2">
- <h2 id="orgab45137"> <a href="#orgab45137"> <span class="done DONE">DONE</span> この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgab45137">
+ <div id="outline-container-org6462a71" class="outline-2">
+ <h2 id="org6462a71"> <a href="#org6462a71"> <span class="todo TODO">TODO</span> この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6462a71">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-09 貴島</li>
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-31 貴島</li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0b2a3ad" class="outline-2">
- <h2 id="org0b2a3ad"> <a href="#org0b2a3ad">概要</a></h2>
- <div class="outline-text-2" id="text-org0b2a3ad">
+ <div id="outline-container-org4950b38" class="outline-2">
+ <h2 id="org4950b38"> <a href="#org4950b38">概要</a></h2>
+ <div class="outline-text-2" id="text-org4950b38">
+ <ul class="org-ul"> <li>クレジットカードの磁気ストライプを砂鉄で偽造する方法</li>
+ <li>戸籍のクリーニング。本籍地を別の役所の管轄地に移せば離婚歴がわからないようになる</li>
+ <li>訴訟詐欺では、裁判の開始が相手に伝わらないようにして欠席裁判にし、終了も伝わらないうちに資産を処分する</li>
+ <li>裁判を起こすのに年齢や本人であることを証明する書類は必要ない</li>
+</ul></div>
+</div>
+ <div id="outline-container-org3dc41a2" class="outline-2">
+ <h2 id="org3dc41a2"> <a href="#org3dc41a2">関連</a></h2>
+ <div class="outline-text-2" id="text-org3dc41a2">
  <p>
-『ザ・ゴール』は、工場の生産管理の手法について、物語形式で説明する本である。
+なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org868bbc5" class="outline-2">
- <h2 id="org868bbc5"> <a href="#org868bbc5">メモ</a></h2>
- <div class="outline-text-2" id="text-org868bbc5">
- <ul class="org-ul"> <li>生産的であるということは、自己の目標と照らし合わせて何かを達成したということである(p58)
- <ul class="org-ul"> <li>感想: ビジネスの目的は利益を得ることであるから、間違ったものを作ったら生産的ではない</li>
-</ul></li>
- <li>生産性は目標がはっきりわかっていなければまったく意味をもたない(p58)</li>
- <li>純利益、投資収益率、キャッシュフローの3つを同時に増やすことで金を儲ける(p85)</li>
- <li>スループットとは、販売を通じてお金を作り出す割合のこと(p102)</li>
- <li>在庫とは、販売しようとするモノを購入するために投入したすべてのお金のこととする。会計の意味とは異なる(p103)</li>
- <li>業務費用とは、在庫をスループットに変えるために費やすお金のこと(p103)</li>
- <li>失ったお金はすべて業務費用で、売れる投資はすべて在庫になる(p126)</li>
- <li>バランスをとらないといけないのは生産能力ではなくフロー(p233)</li>
- <li>ボトルネックを通過するフローを市場からの需要に合わせる(p233)</li>
- <li>ボトルネックがある場合、工場の能力はボトルネックの能力に等しい。だからボトルネックで1時間無駄にすると工場全体で1時間無駄になる(p264)</li>
- <li>すぐに売れる見込みのないものを作って在庫を溜め込むことは、将来入ってくるお金のためにいまあるお金を犠牲にしていることになる(p266)</li>
- <li>非ボトルネックを単純に最大限まで働かせることは愚の骨頂である。工場内のすべてのリソースの能力を個別に最大化してはならない。個別の最大化は全体的にはまったく最適なシステムではない(p345)</li>
- <li>資材が工場を通過する時間は4つに分けられる(p377)
- <ul class="org-ul"> <li>セットアップ</li>
- <li>プロセスタイム</li>
- <li>キュータイム</li>
- <li>ウエイトタイム</li>
-</ul></li>
- <li>何も考えずに習慣どおりにしかできない人を説得するのに、答えをただ教えても非効率である(p435)</li>
- <li>科学のアプローチ。最初にあまりデータの収集はせず、ランダムに事実を取り上げる。それか仮説を立てる。「もし〜ならば、〜になる」という考え方をする。物語の関連性を考える、がすべての基本である(p517)</li>
- <li>目先の状況の改善策だけで満足するだけでなく、何をすべきか慎重に選んで、それに努力を集中させなければならない(p536)</li>
- <li>マネージャーとして求められる3つの能力(p549)
- <ul class="org-ul"> <li>何を変える</li>
- <li>何に変える</li>
- <li>どうやって変える</li>
-</ul></li>
- <li>従来の会計システムは、工場全体の生産量がボトルネックの生産能力以上にできないということを想定してない(p579)</li>
-</ul></div>
-</div>
- <div id="outline-container-org614f224" class="outline-2">
- <h2 id="org614f224"> <a href="#org614f224">関連</a></h2>
- <div class="outline-text-2" id="text-org614f224">
- <ul class="org-ul"> <li>類推: 工場以外にもこの考え方は適用できるか</li>
- <li>追加調査: 従来の会計システムの正しさの根拠はどこにあるか。会計が第一義とすることは何か。逆に向いてない分野はあるか</li>
- <li>類推: Factorioなどの、工場系ゲームの副読本として役に立つだろう</li>
-</ul></div>
-</div>
- <div id="outline-container-org863a449" class="outline-2">
- <h2 id="org863a449"> <a href="#org863a449">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org863a449">
- <ul class="org-ul"> <li> <a href="./20260513T092828--kdoc-583-タスクのリードタイムを計測する__draft_permanent.html">KDOC 583: タスクのリードタイムを計測する</a></li>
-</ul></div>
-</div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260505T111446--kdoc-576-『ザ・ゴール』__book.html"/>
-  <id>https://kijimad.github.io/roam/20260505T111446--kdoc-576-『ザ・ゴール』__book.html</id>
-  <updated>2026-06-19T17:58:15+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260625T195524--kdoc-600-『極悪がんぼ』__draft_book.html"/>
+  <id>https://kijimad.github.io/roam/20260625T195524--kdoc-600-『極悪がんぼ』__draft_book.html</id>
+  <updated>2026-07-20T17:55:57+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 575: JavaScriptで空配列はtruthyである</title>
+  <title>KDOC 599: 関数の最後の操作が再帰呼び出しの結果をそのまま返すだけならスタックフレームを破棄できる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org0af9c2f" class="outline-2">
- <h2 id="org0af9c2f"> <a href="#org0af9c2f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0af9c2f">
+ <div id="outline-container-org259eea3" class="outline-2">
+ <h2 id="org259eea3"> <a href="#org259eea3">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org259eea3">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-26 貴島</li>
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-05-29 貴島</li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgf977941" class="outline-2">
- <h2 id="orgf977941"> <a href="#orgf977941">概要</a></h2>
- <div class="outline-text-2" id="text-orgf977941">
+ <div id="outline-container-orgb9e747a" class="outline-2">
+ <h2 id="orgb9e747a"> <a href="#orgb9e747a">概要</a></h2>
+ <div class="outline-text-2" id="text-orgb9e747a">
  <p>
-JavaScriptでは、空配列は truthy である。まったく直感的ではない。
+関数の最後の操作が再帰呼び出しの結果をそのまま返すだけなら、スタックフレームを破棄できる。呼び出し元に戻ってやる計算がないので、呼び出し元のフレームを保持する必要はない。
+</p>
+
+ <p>
+末尾再帰にするためにアキュムレータを使う。
 </p>
 
  <div class="org-src-container">
- <pre class="src src-js">console.log(!![])
+ <pre class="src src-typescript">function sum(nums: readonly number[], acc=0): number {
+  if (nums.length === 0) {
+    return acc;
+  }
+  return sum(nums.slice(1), nums[0] + acc);
+}
 </pre>
 </div>
 
- <div class="org-src-container">
- <pre class="src src-nil">true
-undefined
+ <p>
+逆にアキュムレータを使わず末尾再帰でないバージョン。リストに含まれる要素の数だけ、再帰呼び出しによりメモリのスタック領域が使われる。再帰呼び出しから戻ったあとに加算する必要があるので各フレームを保持し続ける必要がある。
+</p>
+
+ <ul class="org-ul"> <li> <code>1 + (2 + (3 + (... + 0)))</code></li>
+</ul> <div class="org-src-container">
+ <pre class="src src-typescript">function sum(nums: readonly number[]): number {
+  if (nums.length === 0) {
+    return 0;
+  }
+  return nums[0] + sum(nums.slice(1));
+}
 </pre>
 </div>
 </div>
 </div>
- <div id="outline-container-org71cc4f0" class="outline-2">
- <h2 id="org71cc4f0"> <a href="#org71cc4f0">関連</a></h2>
- <div class="outline-text-2" id="text-org71cc4f0">
- <p>
-なし。
-</p>
-</div>
+ <div id="outline-container-orgf1c9fe6" class="outline-2">
+ <h2 id="orgf1c9fe6"> <a href="#orgf1c9fe6">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf1c9fe6">
+ <ul class="org-ul"> <li>引用:  <a href="20260311T000844--kdoc-554-『effective-typescript』__draft_book.html#ID-20260311T000844">KDOC 554: 『Effective TypeScript』</a>p278から</li>
+</ul></div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260427T204920--kdoc-575-javascriptで空配列はtruthyである__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260427T204920--kdoc-575-javascriptで空配列はtruthyである__permanent.html</id>
-  <updated>2026-06-19T17:58:14+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260623T083610--kdoc-599-関数の最後の操作が再帰呼び出しの結果をそのまま返すだけならスタックフレームを破棄できる__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260623T083610--kdoc-599-関数の最後の操作が再帰呼び出しの結果をそのまま返すだけならスタックフレームを破棄できる__draft_permanent.html</id>
+  <updated>2026-07-20T17:55:57+09:00</updated>
 </entry>
 </feed>
