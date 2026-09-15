@@ -1,10 +1,10 @@
 :properties:
-:ID: 20260712T093246
+:ID: 20260914T223142
 :end:
-#+title:      KDOC 602: TSKaigi2026に参加した
-#+date:       [2026-07-12 Sun 09:32]
-#+filetags:   :draft:essay:
-#+identifier: 20260712T093246
+#+title:      KDOC 615: Postgres には2つのクエリプロトコルがある
+#+date:       [2026-09-14 Mon 22:31]
+#+filetags:   :draft:permanent:
+#+identifier: 20260914T223142
 
 #+begin_comment
 (kd/denote-kdoc-rename)
@@ -66,11 +66,19 @@
 * 概要
 # 本文(見出しも設定する)
 
-会社で参加し、テックブログを書いた。
+Postgresには2つのクエリプロトコルがある。
+# [レビュー:精度] 「2つ」は主要2方式。COPY/Function Call等もあるので
+#   「主な」を足すか、将来リンクの[未解決]へ逃がすと安全。
 
-- [[https://tech.stmn.co.jp/entry/2026/06/02/144626][TSKaigi 2026 に参加しました - stmn tech blog]]
+|                | 複数ステートメント  | パラメータ($n) |
+|----------------+------------------+---------------|
+| Simple Query   | 可               | 不可           |
+| Extended Query | 不可(Parse は1文) | 可            |
+# [レビュー:任意] なぜExtendedは1文だけか=prepared statement/portalに
+#   複数文を許すとプロトコルが過度に複雑化するため(正典に記載)。1行足すと
+#   暗記でなく再導出できる知識になる。
 
-参加した時間とメモを書いた時間にはかなり時差がある。
+- [[https://www.postgresql.org/docs/16/protocol-flow.html][PostgreSQL: Documentation: 16: 55.2 Message Flow]]
 
 * 関連
 # 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
@@ -80,3 +88,8 @@
 # 横に類推するか、上に抽象化するか、下に具体化するか
 
 なし。
+# [レビュー:関連] 空。ポリシーは常時リンク+将来切り口の記入(82行目)。
+#   最低限これらの切り口を置く:
+#   [具体例] プリペアドステートメント/パラメータ化クエリ
+#   [動機] SQLインジェクション対策(なぜパラメータ化が安全か)
+#   [追加調査] Simpleの複数文はimplicit transaction blockで包まれる
