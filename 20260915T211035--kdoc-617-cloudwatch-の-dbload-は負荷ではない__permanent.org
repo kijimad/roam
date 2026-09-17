@@ -1,0 +1,31 @@
+:properties:
+:ID: 20260915T211035
+:end:
+#+title:      KDOC 617: Cloudwatch の dbLoad は負荷ではない
+#+date:       [2026-09-15 Tue 21:10]
+#+filetags:   :permanent:
+#+identifier: 20260915T211035
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-17 貴島
+- レビュー
+  - [X] 2026-09-17 貴島
+
+* 概要
+
+DBLoad は平均アクティブセッション数(AAS)である。実行中というだけで、DBLoadが高くてもDB の CPU負荷は低い、ということがありうる。
+
+アクティブはCPU実行中だけでなく待機(ロック/IO 等の wait イベント)も含む。だから待機主体なら DBLoad 高でも CPU 負荷は低くなる。
+
+#+begin_quote
+DBLoad
+
+The number of active sessions for the database. Typically, you want the data for the average number of active sessions. In Performance Insights, this data is queried as db.load.avg.
+
+[[https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.Cloudwatch.html][Amazon CloudWatch metrics for Amazon RDS Performance Insights - Amazon Relational Database Service]]
+#+end_quote
+
+* 関連
+
+なし。
