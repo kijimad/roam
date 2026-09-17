@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-09-17T22:11:25Z -->
+<!-- 2026-09-18T08:42:40Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>KDOC 622: 全体計測してから内訳に進む</title>
+<title>KDOC 611: SQLコメントにコンテキスト情報を含める</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
 <link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
@@ -14,56 +14,45 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<h1 class="title">KDOC 622: 全体計測してから内訳に進む</h1>
-<div id="outline-container-org04db5f8" class="outline-2">
-<h2 id="org04db5f8"><a href="#org04db5f8">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org04db5f8">
+<h1 class="title">KDOC 611: SQLコメントにコンテキスト情報を含める</h1>
+<div id="outline-container-org2a5b4cd" class="outline-2">
+<h2 id="org2a5b4cd"><a href="#org2a5b4cd">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org2a5b4cd">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-17 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-17 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org3855df3" class="outline-2">
-<h2 id="org3855df3"><a href="#org3855df3">概要</a></h2>
-<div class="outline-text-2" id="text-org3855df3">
+<div id="outline-container-orgda0316a" class="outline-2">
+<h2 id="orgda0316a"><a href="#orgda0316a">概要</a></h2>
+<div class="outline-text-2" id="text-orgda0316a">
 <p>
-前提。
+RDS Performance Insights に実行クエリを表示するとき、対応するソースコードの呼び出し情報をコメントに含めることで辿りやすくなる。そういうコメント仕様を<a href="https://google.github.io/sqlcommenter/">sqlcommenter</a>という。
 </p>
 
+<p>
+ライブラリがあって、たとえば Prisma で以下が使える。
+</p>
+
+<p>
+<a href="https://www.prisma.io/docs/orm/v7/prisma-client/observability-and-logging/sql-comments">SQL comments (Prisma ORM v7) | Prisma Documentation</a>
+</p>
+</div>
+</div>
+<div id="outline-container-orgf907521" class="outline-2">
+<h2 id="orgf907521"><a href="#orgf907521">関連</a></h2>
+<div class="outline-text-2" id="text-orgf907521">
 <ul class="org-ul">
-<li>巨大なデータが流れる非同期サーバがある</li>
-<li>ジョブ1つ1つは任意の長さの配列を持ち、長い場合も短い場合もある。また、配列の要素は複数の種別がありうる。種別によって処理が異なる</li>
+<li>追加調査: sqlcommenter</li>
+<li>追加調査: 実行SQLを観測する運用</li>
 </ul>
-
-<p>
-自分は1種別を取り上げて、処理の内訳を計測してボトルネックを確認し、最適化を行った。テスト環境でのその種別のスループットは大きく改善し、最適化はうまくいったように見えた。
-</p>
-
-<p>
-しかし、後で本番環境のデータを確認したところ、種別ごとの要素数に偏りがあることがわかった。最適化に取り組んだ要素はデータ全体の3%しかなく、本番環境での効果はテスト環境ほどなかった。
-</p>
-
-<p>
-大事なことは、分母を正しく把握しておくことだと考えた。
-</p>
-</div>
-</div>
-<div id="outline-container-org73e80a5" class="outline-2">
-<h2 id="org73e80a5"><a href="#org73e80a5">関連</a></h2>
-<div class="outline-text-2" id="text-org73e80a5">
-<p>
-なし。
-</p>
 </div>
 </div>
 </div>
