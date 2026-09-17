@@ -1,0 +1,34 @@
+:properties:
+:ID: 20260917T004653
+:end:
+#+title:      KDOC 620: CREATE DATABASE は複製のため速い
+#+date:       [2026-09-17 Thu 00:46]
+#+filetags:   :permanent:
+#+identifier: 20260917T004653
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-17 貴島
+- レビュー
+  - [X] 2026-09-17 貴島
+
+* 概要
+
+高速に複数の Database を用意する必要に迫られた。
+
+1. マスタ DB を作成する ~CREATE DATABASE {マスタDB}~
+2. マスタをマイグレーションする
+3. マスタDBを元にテスト用DBを作成する。 ~CREATE DATABASE {テスト用DB} TEMPLATE {マスタDB}~
+
+CREATE DATABASE は複製であって、空 DB をマイグレーションするより高速である。
+
+#+begin_quote
+By default, the new database will be created by cloning the standard system database template1. A different template can be specified by writing TEMPLATE name.
+
+[[https://www.postgresql.org/docs/16/sql-createdatabase.html][PostgreSQL: Documentation: 16: CREATE DATABASE]]
+#+end_quote
+
+* 関連
+
+- 参考: [[https://www.postgresql.org/docs/16/manage-ag-templatedbs.html][PostgreSQL: Documentation: 16: 23.3. Template Databases]]
+- 動機: [[id:20260917T004603][KDOC 619: テストを最小限の手数で並列実行する]]
