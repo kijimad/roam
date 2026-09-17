@@ -1,0 +1,30 @@
+:properties:
+:ID: 20260914T223142
+:end:
+#+title:      KDOC 615: Postgres には2つのクエリプロトコルがある
+#+date:       [2026-09-14 Mon 22:31]
+#+filetags:   :permanent:
+#+identifier: 20260914T223142
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-18 貴島
+- レビュー
+  - [X] 2026-09-18 貴島
+
+* 概要
+
+PostgreSQLでSQLクエリを実行する主なプロトコルは、Simple QueryとExtended Queryの2つである。プロトコル全体にはCOPYやFunction Callなど他のサブプロトコルもあるが、SQL文を投げて実行させる手段はこの2つに大別できる。
+
+|                | 複数ステートメント  | パラメータ($n) |
+|----------------+------------------+---------------|
+| Simple Query   | 可               | 不可           |
+| Extended Query | 不可(Parse は1文) | 可            |
+
+Extended QueryのParseが1文に限られるのは、プリペアドステートメントやポータルに複数文を許すとプロトコルが過度に複雑になるためである。
+
+- [[https://www.postgresql.org/docs/16/protocol-flow.html][PostgreSQL: Documentation: 16: 55.2 Message Flow]]
+
+* 関連
+
+なし。
