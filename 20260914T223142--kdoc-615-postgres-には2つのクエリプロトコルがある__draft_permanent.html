@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-09-17T00:33:15Z -->
+<!-- 2026-09-17T20:36:59Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 615: Postgres には2つのクエリプロトコルがある</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 615: Postgres には2つのクエリプロトコルがある</h1>
-<div id="outline-container-orga171221" class="outline-2">
-<h2 id="orga171221"><a href="#orga171221">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orga171221">
+<div id="outline-container-org24a9430" class="outline-2">
+<h2 id="org24a9430"><a href="#org24a9430">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org24a9430">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -33,11 +33,11 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgafffba6" class="outline-2">
-<h2 id="orgafffba6"><a href="#orgafffba6">概要</a></h2>
-<div class="outline-text-2" id="text-orgafffba6">
+<div id="outline-container-org46393f3" class="outline-2">
+<h2 id="org46393f3"><a href="#org46393f3">概要</a></h2>
+<div class="outline-text-2" id="text-org46393f3">
 <p>
-Postgresには2つのクエリプロトコルがある。
+PostgreSQLでSQLクエリを実行する主なプロトコルは、Simple QueryとExtended Queryの2つである。プロトコル全体にはCOPYやFunction Callなど他のサブプロトコルもあるが、SQL文を投げて実行させる手段はこの2つに大別できる。
 </p>
 
 <table>
@@ -72,17 +72,23 @@ Postgresには2つのクエリプロトコルがある。
 </tbody>
 </table>
 
+<p>
+Extended QueryのParseが1文に限られるのは、プリペアドステートメントやポータルに複数文を許すとプロトコルが過度に複雑になるためである。
+</p>
+
 <ul class="org-ul">
 <li><a href="https://www.postgresql.org/docs/16/protocol-flow.html">PostgreSQL: Documentation: 16: 55.2 Message Flow</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org09700a1" class="outline-2">
-<h2 id="org09700a1"><a href="#org09700a1">関連</a></h2>
-<div class="outline-text-2" id="text-org09700a1">
-<p>
-なし。
-</p>
+<div id="outline-container-org6d87246" class="outline-2">
+<h2 id="org6d87246"><a href="#org6d87246">関連</a></h2>
+<div class="outline-text-2" id="text-org6d87246">
+<ul class="org-ul">
+<li>[具体例] Extended Queryのパラメータ($n)を使うプリペアドステートメント/パラメータ化クエリ。</li>
+<li>[動機] パラメータ化クエリはSQLインジェクション対策になる。なぜ安全かを別メモで説明できる。</li>
+<li>[追加調査] Simple Queryの複数文は、暗黙のトランザクションブロック(implicit transaction block)で包まれて実行される。エラーが起きれば暗黙にロールバックされる。</li>
+</ul>
 </div>
 </div>
 </div>
