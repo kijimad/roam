@@ -1,0 +1,48 @@
+:properties:
+:ID: 20260918T210512
+:end:
+#+title:      KDOC 626: WeakMap のキーは参照で照合する
+#+date:       [2026-09-18 Fri 21:05]
+#+filetags:   :permanent:
+#+identifier: 20260918T210512
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-18 貴島
+- レビュー
+  - [X] 2026-09-18 貴島
+
+* 概要
+
+WeakMap のキーは参照で照合するので、値が同じであっても区別される。
+
+#+begin_src js :results output
+  const wm = new WeakMap();
+
+  const keyObject1 = {"this is": "key object"};
+  const keyObject2 = {"this is": "key object"};
+
+  wm.set(keyObject1, "save1");
+  wm.set(keyObject2, "save2");
+
+  console.log(wm.get(keyObject1));
+  console.log(wm.get(keyObject2));
+#+end_src
+
+#+RESULTS:
+#+begin_src
+save1
+save2
+#+end_src
+
+#+begin_quote
+キーの等価性
+通常の Map と同様に、値の等価性は SameValueZero アルゴリズムに基づきます。これは === 演算子と同じです。WeakMap がオブジェクトとシンボルのキーしか保持できないためです。つまり、オブジェクトキーの場合、等価性はオブジェクトが同一のものであるかに基づきます。これらは値ではなく参照によって比較されます。
+
+[[https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WeakMap][WeakMap - JavaScript | MDN]]
+#+end_quote
+
+* 関連
+
+- 類似: [[id:20260918T205954][KDOC 625: WeakMapはGCを妨げない]]
+- 追加調査: 参照等価と値等価の例を調べる

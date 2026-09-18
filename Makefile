@@ -51,10 +51,11 @@ odp2pdf: ## ODPスライドをPDFに変換する
 
 # development ================
 
+FILES ?= ./*.org
 .PHONY: textlint
 textlint:
 	docker build . --target textlint -t roam_textlint
-	docker run -v $(PWD):/work/roam -w /work/roam --rm roam_textlint bash -c "npx textlint -c ./.textlintrc ./*.org"
+	docker run -v $(PWD):/work/roam -w /work/roam --rm roam_textlint bash -c "npx textlint -c ./.textlintrc $(FILES)"
 
 .PHONY: relink
 relink: ## リンクのタイトルをすべて更新する

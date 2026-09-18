@@ -1,0 +1,58 @@
+:properties:
+:ID: 20260918T201334
+:end:
+#+title:      KDOC 624: Buffers と Cached の違い
+#+date:       [2026-09-18 Fri 20:13]
+#+filetags:   :permanent:
+#+identifier: 20260918T201334
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-18 貴島
+- レビュー
+  - [X] 2026-09-18 貴島
+
+* 概要
+
+~/proc/meminfo~ は Linux のメモリ使用量に関する統計を示すファイルである。
+
+#+begin_src shell
+cat /proc/meminfo | head
+#+end_src
+
+#+RESULTS:
+#+begin_src
+MemTotal:       64963612 kB
+MemFree:        22090252 kB
+MemAvailable:   52819644 kB
+Buffers:         2639360 kB
+Cached:         25346832 kB
+SwapCached:        10472 kB
+Active:         10545988 kB
+Inactive:       25103832 kB
+Active(anon):    6118060 kB
+Inactive(anon):  2000816 kB
+#+end_src
+
+2つの項目の違いがわからなかったので調べた。
+
+- Buffers: 生のディスクブロックの一時ストレージ
+- Cached: ディスクから読み込んだファイルの中身のキャッシュ。ページキャッシュ
+
+#+begin_quote
+Buffers %lu
+       Relatively temporary storage for raw disk blocks
+       that shouldn't get tremendously large (20 MB or so).
+
+Cached %lu
+       In-memory cache for files read from the disk (the
+       page cache).  Doesn't include SwapCached.
+
+[[https://man7.org/linux/man-pages/man5/proc_meminfo.5.html][proc_meminfo(5) - Linux manual page]]
+#+end_quote
+
+man ページには Buffers は 20 MB 程度とあるが、自分のマシンでは 2.6 GB ある。記載は実態と合ってないように見える。
+
+* 関連
+
+なし。

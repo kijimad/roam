@@ -1,0 +1,86 @@
+:properties:
+:ID: 20260918T205954
+:end:
+#+title:      KDOC 625: WeakMapはGCを妨げない
+#+date:       [2026-09-18 Fri 20:59]
+#+filetags:   :permanent:
+#+identifier: 20260918T205954
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-18 貴島
+- レビュー
+  - [X] 2026-09-18 貴島
+
+* 概要
+
+#+begin_quote
+WeakMapは、値がキーを参照している場合でも、キーとなるオブジェクトがガベージコレクションされるのを妨げない方法で、データとオブジェクトを関連付けることができます。
+
+[[https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WeakMap][WeakMap - JavaScript | MDN]]
+#+end_quote
+
+コードで試す。
+
+#+begin_src shell :results output
+node --expose-gc --input-type=module <<'EOF'
+const reg = new FinalizationRegistry(label => console.log("GCで回収 ->", label));
+
+// Map: キーを強参照 → 手放しても Map が生きる限り残る
+const map = new Map();
+let k1 = {};
+reg.register(k1, "Map のキー");
+map.set(k1, "v");
+k1 = null;
+
+// WeakMap: キーを弱参照 → 手放すと回収対象
+const wm = new WeakMap();
+let k2 = {};
+reg.register(k2, "k2あるいは WeakMap のキーの参照先が回収された");
+wm.set(k2, "v");
+k2 = null;
+
+await new Promise(r => setTimeout(r, 50));
+global.gc();
+await new Promise(r => setTimeout(r, 50));
+console.log("Map.size =", map.size, "-> k1をnullにしてもMapがキーを強参照するので参照先は消えず中身も残る");
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_src
+GCで回収 -> k2あるいは WeakMap のキーの参照先が回収された
+Map.size = 1 -> k1をnullにしてもMapがキーを強参照するので参照先は消えず中身も残る
+#+end_src
+
+流れ。
+
+#+begin_example
+Map
+
+変数 --strong--> 実体 <--strong-- Map Key
+
+null            実体 <--strong-- Map Key
+
+                GC
+
+残る             残る             残る
+#+end_example
+
+#+begin_example
+WeakMap
+
+変数 --strong--> 実体 <--weak-- WeakMap Key | slot --strong--> WeakMap Value
+
+null            実体 <--weak-- WeakMap Key | slot --strong--> WeakMap Value
+
+                GC
+
+(なし)           回収             (なし)                           (なし)
+#+end_example
+
+なので、キャッシュやメタデータを保存するのに便利である。
+
+* 関連
+
+なし。
