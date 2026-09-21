@@ -1,0 +1,45 @@
+:properties:
+:ID: 20260919T122334
+:end:
+#+title:      KDOC 630: recover は遅延関数でのみ実行できる
+#+date:       [2026-09-19 Sat 12:23]
+#+filetags:   :permanent:
+#+identifier: 20260919T122334
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-21 貴島
+- レビュー
+  - [X] 2026-09-21 貴島
+
+* 概要
+
+recover は遅延関数内でのみパニックシーケンスを停止できる。遅延関数外で呼ばれてもシーケンスを止めない。
+
+#+begin_quote
+Executing a call to recover inside a deferred function (but not any function called by it) stops the panicking sequence by restoring normal execution and retrieves the error value passed to the call of panic. If recover is called outside the deferred function it will not stop a panicking sequence. In this case, or when the goroutine is not panicking, recover returns nil.
+
+[[https://pkg.go.dev/builtin#recover][builtin package - builtin - Go Packages]]
+#+end_quote
+
+#+begin_src go
+  import "fmt"
+  func main() {
+  	defer func () {
+  		if rec := recover(); rec != nil {
+  			fmt.Printf("comparing err1 panicked = %v\n", rec)
+  		}
+  	}()
+
+  	panic("THIS IS PANIC")
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+comparing err1 panicked = THIS IS PANIC
+#+end_src
+
+* 関連
+
+なし。
