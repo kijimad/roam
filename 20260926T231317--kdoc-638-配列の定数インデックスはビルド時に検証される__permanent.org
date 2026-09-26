@@ -1,0 +1,47 @@
+:properties:
+:ID: 20260926T231317
+:end:
+#+title:      KDOC 638: 配列の定数インデックスはビルド時に検証される
+#+date:       [2026-09-26 Sat 23:13]
+#+filetags:   :permanent:
+#+identifier: 20260926T231317
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-27 貴島
+- レビュー
+  - [X] 2026-09-27 貴島
+
+* 概要
+
+Go で定数インデックスで配列にアクセスすると、ビルド時にチェックされる。
+
+#+begin_src sh
+  set -e
+  d=$(mktemp -d)
+  cat > "$d/go.mod" <<'EOF'
+  module demo
+
+  go 1.26.0
+  EOF
+  cat > "$d/bce.go" <<'EOF'
+  package demo
+
+  func main() {
+  var a [3]int
+  _ = a[5]
+  }
+  EOF
+
+  cd "$d"
+  go build . 2>&1
+#+end_src
+
+#+RESULTS:
+#+begin_src
+./bce.go:5:7: invalid argument: index 5 out of bounds [0:3]
+#+end_src
+
+* 関連
+
+- 動機: [[id:20260926T220337][KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る]]。そもそもビルド時に検証されるケースがあることを初めて知った

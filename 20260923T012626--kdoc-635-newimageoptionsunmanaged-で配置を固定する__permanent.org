@@ -1,0 +1,41 @@
+:properties:
+:ID: 20260923T012626
+:end:
+#+title:      KDOC 635: NewImageOptions.Unmanaged で配置を固定する
+#+date:       [2026-09-23 Wed 01:26]
+#+filetags:   :permanent:
+#+identifier: 20260923T012626
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-27 貴島
+- レビュー
+  - [X] 2026-09-27 貴島
+
+* 概要
+
+Ebiten ゲームの VRT を並行実行すると、画像がフレーキーに数ピクセル変わってしまう問題があった。
+
+これは共有グローバルなアトラスに複数テストが同時に画像を確保するため起こってしまうようで、自動管理させないようにすると VRT が安定した。
+
+#+begin_src git-permalink
+https://github.com/hajimehoshi/ebiten/blob/0465a0cd771a3ee1de5ea452dd40e14dc9d67d23/image.go#L1559-L1568
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// NewImageOptions represents options for NewImageWithOptions.
+type NewImageOptions struct {
+	// Unmanaged represents whether the image is unmanaged or not.
+	// The default (zero) value is false, which means that the image is managed.
+	//
+	// An unmanaged image is never on an internal automatic texture atlas.
+	// A regular image is a part of an internal texture atlas, and locating them is done automatically in Ebitengine.
+	// Unmanaged is useful when you want finer control over the image for performance and memory reasons.
+	Unmanaged bool
+}
+#+end_src
+
+* 関連
+
+- 追加調査: アトラスがあまりわかってない

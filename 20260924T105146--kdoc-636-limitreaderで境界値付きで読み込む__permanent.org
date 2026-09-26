@@ -1,0 +1,46 @@
+:properties:
+:ID: 20260924T105146
+:end:
+#+title:      KDOC 636: LimitReaderで境界値付きで読み込む
+#+date:       [2026-09-24 Thu 10:51]
+#+filetags:   :permanent:
+#+identifier: 20260924T105146
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-27 貴島
+- レビュー
+  - [X] 2026-09-27 貴島
+
+* 概要
+
+ある大きさ以下のデータをネットワークから受け取るプログラムがあるとする。DOS 攻撃対策に、サイズを制限して読み込む必要がある。
+
+前提。
+
+io.Copy に生データを渡すと全部コピーするため目的を達成できない。長さを知るためには全部読み込む必要があって、不可能。HTTPヘッダも信用してはいけない。
+
+流れ。
+
+1. LimitReader でデータを限定して読み取り、 io.Copy に渡す
+2. 続きの1バイトを読み込んで存在確認する。読み込めれば超過で、エラーとする。LimitReader はサイズ超過時に特にエラーは出さないので、それだけでは続きがあったうえで強制的に切り出したのか、既定サイズより下できちんと取り出せたのか判定できないため
+
+#+begin_src git-permalink
+https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/io/io.go#L463-L470
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// A LimitedReader reads from R but limits the amount of
+// data returned to just N bytes. Each call to Read
+// updates N to reflect the new amount remaining.
+// Read returns EOF when N <= 0 or when the underlying R returns EOF.
+type LimitedReader struct {
+	R Reader // underlying reader
+	N int64  // max bytes remaining
+}
+#+end_src
+
+* 関連
+
+- 具体例: [[https://github.com/open-telemetry/opentelemetry-go/pull/8941][feat(otlphttp): configure maximum response size by pellared · Pull Request #8941 · open-telemetry/opentelemetry-go]]

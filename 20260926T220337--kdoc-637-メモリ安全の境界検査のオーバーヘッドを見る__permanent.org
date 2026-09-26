@@ -1,0 +1,119 @@
+:properties:
+:ID: 20260926T220337
+:end:
+#+title:      KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る
+#+date:       [2026-09-26 Sat 22:03]
+#+filetags:   :permanent:
+#+identifier: 20260926T220337
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-27 貴島
+- レビュー
+  - [X] 2026-09-27 貴島
+
+* 概要
+
+[[https://github.com/open-telemetry/opentelemetry-go/issues/8736][trace: unroll TraceIDFromHex/SpanIDFromHex decoders to eliminate bounds checks · Issue #8736 · open-telemetry/opentelemetry-go]]で、インデックスアクセスのオーバーヘッドの存在と、コンパイラでの確認方法について説明していた。
+
+実行して確認した。
+
+#+begin_src sh :results output :exports both
+set -e
+d=$(mktemp -d)
+cat > "$d/go.mod" <<'EOF'
+module bcedemo
+
+go 1.26.0
+EOF
+cat > "$d/bce.go" <<'EOF'
+package bcedemo
+
+// BCE 効かない: i+1,i+2,i+3 を範囲内と証明できず検査が残る
+func sumLoop(a []byte) byte {
+	if len(a) != 8 {
+		return 0
+	}
+	var s byte
+	for i := 0; i < len(a); i += 4 {
+		s += a[i] + a[i+1] + a[i+2] + a[i+3]
+	}
+	return s
+}
+
+// BCE 効く: len==8 ガード後、定数 index だと全検査が消える
+func sumUnrolled(a []byte) byte {
+	if len(a) != 8 {
+		return 0
+	}
+	return a[0] + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]
+}
+EOF
+cat > "$d/bce_test.go" <<'EOF'
+package bcedemo
+
+import "testing"
+
+var input = make([]byte, 8)
+var sink byte
+
+func BenchmarkSumLoop(b *testing.B)     { for i := 0; i < b.N; i++ { sink = sumLoop(input) } }
+func BenchmarkSumUnrolled(b *testing.B) { for i := 0; i < b.N; i++ { sink = sumUnrolled(input) } }
+EOF
+cd "$d"
+echo "== (1) 境界検査 =="
+go build -gcflags='-d=ssa/check_bce/debug=1' . 2>&1 | grep bce.go
+echo "== (2) 速度差 =="
+go test -run='^$' -bench='^BenchmarkSum' -benchmem -count=4 . 2>&1 | grep -E 'Benchmark|ok'
+cd / && rm -rf "$d"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+== (1) 境界検査 ==
+./bce.go:10:9: Found IsInBounds
+./bce.go:10:16: Found IsInBounds
+./bce.go:10:25: Found IsInBounds
+./bce.go:10:34: Found IsInBounds
+== (2) 速度差 ==
+BenchmarkSumLoop-32        	669234343	         1.781 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumLoop-32        	657591210	         1.782 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumLoop-32        	663465331	         1.794 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumLoop-32        	649490074	         1.771 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8872 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8967 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8790 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8782 ns/op	       0 B/op	       0 allocs/op
+ok  	bcedemo	9.372s
+#+end_src
+
+変数インデックス部分にのみ ~IsInBounds~ が発生し、定数インデックスには発生してないことがわかる。ビルド時に挿入されて、実行時に検証される分のオーバーヘッドがある。定数インデックス時には挿入されずにオーバーヘッドがない。
+
+Go本体に、挿入されないケースの確認テストがある。
+
+#+begin_src git-permalink
+https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/test/checkbce.go#L9-L23
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// Test that the compiler does bounds check elimination as expected.
+// This avoids accidental regressions.
+
+package main
+
+import "encoding/binary"
+
+func f0(a []int) {
+	a[0] = 1 // ERROR "Found IsInBounds$"
+	a[0] = 1
+	a[6] = 1 // ERROR "Found IsInBounds$"
+	a[6] = 1
+	a[5] = 1
+	a[5] = 1
+}
+#+end_src
+
+* 関連
+
+- 具体例: [[https://github.com/open-telemetry/opentelemetry-go/pull/8740][perf(trace): unroll hex decoders to drop bounds checks by itssaharsh · Pull Request #8740 · open-telemetry/opentelemetry-go]]

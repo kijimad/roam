@@ -1,0 +1,68 @@
+:properties:
+:ID: 20260922T195146
+:end:
+#+title:      KDOC 634: NaNはガードをすり抜ける
+#+date:       [2026-09-22 Tue 19:51]
+#+filetags:   :permanent:
+#+identifier: 20260922T195146
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-27 貴島
+- レビュー
+  - [X] 2026-09-27 貴島
+
+* 概要
+
+NaNが含まれる可能性のある計算があると、数値比較によるガードをすり抜けることがある。
+
+- [[https://github.com/open-telemetry/opentelemetry-go/pull/8812#pullrequestreview-5012599369][fix(trace): handle NaN sampling fraction deterministically in TraceIDRatioBased by waterWang · Pull Request #8812 · open-telemetry/opentelemetry-go]]
+
+NaNとの数値比較は ~!=~ 以外すべて false になり、条件をすり抜けてしまう。
+
+実行して確認する。
+
+#+caption: math.NaN() と比較する
+#+begin_src go
+  import (
+    "math"
+    "fmt"
+  )
+
+  func main() {
+    fmt.Println(math.NaN())
+    fmt.Println(math.NaN() > 1)
+    fmt.Println(math.NaN() < 1)
+    fmt.Println(math.NaN() >= 1)
+    fmt.Println(math.NaN() <= 1)
+    fmt.Println(math.NaN() == 1)
+    fmt.Println(math.NaN() != 1)
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+NaN
+false
+false
+false
+false
+false
+true
+#+end_src
+
+定義を見る。この挙動は IEEE 754 で定義されているとのこと。
+
+#+begin_src git-permalink
+https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/math/bits.go#L30-L31
+#+end_src
+
+#+RESULTS:
+#+begin_src
+// NaN returns an IEEE 754 “not-a-number” value.
+func NaN() float64 { return Float64frombits(uvnan) }
+#+end_src
+
+* 関連
+
+- 追加調査: IEEE 754 の該当箇所を見る
