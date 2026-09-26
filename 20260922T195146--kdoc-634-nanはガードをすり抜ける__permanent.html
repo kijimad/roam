@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-09-27T01:43:25Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 634: NaNはガードをすり抜ける</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 634: NaNはガードをすり抜ける</h1>
+<div id="outline-container-org81af45f" class="outline-2">
+<h2 id="org81af45f"><a href="#org81af45f">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org81af45f">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-27 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-27 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgdc15c4b" class="outline-2">
+<h2 id="orgdc15c4b"><a href="#orgdc15c4b">概要</a></h2>
+<div class="outline-text-2" id="text-orgdc15c4b">
+<p>
+NaNが含まれる可能性のある計算があると、数値比較によるガードをすり抜けることがある。
+</p>
+
+<ul class="org-ul">
+<li><a href="https://github.com/open-telemetry/opentelemetry-go/pull/8812#pullrequestreview-5012599369">fix(trace): handle NaN sampling fraction deterministically in TraceIDRatioBased by waterWang · Pull Request #8812 · open-telemetry/opentelemetry-go</a></li>
+</ul>
+
+<p>
+NaNとの数値比較は <code>!=</code> 以外すべて false になり、条件をすり抜けてしまう。
+</p>
+
+<p>
+実行して確認する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>math.NaN() と比較する</label><pre class="src src-go">import (
+  "math"
+  "fmt"
+)
+
+func main() {
+  fmt.Println(math.NaN())
+  fmt.Println(math.NaN() &gt; 1)
+  fmt.Println(math.NaN() &lt; 1)
+  fmt.Println(math.NaN() &gt;= 1)
+  fmt.Println(math.NaN() &lt;= 1)
+  fmt.Println(math.NaN() == 1)
+  fmt.Println(math.NaN() != 1)
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">NaN
+false
+false
+false
+false
+false
+true
+</pre>
+</div>
+
+<p>
+定義を見る。この挙動は IEEE 754 で定義されているとのこと。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink">https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/math/bits.go#L30-L31
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">// NaN returns an IEEE 754 “not-a-number” value.
+func NaN() float64 { return Float64frombits(uvnan) }
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org38707f8" class="outline-2">
+<h2 id="org38707f8"><a href="#org38707f8">関連</a></h2>
+<div class="outline-text-2" id="text-org38707f8">
+<ul class="org-ul">
+<li>追加調査: IEEE 754 の該当箇所を見る</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

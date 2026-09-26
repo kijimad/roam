@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-09-27T01:43:00Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</h1>
+<div id="outline-container-orgda94f09" class="outline-2">
+<h2 id="orgda94f09"><a href="#orgda94f09">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgda94f09">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-27 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-27 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgbd236e7" class="outline-2">
+<h2 id="orgbd236e7"><a href="#orgbd236e7">概要</a></h2>
+<div class="outline-text-2" id="text-orgbd236e7">
+<p>
+<a href="https://github.com/open-telemetry/opentelemetry-go/issues/8736">trace: unroll TraceIDFromHex/SpanIDFromHex decoders to eliminate bounds checks · Issue #8736 · open-telemetry/opentelemetry-go</a>で、インデックスアクセスのオーバーヘッドの存在と、コンパイラでの確認方法について説明していた。
+</p>
+
+<p>
+実行して確認した。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh"><span class="org-builtin">set</span> -e
+<span class="org-variable-name">d</span>=$(mktemp -d)
+cat &gt; <span class="org-string">"$d/go.mod"</span> &lt;&lt;<span class="org-string">'EOF'</span><span class="org-sh-heredoc">
+module bcedemo
+
+go 1.26.0
+EOF
+</span>cat &gt; <span class="org-string">"$d/bce.go"</span> &lt;&lt;<span class="org-string">'EOF'</span><span class="org-sh-heredoc">
+package bcedemo
+
+// BCE &#21177;&#12363;&#12394;&#12356;: i+1,i+2,i+3 &#12434;&#31684;&#22258;&#20869;&#12392;&#35388;&#26126;&#12391;&#12365;&#12378;&#26908;&#26619;&#12364;&#27531;&#12427;
+func sumLoop(a []byte) byte {
+        if len(a) != 8 {
+                return 0
+        }
+        var s byte
+        for i := 0; i &lt; len(a); i += 4 {
+                s += a[i] + a[i+1] + a[i+2] + a[i+3]
+        }
+        return s
+}
+
+// BCE &#21177;&#12367;: len==8 &#12460;&#12540;&#12489;&#24460;&#12289;&#23450;&#25968; index &#12384;&#12392;&#20840;&#26908;&#26619;&#12364;&#28040;&#12360;&#12427;
+func sumUnrolled(a []byte) byte {
+        if len(a) != 8 {
+                return 0
+        }
+        return a[0] + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]
+}
+EOF
+</span>cat &gt; <span class="org-string">"$d/bce_test.go"</span> &lt;&lt;<span class="org-string">'EOF'</span><span class="org-sh-heredoc">
+package bcedemo
+
+import "testing"
+
+var input = make([]byte, 8)
+var sink byte
+
+func BenchmarkSumLoop(b *testing.B)     { for i := 0; i &lt; b.N; i++ { sink = sumLoop(input) } }
+func BenchmarkSumUnrolled(b *testing.B) { for i := 0; i &lt; b.N; i++ { sink = sumUnrolled(input) } }
+EOF
+</span><span class="org-builtin">cd</span> <span class="org-string">"$d"</span>
+<span class="org-builtin">echo</span> <span class="org-string">"== (1) &#22659;&#30028;&#26908;&#26619; =="</span>
+go build -gcflags=<span class="org-string">'-d=ssa/check_bce/debug=1'</span> . 2&gt;&amp;1 | grep bce.go
+<span class="org-builtin">echo</span> <span class="org-string">"== (2) &#36895;&#24230;&#24046; =="</span>
+go test -run=<span class="org-string">'^$'</span> -bench=<span class="org-string">'^BenchmarkSum'</span> -benchmem -count=4 . 2&gt;&amp;1 | grep -E <span class="org-string">'Benchmark|ok'</span>
+<span class="org-builtin">cd</span> / &amp;&amp; rm -rf <span class="org-string">"$d"</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">== (1) 境界検査 ==
+./bce.go:10:9: Found IsInBounds
+./bce.go:10:16: Found IsInBounds
+./bce.go:10:25: Found IsInBounds
+./bce.go:10:34: Found IsInBounds
+== (2) 速度差 ==
+BenchmarkSumLoop-32        	669234343	         1.781 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumLoop-32        	657591210	         1.782 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumLoop-32        	663465331	         1.794 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumLoop-32        	649490074	         1.771 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8872 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8967 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8790 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSumUnrolled-32    	1000000000	         0.8782 ns/op	       0 B/op	       0 allocs/op
+ok  	bcedemo	9.372s
+</pre>
+</div>
+
+<p>
+変数インデックス部分にのみ <code>IsInBounds</code> が発生し、定数インデックスには発生してないことがわかる。ビルド時に挿入されて、実行時に検証される分のオーバーヘッドがある。定数インデックス時には挿入されずにオーバーヘッドがない。
+</p>
+
+<p>
+Go本体に、挿入されないケースの確認テストがある。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink">https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/test/checkbce.go#L9-L23
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">// Test that the compiler does bounds check elimination as expected.
+// This avoids accidental regressions.
+
+package main
+
+import "encoding/binary"
+
+func f0(a []int) {
+	a[0] = 1 // ERROR "Found IsInBounds$"
+	a[0] = 1
+	a[6] = 1 // ERROR "Found IsInBounds$"
+	a[6] = 1
+	a[5] = 1
+	a[5] = 1
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org00bbb65" class="outline-2">
+<h2 id="org00bbb65"><a href="#org00bbb65">関連</a></h2>
+<div class="outline-text-2" id="text-org00bbb65">
+<ul class="org-ul">
+<li>具体例: <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8740">perf(trace): unroll hex decoders to drop bounds checks by itssaharsh · Pull Request #8740 · open-telemetry/opentelemetry-go</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgd1d918c" class="outline-2">
+<h2 id="orgd1d918c"><a href="#orgd1d918c">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgd1d918c">
+<ul class="org-ul">
+<li><a href="./20260926T231317--kdoc-638-配列の定数インデックスはビルド時に検証される__permanent.html">KDOC 638: 配列の定数インデックスはビルド時に検証される</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
