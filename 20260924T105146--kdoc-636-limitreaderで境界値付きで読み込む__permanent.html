@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-09-27T02:21:39Z -->
+<!-- 2026-10-05T23:59:20Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 636: LimitReaderで境界値付きで読み込む</title>
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 636: LimitReaderで境界値付きで読み込む</h1>
-<div id="outline-container-org040d5c4" class="outline-2">
-<h2 id="org040d5c4"><a href="#org040d5c4">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org040d5c4">
+<div id="outline-container-org4fa3d2f" class="outline-2">
+<h2 id="org4fa3d2f"><a href="#org4fa3d2f">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4fa3d2f">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +30,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org999fd2b" class="outline-2">
-<h2 id="org999fd2b"><a href="#org999fd2b">概要</a></h2>
-<div class="outline-text-2" id="text-org999fd2b">
+<div id="outline-container-org25932fd" class="outline-2">
+<h2 id="org25932fd"><a href="#org25932fd">概要</a></h2>
+<div class="outline-text-2" id="text-org25932fd">
 <p>
 ある大きさ以下のデータをネットワークから受け取るプログラムがあるとする。DOS 攻撃対策に、サイズを制限して読み込む必要がある。
 </p>
@@ -70,11 +70,39 @@ type LimitedReader struct {
 }
 </pre>
 </div>
+
+<p>
+実際のコード。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink">https://github.com/kd-collective/opentelemetry-go/blob/40679e672e46abde92cea3f59ec6f66b38e4abc2/internal/shared/otlp/response.go.tmpl#L17-L31
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">func CopyResponseBody(dst io.Writer, src io.Reader, maxSize int64) error {
+	if _, err := io.Copy(dst, io.LimitReader(src, maxSize)); err != nil {
+		return err
+	}
+
+	var extra [1]byte
+	_, err := io.ReadFull(src, extra[:])
+	if err == nil {
+		return fmt.Errorf("response body too large: exceeded %d bytes", maxSize)
+	}
+	if errors.Is(err, io.EOF) {
+		return nil
+	}
+	return err
+}
+</pre>
 </div>
 </div>
-<div id="outline-container-org1617f23" class="outline-2">
-<h2 id="org1617f23"><a href="#org1617f23">関連</a></h2>
-<div class="outline-text-2" id="text-org1617f23">
+</div>
+<div id="outline-container-org7a08c5d" class="outline-2">
+<h2 id="org7a08c5d"><a href="#org7a08c5d">関連</a></h2>
+<div class="outline-text-2" id="text-org7a08c5d">
 <ul class="org-ul">
 <li>具体例: <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8941">feat(otlphttp): configure maximum response size by pellared · Pull Request #8941 · open-telemetry/opentelemetry-go</a></li>
 </ul>

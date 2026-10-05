@@ -5,107 +5,134 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-09-27T02:23:33+09:00</updated>
+<updated>2026-10-06T00:01:10+09:00</updated>
 <entry>
-  <title>KDOC 623: ファイルごとの並列実行は変更コストが低い</title>
+  <title>KDOC 644: Recordを外部値がくるところで使うとプロトタイプを書き換えられる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org0dea583" class="outline-2">
- <h2 id="org0dea583"> <a href="#org0dea583">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0dea583">
+ <div id="outline-container-org92007e3" class="outline-2">
+ <h2 id="org92007e3"> <a href="#org92007e3">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org92007e3">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-03 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-03 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orge52c2b0" class="outline-2">
- <h2 id="orge52c2b0"> <a href="#orge52c2b0">概要</a></h2>
- <div class="outline-text-2" id="text-orge52c2b0">
+ <div id="outline-container-orga0ff948" class="outline-2">
+ <h2 id="orga0ff948"> <a href="#orga0ff948">概要</a></h2>
+ <div class="outline-text-2" id="text-orga0ff948">
  <p>
-jest でのテストをファイルごとの並列実行(jest デフォルトの挙動)にすると、変更コストが低かった。
+TypeScriptのRecord型は型だけの存在で、実行時の値はプロトタイプを持つ普通のオブジェクトである。
+</p>
+
+ <blockquote>
+ <p>
+Record<Keys, Type>はプロパティのキーがKeysであり、プロパティの値がTypeであるオブジェクトの型を作るユーティリティ型です。
 </p>
 
  <p>
-関数レベルの並列実行がもっとも高速だが、各テストが状態を共有しないように隔離する改修が必要である。これは大規模な改修になる。いっぽうファイルレベルの並列実行に留めておくと変更コストがほぼないが、並列実行の恩恵を受けられる。
+ <a href="https://typescriptbook.jp/reference/type-reuse/utility-types/record">Record<Keys, Type> | TypeScript入門『サバイバルTypeScript』</a>
 </p>
+</blockquote>
+
+ <p>
+オブジェクトはプロトタイプを持つので、 Record の値に外部から来たキーで書き込むと、プロトタイプを書き換えられる。
+</p>
+
+ <blockquote>
+ <p>
+Object Security
+</p>
+
+ <p>
+Setting user-provided key-value pairs on an Object may allow an attacker to override the object’s prototype, which can lead to object injection attacks or prototype pollution attacks. Like the accidental keys issue, this can also be mitigated by using a null-prototype object.
+</p>
+
+ <p>
+ <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#objects_vs._maps">Map#objects vs maps - JavaScript | MDN</a>
+</p>
+</blockquote>
 </div>
 </div>
- <div id="outline-container-org93607f3" class="outline-2">
- <h2 id="org93607f3"> <a href="#org93607f3">関連</a></h2>
- <div class="outline-text-2" id="text-org93607f3">
- <ul class="org-ul"> <li>関連:  <a href="20260917T004603--kdoc-619-テストを最小限の手数で並列実行する__permanent.html#ID-20260917T004603">KDOC 619: テストを最小限の手数で並列実行する</a></li>
+ <div id="outline-container-org7423667" class="outline-2">
+ <h2 id="org7423667"> <a href="#org7423667">関連</a></h2>
+ <div class="outline-text-2" id="text-org7423667">
+ <ul class="org-ul"> <li>追加調査: プロトタイプ汚染を試す</li>
 </ul></div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260917T200029--kdoc-623-ファイルごとの並列実行は変更コストが低い__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260917T200029--kdoc-623-ファイルごとの並列実行は変更コストが低い__permanent.html</id>
-  <updated>2026-09-27T11:23:28+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html</id>
+  <updated>2026-10-06T09:01:09+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 619: テストを最小限の手数で並列実行する</title>
+  <title>KDOC 640: 関連が少ないレコードで破壊的に時間がかかる現象</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org4aff4bb" class="outline-2">
- <h2 id="org4aff4bb"> <a href="#org4aff4bb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4aff4bb">
+ <div id="outline-container-org2bb0647" class="outline-2">
+ <h2 id="org2bb0647"> <a href="#org2bb0647">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2bb0647">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-30 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-30 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc5e499b" class="outline-2">
- <h2 id="orgc5e499b"> <a href="#orgc5e499b">概要</a></h2>
- <div class="outline-text-2" id="text-orgc5e499b">
+ <div id="outline-container-org514817e" class="outline-2">
+ <h2 id="org514817e"> <a href="#org514817e">概要</a></h2>
+ <div class="outline-text-2" id="text-org514817e">
  <p>
-並列度1の実行しか許容しない、 jest で実行するテスト群があった。テスト内にデータベースを使う関数のテストが含まれていて、並列度を増やしてテスト実行するとテストケース間のレコードが混ざって大量に失敗した。これを最小限の手数(約200行の変更)で並列実行にしてマシンのCPUをほぼ使い切れるようにした。
+関連レコードが少ないユーザのほうが、多いユーザより100倍以上遅くなることがあった。
 </p>
 
  <p>
-コアアイデア。
+結局、関連のある1レコードを辿るようなクエリになっていて、レコードが少ないほど発見しにくく全件取得していた。また、レコードが少ないとシーケンシャルに取得する実行計画が選ばれ、破壊的に遅くなった。
 </p>
 
  <p>
-jest ワーカーごとに Postgres の Database を分離する。ここでいう Database は  <code>CREATE DATABASE</code> のそれである。並列実行するワーカーごとに専用の Database を使って隔離すれば、ワーカー間でレコードが競合しなくなる。
+事象のメモ。
+</p>
+
+ <ul class="org-ul"> <li>ユーザに関連する特定のテーブルの SELECT が、破壊的に時間がかかることがある。もともと早くないところが100倍以上遅くなって、数分レベルで時間がかかる</li>
+ <li>DBやインフラにスパイクや変わった点は一切なく、負荷や入出力に時間がかかっているようにも見えない。同時刻のほかのクエリは問題なく動く</li>
+ <li>ユーザ × タイミングによって発生する
+ <ul class="org-ul"> <li>最近会員登録したような、レコードが  <b>少ない</b> ユーザでのみ発生する</li>
+</ul></li>
+ <li>そのテーブルの全レコード数は60万件程度で、ユーザ1人が関連するレコードは100件程度</li>
+ <li>レコードが多いユーザと少ないユーザでパラメータだけ変えて SELECT すると、実行計画は異なっている。結合方法が異なっていて、多いユーザは Hash Join で子テーブルを1回だけ読む。少ないユーザは Nested Loop Semi Join で、親の1行ごとに子テーブルのインデックスを先頭から走査する</li>
+</ul> <p>
+異なる実行計画から明らかに遅そうには見えるのだが、100倍の速度低下は再現できなかった。なにか別の要因が組み合わさっているようにも見える。
 </p>
 </div>
 </div>
- <div id="outline-container-org1bff3f5" class="outline-2">
- <h2 id="org1bff3f5"> <a href="#org1bff3f5">関連</a></h2>
- <div class="outline-text-2" id="text-org1bff3f5">
+ <div id="outline-container-org9eccf7c" class="outline-2">
+ <h2 id="org9eccf7c"> <a href="#org9eccf7c">関連</a></h2>
+ <div class="outline-text-2" id="text-org9eccf7c">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgcb87213" class="outline-2">
- <h2 id="orgcb87213"> <a href="#orgcb87213">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgcb87213">
- <ul class="org-ul"> <li> <a href="./20260917T004653--kdoc-620-create-database-は複製のため速い__permanent.html">KDOC 620: CREATE DATABASE は複製のため速い</a></li>
- <li> <a href="./20260917T015350--kdoc-621-jest-worker-は-fork-した子プロセスで並列実行する__permanent.html">KDOC 621: Jest Worker は fork した子プロセスで並列実行する</a></li>
- <li> <a href="./20260917T200029--kdoc-623-ファイルごとの並列実行は変更コストが低い__permanent.html">KDOC 623: ファイルごとの並列実行は変更コストが低い</a></li>
-</ul></div>
-</div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260917T004603--kdoc-619-テストを最小限の手数で並列実行する__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260917T004603--kdoc-619-テストを最小限の手数で並列実行する__permanent.html</id>
-  <updated>2026-09-27T11:23:27+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260929T005900--kdoc-640-関連が少ないレコードで破壊的に時間がかかる現象__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260929T005900--kdoc-640-関連が少ないレコードで破壊的に時間がかかる現象__permanent.html</id>
+  <updated>2026-10-06T09:00:57+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 638: 配列の定数インデックスはビルド時に検証される</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orged53e2c" class="outline-2">
- <h2 id="orged53e2c"> <a href="#orged53e2c">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orged53e2c">
+ <div id="outline-container-orgea3c587" class="outline-2">
+ <h2 id="orgea3c587"> <a href="#orgea3c587">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgea3c587">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-27 貴島</li>
 </ul></li>
@@ -114,9 +141,9 @@ jest ワーカーごとに Postgres の Database を分離する。ここでい�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org9a2520c" class="outline-2">
- <h2 id="org9a2520c"> <a href="#org9a2520c">概要</a></h2>
- <div class="outline-text-2" id="text-org9a2520c">
+ <div id="outline-container-org9fcfa7d" class="outline-2">
+ <h2 id="org9fcfa7d"> <a href="#org9fcfa7d">概要</a></h2>
+ <div class="outline-text-2" id="text-org9fcfa7d">
  <p>
 Go で定数インデックスで配列にアクセスすると、ビルド時にチェックされる。
 </p>
@@ -149,25 +176,25 @@ go build . 2>&1
 </div>
 </div>
 </div>
- <div id="outline-container-org4a07185" class="outline-2">
- <h2 id="org4a07185"> <a href="#org4a07185">関連</a></h2>
- <div class="outline-text-2" id="text-org4a07185">
+ <div id="outline-container-org9c2ff38" class="outline-2">
+ <h2 id="org9c2ff38"> <a href="#org9c2ff38">関連</a></h2>
+ <div class="outline-text-2" id="text-org9c2ff38">
  <ul class="org-ul"> <li>動機:  <a href="20260926T220337--kdoc-637-メモリ安全の境界検査のオーバーヘッドを見る__permanent.html#ID-20260926T220337">KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</a>。そもそもビルド時に検証されるケースがあることを初めて知った</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260926T231317--kdoc-638-配列の定数インデックスはビルド時に検証される__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260926T231317--kdoc-638-配列の定数インデックスはビルド時に検証される__permanent.html</id>
-  <updated>2026-09-27T11:23:18+09:00</updated>
+  <updated>2026-10-06T09:00:56+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 633: 領土・主権博物館を観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgd97821c" class="outline-2">
- <h2 id="orgd97821c"> <a href="#orgd97821c">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd97821c">
+ <div id="outline-container-orgbe8879b" class="outline-2">
+ <h2 id="orgbe8879b"> <a href="#orgbe8879b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgbe8879b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-27 貴島</li>
 </ul></li>
@@ -176,9 +203,9 @@ go build . 2>&1
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga2fcb85" class="outline-2">
- <h2 id="orga2fcb85"> <a href="#orga2fcb85">概要</a></h2>
- <div class="outline-text-2" id="text-orga2fcb85">
+ <div id="outline-container-org3da27c5" class="outline-2">
+ <h2 id="org3da27c5"> <a href="#org3da27c5">概要</a></h2>
+ <div class="outline-text-2" id="text-org3da27c5">
  <p>
 領土・主権博物館は、東京都千代田区にある、領土についての博物館である。ニュースなどで話題になる3つの領土について、解説している。
 </p>
@@ -186,92 +213,187 @@ go build . 2>&1
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.1136307124143!2d139.74514411198538!3d35.66994537247657!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188beda29b733b%3A0x18d92703bdf8d9b4!2sNational%20Museum%20of%20Territory%20and%20Sovereignty!5e1!3m2!1sen!2sjp!4v1790075220397!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 </div>
 </div>
- <div id="outline-container-orgba0aeb0" class="outline-2">
- <h2 id="orgba0aeb0"> <a href="#orgba0aeb0">メモ</a></h2>
- <div class="outline-text-2" id="text-orgba0aeb0">
+ <div id="outline-container-orgbf442da" class="outline-2">
+ <h2 id="orgbf442da"> <a href="#orgbf442da">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgbf442da">
  <ul class="org-ul"> <li>入口のドアの近い位置に警備員がいて、館内の案内を兼ねていた。比較的厳重に守られているように感じた。博物館の性質上、問題が起きやすいように見えた</li>
  <li>どんな人が来るのか気になっていたが、普通の人たちに見えた。どういった気持ちで見るのかわからないが、家族連れも多かった。児童向けのコーナーも広く取られていた</li>
  <li>双方の主張としては知っていたとおりで特に驚きはなかった。じっさいに住んでいた写真資料や生活物品などを見ると、領土を失うということがどういうことか、深刻に捉えられる感じがした。住民として考えると、よりシリアスに考えられる</li>
 </ul></div>
 </div>
- <div id="outline-container-org29b0a37" class="outline-2">
- <h2 id="org29b0a37"> <a href="#org29b0a37">関連</a></h2>
- <div class="outline-text-2" id="text-org29b0a37">
+ <div id="outline-container-org33350e6" class="outline-2">
+ <h2 id="org33350e6"> <a href="#org33350e6">関連</a></h2>
+ <div class="outline-text-2" id="text-org33350e6">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgdbdd76d" class="outline-2">
- <h2 id="orgdbdd76d"> <a href="#orgdbdd76d">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgdbdd76d">
+ <div id="outline-container-orgeffca91" class="outline-2">
+ <h2 id="orgeffca91"> <a href="#orgeffca91">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgeffca91">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260922T193745--kdoc-633-領土・主権博物館を観察する__essay.html"/>
   <id>https://kijimad.github.io/roam/20260922T193745--kdoc-633-領土・主権博物館を観察する__essay.html</id>
-  <updated>2026-09-27T11:23:14+09:00</updated>
+  <updated>2026-10-06T09:00:52+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 622: 全体計測してから内訳に進む</title>
+  <title>KDOC 642: 実行計画は3つの結合を選ぶ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org0a4e83c" class="outline-2">
- <h2 id="org0a4e83c"> <a href="#org0a4e83c">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0a4e83c">
+ <div id="outline-container-org1e90bf7" class="outline-2">
+ <h2 id="org1e90bf7"> <a href="#org1e90bf7">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1e90bf7">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgea39176" class="outline-2">
- <h2 id="orgea39176"> <a href="#orgea39176">概要</a></h2>
- <div class="outline-text-2" id="text-orgea39176">
+ <div id="outline-container-org8b578bf" class="outline-2">
+ <h2 id="org8b578bf"> <a href="#org8b578bf">概要</a></h2>
+ <div class="outline-text-2" id="text-org8b578bf">
  <p>
-前提。
+Postgres の実行計画では、リレーションを結合する方法には3つある。
 </p>
 
- <ul class="org-ul"> <li>巨大なデータが流れる非同期サーバがある</li>
- <li>ジョブ1つ1つは任意の長さの配列を持ち、長い場合も短い場合もある。また、配列の要素は複数の種別がありうる。種別によって処理が異なる</li>
-</ul> <p>
-自分は1つの種別を取り上げて、処理の内訳を計測してボトルネックを確認し、最適化を行った。テスト環境でのその種別のスループットは大きく改善し、最適化はうまくいったように見えた。
+ <ul class="org-ul"> <li>ネステッドループ結合</li>
+ <li>マージ結合</li>
+ <li>ハッシュ結合</li>
+</ul></div>
+</div>
+ <div id="outline-container-org9334bd2" class="outline-2">
+ <h2 id="org9334bd2"> <a href="#org9334bd2">関連</a></h2>
+ <div class="outline-text-2" id="text-org9334bd2">
+ <ul class="org-ul"> <li>参照:  <a href="https://www.postgresql.jp/document/18/html/planner-optimizer.html">51.5. プランナ/オプティマイザ</a></li>
+ <li>関連:  <a href="https://www.postgresql.jp/document/18/html/query-path.html">51.1. 問い合わせの経路</a></li>
+ <li>関連:  <a href="https://www.postgresql.jp/document/18/html/using-explain.html">14.1. EXPLAINの利用</a></li>
+ <li>関連:  <a href="https://www.postgresql.jp/document/18/html/planner-stats.html">14.2. プランナで使用される統計情報</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html</id>
+  <updated>2026-10-06T09:00:51+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 641: ANALYZEで生成される統計情報は、テーブルのランダムな標本から取り出される</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org836b53f" class="outline-2">
+ <h2 id="org836b53f"> <a href="#org836b53f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org836b53f">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org1bc86e1" class="outline-2">
+ <h2 id="org1bc86e1"> <a href="#org1bc86e1">概要</a></h2>
+ <div class="outline-text-2" id="text-org1bc86e1">
+ <p>
+データベースはどうやって計画を作成するだろう、なぜ間違えることがあるのだろう、と考えた。
+</p>
+
+ <blockquote>
+ <p>
+なぜなら、ANALYZEで生成される統計情報は、テーブルのランダムな標本から取り出されるからです。
 </p>
 
  <p>
-しかし、後で本番環境のデータを確認したところ、種別ごとの要素数に偏りがあると判明した。最適化に取り組んだ要素はデータ全体の3%しかなく、本番環境での効果はテスト環境ほどなかった。
+ <a href="https://www.postgresql.jp/document/18/html/using-explain.html">14.1. EXPLAINの利用</a>
 </p>
+</blockquote>
 
  <p>
-大事なことは、内訳へ入る前に全体の分布を正しく把握しておくことだと考えた。
+したがって、少数のレコードだけが持つ性質がある場合、考慮せずに計画を作ってしまうことがある。
 </p>
 </div>
 </div>
- <div id="outline-container-orgf5d92f4" class="outline-2">
- <h2 id="orgf5d92f4"> <a href="#orgf5d92f4">関連</a></h2>
- <div class="outline-text-2" id="text-orgf5d92f4">
+ <div id="outline-container-org699fdab" class="outline-2">
+ <h2 id="org699fdab"> <a href="#org699fdab">関連</a></h2>
+ <div class="outline-text-2" id="text-org699fdab">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260917T193557--kdoc-622-全体計測してから内訳に進む__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260917T193557--kdoc-622-全体計測してから内訳に進む__permanent.html</id>
-  <updated>2026-09-27T11:23:13+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20260930T084643--kdoc-641-analyzeで生成される統計情報は、テーブルのランダムな標本から取り出される__draft_permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260930T084643--kdoc-641-analyzeで生成される統計情報は、テーブルのランダムな標本から取り出される__draft_permanent.html</id>
+  <updated>2026-10-06T09:00:49+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 639: しょうけい館を観察する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org707ce6c" class="outline-2">
+ <h2 id="org707ce6c"> <a href="#org707ce6c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org707ce6c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul> <ul class="org-ul"> <li>レビュー
+ <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> <署名></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgd555ac2" class="outline-2">
+ <h2 id="orgd555ac2"> <a href="#orgd555ac2">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd555ac2">
+ <p>
+しょうけい館は、東京都千代田区にある、戦争における戦傷病者に関する史料館。
+</p>
+
+ <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.18699342308!2d139.74853281198656!3d35.69701577246775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c6b4c390fff%3A0x1d43f78e820a337b!2sSh%C5%8Dkei-kan!5e0!3m2!1sen!2sjp!4v1790485287074!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+</div>
+</div>
+ <div id="outline-container-org4c7505b" class="outline-2">
+ <h2 id="org4c7505b"> <a href="#org4c7505b">メモ</a></h2>
+ <div class="outline-text-2" id="text-org4c7505b">
+ <ul class="org-ul"> <li>戦争が終わったらすべてハッピー、というわけでは当然ない。戦争で受けた傷があり、それぞれに続く人生がある。具体的な一人ひとりの例を知れた。戦病者数の割合などの展示もあって、具体と抽象の両方で戦争の重みを感じられる</li>
+ <li>戦争の間だけをフォーカスしがちだが、前後の日常との切れ目があって、むしろ日常の方に目を向けることで、戦争の重大さを感じられるように見える</li>
+ <li>被弾した物品、血液痕のついた衣服で、リアリティを感じられる</li>
+ <li>義足や義手といった人口の装具を手に取ることができた。ずっしりと重みがあり、彼らの語る人生を理解する手助けになったように見える</li>
+</ul></div>
+</div>
+ <div id="outline-container-org70da5fa" class="outline-2">
+ <h2 id="org70da5fa"> <a href="#org70da5fa">関連</a></h2>
+ <div class="outline-text-2" id="text-org70da5fa">
+ <ul class="org-ul"> <li>類似:  <a href="20241103T172630--kdoc-265-昭和記念館を観察する__essay.html#ID-20241103T172630">KDOC 265: 昭和記念館を観察する</a>。同様に戦争関係の展示</li>
+ <li>類似:  <a href="20250921T190642--kdoc-468-帰還者たちの記憶ミュージアムを観察する__essay.html#ID-20250921T190642">KDOC 468: 帰還者たちの記憶ミュージアムを観察する</a>。同様に戦争関係の展示。特に、戦争後にフォーカスした点で共通点がある</li>
+</ul></div>
+</div>
+ <div id="outline-container-org5409560" class="outline-2">
+ <h2 id="org5409560"> <a href="#org5409560">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org5409560">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260927T140029--kdoc-639-しょうけい館を観察する__draft_essay.html"/>
+  <id>https://kijimad.github.io/roam/20260927T140029--kdoc-639-しょうけい館を観察する__draft_essay.html</id>
+  <updated>2026-10-06T09:00:21+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 635: NewImageOptions.Unmanaged で配置を固定する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org47b7bf1" class="outline-2">
- <h2 id="org47b7bf1"> <a href="#org47b7bf1">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org47b7bf1">
+ <div id="outline-container-org4fb1736" class="outline-2">
+ <h2 id="org4fb1736"> <a href="#org4fb1736">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4fb1736">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-27 貴島</li>
 </ul></li>
@@ -280,9 +402,9 @@ go build . 2>&1
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb4d29a6" class="outline-2">
- <h2 id="orgb4d29a6"> <a href="#orgb4d29a6">概要</a></h2>
- <div class="outline-text-2" id="text-orgb4d29a6">
+ <div id="outline-container-org25cf5be" class="outline-2">
+ <h2 id="org25cf5be"> <a href="#org25cf5be">概要</a></h2>
+ <div class="outline-text-2" id="text-org25cf5be">
  <p>
 Ebiten ゲームの VRT を並行実行すると、画像がフレーキーに数ピクセル変わってしまう問題があった。
 </p>
@@ -311,112 +433,69 @@ type NewImageOptions struct {
 </div>
 </div>
 </div>
- <div id="outline-container-org4a1cfbb" class="outline-2">
- <h2 id="org4a1cfbb"> <a href="#org4a1cfbb">関連</a></h2>
- <div class="outline-text-2" id="text-org4a1cfbb">
+ <div id="outline-container-org0c9f7db" class="outline-2">
+ <h2 id="org0c9f7db"> <a href="#org0c9f7db">関連</a></h2>
+ <div class="outline-text-2" id="text-org0c9f7db">
  <ul class="org-ul"> <li>追加調査: アトラスがあまりわかってない</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260923T012626--kdoc-635-newimageoptionsunmanaged-で配置を固定する__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260923T012626--kdoc-635-newimageoptionsunmanaged-で配置を固定する__permanent.html</id>
-  <updated>2026-09-27T11:22:41+09:00</updated>
+  <updated>2026-10-06T09:00:21+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 621: Jest Worker は fork した子プロセスで並列実行する</title>
+  <title>KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org85e57c3" class="outline-2">
- <h2 id="org85e57c3"> <a href="#org85e57c3">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org85e57c3">
+ <div id="outline-container-org300e5e2" class="outline-2">
+ <h2 id="org300e5e2"> <a href="#org300e5e2">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org300e5e2">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org49dfddc" class="outline-2">
- <h2 id="org49dfddc"> <a href="#org49dfddc">概要</a></h2>
- <div class="outline-text-2" id="text-org49dfddc">
+ <div id="outline-container-org5f91410" class="outline-2">
+ <h2 id="org5f91410"> <a href="#org5f91410">概要</a></h2>
+ <div class="outline-text-2" id="text-org5f91410">
  <p>
-Jest Worker は既定では fork した子プロセスで並列実行する。
+select は複数の case が同時に実行できる状態だとランダムに選ぶ。
 </p>
 
  <blockquote>
  <p>
-Module for executing heavy tasks under forked processes in parallel, by providing a Promise based interface, minimum overhead, and bound workers.
-</p>
-
- <p>
- <a href="https://github.com/jestjs/jest/blob/main/packages/jest-worker/README.md">jest/packages/jest-worker/README.md at main · jestjs/jest</a>
+If one or more of the communications can proceed, a single one that can proceed is chosen via a uniform pseudo-random selection. Otherwise, if there is a default case, that case is chosen. If there is no default case, the “select” statement blocks until at least one of the communications can proceed.
+ <a href="https://go.dev/ref/spec#Select_statements">The Go Programming Language Specification - The Go Programming Language</a>
 </p>
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org8ab2668" class="outline-2">
- <h2 id="org8ab2668"> <a href="#org8ab2668">関連</a></h2>
- <div class="outline-text-2" id="text-org8ab2668">
- <ul class="org-ul"> <li>補足:  <a href="20260917T004603--kdoc-619-テストを最小限の手数で並列実行する__permanent.html#ID-20260917T004603">KDOC 619: テストを最小限の手数で並列実行する</a></li>
-</ul></div>
+ <div id="outline-container-org35226ba" class="outline-2">
+ <h2 id="org35226ba"> <a href="#org35226ba">関連</a></h2>
+ <div class="outline-text-2" id="text-org35226ba">
+ <p>
+なし。
+</p>
+</div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260917T015350--kdoc-621-jest-worker-は-fork-した子プロセスで並列実行する__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260917T015350--kdoc-621-jest-worker-は-fork-した子プロセスで並列実行する__permanent.html</id>
-  <updated>2026-09-27T11:22:35+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 627: WeakMap のキーはGC可能かで制限されている</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgbe1339d" class="outline-2">
- <h2 id="orgbe1339d"> <a href="#orgbe1339d">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgbe1339d">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org8bedc39" class="outline-2">
- <h2 id="org8bedc39"> <a href="#org8bedc39">概要</a></h2>
- <div class="outline-text-2" id="text-org8bedc39">
- <blockquote>
- <p>
-WeakMap のキーはガベージコレクション可能でなければなりません。ほとんどのプリミティブデータ型は任意に作成でき、寿命を持たないため、キーとして使用できません。オブジェクトと非登録シンボルは、ガベージコレクション可能であるためキーとして使用できます。
-</p>
-
- <p>
- <a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WeakMap">WeakMap - JavaScript | MDN</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org9247272" class="outline-2">
- <h2 id="org9247272"> <a href="#org9247272">関連</a></h2>
- <div class="outline-text-2" id="text-org9247272">
- <ul class="org-ul"> <li>動機:  <a href="20260918T210512--kdoc-626-weakmap-のキーは参照で照合する__permanent.html#ID-20260918T210512">KDOC 626: WeakMap のキーは参照で照合する</a>。調べていたのが起点</li>
- <li>追加調査: 寿命を持つものと持たないものの区別</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260918T214132--kdoc-627-weakmap-のキーはgc可能かで制限されている__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260918T214132--kdoc-627-weakmap-のキーはgc可能かで制限されている__permanent.html</id>
-  <updated>2026-09-27T11:22:34+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html</id>
+  <updated>2026-10-06T09:00:09+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 634: NaNはガードをすり抜ける</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgdaad6ac" class="outline-2">
- <h2 id="orgdaad6ac"> <a href="#orgdaad6ac">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgdaad6ac">
+ <div id="outline-container-org05ff368" class="outline-2">
+ <h2 id="org05ff368"> <a href="#org05ff368">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org05ff368">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-27 貴島</li>
 </ul></li>
@@ -425,9 +504,9 @@ WeakMap のキーはガベージコレクション可能でなければなりま
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org057e4ce" class="outline-2">
- <h2 id="org057e4ce"> <a href="#org057e4ce">概要</a></h2>
- <div class="outline-text-2" id="text-org057e4ce">
+ <div id="outline-container-org041de60" class="outline-2">
+ <h2 id="org041de60"> <a href="#org041de60">概要</a></h2>
+ <div class="outline-text-2" id="text-org041de60">
  <p>
 NaNが含まれる可能性のある計算があると、数値比較によるガードをすり抜けることがある。
 </p>
@@ -486,25 +565,130 @@ func NaN() float64 { return Float64frombits(uvnan) }
 </div>
 </div>
 </div>
- <div id="outline-container-orgb798e62" class="outline-2">
- <h2 id="orgb798e62"> <a href="#orgb798e62">関連</a></h2>
- <div class="outline-text-2" id="text-orgb798e62">
+ <div id="outline-container-org86af290" class="outline-2">
+ <h2 id="org86af290"> <a href="#org86af290">関連</a></h2>
+ <div class="outline-text-2" id="text-org86af290">
  <ul class="org-ul"> <li>追加調査: IEEE 754 の該当箇所を見る</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260922T195146--kdoc-634-nanはガードをすり抜ける__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260922T195146--kdoc-634-nanはガードをすり抜ける__permanent.html</id>
-  <updated>2026-09-27T11:22:30+09:00</updated>
+  <updated>2026-10-06T09:00:09+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 643: WHERE条件の大小によって実行計画が変わる例</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org09f85d1" class="outline-2">
+ <h2 id="org09f85d1"> <a href="#org09f85d1">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org09f85d1">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org3fb358c" class="outline-2">
+ <h2 id="org3fb358c"> <a href="#org3fb358c">概要</a></h2>
+ <div class="outline-text-2" id="text-org3fb358c">
+ <p>
+推定した取得行数によって、全部読むか一部だけ読むかの判断が変わって実行計画が変わるのを見る。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ条件式で値だけを変えると、Index Scan、Bitmap Heap Scan、Seq Scan と計画が変わる</label> <pre class="src src-sql"> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (
+    id    <span class="org-type">integer</span>  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,
+     <span class="org-keyword">name</span>  <span class="org-type">varchar</span>(255)
+);
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">10万件を挿入する。id の物理的な並びをばらばらにする
+</span> <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> users (id,  <span class="org-keyword">name</span>)
+ <span class="org-keyword">SELECT</span>
+     i,
+      <span class="org-comment-delimiter">-- </span> <span class="org-comment">32x2 文字
+</span>     concat(md5(random()::text), md5(random()::text))
+ <span class="org-keyword">FROM</span> generate_series(1, 100000) i
+ <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> random();
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">統計情報を作る
+</span>ANALYZE users;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">1件
+</span>EXPLAIN  <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> users  <span class="org-keyword">WHERE</span> id < 2;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">約1000件
+</span>EXPLAIN  <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> users  <span class="org-keyword">WHERE</span> id < 1000;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">約70000件
+</span>EXPLAIN  <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> users  <span class="org-keyword">WHERE</span> id < 70000;
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">|                                                                          |
+|--------------------------------------------------------------------------|
+| > CREATE TABLE users (                                                   |
+| >     id   integer PRIMARY KEY,                                          |
+| >     name varchar(255)                                                  |
+| > );                                                                     |
+| CREATE TABLE                                                             |
+|                                                                          |
+| > INSERT INTO users (id, name)                                           |
+| > SELECT                                                                 |
+| >      i,                                                                |
+| >      -- 32x2 文字                                                       |
+| >      concat(md5(random()::text), md5(random()::text))                  |
+| > FROM generate_series(1, 100000) i                                      |
+| > ORDER BY random();                                                     |
+| INSERT 0 100000                                                          |
+|                                                                          |
+| > ANALYZE users;                                                         |
+| ANALYZE                                                                  |
+|                                                                          |
+| > EXPLAIN SELECT * FROM users WHERE id < 2;                              |
+| QUERY PLAN                                                               |
+| Index Scan using users_pkey on users  (cost=0.29..8.31 rows=1 width=69)  |
+| Index Cond: (id < 2)                                                     |
+|                                                                          |
+| > EXPLAIN SELECT * FROM users WHERE id < 1000;                           |
+| QUERY PLAN                                                               |
+| Bitmap Heap Scan on users  (cost=23.70..1248.40 rows=956 width=69)       |
+| Recheck Cond: (id < 1000)                                                |
+| ->  Bitmap Index Scan on users_pkey  (cost=0.00..23.46 rows=956 width=0) |
+| Index Cond: (id < 1000)                                                  |
+|                                                                          |
+| > EXPLAIN SELECT * FROM users WHERE id < 70000;                          |
+| QUERY PLAN                                                               |
+| Seq Scan on users  (cost=0.00..2485.00 rows=69782 width=69)              |
+| Filter: (id < 70000)                                                     |
+</pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org53b5c0a" class="outline-2">
+ <h2 id="org53b5c0a"> <a href="#org53b5c0a">関連</a></h2>
+ <div class="outline-text-2" id="text-org53b5c0a">
+ <ul class="org-ul"> <li>参照:  <a href="https://www.postgresql.jp/docs/18/using-explain.html">14.1. EXPLAINの利用</a></li>
+ <li>類似:  <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。実行計画に関する話題</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html</id>
+  <updated>2026-10-06T08:59:36+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 632: 憲政記念館を観察する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org314bbd2" class="outline-2">
- <h2 id="org314bbd2"> <a href="#org314bbd2">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org314bbd2">
+ <div id="outline-container-orge19889a" class="outline-2">
+ <h2 id="orge19889a"> <a href="#orge19889a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orge19889a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-23 貴島</li>
 </ul></li>
@@ -513,9 +697,9 @@ func NaN() float64 { return Float64frombits(uvnan) }
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org1f2b37d" class="outline-2">
- <h2 id="org1f2b37d"> <a href="#org1f2b37d">概要</a></h2>
- <div class="outline-text-2" id="text-org1f2b37d">
+ <div id="outline-container-org1fbf0e3" class="outline-2">
+ <h2 id="org1fbf0e3"> <a href="#org1fbf0e3">概要</a></h2>
+ <div class="outline-text-2" id="text-org1fbf0e3">
  <p>
 憲政記念館は、東京都千代田区にある憲政についての博物館である。
 </p>
@@ -523,9 +707,9 @@ func NaN() float64 { return Float64frombits(uvnan) }
  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3907.657132088147!2d139.74276541198572!3d35.679268372473565!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188b89fe952309%3A0xb00787605e2a7d0b!2sParliamentary%20Museum!5e1!3m2!1sen!2sjp!4v1790075416612!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 </div>
 </div>
- <div id="outline-container-org727e411" class="outline-2">
- <h2 id="org727e411"> <a href="#org727e411">メモ</a></h2>
- <div class="outline-text-2" id="text-org727e411">
+ <div id="outline-container-orgb1f9dff" class="outline-2">
+ <h2 id="orgb1f9dff"> <a href="#orgb1f9dff">メモ</a></h2>
+ <div class="outline-text-2" id="text-orgb1f9dff">
  <ul class="org-ul"> <li>国会議事堂の隣にあって、憲政博物館の場所としてはこの上なく適した場所にある。定番の観光地なのか広大な駐車場も備えていて、はとバスが数台停車していた</li>
  <li>学生のときに丸暗記した、キーワードだけ知っている政治家が、憲政のうえでどのようなことを達成してきたのか解説されていた</li>
  <li>議事堂のレプリカは重厚で迫力があった</li>
@@ -533,203 +717,79 @@ func NaN() float64 { return Float64frombits(uvnan) }
  <li>行き道の国家議事堂前に警察の青いバスが大量に停車していて、物々しい雰囲気があった。いつもそんな感じなんだろうか、怖い世の中だ、と考えていた。帰るときにはデモになっていて、歩道に人がひしめきあっていた。大勢の警官が展開して警備していた。デモをする人を胡散臭く見ていた、憲政を見たあとだと、本来こうあるべきなのだろうか、と少し考えた</li>
 </ul></div>
 </div>
- <div id="outline-container-org4300a58" class="outline-2">
- <h2 id="org4300a58"> <a href="#org4300a58">関連</a></h2>
- <div class="outline-text-2" id="text-org4300a58">
+ <div id="outline-container-org4f4c866" class="outline-2">
+ <h2 id="org4f4c866"> <a href="#org4f4c866">関連</a></h2>
+ <div class="outline-text-2" id="text-org4f4c866">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org1c47f0c" class="outline-2">
- <h2 id="org1c47f0c"> <a href="#org1c47f0c">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org1c47f0c">
+ <div id="outline-container-orgd542e9b" class="outline-2">
+ <h2 id="orgd542e9b"> <a href="#orgd542e9b">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgd542e9b">
  <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260922T131445--kdoc-632-憲政記念館を観察する__essay.html"/>
   <id>https://kijimad.github.io/roam/20260922T131445--kdoc-632-憲政記念館を観察する__essay.html</id>
-  <updated>2026-09-27T11:21:55+09:00</updated>
+  <updated>2026-10-06T08:59:36+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 620: CREATE DATABASE は複製のため速い</title>
+  <title>KDOC 646: require.Eventuallyは時間内で繰り返す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgf847b5b" class="outline-2">
- <h2 id="orgf847b5b"> <a href="#orgf847b5b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgf847b5b">
+ <div id="outline-container-org4c0d3bd" class="outline-2">
+ <h2 id="org4c0d3bd"> <a href="#org4c0d3bd">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4c0d3bd">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org06029da" class="outline-2">
- <h2 id="org06029da"> <a href="#org06029da">概要</a></h2>
- <div class="outline-text-2" id="text-org06029da">
+ <div id="outline-container-orgffd23a6" class="outline-2">
+ <h2 id="orgffd23a6"> <a href="#orgffd23a6">概要</a></h2>
+ <div class="outline-text-2" id="text-orgffd23a6">
  <p>
-高速に複数の Database を用意する必要に迫られた。
-</p>
-
- <ol class="org-ol"> <li>マスタ DB を作成する  <code>CREATE DATABASE {マスタDB}</code></li>
- <li>マスタをマイグレーションする</li>
- <li>マスタDBを元にテスト用DBを作成する。  <code>CREATE DATABASE {テスト用DB} TEMPLATE {マスタDB}</code></li>
-</ol> <p>
-CREATE DATABASE は複製であって、空 DB をマイグレーションするより高速である。
+Go のライブラリ testify に  <code>require.Eventually</code> 関数がある。非同期処理を含む非決定的な挙動のテストに便利である。
 </p>
 
  <blockquote>
  <p>
-By default, the new database will be created by cloning the standard system database template1. A different template can be specified by writing TEMPLATE name.
-</p>
-
- <p>
- <a href="https://www.postgresql.org/docs/16/sql-createdatabase.html">PostgreSQL: Documentation: 16: CREATE DATABASE</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-orgc75fb79" class="outline-2">
- <h2 id="orgc75fb79"> <a href="#orgc75fb79">関連</a></h2>
- <div class="outline-text-2" id="text-orgc75fb79">
- <ul class="org-ul"> <li>参考:  <a href="https://www.postgresql.org/docs/16/manage-ag-templatedbs.html">PostgreSQL: Documentation: 16: 23.3. Template Databases</a></li>
- <li>動機:  <a href="20260917T004603--kdoc-619-テストを最小限の手数で並列実行する__permanent.html#ID-20260917T004603">KDOC 619: テストを最小限の手数で並列実行する</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260917T004653--kdoc-620-create-database-は複製のため速い__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260917T004653--kdoc-620-create-database-は複製のため速い__permanent.html</id>
-  <updated>2026-09-27T11:21:53+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 625: WeakMapはGCを妨げない</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org2b9f807" class="outline-2">
- <h2 id="org2b9f807"> <a href="#org2b9f807">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2b9f807">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgd005668" class="outline-2">
- <h2 id="orgd005668"> <a href="#orgd005668">概要</a></h2>
- <div class="outline-text-2" id="text-orgd005668">
- <blockquote>
- <p>
-WeakMapは、値がキーを参照している場合でも、キーとなるオブジェクトがガベージコレクションされるのを妨げない方法で、データとオブジェクトを関連付けることができます。
-</p>
-
- <p>
- <a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WeakMap">WeakMap - JavaScript | MDN</a>
+func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick time.Duration, msgAndArgs …interface{})
 </p>
 </blockquote>
 
  <p>
-コードで試す。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-shell">node --expose-gc --input-type=module << <span class="org-string">'EOF'</span> <span class="org-sh-heredoc">
-const reg = new FinalizationRegistry(label => console.log("GCで回収 ->", label));
-
-// Map: キーを強参照 → 手放しても Map が生きる限り残る
-const map = new Map();
-let k1 = {};
-reg.register(k1, "Map のキー");
-map.set(k1, "v");
-k1 = null;
-
-// WeakMap: キーを弱参照 → 手放すと回収対象
-const wm = new WeakMap();
-let k2 = {};
-reg.register(k2, "k2あるいは WeakMap のキーの参照先が回収された");
-wm.set(k2, "v");
-k2 = null;
-
-await new Promise(r => setTimeout(r, 50));
-global.gc();
-await new Promise(r => setTimeout(r, 50));
-console.log("Map.size =", map.size, "-> k1をnullにしてもMapがキーを強参照するので参照先は消えず中身も残る");
-EOF</span>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">GCで回収 -> k2あるいは WeakMap のキーの参照先が回収された
-Map.size = 1 -> k1をnullにしてもMapがキーを強参照するので参照先は消えず中身も残る
-</pre>
-</div>
-
- <p>
-流れ。
-</p>
-
- <pre class="example" id="orgd80a51f">
-Map
-
-変数 --strong--> 実体 <--strong-- Map Key
-
-null            実体 <--strong-- Map Key
-
-                GC
-
-残る             残る             残る
-</pre>
-
- <pre class="example" id="orgcd68113">
-WeakMap
-
-変数 --strong--> 実体 <--weak-- WeakMap Key | slot --strong--> WeakMap Value
-
-null            実体 <--weak-- WeakMap Key | slot --strong--> WeakMap Value
-
-                GC
-
-(なし)           回収             (なし)                           (なし)
-</pre>
-
- <p>
-なので、キャッシュやメタデータを保存するのに便利である。
+呼び出し直後に1回確かめ、false のときだけ次の  <code>tick</code> を待って繰り返す。  <code>waitFor</code> の間に1度も  <code>condition</code> が true にならなければ失敗する。
 </p>
 </div>
 </div>
- <div id="outline-container-org8b137b0" class="outline-2">
- <h2 id="org8b137b0"> <a href="#org8b137b0">関連</a></h2>
- <div class="outline-text-2" id="text-org8b137b0">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org2f08a6b" class="outline-2">
- <h2 id="org2f08a6b"> <a href="#org2f08a6b">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org2f08a6b">
- <ul class="org-ul"> <li> <a href="./20260918T210512--kdoc-626-weakmap-のキーは参照で照合する__permanent.html">KDOC 626: WeakMap のキーは参照で照合する</a></li>
+ <div id="outline-container-orgda85ea9" class="outline-2">
+ <h2 id="orgda85ea9"> <a href="#orgda85ea9">関連</a></h2>
+ <div class="outline-text-2" id="text-orgda85ea9">
+ <ul class="org-ul"> <li>実例:  <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8754">sdk/log: add queue_full shutdown regression test by RedZapdos123 · Pull Request #8754 · open-telemetry/opentelemetry-go</a></li>
+ <li>正典:  <a href="https://pkg.go.dev/github.com/stretchr/testify/require#Eventually">require package - github.com/stretchr/testify/require - Go Packages</a></li>
 </ul></div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260918T205954--kdoc-625-weakmapはgcを妨げない__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260918T205954--kdoc-625-weakmapはgcを妨げない__permanent.html</id>
-  <updated>2026-09-27T11:21:52+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html</id>
+  <updated>2026-10-06T08:59:32+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 630: recover は遅延関数でのみ実行できる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org4d291ce" class="outline-2">
- <h2 id="org4d291ce"> <a href="#org4d291ce">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4d291ce">
+ <div id="outline-container-org2637cdd" class="outline-2">
+ <h2 id="org2637cdd"> <a href="#org2637cdd">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2637cdd">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-21 貴島</li>
 </ul></li>
@@ -738,9 +798,9 @@ null            実体 <--weak-- WeakMap Key | slot --strong--> WeakMap Value
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgbab07a9" class="outline-2">
- <h2 id="orgbab07a9"> <a href="#orgbab07a9">概要</a></h2>
- <div class="outline-text-2" id="text-orgbab07a9">
+ <div id="outline-container-org81cb283" class="outline-2">
+ <h2 id="org81cb283"> <a href="#org81cb283">概要</a></h2>
+ <div class="outline-text-2" id="text-org81cb283">
  <p>
 recover は遅延関数内でのみパニックシーケンスを停止できる。遅延関数外で呼ばれてもシーケンスを止めない。
 </p>
@@ -775,9 +835,9 @@ func main() {
 </div>
 </div>
 </div>
- <div id="outline-container-orgc03a297" class="outline-2">
- <h2 id="orgc03a297"> <a href="#orgc03a297">関連</a></h2>
- <div class="outline-text-2" id="text-orgc03a297">
+ <div id="outline-container-orgf6d7dea" class="outline-2">
+ <h2 id="orgf6d7dea"> <a href="#orgf6d7dea">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf6d7dea">
  <p>
 なし。
 </p>
@@ -786,16 +846,16 @@ func main() {
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260919T122334--kdoc-630-recover-は遅延関数でのみ実行できる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260919T122334--kdoc-630-recover-は遅延関数でのみ実行できる__permanent.html</id>
-  <updated>2026-09-27T11:21:49+09:00</updated>
+  <updated>2026-10-06T08:59:30+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org40a5c08" class="outline-2">
- <h2 id="org40a5c08"> <a href="#org40a5c08">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org40a5c08">
+ <div id="outline-container-org62580e1" class="outline-2">
+ <h2 id="org62580e1"> <a href="#org62580e1">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org62580e1">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-27 貴島</li>
 </ul></li>
@@ -804,9 +864,9 @@ func main() {
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgd02af84" class="outline-2">
- <h2 id="orgd02af84"> <a href="#orgd02af84">概要</a></h2>
- <div class="outline-text-2" id="text-orgd02af84">
+ <div id="outline-container-orgdb3484c" class="outline-2">
+ <h2 id="orgdb3484c"> <a href="#orgdb3484c">概要</a></h2>
+ <div class="outline-text-2" id="text-orgdb3484c">
  <p>
  <a href="https://github.com/open-telemetry/opentelemetry-go/issues/8736">trace: unroll TraceIDFromHex/SpanIDFromHex decoders to eliminate bounds checks · Issue #8736 · open-telemetry/opentelemetry-go</a>で、インデックスアクセスのオーバーヘッドの存在と、コンパイラでの確認方法について説明していた。
 </p>
@@ -918,188 +978,31 @@ func f0(a []int) {
 </div>
 </div>
 </div>
- <div id="outline-container-orgaa0f524" class="outline-2">
- <h2 id="orgaa0f524"> <a href="#orgaa0f524">関連</a></h2>
- <div class="outline-text-2" id="text-orgaa0f524">
+ <div id="outline-container-orgb49d8b7" class="outline-2">
+ <h2 id="orgb49d8b7"> <a href="#orgb49d8b7">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb49d8b7">
  <ul class="org-ul"> <li>具体例:  <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8740">perf(trace): unroll hex decoders to drop bounds checks by itssaharsh · Pull Request #8740 · open-telemetry/opentelemetry-go</a></li>
 </ul></div>
 </div>
- <div id="outline-container-org1880ba7" class="outline-2">
- <h2 id="org1880ba7"> <a href="#org1880ba7">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org1880ba7">
+ <div id="outline-container-orga949e21" class="outline-2">
+ <h2 id="orga949e21"> <a href="#orga949e21">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orga949e21">
  <ul class="org-ul"> <li> <a href="./20260926T231317--kdoc-638-配列の定数インデックスはビルド時に検証される__permanent.html">KDOC 638: 配列の定数インデックスはビルド時に検証される</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260926T220337--kdoc-637-メモリ安全の境界検査のオーバーヘッドを見る__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260926T220337--kdoc-637-メモリ安全の境界検査のオーバーヘッドを見る__permanent.html</id>
-  <updated>2026-09-27T11:21:48+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 626: WeakMap のキーは参照で照合する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org9e56b71" class="outline-2">
- <h2 id="org9e56b71"> <a href="#org9e56b71">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org9e56b71">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org1579de0" class="outline-2">
- <h2 id="org1579de0"> <a href="#org1579de0">概要</a></h2>
- <div class="outline-text-2" id="text-org1579de0">
- <p>
-WeakMap のキーは参照で照合するので、値が同じであっても区別される。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-js"> <span class="org-keyword">const</span>  <span class="org-variable-name">wm</span> =  <span class="org-keyword">new</span>  <span class="org-type">WeakMap</span>();
-
- <span class="org-keyword">const</span>  <span class="org-variable-name">keyObject1</span> = { <span class="org-string">"this is"</span>:  <span class="org-string">"key object"</span>};
- <span class="org-keyword">const</span>  <span class="org-variable-name">keyObject2</span> = { <span class="org-string">"this is"</span>:  <span class="org-string">"key object"</span>};
-
-wm.set(keyObject1,  <span class="org-string">"save1"</span>);
-wm.set(keyObject2,  <span class="org-string">"save2"</span>);
-
-console.log(wm.get(keyObject1));
-console.log(wm.get(keyObject2));
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">save1
-save2
-</pre>
-</div>
-
- <blockquote>
- <p>
-キーの等価性
-通常の Map と同様に、値の等価性は SameValueZero アルゴリズムに基づきます。これは  <code>=</code> 演算子と同じです。WeakMap がオブジェクトとシンボルのキーしか保持できないためです。つまり、オブジェクトキーの場合、等価性はオブジェクトが同一のものであるかに基づきます。これらは値ではなく参照によって比較されます。
-</p>
-
- <p>
- <a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WeakMap">WeakMap - JavaScript | MDN</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-orgeac43e7" class="outline-2">
- <h2 id="orgeac43e7"> <a href="#orgeac43e7">関連</a></h2>
- <div class="outline-text-2" id="text-orgeac43e7">
- <ul class="org-ul"> <li>類似:  <a href="20260918T205954--kdoc-625-weakmapはgcを妨げない__permanent.html#ID-20260918T205954">KDOC 625: WeakMapはGCを妨げない</a></li>
- <li>追加調査: 参照等価と値等価の例を調べる</li>
-</ul></div>
-</div>
- <div id="outline-container-org3ee6e33" class="outline-2">
- <h2 id="org3ee6e33"> <a href="#org3ee6e33">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org3ee6e33">
- <ul class="org-ul"> <li> <a href="./20260918T214132--kdoc-627-weakmap-のキーはgc可能かで制限されている__permanent.html">KDOC 627: WeakMap のキーはGC可能かで制限されている</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260918T210512--kdoc-626-weakmap-のキーは参照で照合する__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260918T210512--kdoc-626-weakmap-のキーは参照で照合する__permanent.html</id>
-  <updated>2026-09-27T11:21:48+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 624: Buffers と Cached の違い</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgc0f35fa" class="outline-2">
- <h2 id="orgc0f35fa"> <a href="#orgc0f35fa">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc0f35fa">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-18 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgd941c57" class="outline-2">
- <h2 id="orgd941c57"> <a href="#orgd941c57">概要</a></h2>
- <div class="outline-text-2" id="text-orgd941c57">
- <p>
- <code>/proc/meminfo</code> は Linux のメモリ使用量に関する統計を示すファイルである。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-shell">cat /proc/meminfo | head
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">MemTotal:       64963612 kB
-MemFree:        22090252 kB
-MemAvailable:   52819644 kB
-Buffers:         2639360 kB
-Cached:         25346832 kB
-SwapCached:        10472 kB
-Active:         10545988 kB
-Inactive:       25103832 kB
-Active(anon):    6118060 kB
-Inactive(anon):  2000816 kB
-</pre>
-</div>
-
- <p>
-2つの項目の違いがわからなかったので調べた。
-</p>
-
- <ul class="org-ul"> <li>Buffers: 生のディスクブロックの一時ストレージ</li>
- <li>Cached: ディスクから読み込んだファイルの中身のキャッシュ。ページキャッシュ</li>
-</ul> <blockquote>
- <p>
-Buffers %lu
-       Relatively temporary storage for raw disk blocks
-       that shouldn’t get tremendously large (20 MB or so).
-</p>
-
- <p>
-Cached %lu
-       In-memory cache for files read from the disk (the
-       page cache).  Doesn’t include SwapCached.
-</p>
-
- <p>
- <a href="https://man7.org/linux/man-pages/man5/proc_meminfo.5.html">proc_meminfo(5) - Linux manual page</a>
-</p>
-</blockquote>
-
- <p>
-man ページには Buffers は 20 MB 程度とあるが、自分のマシンでは 2.6 GB ある。記載は実態と合ってないように見える。
-</p>
-</div>
-</div>
- <div id="outline-container-org3c7b2f4" class="outline-2">
- <h2 id="org3c7b2f4"> <a href="#org3c7b2f4">関連</a></h2>
- <div class="outline-text-2" id="text-org3c7b2f4">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260918T201334--kdoc-624-buffers-と-cached-の違い__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260918T201334--kdoc-624-buffers-と-cached-の違い__permanent.html</id>
-  <updated>2026-09-27T11:21:48+09:00</updated>
+  <updated>2026-10-06T08:59:29+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 631: MBpsとMbpsの表記なのはなぜか</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgbf6b3c7" class="outline-2">
- <h2 id="orgbf6b3c7"> <a href="#orgbf6b3c7">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgbf6b3c7">
+ <div id="outline-container-org83de556" class="outline-2">
+ <h2 id="org83de556"> <a href="#org83de556">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org83de556">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-20 貴島</li>
 </ul></li>
@@ -1108,33 +1011,85 @@ man ページには Buffers は 20 MB 程度とあるが、自分のマシンで
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0f4747f" class="outline-2">
- <h2 id="org0f4747f"> <a href="#org0f4747f">概要</a></h2>
- <div class="outline-text-2" id="text-org0f4747f">
+ <div id="outline-container-orge6d23d5" class="outline-2">
+ <h2 id="orge6d23d5"> <a href="#orge6d23d5">概要</a></h2>
+ <div class="outline-text-2" id="text-orge6d23d5">
  <p>
 MBps(Byte)とMbps(Bit)は似ているが、単位が違う。詐欺的な表記ができたり、コミュニケーションの混乱が起きたりする。なぜこんなことになったのだろうか。
 </p>
 </div>
 </div>
- <div id="outline-container-orgdd86912" class="outline-2">
- <h2 id="orgdd86912"> <a href="#orgdd86912">関連</a></h2>
- <div class="outline-text-2" id="text-orgdd86912">
+ <div id="outline-container-org2d14872" class="outline-2">
+ <h2 id="org2d14872"> <a href="#org2d14872">関連</a></h2>
+ <div class="outline-text-2" id="text-org2d14872">
  <ul class="org-ul"> <li>参照:  <a href="20260913T194047--kdoc-614-『入門監視』__book.html#ID-20260913T194047">KDOC 614: 『入門監視』</a>。サーバ管理者は Bps を使い、ネットワークエンジニアは bps を使うという</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260920T222311--kdoc-631-mbpsとmbpsの表記なのはなぜか__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260920T222311--kdoc-631-mbpsとmbpsの表記なのはなぜか__permanent.html</id>
-  <updated>2026-09-27T11:21:44+09:00</updated>
+  <updated>2026-10-06T08:59:25+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 645: sync.OnceFuncは1度だけ実行する関数を返す</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org7c27638" class="outline-2">
+ <h2 id="org7c27638"> <a href="#org7c27638">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7c27638">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org7f05875" class="outline-2">
+ <h2 id="org7f05875"> <a href="#org7f05875">概要</a></h2>
+ <div class="outline-text-2" id="text-org7f05875">
+ <p>
+Go の  <code>sync.OnceFunc</code> は1度だけ実行される関数を返す。
+</p>
+
+ <p>
+並行処理する環境で1度だけ警告ログを出すときなどに便利である。
+</p>
+
+
+ <div class="org-src-container">
+ <pre class="src src-git-permalink">https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/record.go#L30-L32
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">var logAttrDropped = sync.OnceFunc(func() {
+	global.Warn("limit reached: dropping log Record attributes")
+})
+</pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-orge1d6609" class="outline-2">
+ <h2 id="orge1d6609"> <a href="#orge1d6609">関連</a></h2>
+ <div class="outline-text-2" id="text-orge1d6609">
+ <ul class="org-ul"> <li>正典:  <a href="https://pkg.go.dev/sync@go1.26.7#OnceFunc">sync package - sync - Go Packages</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html</id>
+  <updated>2026-10-06T08:59:24+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 628: フレーキーテストのダッシュボードを表示する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgfe9ae1e" class="outline-2">
- <h2 id="orgfe9ae1e"> <a href="#orgfe9ae1e">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgfe9ae1e">
+ <div id="outline-container-orgb897d47" class="outline-2">
+ <h2 id="orgb897d47"> <a href="#orgb897d47">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgb897d47">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-20 貴島</li>
 </ul></li>
@@ -1143,9 +1098,9 @@ MBps(Byte)とMbps(Bit)は似ているが、単位が違う。詐欺的な表記�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org5dd7a0a" class="outline-2">
- <h2 id="org5dd7a0a"> <a href="#org5dd7a0a">概要</a></h2>
- <div class="outline-text-2" id="text-org5dd7a0a">
+ <div id="outline-container-org7355323" class="outline-2">
+ <h2 id="org7355323"> <a href="#org7355323">概要</a></h2>
+ <div class="outline-text-2" id="text-org7355323">
  <p>
  <a href="https://github.com/containerd/nerdctl/issues/5202">📌 Flaky test dashboard · Issue #5202 · containerd/nerdctl</a>
 </p>
@@ -1155,9 +1110,9 @@ MBps(Byte)とMbps(Bit)は似ているが、単位が違う。詐欺的な表記�
 </p>
 </div>
 </div>
- <div id="outline-container-org2d6af90" class="outline-2">
- <h2 id="org2d6af90"> <a href="#org2d6af90">関連</a></h2>
- <div class="outline-text-2" id="text-org2d6af90">
+ <div id="outline-container-org6104b94" class="outline-2">
+ <h2 id="org6104b94"> <a href="#org6104b94">関連</a></h2>
+ <div class="outline-text-2" id="text-org6104b94">
  <p>
 なし。
 </p>
@@ -1166,16 +1121,16 @@ MBps(Byte)とMbps(Bit)は似ているが、単位が違う。詐欺的な表記�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260919T092405--kdoc-628-フレーキーテストのダッシュボードを表示する__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260919T092405--kdoc-628-フレーキーテストのダッシュボードを表示する__permanent.html</id>
-  <updated>2026-09-27T11:21:41+09:00</updated>
+  <updated>2026-10-06T08:59:22+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 636: LimitReaderで境界値付きで読み込む</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org040d5c4" class="outline-2">
- <h2 id="org040d5c4"> <a href="#org040d5c4">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org040d5c4">
+ <div id="outline-container-org4fa3d2f" class="outline-2">
+ <h2 id="org4fa3d2f"> <a href="#org4fa3d2f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4fa3d2f">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-27 貴島</li>
 </ul></li>
@@ -1184,9 +1139,9 @@ MBps(Byte)とMbps(Bit)は似ているが、単位が違う。詐欺的な表記�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org999fd2b" class="outline-2">
- <h2 id="org999fd2b"> <a href="#org999fd2b">概要</a></h2>
- <div class="outline-text-2" id="text-org999fd2b">
+ <div id="outline-container-org25932fd" class="outline-2">
+ <h2 id="org25932fd"> <a href="#org25932fd">概要</a></h2>
+ <div class="outline-text-2" id="text-org25932fd">
  <p>
 ある大きさ以下のデータをネットワークから受け取るプログラムがあるとする。DOS 攻撃対策に、サイズを制限して読み込む必要がある。
 </p>
@@ -1221,27 +1176,55 @@ type LimitedReader struct {
 }
 </pre>
 </div>
+
+ <p>
+実際のコード。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-git-permalink">https://github.com/kd-collective/opentelemetry-go/blob/40679e672e46abde92cea3f59ec6f66b38e4abc2/internal/shared/otlp/response.go.tmpl#L17-L31
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">func CopyResponseBody(dst io.Writer, src io.Reader, maxSize int64) error {
+	if _, err := io.Copy(dst, io.LimitReader(src, maxSize)); err != nil {
+		return err
+	}
+
+	var extra [1]byte
+	_, err := io.ReadFull(src, extra[:])
+	if err == nil {
+		return fmt.Errorf("response body too large: exceeded %d bytes", maxSize)
+	}
+	if errors.Is(err, io.EOF) {
+		return nil
+	}
+	return err
+}
+</pre>
 </div>
 </div>
- <div id="outline-container-org1617f23" class="outline-2">
- <h2 id="org1617f23"> <a href="#org1617f23">関連</a></h2>
- <div class="outline-text-2" id="text-org1617f23">
+</div>
+ <div id="outline-container-org7a08c5d" class="outline-2">
+ <h2 id="org7a08c5d"> <a href="#org7a08c5d">関連</a></h2>
+ <div class="outline-text-2" id="text-org7a08c5d">
  <ul class="org-ul"> <li>具体例:  <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8941">feat(otlphttp): configure maximum response size by pellared · Pull Request #8941 · open-telemetry/opentelemetry-go</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260924T105146--kdoc-636-limitreaderで境界値付きで読み込む__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260924T105146--kdoc-636-limitreaderで境界値付きで読み込む__permanent.html</id>
-  <updated>2026-09-27T11:21:39+09:00</updated>
+  <updated>2026-10-06T08:59:20+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 629: 遅延関数呼び出しはLIFOで実行される</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org215055f" class="outline-2">
- <h2 id="org215055f"> <a href="#org215055f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org215055f">
+ <div id="outline-container-org79b1801" class="outline-2">
+ <h2 id="org79b1801"> <a href="#org79b1801">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org79b1801">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-21 貴島</li>
 </ul></li>
@@ -1250,9 +1233,9 @@ type LimitedReader struct {
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org4ca6666" class="outline-2">
- <h2 id="org4ca6666"> <a href="#org4ca6666">概要</a></h2>
- <div class="outline-text-2" id="text-org4ca6666">
+ <div id="outline-container-orgbd188e9" class="outline-2">
+ <h2 id="orgbd188e9"> <a href="#orgbd188e9">概要</a></h2>
+ <div class="outline-text-2" id="text-orgbd188e9">
  <p>
 遅延関数は、周囲の関数が戻り値を返した後に LIFO の順序で実行される。
 </p>
@@ -1281,7 +1264,7 @@ func main() {
 defer 実行時でなく、 defer 文評価時  <code>i</code> が確定する。
 </p>
 
- <pre class="example" id="org4dfed5c">
+ <pre class="example" id="org874d210">
                     ループでの実行順序   deferの実行順序
 defer fmt.Print(0)        1                  4
 defer fmt.Print(1)        2                  3
@@ -1290,9 +1273,9 @@ defer fmt.Print(3)        4                  1
 </pre>
 </div>
 </div>
- <div id="outline-container-orgd15497b" class="outline-2">
- <h2 id="orgd15497b"> <a href="#orgd15497b">関連</a></h2>
- <div class="outline-text-2" id="text-orgd15497b">
+ <div id="outline-container-org76590cb" class="outline-2">
+ <h2 id="org76590cb"> <a href="#org76590cb">関連</a></h2>
+ <div class="outline-text-2" id="text-org76590cb">
  <p>
 なし。
 </p>
@@ -1301,6 +1284,6 @@ defer fmt.Print(3)        4                  1
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20260919T121644--kdoc-629-遅延関数呼び出しはlifoで実行される__permanent.html"/>
   <id>https://kijimad.github.io/roam/20260919T121644--kdoc-629-遅延関数呼び出しはlifoで実行される__permanent.html</id>
-  <updated>2026-09-27T11:21:37+09:00</updated>
+  <updated>2026-10-06T08:59:19+09:00</updated>
 </entry>
 </feed>

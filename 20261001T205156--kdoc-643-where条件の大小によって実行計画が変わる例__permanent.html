@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-05T23:59:36Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 643: WHERE条件の大小によって実行計画が変わる例</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 643: WHERE条件の大小によって実行計画が変わる例</h1>
+<div id="outline-container-org09f85d1" class="outline-2">
+<h2 id="org09f85d1"><a href="#org09f85d1">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org09f85d1">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-05 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-05 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org3fb358c" class="outline-2">
+<h2 id="org3fb358c"><a href="#org3fb358c">概要</a></h2>
+<div class="outline-text-2" id="text-org3fb358c">
+<p>
+推定した取得行数によって、全部読むか一部だけ読むかの判断が変わって実行計画が変わるのを見る。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>同じ条件式で値だけを変えると、Index Scan、Bitmap Heap Scan、Seq Scan と計画が変わる</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
+    id   <span class="org-type">integer</span> <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
+    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">10&#19975;&#20214;&#12434;&#25407;&#20837;&#12377;&#12427;&#12290;id &#12398;&#29289;&#29702;&#30340;&#12394;&#20006;&#12403;&#12434;&#12400;&#12425;&#12400;&#12425;&#12395;&#12377;&#12427;
+</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (id, <span class="org-keyword">name</span>)
+<span class="org-keyword">SELECT</span>
+     i,
+     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
+</span>     concat(md5(random()::text), md5(random()::text))
+<span class="org-keyword">FROM</span> generate_series(1, 100000) i
+<span class="org-keyword">ORDER</span> <span class="org-keyword">BY</span> random();
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#32113;&#35336;&#24773;&#22577;&#12434;&#20316;&#12427;
+</span>ANALYZE users;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">1&#20214;
+</span>EXPLAIN <span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> id &lt; 2;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#32004;1000&#20214;
+</span>EXPLAIN <span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> id &lt; 1000;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#32004;70000&#20214;
+</span>EXPLAIN <span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> id &lt; 70000;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                          |
+|--------------------------------------------------------------------------|
+| &gt; CREATE TABLE users (                                                   |
+| &gt;     id   integer PRIMARY KEY,                                          |
+| &gt;     name varchar(255)                                                  |
+| &gt; );                                                                     |
+| CREATE TABLE                                                             |
+|                                                                          |
+| &gt; INSERT INTO users (id, name)                                           |
+| &gt; SELECT                                                                 |
+| &gt;      i,                                                                |
+| &gt;      -- 32x2 文字                                                       |
+| &gt;      concat(md5(random()::text), md5(random()::text))                  |
+| &gt; FROM generate_series(1, 100000) i                                      |
+| &gt; ORDER BY random();                                                     |
+| INSERT 0 100000                                                          |
+|                                                                          |
+| &gt; ANALYZE users;                                                         |
+| ANALYZE                                                                  |
+|                                                                          |
+| &gt; EXPLAIN SELECT * FROM users WHERE id &lt; 2;                              |
+| QUERY PLAN                                                               |
+| Index Scan using users_pkey on users  (cost=0.29..8.31 rows=1 width=69)  |
+| Index Cond: (id &lt; 2)                                                     |
+|                                                                          |
+| &gt; EXPLAIN SELECT * FROM users WHERE id &lt; 1000;                           |
+| QUERY PLAN                                                               |
+| Bitmap Heap Scan on users  (cost=23.70..1248.40 rows=956 width=69)       |
+| Recheck Cond: (id &lt; 1000)                                                |
+| -&gt;  Bitmap Index Scan on users_pkey  (cost=0.00..23.46 rows=956 width=0) |
+| Index Cond: (id &lt; 1000)                                                  |
+|                                                                          |
+| &gt; EXPLAIN SELECT * FROM users WHERE id &lt; 70000;                          |
+| QUERY PLAN                                                               |
+| Seq Scan on users  (cost=0.00..2485.00 rows=69782 width=69)              |
+| Filter: (id &lt; 70000)                                                     |
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org53b5c0a" class="outline-2">
+<h2 id="org53b5c0a"><a href="#org53b5c0a">関連</a></h2>
+<div class="outline-text-2" id="text-org53b5c0a">
+<ul class="org-ul">
+<li>参照: <a href="https://www.postgresql.jp/docs/18/using-explain.html">14.1. EXPLAINの利用</a></li>
+<li>類似: <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。実行計画に関する話題</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
