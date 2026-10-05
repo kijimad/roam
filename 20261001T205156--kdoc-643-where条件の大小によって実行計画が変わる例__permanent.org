@@ -1,0 +1,99 @@
+:properties:
+:ID: 20261001T205156
+:end:
+#+title:      KDOC 643: WHERE条件の大小によって実行計画が変わる例
+#+date:       [2026-10-01 Thu 20:51]
+#+filetags:   :permanent:
+#+identifier: 20261001T205156
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-05 貴島
+- レビュー
+  - [X] 2026-10-05 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+推定した取得行数によって、全部読むか一部だけ読むかの判断が変わって実行計画が変わるのを見る。
+
+#+caption: 同じ条件式で値だけを変えると、Index Scan、Bitmap Heap Scan、Seq Scan と計画が変わる
+#+begin_src sql
+  CREATE TABLE users (
+      id   integer PRIMARY KEY,
+      name varchar(255)
+  );
+
+  -- 10万件を挿入する。id の物理的な並びをばらばらにする
+  INSERT INTO users (id, name)
+  SELECT
+       i,
+       -- 32x2 文字
+       concat(md5(random()::text), md5(random()::text))
+  FROM generate_series(1, 100000) i
+  ORDER BY random();
+
+  -- 統計情報を作る
+  ANALYZE users;
+
+  -- 1件
+  EXPLAIN SELECT * FROM users WHERE id < 2;
+
+  -- 約1000件
+  EXPLAIN SELECT * FROM users WHERE id < 1000;
+
+  -- 約70000件
+  EXPLAIN SELECT * FROM users WHERE id < 70000;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                          |
+|--------------------------------------------------------------------------|
+| > CREATE TABLE users (                                                   |
+| >     id   integer PRIMARY KEY,                                          |
+| >     name varchar(255)                                                  |
+| > );                                                                     |
+| CREATE TABLE                                                             |
+|                                                                          |
+| > INSERT INTO users (id, name)                                           |
+| > SELECT                                                                 |
+| >      i,                                                                |
+| >      -- 32x2 文字                                                       |
+| >      concat(md5(random()::text), md5(random()::text))                  |
+| > FROM generate_series(1, 100000) i                                      |
+| > ORDER BY random();                                                     |
+| INSERT 0 100000                                                          |
+|                                                                          |
+| > ANALYZE users;                                                         |
+| ANALYZE                                                                  |
+|                                                                          |
+| > EXPLAIN SELECT * FROM users WHERE id < 2;                              |
+| QUERY PLAN                                                               |
+| Index Scan using users_pkey on users  (cost=0.29..8.31 rows=1 width=69)  |
+| Index Cond: (id < 2)                                                     |
+|                                                                          |
+| > EXPLAIN SELECT * FROM users WHERE id < 1000;                           |
+| QUERY PLAN                                                               |
+| Bitmap Heap Scan on users  (cost=23.70..1248.40 rows=956 width=69)       |
+| Recheck Cond: (id < 1000)                                                |
+| ->  Bitmap Index Scan on users_pkey  (cost=0.00..23.46 rows=956 width=0) |
+| Index Cond: (id < 1000)                                                  |
+|                                                                          |
+| > EXPLAIN SELECT * FROM users WHERE id < 70000;                          |
+| QUERY PLAN                                                               |
+| Seq Scan on users  (cost=0.00..2485.00 rows=69782 width=69)              |
+| Filter: (id < 70000)                                                     |
+#+end_src
+
+* 関連
+
+- 参照: [[https://www.postgresql.jp/docs/18/using-explain.html][14.1. EXPLAINの利用]]
+- 類似: [[id:20251206T213844][KDOC 496: Index (Only) Scanの様子を見る]]。実行計画に関する話題

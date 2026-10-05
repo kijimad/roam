@@ -1,0 +1,35 @@
+:properties:
+:ID: 20261003T120627
+:end:
+#+title:      KDOC 645: sync.OnceFuncは1度だけ実行する関数を返す
+#+date:       [2026-10-03 Sat 12:06]
+#+filetags:   :permanent:
+#+identifier: 20261003T120627
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-05 貴島
+- レビュー
+  - [X] 2026-10-05 貴島
+
+* 概要
+
+Go の ~sync.OnceFunc~ は1度だけ実行される関数を返す。
+
+並行処理する環境で1度だけ警告ログを出すときなどに便利である。
+
+
+#+begin_src git-permalink
+https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/record.go#L30-L32
+#+end_src
+
+#+RESULTS:
+#+begin_src
+var logAttrDropped = sync.OnceFunc(func() {
+	global.Warn("limit reached: dropping log Record attributes")
+})
+#+end_src
+
+* 関連
+
+- 正典: [[https://pkg.go.dev/sync@go1.26.7#OnceFunc][sync package - sync - Go Packages]]

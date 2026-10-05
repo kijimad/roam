@@ -41,6 +41,31 @@ type LimitedReader struct {
 }
 #+end_src
 
+実際のコード。
+
+#+begin_src git-permalink
+https://github.com/kd-collective/opentelemetry-go/blob/40679e672e46abde92cea3f59ec6f66b38e4abc2/internal/shared/otlp/response.go.tmpl#L17-L31
+#+end_src
+
+#+RESULTS:
+#+begin_src
+func CopyResponseBody(dst io.Writer, src io.Reader, maxSize int64) error {
+	if _, err := io.Copy(dst, io.LimitReader(src, maxSize)); err != nil {
+		return err
+	}
+
+	var extra [1]byte
+	_, err := io.ReadFull(src, extra[:])
+	if err == nil {
+		return fmt.Errorf("response body too large: exceeded %d bytes", maxSize)
+	}
+	if errors.Is(err, io.EOF) {
+		return nil
+	}
+	return err
+}
+#+end_src
+
 * 関連
 
 - 具体例: [[https://github.com/open-telemetry/opentelemetry-go/pull/8941][feat(otlphttp): configure maximum response size by pellared · Pull Request #8941 · open-telemetry/opentelemetry-go]]

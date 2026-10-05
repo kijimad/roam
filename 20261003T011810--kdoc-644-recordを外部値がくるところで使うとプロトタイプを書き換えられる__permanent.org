@@ -1,0 +1,37 @@
+:properties:
+:ID: 20261003T011810
+:end:
+#+title:      KDOC 644: Recordを外部値がくるところで使うとプロトタイプを書き換えられる
+#+date:       [2026-10-03 Sat 01:18]
+#+filetags:   :permanent:
+#+identifier: 20261003T011810
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-03 貴島
+- レビュー
+  - [X] 2026-10-03 貴島
+
+* 概要
+
+TypeScriptのRecord型は型だけの存在で、実行時の値はプロトタイプを持つ普通のオブジェクトである。
+
+#+begin_quote
+Record<Keys, Type>はプロパティのキーがKeysであり、プロパティの値がTypeであるオブジェクトの型を作るユーティリティ型です。
+
+[[https://typescriptbook.jp/reference/type-reuse/utility-types/record][Record<Keys, Type> | TypeScript入門『サバイバルTypeScript』]]
+#+end_quote
+
+オブジェクトはプロトタイプを持つので、 Record の値に外部から来たキーで書き込むと、プロトタイプを書き換えられる。
+
+#+begin_quote
+Object Security
+
+Setting user-provided key-value pairs on an Object may allow an attacker to override the object's prototype, which can lead to object injection attacks or prototype pollution attacks. Like the accidental keys issue, this can also be mitigated by using a null-prototype object.
+
+[[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#objects_vs._maps][Map#objects vs maps - JavaScript | MDN]]
+#+end_quote
+
+* 関連
+
+- 追加調査: プロトタイプ汚染を試す

@@ -1,0 +1,28 @@
+:properties:
+:ID: 20261004T133733
+:end:
+#+title:      KDOC 646: require.Eventuallyは時間内で繰り返す
+#+date:       [2026-10-04 Sun 13:37]
+#+filetags:   :permanent:
+#+identifier: 20261004T133733
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-05 貴島
+- レビュー
+  - [X] 2026-10-05 貴島
+
+* 概要
+
+Go のライブラリ testify に ~require.Eventually~ 関数がある。非同期処理を含む非決定的な挙動のテストに便利である。
+
+#+begin_quote
+func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick time.Duration, msgAndArgs ...interface{})
+#+end_quote
+
+呼び出し直後に1回確かめ、false のときだけ次の ~tick~ を待って繰り返す。 ~waitFor~ の間に1度も ~condition~ が true にならなければ失敗する。
+
+* 関連
+
+- 実例: [[https://github.com/open-telemetry/opentelemetry-go/pull/8754][sdk/log: add queue_full shutdown regression test by RedZapdos123 · Pull Request #8754 · open-telemetry/opentelemetry-go]]
+- 正典: [[https://pkg.go.dev/github.com/stretchr/testify/require#Eventually][require package - github.com/stretchr/testify/require - Go Packages]]
