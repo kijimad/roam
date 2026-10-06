@@ -1,0 +1,79 @@
+:properties:
+:ID: 20261007T004113
+:end:
+#+title:      KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる
+#+date:       [2026-10-07 Wed 00:41]
+#+filetags:   :permanent:
+#+identifier: 20261007T004113
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-07 貴島
+- レビュー
+  - [X] 2026-10-07 貴島
+
+* 概要
+
+Go の ~select~ では、複数の case が同時に進行できるときランダムに選ばれる。なので例えばシャットダウン用とキュー追加用の両方のチャネルに値が届いていると、どちらを処理するかはランダムになる。キュー追加をせずシャットダウンの後処理だけをやるなど、一貫させたほうがよいこともある。その場合、優先したい ~case~ だけを ~default~ 付きの ~select~ で先に確かめ、なければ全部の ~case~ を並べた ~select~ で待つ。
+
+実例として、 opentelemetry-go の BatchProcessor は Shutdown 要求を flush や定期 export より先に処理する。
+
+#+begin_src git-permalink
+https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/batch.go#L139-L186
+#+end_src
+
+#+RESULTS:
+#+begin_src
+		for {
+			// Probe shutdown by itself first. This makes an already queued terminal
+			// request win over every other ready case. Closing done before replying
+			// also means a successful Shutdown response observes a stopped worker.
+			select {
+			case req := <-b.shutdown:
+				err := b.shutdownExporter(req.ctx)
+				close(b.done)
+				req.respond(err)
+				return
+			default:
+			}
+
+			// With no queued shutdown, service a waiting ForceFlush before ordinary
+			// export wakes. The default keeps this priority check non-blocking.
+			// Shutdown remains selectable in case it arrived after the first probe.
+			select {
+			case req := <-b.shutdown:
+				err := b.shutdownExporter(req.ctx)
+				close(b.done)
+				req.respond(err)
+				return
+			case req := <-b.flush:
+				err := b.flushExporter(req.ctx)
+				req.respond(err)
+				continue
+			default:
+			}
+
+			// No lifecycle request was waiting, so block on the complete event set.
+			// Both timer and size-triggered exports start a new interval window.
+			select {
+			case req := <-b.shutdown:
+				err := b.shutdownExporter(req.ctx)
+				close(b.done)
+				req.respond(err)
+				return
+			case req := <-b.flush:
+				err := b.flushExporter(req.ctx)
+				req.respond(err)
+			case <-timer.C:
+				resetTimer(timer, interval)
+				b.exportBatch(buf)
+			case <-b.exportTrigger:
+				resetTimer(timer, interval)
+				b.exportBatch(buf)
+			}
+		}
+#+end_src
+
+* 関連
+
+- 前提: [[id:20261005T223831][KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ]]
