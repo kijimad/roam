@@ -1,0 +1,73 @@
+:properties:
+:ID: 20261010T220401
+:end:
+#+title:      KDOC 655: 式の照合順序を変えて並び替えの結果を変える
+#+date:       [2026-10-10 Sat 22:04]
+#+filetags:   :permanent:
+#+identifier: 20261010T220401
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-11 貴島
+- レビュー
+  - [X] 2026-10-11 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+データベースシステムが並び替えや文字区別をする場合、データベースは入力の照合順序(collation)を使用する。
+
+たとえば同じ文字列を並び替えても、どの照合順序(並び替えの規則)を使うかで結果が変わる。
+
+#+caption: 同じ UTF8 の文字列を、照合順序だけ変えて並び替える
+#+begin_src sql
+  SHOW server_encoding;
+
+  -- コードポイントの値の順
+  SELECT string_agg(x, ' ' ORDER BY x COLLATE "C") AS c
+  FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
+
+  -- 言語の規則の順(ICU)
+  SELECT string_agg(x, ' ' ORDER BY x COLLATE "und-x-icu") AS und_x_icu
+  FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                         |
+|-------------------------------------------------------------------------|
+| > SHOW server_encoding;                                                 |
+| server_encoding                                                         |
+| UTF8                                                                    |
+|                                                                         |
+| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "C") AS c                 |
+| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| c                                                                       |
+| A B a b                                                                 |
+|                                                                         |
+| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "und-x-icu") AS und_x_icu |
+| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| und_x_icu                                                               |
+| a A b B                                                                 |
+#+end_src
+
+#+begin_quote
+概念的に照合可能なデータ型のそれぞれの式は、照合順序を保持しています （組み込みの照合可能なデータ型はtext、varchar、 charです。 ユーザ定義の基本型は照合可能とマーキングできます。もちろん照合可能なデータ型上のドメインは照合可能となります）。 もし、式が列参照である場合は、式の照合順序は列の定義された照合順序となります。 もし、式が定数である場合は、照合順序は定数のデータ型のデフォルトの照合順序となります。 より複雑な式の照合順序は、下記に示すように、その入力の照合順序から引き出されます。
+
+(略)
+
+データベースシステムが並べ替えや文字区別を行う場合、データベースは入力の照合順序を使用します。 これは、たとえばORDER BY句や < 演算子や関数を使用する際に発生します。 ORDER BY句に適用する照合順序は、単純にソートキーの照合順序です。 関数や演算子の呼び出しに対して適用される照合順序は、以下に述べるように引数により決まります。 比較演算子に加えて、照合順序はlower、upper、initcapといった小文字と大文字を変換する関数やパターンマッチングの演算子、to_char関連の関数で考慮されています。
+
+[[https://www.postgresql.jp/document/18/html/collation.html][23.2. 照合順序サポート]]
+#+end_quote
+
+* 関連
+
+なし。

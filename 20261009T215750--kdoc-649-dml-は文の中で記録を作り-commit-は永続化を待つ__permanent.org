@@ -1,0 +1,25 @@
+:properties:
+:ID: 20261009T215750
+:end:
+#+title:      KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ
+#+date:       [2026-10-09 Fri 21:57]
+#+filetags:   :permanent:
+#+identifier: 20261009T215750
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-11 貴島
+- レビュー
+  - [X] 2026-10-11 貴島
+
+* 概要
+
+PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL)を作成する。COMMIT は書き込みがある場合は主にその記録の永続化を待ち、ページは書かない。Aurora だと待機イベント ~IO:XactSync~ として現れる。
+
+ページはあとでチェックポイント等で書かれる。
+
+* 関連
+
+- 正典: [[https://www.postgresql.jp/docs/18/wal-intro.html][28.3. 先行書き込みログ(WAL)]]
+- 正典: [[https://www.postgresql.jp/docs/18/wal-configuration.html][28.5. WALの設定]]
+- 正典: [[https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/AuroraUserGuide/apg-waits.xactsync.html][IO:XactSync - Amazon Aurora]]

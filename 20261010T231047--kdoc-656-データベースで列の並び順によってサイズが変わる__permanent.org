@@ -1,0 +1,126 @@
+:properties:
+:ID: 20261010T231047
+:end:
+#+title:      KDOC 656: データベースで列の並び順によってサイズが変わる
+#+date:       [2026-10-10 Sat 23:10]
+#+filetags:   :permanent:
+#+identifier: 20261010T231047
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-11 貴島
+- レビュー
+  - [X] 2026-10-11 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+データベースでも、プログラミング言語と同様に、フィールドのデータ型を定義する順序によって使うデータサイズが変わりうる。
+
+型ごとに、値を置く位置の境界(整列)が決まっている。境界に合わないときは、前にパディングが入る。
+
+#+begin_quote
+ディスク上の完全な行の表現のように、複数の値が隣接して格納される際には、指定された境界で始まるように、この型のデータの前にパディングが挿入されます。
+
+[[https://www.postgresql.jp/docs/18/catalog-pg-type.html][52.64. pg_type]]
+#+end_quote
+
+同じ列を、並び順だけ変えた2つのテーブルで比べる。boolean は1バイトで整列なし、bigint は8バイトで8バイト境界(double 整列)である。
+
+#+caption: 同じ列を並び順だけ変えて、1行の大きさを比べる
+#+begin_src sql
+  -- boolean と bigint を交互に並べる
+  CREATE TABLE padded
+    (a boolean, b bigint, c boolean, d bigint);
+  -- bigint を先に、boolean をあとにまとめる
+  CREATE TABLE packed
+    (b bigint, d bigint, a boolean, c boolean);
+
+  INSERT INTO padded VALUES (true, 1, false, 2);
+  INSERT INTO packed VALUES (1, 2, true, false);
+
+  -- 列ごとの長さと整列
+  SELECT format('%s : %s : 長さ %s : 整列 %s',
+                attname, typname, typlen, typalign)
+         AS cols
+  FROM pg_attribute a
+  JOIN pg_type t ON t.oid = a.atttypid
+  WHERE attrelid = 'padded'::regclass
+    AND attnum > 0
+  ORDER BY attnum;
+
+  -- 1行の大きさ(行ヘッダを含む)
+  SELECT pg_column_size(p.*) AS padded FROM padded p;
+  SELECT pg_column_size(p.*) AS packed FROM packed p;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                       |
+|-------------------------------------------------------|
+| > CREATE TABLE padded                                 |
+| >   (a boolean, b bigint, c boolean, d bigint);       |
+| CREATE TABLE                                          |
+|                                                       |
+| > CREATE TABLE packed                                 |
+| >   (b bigint, d bigint, a boolean, c boolean);       |
+| CREATE TABLE                                          |
+|                                                       |
+| > INSERT INTO padded VALUES (true, 1, false, 2);      |
+| INSERT 0 1                                            |
+|                                                       |
+| > INSERT INTO packed VALUES (1, 2, true, false);      |
+| INSERT 0 1                                            |
+|                                                       |
+| > SELECT format('%s : %s : 長さ %s : 整列 %s',        |
+| >               attname, typname, typlen, typalign)   |
+| >        AS cols                                      |
+| > FROM pg_attribute a                                 |
+| > JOIN pg_type t ON t.oid = a.atttypid                |
+| > WHERE attrelid = 'padded'::regclass                 |
+| >   AND attnum > 0                                    |
+| > ORDER BY attnum;                                    |
+| cols                                                  |
+| a : bool : 長さ 1 : 整列 c                            |
+| b : int8 : 長さ 8 : 整列 d                            |
+| c : bool : 長さ 1 : 整列 c                            |
+| d : int8 : 長さ 8 : 整列 d                            |
+|                                                       |
+| > SELECT pg_column_size(p.*) AS padded FROM padded p; |
+| padded                                                |
+| 56                                                    |
+|                                                       |
+| > SELECT pg_column_size(p.*) AS packed FROM packed p; |
+| packed                                                |
+| 42                                                    |
+#+end_src
+
+padded は1行 56 バイト、packed は 42 バイトで、14 バイト違う。padded では、boolean(1バイト)のあとの bigint を8バイト境界へ置くため、7バイトのパディングが2回入る。その 7 × 2 = 14 バイトが差になる。
+
+#+caption: 列のデータの並び
+#+begin_example
+※行ヘッダを除く
+
+padded (boolean, bigint, boolean, bigint) : 32 バイト
+0        8        16       24       32
+|a.......|bbbbbbbb|c.......|dddddddd|
+  ^^^^^^^           ^^^^^^^
+  パディング 7      パディング 7
+
+packed (bigint, bigint, boolean, boolean) : 18 バイト
+0        8        16 18
+|bbbbbbbb|dddddddd|ac|
+
+a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = パディング
+#+end_example
+
+* 関連
+
+- 類似: [[id:20240825T101916][KDOC 227: フィールド定義の順番によってメモリサイズが変わることがある]]。C言語での同様の例

@@ -1,0 +1,125 @@
+:properties:
+:ID: 20261010T095759
+:end:
+#+title:      KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す
+#+date:       [2026-10-10 Sat 09:57]
+#+filetags:   :permanent:
+#+identifier: 20261010T095759
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-11 貴島
+- レビュー
+  - [X] 2026-10-11 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
+
+pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに pg_stat_activity でアクティブなセッションの文を数える。2つのセッションが同時に要るので、この実験は pgpg のプロキシを通さず、PostgreSQL に直接つなぐ。
+
+#+caption: 標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える
+#+begin_src shell :results output verbatim
+  # 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+  sample() {
+    psql -h localhost -p 15433 -U postgres -d postgres -qAt -F ' | ' <<'SQL'
+  CREATE TABLE samples (query text, wait text);
+  DO $$
+  BEGIN
+    FOR i IN 1..400 LOOP
+      PERFORM pg_stat_clear_snapshot();
+      INSERT INTO samples
+      -- 待機イベントがなければ CPU で動いている
+      SELECT query, coalesce(wait_event_type || ':' || wait_event, 'CPU')
+      FROM pg_stat_activity
+      WHERE application_name = 'pgbench' AND state = 'active';
+      PERFORM pg_sleep(0.01);
+    END LOOP;
+  END $$;
+  SELECT query, wait, count(*) FROM samples GROUP BY 1, 2 ORDER BY 3 DESC;
+  DROP TABLE samples;
+  SQL
+  }
+
+  # $1: 説明、$2: pgbench に流す SQL、$3: pgbench のオプション
+  run() {
+    echo "== $1"
+    docker exec pgpg-postgres-1 psql -U postgres -qAt \
+      -c "DROP TABLE IF EXISTS w" -c "CREATE TABLE w (id int, pad text)" \
+      -c "CREATE INDEX ON w (id)" -c "CREATE INDEX ON w (pad)" 2>/dev/null
+    printf "$2" | docker exec -i pgpg-postgres-1 sh -c 'cat > /tmp/bench.sql'
+    out=$(mktemp)
+    # 拡張プロトコル(-M extended)で書き込む
+    docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $3 \
+      -f /tmp/bench.sql postgres > "$out" 2>/dev/null &
+    sleep 0.3
+    sample
+    wait
+    grep 'latency average' "$out"
+    rm -f "$out"
+  }
+
+  run "小さい INSERT を明示的なトランザクションで(4並列、5秒)" \
+      'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n' "-c 4 -T 5"
+  run "小さい INSERT を自動コミットで(4並列、5秒)" \
+      'INSERT INTO w VALUES (1, md5(random()::text));\n' "-c 4 -T 5"
+  run "50万行の INSERT を明示的なトランザクションで1回" \
+      'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n' "-c 1 -t 1"
+  docker exec pgpg-postgres-1 psql -U postgres -qAt -c "DROP TABLE w"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
+COMMIT; | LWLock:WALWrite | 1128
+COMMIT; | IO:WalSync | 395
+INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 21
+COMMIT; | CPU | 8
+INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 3
+BEGIN; | CPU | 3
+BEGIN; | Client:ClientRead | 2
+COMMIT; | IO:WalWrite | 2
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:DataFileExtend | 1
+latency average = 1.684 ms
+== 小さい INSERT を自動コミットで(4並列、5秒)
+INSERT INTO w VALUES (1, md5(random()::text)); | LWLock:WALWrite | 1144
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalSync | 394
+INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 38
+INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 6
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalWrite | 3
+latency average = 1.678 ms
+== 50万行の INSERT を明示的なトランザクションで1回
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | CPU | 148
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:DataFileExtend | 6
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalWrite | 4
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalSync | 4
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | LWLock:WALWrite | 3
+COMMIT; | IO:WalSync | 1
+latency average = 1934.744 ms
+#+end_src
+
+- 小さい INSERT を明示的なトランザクションで繰り返すと、標本の約98%が COMMIT だった。COMMIT の標本のほとんどは、WAL の確定を待つ IO:WalSync と LWLock:WALWrite だった
+- 同じ INSERT を自動コミットにすると、標本はすべて INSERT になった。待機イベントの内訳も、1回あたりの時間も変わらない
+- 50万行の INSERT を1回でコミットすると、標本のほとんどは INSERT の CPU で、COMMIT は1回だけだった。INSERT の最中にも IO:WalWrite と IO:WalSync が出ている。
+
+#+begin_quote
+WalSync: WALファイルが永続的ストレージに達するのを待機しています。
+
+WALWrite: WALバッファがディスクに書き込まれるのを待機しています。
+
+[[https://www.postgresql.jp/docs/18/monitoring-stats.html#WAIT-EVENT-TABLE][27.2. 累積統計システム]]
+#+end_quote
+
+* 関連
+
+- 前提: [[id:20261009T215750][KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ]]。コミット処理で何を待っているか
+- 前提: [[id:20261009T231020][KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している]]
+- 前提: [[id:20261010T095355][KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない]]

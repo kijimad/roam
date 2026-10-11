@@ -1,0 +1,200 @@
+:properties:
+:ID: 20261010T095355
+:end:
+#+title:      KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない
+#+date:       [2026-10-10 Sat 09:53]
+#+filetags:   :permanent:
+#+identifier: 20261010T095355
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-11 貴島
+- レビュー
+  - [X] 2026-10-11 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
+
+COMMIT に時間がかかったとき、pg_stat_statements はその時間を記録するのかを確認する。
+
+COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT のときに走るので、その中で1秒待つ。COMMIT をはさんだ時間と、pg_stat_statements が COMMIT に記録した時間を比べる。準備と計測は、あとの対照実験と共通にする。
+
+#+caption: 共通の準備: テーブルと、1秒かかるトリガー関数
+#+name: setup
+#+begin_src sql :eval no
+  CREATE EXTENSION pg_stat_statements;
+  CREATE TABLE t (id int);
+
+  -- COMMIT のときに1秒かかる処理を作る
+  CREATE FUNCTION slow_at_commit() RETURNS trigger
+  LANGUAGE plpgsql AS $$
+  BEGIN
+    PERFORM pg_sleep(1);
+    RETURN NULL;
+  END $$;
+#+end_src
+
+#+caption: 共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録
+#+name: measure
+#+begin_src sql :eval no
+  SELECT pg_stat_statements_reset() IS NOT NULL AS reset;
+
+  BEGIN;
+  INSERT INTO t VALUES (1);
+  -- COMMIT の直前の時刻を覚える
+  SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;
+  COMMIT;
+
+  -- COMMIT をはさんだ時間(サーバーの時計で測る)
+  SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;
+
+  -- pg_stat_statements が記録した時間
+  SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded
+  FROM pg_stat_statements
+  WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');
+#+end_src
+
+#+begin_src sql :noweb yes
+  <<setup>>
+  CREATE CONSTRAINT TRIGGER t_slow
+  AFTER INSERT ON t
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
+
+  <<measure>>
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                      |
+|--------------------------------------------------------------------------------------|
+| > CREATE EXTENSION pg_stat_statements;                                               |
+| CREATE EXTENSION                                                                     |
+|                                                                                      |
+| > CREATE TABLE t (id int);                                                           |
+| CREATE TABLE                                                                         |
+|                                                                                      |
+| > CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
+| > LANGUAGE plpgsql AS $$                                                             |
+| > BEGIN                                                                              |
+| >   PERFORM pg_sleep(1);                                                             |
+| >   RETURN NULL;                                                                     |
+| > END $$;                                                                            |
+| CREATE FUNCTION                                                                      |
+|                                                                                      |
+| > CREATE CONSTRAINT TRIGGER t_slow                                                   |
+| > AFTER INSERT ON t                                                                  |
+| > DEFERRABLE INITIALLY DEFERRED                                                      |
+| > FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
+| CREATE TRIGGER                                                                       |
+|                                                                                      |
+| > SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
+| reset                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| > BEGIN;                                                                             |
+| BEGIN                                                                                |
+|                                                                                      |
+| > INSERT INTO t VALUES (1);                                                          |
+| INSERT 0 1                                                                           |
+|                                                                                      |
+| > SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
+| saved                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| > COMMIT;                                                                            |
+| COMMIT                                                                               |
+|                                                                                      |
+| > SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
+| commit_time                                                                          |
+| 00:00:01.005218                                                                      |
+|                                                                                      |
+| > SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
+| > FROM pg_stat_statements                                                            |
+| > WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
+| recorded                                                                             |
+| INSERT INTO t VALUES ($1) : 0.033 ms                                                 |
+| COMMIT : 0.000 ms                                                                    |
+#+end_src
+
+COMMIT をはさんだ時間は約1秒なのに、pg_stat_statements が COMMIT に記録した時間は 0.000 ms である。
+
+これだけでは、pg_stat_statements がトリガーの時間を記録しないだけ、という可能性が残る。そこで対照実験として、トリガーを遅延させず、INSERT の文の終わりで走らせる。それ以外は同じ条件にする。
+
+#+begin_src sql :noweb yes
+  <<setup>>
+  -- 対照: DEFERRABLE INITIALLY DEFERRED を外す。INSERT の文の終わりで走る
+  CREATE CONSTRAINT TRIGGER t_slow
+  AFTER INSERT ON t
+  FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
+
+  <<measure>>
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                      |
+|--------------------------------------------------------------------------------------|
+| > CREATE EXTENSION pg_stat_statements;                                               |
+| CREATE EXTENSION                                                                     |
+|                                                                                      |
+| > CREATE TABLE t (id int);                                                           |
+| CREATE TABLE                                                                         |
+|                                                                                      |
+| > CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
+| > LANGUAGE plpgsql AS $$                                                             |
+| > BEGIN                                                                              |
+| >   PERFORM pg_sleep(1);                                                             |
+| >   RETURN NULL;                                                                     |
+| > END $$;                                                                            |
+| CREATE FUNCTION                                                                      |
+|                                                                                      |
+| > CREATE CONSTRAINT TRIGGER t_slow                                                   |
+| > AFTER INSERT ON t                                                                  |
+| > FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
+| CREATE TRIGGER                                                                       |
+|                                                                                      |
+| > SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
+| reset                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| > BEGIN;                                                                             |
+| BEGIN                                                                                |
+|                                                                                      |
+| > INSERT INTO t VALUES (1);                                                          |
+| INSERT 0 1                                                                           |
+|                                                                                      |
+| > SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
+| saved                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| > COMMIT;                                                                            |
+| COMMIT                                                                               |
+|                                                                                      |
+| > SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
+| commit_time                                                                          |
+| 00:00:00.003946                                                                      |
+|                                                                                      |
+| > SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
+| > FROM pg_stat_statements                                                            |
+| > WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
+| recorded                                                                             |
+| COMMIT : 0.001 ms                                                                    |
+| INSERT INTO t VALUES ($1) : 1000.617 ms                                              |
+#+end_src
+
+今度は COMMIT をはさんだ時間はほぼ 0 で、pg_stat_statements は INSERT に約1秒を記録した。同じトリガーでも、INSERT の中で走れば記録され、コミット処理の中で走れば記録されなかった。記録されないのはトリガーだからではなく、コミット処理だからに見える。
+
+* 関連
+
+- 前提: [[id:20261009T215750][KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ]]。コミット処理の中で何を待っているか
+- 前提: [[id:20261009T231020][KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している]]

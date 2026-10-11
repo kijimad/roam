@@ -1,0 +1,48 @@
+:properties:
+:ID: 20261009T231020
+:end:
+#+title:      KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している
+#+date:       [2026-10-09 Fri 23:10]
+#+filetags:   :permanent:
+#+identifier: 20261009T231020
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-11 貴島
+- レビュー
+  - [X] 2026-10-11 貴島
+
+* 概要
+
+RDS Performance Insights の値は何に由来しているのだろう、と考えた。PostgreSQL に同梱された拡張 pg_stat_statements の値を集計しているように見える。
+
+#+begin_quote
+Performance Insights は、SQL 呼び出しごとおよびクエリが実行中の 1 秒ごとに SQL 統計を収集します。
+
+(略)
+
+SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_stat_statements ライブラリをロードする必要があります。
+
+(略)
+
+これらのメトリクスの詳細については、PostgreSQL ドキュメントの「pg_stat_statements」を参照してください。
+
+[[https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.UsingDashboard.AnalyzeDBLoad.AdditionalMetrics.PostgreSQL.html][RDS PostgreSQL での SQL 統計 - Amazon Relational Database Service]]
+#+end_quote
+
+いっぽうで DB Load (AAS) は pg_stat_statements になく、すべてそこから集計しているわけではない。
+
+#+begin_quote
+毎秒、Database Insights は、クエリを同時に実行するセッションの数をサンプリングします。Database Insights は、アクティブなセッションごとに以下のデータを収集します。
+
+- SQL ステートメント
+- セッション状態 (CPU で実行中または待機中)
+- ホスト
+- SQL を実行しているユーザー
+
+[[https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html][データベース負荷 - Amazon Relational Database Service]]
+#+end_quote
+
+* 関連
+
+なし。
