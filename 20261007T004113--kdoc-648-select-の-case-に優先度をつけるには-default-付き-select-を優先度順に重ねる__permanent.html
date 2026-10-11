@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-11T15:18:03Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</h1>
+<div id="outline-container-org9b5c646" class="outline-2">
+<h2 id="org9b5c646"><a href="#org9b5c646">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org9b5c646">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-07 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-07 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org568e35e" class="outline-2">
+<h2 id="org568e35e"><a href="#org568e35e">概要</a></h2>
+<div class="outline-text-2" id="text-org568e35e">
+<p>
+Go の <code>select</code> では、複数の case が同時に進行できるときランダムに選ばれる。なので例えばシャットダウン用とキュー追加用の両方のチャネルに値が届いていると、どちらを処理するかはランダムになる。キュー追加をせずシャットダウンの後処理だけをやるなど、一貫させたほうがよいこともある。その場合、優先したい <code>case</code> だけを <code>default</code> 付きの <code>select</code> で先に確かめ、なければ全部の <code>case</code> を並べた <code>select</code> で待つ。
+</p>
+
+<p>
+実例として、 opentelemetry-go の BatchProcessor は Shutdown 要求を flush や定期 export より先に処理する。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink">https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/batch.go#L139-L186
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">for {
+	// Probe shutdown by itself first. This makes an already queued terminal
+	// request win over every other ready case. Closing done before replying
+	// also means a successful Shutdown response observes a stopped worker.
+	select {
+	case req := &lt;-b.shutdown:
+		err := b.shutdownExporter(req.ctx)
+		close(b.done)
+		req.respond(err)
+		return
+	default:
+	}
+
+	// With no queued shutdown, service a waiting ForceFlush before ordinary
+	// export wakes. The default keeps this priority check non-blocking.
+	// Shutdown remains selectable in case it arrived after the first probe.
+	select {
+	case req := &lt;-b.shutdown:
+		err := b.shutdownExporter(req.ctx)
+		close(b.done)
+		req.respond(err)
+		return
+	case req := &lt;-b.flush:
+		err := b.flushExporter(req.ctx)
+		req.respond(err)
+		continue
+	default:
+	}
+
+	// No lifecycle request was waiting, so block on the complete event set.
+	// Both timer and size-triggered exports start a new interval window.
+	select {
+	case req := &lt;-b.shutdown:
+		err := b.shutdownExporter(req.ctx)
+		close(b.done)
+		req.respond(err)
+		return
+	case req := &lt;-b.flush:
+		err := b.flushExporter(req.ctx)
+		req.respond(err)
+	case &lt;-timer.C:
+		resetTimer(timer, interval)
+		b.exportBatch(buf)
+	case &lt;-b.exportTrigger:
+		resetTimer(timer, interval)
+		b.exportBatch(buf)
+	}
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org73dc656" class="outline-2">
+<h2 id="org73dc656"><a href="#org73dc656">関連</a></h2>
+<div class="outline-text-2" id="text-org73dc656">
+<ul class="org-ul">
+<li>前提: <a href="20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html#ID-20261005T223831">KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
