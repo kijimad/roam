@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-11T22:23:38Z -->
+<!-- 2026-10-11T22:23:48Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 5: fmtを読む</title>
@@ -60,16 +60,16 @@ fmtは<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">G
 <li>テストを使って関数の使い方を確かめる</li>
 <li>デバッガーを使って順に追う</li>
 </ul>
-<div id="outline-container-org78bec40" class="outline-2">
-<h2 id="org78bec40"><a href="#org78bec40">memo</a></h2>
-<div class="outline-text-2" id="text-org78bec40">
+<div id="outline-container-org98f7ea6" class="outline-2">
+<h2 id="org98f7ea6"><a href="#org98f7ea6">memo</a></h2>
+<div class="outline-text-2" id="text-org98f7ea6">
 <p>
 printとformatがある。
 </p>
 </div>
-<div id="outline-container-orge159fdc" class="outline-3">
-<h3 id="orge159fdc"><a href="#orge159fdc">Stateインターフェース</a></h3>
-<div class="outline-text-3" id="text-orge159fdc">
+<div id="outline-container-orgd1fbfd2" class="outline-3">
+<h3 id="orgd1fbfd2"><a href="#orgd1fbfd2">Stateインターフェース</a></h3>
+<div class="outline-text-3" id="text-orgd1fbfd2">
 <div class="org-src-container">
 <pre class="src src-go">type State interface {
 	Write(b []byte) (n int, err error)
@@ -85,9 +85,9 @@ pp構造体がこれを満たしている。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf9c2656" class="outline-3">
-<h3 id="orgf9c2656"><a href="#orgf9c2656">pp構造体</a></h3>
-<div class="outline-text-3" id="text-orgf9c2656">
+<div id="outline-container-org909e26d" class="outline-3">
+<h3 id="org909e26d"><a href="#org909e26d">pp構造体</a></h3>
+<div class="outline-text-3" id="text-org909e26d">
 <p>
 ppはプリンターの状態を持つ構造体。
 ppはfmtをフィールドに持っている。fmtは構造体で、printfで使われるフォーマッター。各種フラグやwidthを持っている。
@@ -107,9 +107,9 @@ precisionはそういうオプションがあって、小数精度ってこと�
 </p>
 </div>
 </div>
-<div id="outline-container-orgad68f95" class="outline-3">
-<h3 id="orgad68f95"><a href="#orgad68f95">GoStringer</a></h3>
-<div class="outline-text-3" id="text-orgad68f95">
+<div id="outline-container-org3dbc996" class="outline-3">
+<h3 id="org3dbc996"><a href="#org3dbc996">GoStringer</a></h3>
+<div class="outline-text-3" id="text-org3dbc996">
 <p>
 型定義したものの出力をするためのものらしい。フォーマット%#vとかで出てくるやつ。実装してみると、%#vはGoString()で上書きされた。%fはどちらも使わない。PrintlnではString()が使用された。
 </p>
@@ -154,9 +154,9 @@ func main() {
 </div>
 </div>
 </div>
-<div id="outline-container-org8a040a2" class="outline-3">
-<h3 id="org8a040a2"><a href="#org8a040a2">printの種類</a></h3>
-<div class="outline-text-3" id="text-org8a040a2">
+<div id="outline-container-org136fd59" class="outline-3">
+<h3 id="org136fd59"><a href="#org136fd59">printの種類</a></h3>
+<div class="outline-text-3" id="text-org136fd59">
 <ul class="org-ul">
 <li>出力先</li>
 <li>フォーマットを取るもの</li>
@@ -173,9 +173,9 @@ doPrintln()はdoPrint()の改行する版で、だいたい最後にp.buf.writeB
 </p>
 </div>
 </div>
-<div id="outline-container-org9b40fb4" class="outline-3">
-<h3 id="org9b40fb4"><a href="#org9b40fb4">fmtとprinter</a></h3>
-<div class="outline-text-3" id="text-org9b40fb4">
+<div id="outline-container-org3c343fe" class="outline-3">
+<h3 id="org3c343fe"><a href="#org3c343fe">fmtとprinter</a></h3>
+<div class="outline-text-3" id="text-org3c343fe">
 <p>
 ppのメソッドのいくつかは、同名のfmtにある関数へ移譲している。
 </p>
@@ -185,9 +185,9 @@ signed integerは符号付き整数。
 </p>
 </div>
 </div>
-<div id="outline-container-orga3857a0" class="outline-3">
-<h3 id="orga3857a0"><a href="#orga3857a0">多くのfmt{型}関数</a></h3>
-<div class="outline-text-3" id="text-orga3857a0">
+<div id="outline-container-org7b56f9b" class="outline-3">
+<h3 id="org7b56f9b"><a href="#org7b56f9b">多くのfmt{型}関数</a></h3>
+<div class="outline-text-3" id="text-org7b56f9b">
 <p>
 fmtInteger()は長い関数。各オプションの処理をしているように見える。基数の数で分岐したり、プレフィクスによって変えたり。rune型のverbによって条件分岐する。fmtのintegerに移譲する。基数によって引数を変えてる。
 float、complex, string&#x2026;。それぞれオプションがあるかで分岐する。実際にbufに書き込みしてるのは、このfmt{型}関数のようだ。で、最終的には、たとえばFprint()の場合は関数内でwriterに書き込んで処理が完了する。途中まではpp構造体のbufフィールドで持っておく。
@@ -218,25 +218,25 @@ verbはどうやって渡されるか。例えば%#vの、 <code>v</code> の部
 </p>
 </div>
 </div>
-<div id="outline-container-orgf6f0d62" class="outline-3">
-<h3 id="orgf6f0d62"><a href="#orgf6f0d62">print時の全体の流れ</a></h3>
-<div class="outline-text-3" id="text-orgf6f0d62">
+<div id="outline-container-orgcb8b2fb" class="outline-3">
+<h3 id="orgcb8b2fb"><a href="#orgcb8b2fb">print時の全体の流れ</a></h3>
+<div class="outline-text-3" id="text-orgcb8b2fb">
 <p>
 つまりFprintf(),Sprintf()&#x2026; -&gt; doPrint() -&gt; printArg() -&gt; fmtInteger(), fmtString()&#x2026;という感じ。
 </p>
 </div>
 </div>
-<div id="outline-container-org1723e57" class="outline-3">
-<h3 id="org1723e57"><a href="#org1723e57">printArg()でverbを渡すのはformat系のみ</a></h3>
-<div class="outline-text-3" id="text-org1723e57">
+<div id="outline-container-orge943be8" class="outline-3">
+<h3 id="orge943be8"><a href="#orge943be8">printArg()でverbを渡すのはformat系のみ</a></h3>
+<div class="outline-text-3" id="text-orge943be8">
 <p>
 printArg()で、verbを伝播して渡すのはdoPrintf()系のみ。doPrint()では、printArg(arg, &rsquo;v&rsquo;)と固定オプションを指定する扱いになっている。
 </p>
 </div>
 </div>
-<div id="outline-container-org5a9a488" class="outline-3">
-<h3 id="org5a9a488"><a href="#org5a9a488">doPrint()</a></h3>
-<div class="outline-text-3" id="text-org5a9a488">
+<div id="outline-container-org3aabb3a" class="outline-3">
+<h3 id="org3aabb3a"><a href="#org3aabb3a">doPrint()</a></h3>
+<div class="outline-text-3" id="text-org3aabb3a">
 <p>
 anyの引数に対してループ回してる。複数引数が渡されたときはそれぞれを表示するからな。
 doPrint(&ldquo;aa&rdquo;, &ldquo;bb&rdquo;) だと <code>aa bb</code> みたく1文字空けて表示する。
@@ -247,9 +247,9 @@ anyの引数に対してループを作り、それぞれに <code>p.printArg(ar
 </p>
 </div>
 </div>
-<div id="outline-container-org4d77769" class="outline-3">
-<h3 id="org4d77769"><a href="#org4d77769">trucateString</a></h3>
-<div class="outline-text-3" id="text-org4d77769">
+<div id="outline-container-org1a93eed" class="outline-3">
+<h3 id="org1a93eed"><a href="#org1a93eed">trucateString</a></h3>
+<div class="outline-text-3" id="text-org1a93eed">
 <p>
 手頃そうな関数を調べてみる。左から数えた文字数で切るtruncateString()。例えば指定文字数が2文字だと、 <code>"aaaa" -&gt; "aa"</code> とするような非常に単純な機能。しかし実装は一見ぱっと見でわかりにくい。最初はスライスの記法だけでいけるように見える。これは桁の方が文字数より多いケースに対応している。普通にスライス記法で書くとindex out of rangeエラーになるだろう。
 </p>
@@ -283,9 +283,9 @@ func main() {
 </div>
 </div>
 </div>
-<div id="outline-container-orgc18c407" class="outline-3">
-<h3 id="orgc18c407"><a href="#orgc18c407">truncate(バイト列バージョン)</a></h3>
-<div class="outline-text-3" id="text-orgc18c407">
+<div id="outline-container-orgd3f1997" class="outline-3">
+<h3 id="orgd3f1997"><a href="#orgd3f1997">truncate(バイト列バージョン)</a></h3>
+<div class="outline-text-3" id="text-orgd3f1997">
 <p>
 バイト列バージョン。文字エンコードが絡むのでちょっと処理が増えるが基本は同じ。
 </p>
@@ -334,9 +334,9 @@ func main() {
 </div>
 </div>
 </div>
-<div id="outline-container-org4c52125" class="outline-3">
-<h3 id="org4c52125"><a href="#org4c52125">precisionの指定方法</a></h3>
-<div class="outline-text-3" id="text-org4c52125">
+<div id="outline-container-org68f3363" class="outline-3">
+<h3 id="org68f3363"><a href="#org68f3363">precisionの指定方法</a></h3>
+<div class="outline-text-3" id="text-org68f3363">
 <p>
 小数精度の指定方法。
 </p>
@@ -347,9 +347,9 @@ func main() {
 </div>
 </div>
 </div>
-<div id="outline-container-org042fca9" class="outline-3">
-<h3 id="org042fca9"><a href="#org042fca9">フォーマットの対応付けはどうやってるか</a></h3>
-<div class="outline-text-3" id="text-org042fca9">
+<div id="outline-container-orgdcb94f2" class="outline-3">
+<h3 id="orgdcb94f2"><a href="#orgdcb94f2">フォーマットの対応付けはどうやってるか</a></h3>
+<div class="outline-text-3" id="text-orgdcb94f2">
 <p>
 フォーマットを解釈するところはわかったが、対応づけてフォーマット文字の部分に文字列を加えている部分がよくわかってない。
 </p>
@@ -359,9 +359,9 @@ doPrintf(format: string, a: any)みたいな感じで呼ばれる。
 </p>
 </div>
 </div>
-<div id="outline-container-org329ac5c" class="outline-3">
-<h3 id="org329ac5c"><a href="#org329ac5c">それぞれの構造体の役割</a></h3>
-<div class="outline-text-3" id="text-org329ac5c">
+<div id="outline-container-org4e8b478" class="outline-3">
+<h3 id="org4e8b478"><a href="#org4e8b478">それぞれの構造体の役割</a></h3>
+<div class="outline-text-3" id="text-org4e8b478">
 <ul class="org-ul">
 <li>pp(print.go)</li>
 <li>fmt(format.go) ppに埋め込まれる構造体。fmt{型}系メソッドがある</li>
@@ -370,9 +370,9 @@ doPrintf(format: string, a: any)みたいな感じで呼ばれる。
 </ul>
 </div>
 </div>
-<div id="outline-container-org4f6f6b8" class="outline-3">
-<h3 id="org4f6f6b8"><a href="#org4f6f6b8">表示の意味</a></h3>
-<div class="outline-text-3" id="text-org4f6f6b8">
+<div id="outline-container-org47d4f74" class="outline-3">
+<h3 id="org47d4f74"><a href="#org47d4f74">表示の意味</a></h3>
+<div class="outline-text-3" id="text-org47d4f74">
 <p>
 os.Stdout(/dev/stdout)に書き込むのが、表示の意味。
 結果がすべて出るまでは一時的にpp.bufに入れておき、一気にos.Stdoutに書き込んで表示する。
@@ -383,9 +383,9 @@ os.Stdout(/dev/stdout)に書き込むのが、表示の意味。
 </p>
 </div>
 </div>
-<div id="outline-container-org9aeac39" class="outline-3">
-<h3 id="org9aeac39"><a href="#org9aeac39">References</a></h3>
-<div class="outline-text-3" id="text-org9aeac39">
+<div id="outline-container-org9ec61d4" class="outline-3">
+<h3 id="org9ec61d4"><a href="#org9ec61d4">References</a></h3>
+<div class="outline-text-3" id="text-org9ec61d4">
 <p>
 読む解くのに文字コード系やバイトに関する知識が必要だった。
 </p>
@@ -397,9 +397,9 @@ os.Stdout(/dev/stdout)に書き込むのが、表示の意味。
 </div>
 </div>
 </div>
-<div id="outline-container-orgff21b5d" class="outline-2">
-<h2 id="orgff21b5d"><a href="#orgff21b5d">関連</a></h2>
-<div class="outline-text-2" id="text-orgff21b5d">
+<div id="outline-container-org114e2f0" class="outline-2">
+<h2 id="org114e2f0"><a href="#org114e2f0">関連</a></h2>
+<div class="outline-text-2" id="text-org114e2f0">
 <ul class="org-ul">
 <li>補足: 単なる作業メモで、結論がない。フォーカスがない</li>
 </ul>
