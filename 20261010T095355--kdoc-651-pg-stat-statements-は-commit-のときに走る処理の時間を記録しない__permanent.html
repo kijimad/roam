@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-11T22:24:51Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</h1>
+<div id="outline-container-org4ec43a7" class="outline-2">
+<h2 id="org4ec43a7"><a href="#org4ec43a7">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4ec43a7">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-11 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-11 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgc4dae64" class="outline-2">
+<h2 id="orgc4dae64"><a href="#orgc4dae64">概要</a></h2>
+<div class="outline-text-2" id="text-orgc4dae64">
+<p>
+Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
+</p>
+
+<p>
+COMMIT に時間がかかったとき、pg_stat_statements はその時間を記録するのかを確認する。
+</p>
+
+<p>
+COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT のときに走るので、その中で1秒待つ。COMMIT をはさんだ時間と、pg_stat_statements が COMMIT に記録した時間を比べる。準備と計測は、あとの対照実験と共通にする。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label><pre class="src src-sql" id="orgaa7c507"><span class="org-keyword">CREATE</span> EXTENSION pg_stat_statements;
+<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">t</span> (id <span class="org-type">int</span>);
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">COMMIT &#12398;&#12392;&#12365;&#12395;1&#31186;&#12363;&#12363;&#12427;&#20966;&#29702;&#12434;&#20316;&#12427;
+</span><span class="org-keyword">CREATE</span> <span class="org-keyword">FUNCTION</span> <span class="org-function-name">slow_at_commit</span>() <span class="org-keyword">RETURNS</span> <span class="org-keyword">trigger</span>
+<span class="org-keyword">LANGUAGE</span> plpgsql <span class="org-keyword">AS</span> $$
+<span class="org-keyword">BEGIN</span>
+  PERFORM pg_sleep(1);
+  <span class="org-keyword">RETURN</span> <span class="org-keyword">NULL</span>;
+<span class="org-keyword">END</span> $$;
+</pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label><pre class="src src-sql" id="orgbe6d494"><span class="org-keyword">SELECT</span> pg_stat_statements_reset() <span class="org-keyword">IS</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">AS</span> reset;
+
+<span class="org-keyword">BEGIN</span>;
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> t <span class="org-keyword">VALUES</span> (1);
+<span class="org-comment-delimiter">-- </span><span class="org-comment">COMMIT &#12398;&#30452;&#21069;&#12398;&#26178;&#21051;&#12434;&#35226;&#12360;&#12427;
+</span><span class="org-keyword">SELECT</span> set_config(<span class="org-string">'my.t0'</span>, clock_timestamp()::text, <span class="org-keyword">false</span>) <span class="org-keyword">IS</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">AS</span> saved;
+<span class="org-keyword">COMMIT</span>;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">COMMIT &#12434;&#12399;&#12373;&#12435;&#12384;&#26178;&#38291;(&#12469;&#12540;&#12496;&#12540;&#12398;&#26178;&#35336;&#12391;&#28204;&#12427;)
+</span><span class="org-keyword">SELECT</span> clock_timestamp() - current_setting(<span class="org-string">'my.t0'</span>)::timestamptz <span class="org-keyword">AS</span> commit_time;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">pg_stat_statements &#12364;&#35352;&#37682;&#12375;&#12383;&#26178;&#38291;
+</span><span class="org-keyword">SELECT</span> format(<span class="org-string">'%s : %s ms'</span>, query, round(total_exec_time::<span class="org-type">numeric</span>, 3)) <span class="org-keyword">AS</span> recorded
+<span class="org-keyword">FROM</span> pg_stat_statements
+<span class="org-keyword">WHERE</span> query <span class="org-keyword">IN</span> (<span class="org-string">'COMMIT'</span>, <span class="org-string">'INSERT INTO t VALUES ($1)'</span>);
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-sql">&lt;&lt;setup&gt;&gt;
+<span class="org-keyword">CREATE</span> <span class="org-keyword">CONSTRAINT</span> <span class="org-keyword">TRIGGER</span> <span class="org-function-name">t_slow</span>
+<span class="org-keyword">AFTER</span> <span class="org-keyword">INSERT</span> <span class="org-keyword">ON</span> t
+<span class="org-keyword">DEFERRABLE</span> <span class="org-keyword">INITIALLY</span> <span class="org-keyword">DEFERRED</span>
+<span class="org-keyword">FOR</span> <span class="org-keyword">EACH</span> <span class="org-type">ROW</span> <span class="org-keyword">EXECUTE</span> <span class="org-keyword">FUNCTION</span> slow_at_commit();
+
+&lt;&lt;measure&gt;&gt;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                      |
+|--------------------------------------------------------------------------------------|
+| &gt; CREATE EXTENSION pg_stat_statements;                                               |
+| CREATE EXTENSION                                                                     |
+|                                                                                      |
+| &gt; CREATE TABLE t (id int);                                                           |
+| CREATE TABLE                                                                         |
+|                                                                                      |
+| &gt; CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
+| &gt; LANGUAGE plpgsql AS $$                                                             |
+| &gt; BEGIN                                                                              |
+| &gt;   PERFORM pg_sleep(1);                                                             |
+| &gt;   RETURN NULL;                                                                     |
+| &gt; END $$;                                                                            |
+| CREATE FUNCTION                                                                      |
+|                                                                                      |
+| &gt; CREATE CONSTRAINT TRIGGER t_slow                                                   |
+| &gt; AFTER INSERT ON t                                                                  |
+| &gt; DEFERRABLE INITIALLY DEFERRED                                                      |
+| &gt; FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
+| CREATE TRIGGER                                                                       |
+|                                                                                      |
+| &gt; SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
+| reset                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; BEGIN;                                                                             |
+| BEGIN                                                                                |
+|                                                                                      |
+| &gt; INSERT INTO t VALUES (1);                                                          |
+| INSERT 0 1                                                                           |
+|                                                                                      |
+| &gt; SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
+| saved                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; COMMIT;                                                                            |
+| COMMIT                                                                               |
+|                                                                                      |
+| &gt; SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
+| commit_time                                                                          |
+| 00:00:01.005218                                                                      |
+|                                                                                      |
+| &gt; SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
+| &gt; FROM pg_stat_statements                                                            |
+| &gt; WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
+| recorded                                                                             |
+| INSERT INTO t VALUES ($1) : 0.033 ms                                                 |
+| COMMIT : 0.000 ms                                                                    |
+</pre>
+</div>
+
+<p>
+COMMIT をはさんだ時間は約1秒なのに、pg_stat_statements が COMMIT に記録した時間は 0.000 ms である。
+</p>
+
+<p>
+これだけでは、pg_stat_statements がトリガーの時間を記録しないだけ、という可能性が残る。そこで対照実験として、トリガーを遅延させず、INSERT の文の終わりで走らせる。それ以外は同じ条件にする。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql">&lt;&lt;setup&gt;&gt;
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#23550;&#29031;: DEFERRABLE INITIALLY DEFERRED &#12434;&#22806;&#12377;&#12290;INSERT &#12398;&#25991;&#12398;&#32066;&#12431;&#12426;&#12391;&#36208;&#12427;
+</span><span class="org-keyword">CREATE</span> <span class="org-keyword">CONSTRAINT</span> <span class="org-keyword">TRIGGER</span> <span class="org-function-name">t_slow</span>
+<span class="org-keyword">AFTER</span> <span class="org-keyword">INSERT</span> <span class="org-keyword">ON</span> t
+<span class="org-keyword">FOR</span> <span class="org-keyword">EACH</span> <span class="org-type">ROW</span> <span class="org-keyword">EXECUTE</span> <span class="org-keyword">FUNCTION</span> slow_at_commit();
+
+&lt;&lt;measure&gt;&gt;
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">|                                                                                      |
+|--------------------------------------------------------------------------------------|
+| &gt; CREATE EXTENSION pg_stat_statements;                                               |
+| CREATE EXTENSION                                                                     |
+|                                                                                      |
+| &gt; CREATE TABLE t (id int);                                                           |
+| CREATE TABLE                                                                         |
+|                                                                                      |
+| &gt; CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
+| &gt; LANGUAGE plpgsql AS $$                                                             |
+| &gt; BEGIN                                                                              |
+| &gt;   PERFORM pg_sleep(1);                                                             |
+| &gt;   RETURN NULL;                                                                     |
+| &gt; END $$;                                                                            |
+| CREATE FUNCTION                                                                      |
+|                                                                                      |
+| &gt; CREATE CONSTRAINT TRIGGER t_slow                                                   |
+| &gt; AFTER INSERT ON t                                                                  |
+| &gt; FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
+| CREATE TRIGGER                                                                       |
+|                                                                                      |
+| &gt; SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
+| reset                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; BEGIN;                                                                             |
+| BEGIN                                                                                |
+|                                                                                      |
+| &gt; INSERT INTO t VALUES (1);                                                          |
+| INSERT 0 1                                                                           |
+|                                                                                      |
+| &gt; SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
+| saved                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; COMMIT;                                                                            |
+| COMMIT                                                                               |
+|                                                                                      |
+| &gt; SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
+| commit_time                                                                          |
+| 00:00:00.003946                                                                      |
+|                                                                                      |
+| &gt; SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
+| &gt; FROM pg_stat_statements                                                            |
+| &gt; WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
+| recorded                                                                             |
+| COMMIT : 0.001 ms                                                                    |
+| INSERT INTO t VALUES ($1) : 1000.617 ms                                              |
+</pre>
+</div>
+
+<p>
+今度は COMMIT をはさんだ時間はほぼ 0 で、pg_stat_statements は INSERT に約1秒を記録した。同じトリガーでも、INSERT の中で走れば記録され、コミット処理の中で走れば記録されなかった。記録されないのはトリガーだからではなく、コミット処理だからに見える。
+</p>
+</div>
+</div>
+<div id="outline-container-org566b59c" class="outline-2">
+<h2 id="org566b59c"><a href="#org566b59c">関連</a></h2>
+<div class="outline-text-2" id="text-org566b59c">
+<ul class="org-ul">
+<li>前提: <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ</a>。コミット処理の中で何を待っているか</li>
+<li>前提: <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb1c626f" class="outline-2">
+<h2 id="orgb1c626f"><a href="#orgb1c626f">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgb1c626f">
+<ul class="org-ul">
+<li><a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
