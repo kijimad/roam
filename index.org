@@ -250,70 +250,9 @@
 #+end_src
 
 * Recent activity
+
 [[id:1ad8c3d5-97ba-4905-be11-e6f2626127ad][Emacs]]の[[id:7e85e3f3-a6b9-447e-9826-307a3618dac8][org-mode]]により時刻記録して、clock-tableとorg-agendaで出力した結果を示す。
-** Pomodoro
-ポモドーロの統計。費やした時間を認識し、見合った効果が出ているかを考える。ある時期から業務でもカウントするようになっている。
 
-#+caption: ポモドーロ統計の図
- #+BEGIN_EXPORT html
- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
- <script type="text/javascript">
- google.charts.load("current", {packages:["calendar"]});
- google.charts.setOnLoadCallback(drawChart);
-
- function drawChart() {
-  scores = csvToArray("js/pmd.csv").map(function (value) {
-   return [new Date(value[0]), Number(value[1])];
-  })
-
-  var dataTable = new google.visualization.DataTable();
-  dataTable.addColumn({ type: 'date', id: 'Date' });
-  dataTable.addColumn({ type: 'number', id: 'Score' });
-  dataTable.addRows(scores);
-
-  var chart = new google.visualization.Calendar(document.getElementById('calendar_basic'));   const currentYear = new Date().getFullYear();
-  const startYear = 2022;
-
-  var options = {
-    title: "Pomodoro stats",
-    height: 250 * (currentYear - startYear), // カレンダーは年ごとに下に追加される
-  };
-
-  chart.draw(dataTable, options);
- }
-
- function csvToArray(filename) {
-
-   // CSVファイルを文字列として取得
-   var srt = new XMLHttpRequest();
-   srt.open("GET", filename, false);
-   try {
-     srt.send(null);
-   } catch (err) {
-     console.log(err)
-   }
-
-   // 配列を用意
-   var csvArr = [];
-
-   // 改行ごとに配列化
-   var lines = srt.responseText.split("\n");
-
-   // 1行ごとに処理
-   for (var i = 0; i < lines.length; ++i) {
-     var cells = lines[i].split(",");
-     if (cells.length != 1) {
-       csvArr.push(cells);
-     }
-   }
-   return csvArr;
- }
- </script>
-
- <body>
- <div id="calendar_basic" style="width: 100%; max-width: 1000px;"></div>
- </body>
- #+END_EXPORT
 ** This Week by Day
 今週の記録。
 

@@ -24,10 +24,6 @@ node-graph: ## ファイルの関係性グラフを描画する
 	pip3 install -r requirements.txt --break-system-packages
 	python3 node_graph/build_graph.py > public/js/graph.json
 
-.PHONY: pmd-graph
-pmd-graph: ## ポモドーロの記録ファイルを公開ディレクトリに移す
-	cp pmd.csv public/js/
-
 .PHONY: file-graph
 file-graph: ## ファイル数の統計情報をグラフ化する
 	ruby ./git-file/git-file.rb > ./git-file/git-file.dat
