@@ -403,10 +403,11 @@ d3.json("js/graph.json").then(function(data) {
                    }).strength(0.25))
                    .force('y', d3.forceY().y(function(d) {
                        return height / 2 +  (height / 8) * centersy[d.communityLabel];
-                   }).strength(0.25));
+                   }).strength(0.25))
+                   .stop();
 
     // Create all the graph elements
-    const svg = d3.select("svg")
+    const svg = d3.select("#main-graph svg")
                   .attr('width', '100%')
                   .attr('height', '300')
                   .attr('class', 'node-graph')
@@ -416,7 +417,7 @@ d3.json("js/graph.json").then(function(data) {
                   .style("display", "block");
 
     // Zoom and pan container
-    const g = svg.append("g");
+    const g = svg.append("g").attr("visibility", "hidden");
 
     let isWheelZoom = false;
 
@@ -473,7 +474,7 @@ d3.json("js/graph.json").then(function(data) {
                     .on("mouseout", handleMouseOut)
                     .call(drag(simulation));
 
-    simulation.on("tick", () => {
+    const ticked = () => {
         node.attr("cx", d => d.x)
             .attr("cy", d => d.y);
 
@@ -481,5 +482,16 @@ d3.json("js/graph.json").then(function(data) {
             .attr("y1", d => d.source.y)
             .attr("x2", d => d.target.x)
             .attr("y2", d => d.target.y);
-    });
+    };
+    // 落ち着くまで毎フレーム描き直すと重いので、配置を計算しきってから描く。
+    // 計算は小分けにして、その間もページを操作できるようにする
+    const settle = () => {
+        const deadline = performance.now() + 30;
+        while (simulation.alpha() > simulation.alphaMin() && performance.now() < deadline) simulation.tick();
+        if (simulation.alpha() > simulation.alphaMin()) return setTimeout(settle);
+        ticked();
+        g.attr("visibility", null);
+        simulation.on("tick", ticked);
+    };
+    settle();
 });
