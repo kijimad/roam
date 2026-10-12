@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-11T22:53:21Z -->
+<!-- 2026-10-12T22:10:12Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</h1>
-<div id="outline-container-org75970a5" class="outline-2">
-<h2 id="org75970a5"><a href="#org75970a5">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org75970a5">
+<div id="outline-container-orgfc0b112" class="outline-2">
+<h2 id="orgfc0b112"><a href="#orgfc0b112">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgfc0b112">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +30,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orge429111" class="outline-2">
-<h2 id="orge429111"><a href="#orge429111">概要</a></h2>
-<div class="outline-text-2" id="text-orge429111">
+<div id="outline-container-org8074d14" class="outline-2">
+<h2 id="org8074d14"><a href="#org8074d14">概要</a></h2>
+<div class="outline-text-2" id="text-org8074d14">
 <p>
 Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
 </p>
@@ -142,9 +142,9 @@ WALWrite: WALバッファがディスクに書き込まれるのを待機して�
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org8b09f71" class="outline-2">
-<h2 id="org8b09f71"><a href="#org8b09f71">関連</a></h2>
-<div class="outline-text-2" id="text-org8b09f71">
+<div id="outline-container-orgdf0bc7a" class="outline-2">
+<h2 id="orgdf0bc7a"><a href="#orgdf0bc7a">関連</a></h2>
+<div class="outline-text-2" id="text-orgdf0bc7a">
 <ul class="org-ul">
 <li>前提: <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
 <li>前提: <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>

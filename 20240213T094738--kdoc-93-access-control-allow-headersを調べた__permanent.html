@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-11T22:53:23Z -->
+<!-- 2026-10-12T22:10:14Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 93: Access-Control-Allow-Headersを調べた</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 93: Access-Control-Allow-Headersを調べた</h1>
-<div id="outline-container-orgcd0d349" class="outline-2">
-<h2 id="orgcd0d349"><a href="#orgcd0d349">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgcd0d349">
+<div id="outline-container-org77e0525" class="outline-2">
+<h2 id="org77e0525"><a href="#org77e0525">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org77e0525">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,17 +30,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orge61b649" class="outline-2">
-<h2 id="orge61b649"><a href="#orge61b649">概要</a></h2>
-<div class="outline-text-2" id="text-orge61b649">
+<div id="outline-container-orgef14202" class="outline-2">
+<h2 id="orgef14202"><a href="#orgef14202">概要</a></h2>
+<div class="outline-text-2" id="text-orgef14202">
 <p>
 POSTリクエストは成功するのに、GETリクエストがCORSエラーな状態になった。デベロッパーツールを見るとCORSエラーが出ていた。真の違いの理由は、トークンで <code>Authorization</code> ヘッダーを使っていたことだった。調べて <code>Access-Control-Allow-Headers</code> を返すようにしたら解決したが、知らなかったので調べる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd39da3b" class="outline-2">
-<h2 id="orgd39da3b"><a href="#orgd39da3b">何か</a></h2>
-<div class="outline-text-2" id="text-orgd39da3b">
+<div id="outline-container-orgb10a7d5" class="outline-2">
+<h2 id="orgb10a7d5"><a href="#orgb10a7d5">何か</a></h2>
+<div class="outline-text-2" id="text-orgb10a7d5">
 <p>
 <code>Access-Control-Allow-Headers</code> は、同一オリジンでないときに、実際のリクエスト(プリフライトリクエストと対置して)で使用できるヘッダーの種類を示すものだ。デフォルトでは <code>Accept</code>, <code>Accept-Language</code>, <code>Content-Language</code>, <code>Content-Type</code> だけが許可されていて、 <code>Authorization</code> ヘッダーは含まれていない。
 </p>
@@ -50,9 +50,9 @@ Google Chromeの挙動を見る限り、同一オリジンでないときに許�
 </p>
 </div>
 </div>
-<div id="outline-container-org535e644" class="outline-2">
-<h2 id="org535e644"><a href="#org535e644">流れ</a></h2>
-<div class="outline-text-2" id="text-org535e644">
+<div id="outline-container-org3a7b887" class="outline-2">
+<h2 id="org3a7b887"><a href="#org3a7b887">流れ</a></h2>
+<div class="outline-text-2" id="text-org3a7b887">
 <p>
 プリフライトリクエストから一連の流れを見る。まず、ブラウザは実際のリクエスト前にOriginヘッダーが同一でないのを見て、CORSによってリソースに<a href="20210509100112-javascript.html#ID-a6980e15-ecee-466e-9ea7-2c0210243c0d">JavaScript</a>コードがアクセスできるか判断しようとする。検証するため、ブラウザは実際に行いたいリクエストを元にプリフライトリクエストを作成する。
 </p>
@@ -122,9 +122,9 @@ Google Chromeの挙動を見る限り、同一オリジンでないときに許�
 </div>
 </div>
 </div>
-<div id="outline-container-org3f6a159" class="outline-2">
-<h2 id="org3f6a159"><a href="#org3f6a159">関連</a></h2>
-<div class="outline-text-2" id="text-org3f6a159">
+<div id="outline-container-org279796e" class="outline-2">
+<h2 id="org279796e"><a href="#org279796e">関連</a></h2>
+<div class="outline-text-2" id="text-org279796e">
 <ul class="org-ul">
 <li>参照: <a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Headers">Access-Control-Allow-Headers - HTTP | MDN</a></li>
 <li>類似: <a href="20240209T111023--kdoc-83-corsを確認する__permanent.html#ID-20240209T111023">KDOC 83: CORSを確認する</a>。同様にCORSを調べた</li>

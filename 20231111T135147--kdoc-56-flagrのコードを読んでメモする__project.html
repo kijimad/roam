@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-11T22:52:36Z -->
+<!-- 2026-10-12T22:09:27Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 56: flagrのコードを読んでメモする</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,25 +15,25 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 56: flagrのコードを読んでメモする</h1>
-<div id="outline-container-org2a947ac" class="outline-2">
-<h2 id="org2a947ac"><a href="#org2a947ac"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-org2a947ac">
+<div id="outline-container-org2ceb175" class="outline-2">
+<h2 id="org2ceb175"><a href="#org2ceb175"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-org2ceb175">
 <p>
 プロジェクトは終了である。
 </p>
 </div>
 </div>
-<div id="outline-container-org4af7b13" class="outline-2">
-<h2 id="org4af7b13"><a href="#org4af7b13">概要</a></h2>
-<div class="outline-text-2" id="text-org4af7b13">
+<div id="outline-container-orgb9f1a8b" class="outline-2">
+<h2 id="orgb9f1a8b"><a href="#orgb9f1a8b">概要</a></h2>
+<div class="outline-text-2" id="text-orgb9f1a8b">
 <p>
 <a href="https://github.com/openflagr/flagr">openflagr/flagr</a>を読んだメモ。バックエンドは<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>で書かれている。
 </p>
 </div>
 </div>
-<div id="outline-container-orgdbe3afe" class="outline-2">
-<h2 id="orgdbe3afe"><a href="#orgdbe3afe">DB初期化部分</a></h2>
-<div class="outline-text-2" id="text-orgdbe3afe">
+<div id="outline-container-orgce61aaa" class="outline-2">
+<h2 id="orgce61aaa"><a href="#orgce61aaa">DB初期化部分</a></h2>
+<div class="outline-text-2" id="text-orgce61aaa">
 <p>
 グローバル変数にdb取得関数がある。
 </p>
@@ -43,7 +43,7 @@
 </pre>
 </div>
 
-<div class="yes" id="org6823f71">
+<div class="yes" id="orgb6ae4fc">
 <p>
 var getDB = entity.GetDB
 </p>
@@ -59,7 +59,7 @@ var getDB = entity.GetDB
 </pre>
 </div>
 
-<pre class="example" id="orgb227225">
+<pre class="example" id="org3f46ca2">
 // GetDB gets the db singleton
 func GetDB() *gorm.DB {
 	singletonOnce.Do(func() {
@@ -80,9 +80,9 @@ func GetDB() *gorm.DB {
 </pre>
 </div>
 </div>
-<div id="outline-container-org7dc39af" class="outline-2">
-<h2 id="org7dc39af"><a href="#org7dc39af">データベース分岐部分</a></h2>
-<div class="outline-text-2" id="text-org7dc39af">
+<div id="outline-container-org17da405" class="outline-2">
+<h2 id="org17da405"><a href="#org17da405">データベース分岐部分</a></h2>
+<div class="outline-text-2" id="text-org17da405">
 <p>
 データベース分岐している箇所。
 </p>
@@ -92,7 +92,7 @@ func GetDB() *gorm.DB {
 </pre>
 </div>
 
-<div class="results" id="org3bd1d92">
+<div class="results" id="org678d7e5">
 <p>
 err = retry.Do(
 	func() error {
@@ -120,9 +120,9 @@ err = retry.Do(
 </div>
 </div>
 </div>
-<div id="outline-container-orgdcd2811" class="outline-2">
-<h2 id="orgdcd2811"><a href="#orgdcd2811">各データベースによる結合テスト</a></h2>
-<div class="outline-text-2" id="text-orgdcd2811">
+<div id="outline-container-org02b4846" class="outline-2">
+<h2 id="org02b4846"><a href="#org02b4846">各データベースによる結合テスト</a></h2>
+<div class="outline-text-2" id="text-org02b4846">
 <p>
 sqlite, mysql, postgresによる結合テストをしている。
 </p>
@@ -132,7 +132,7 @@ sqlite, mysql, postgresによる結合テストをしている。
 </pre>
 </div>
 
-<div class="results" id="org7d1dc6b">
+<div class="results" id="org9e44c89">
 <p>
 start() {
     start_test flagr_with_sqlite
@@ -150,9 +150,9 @@ start() {
 </div>
 </div>
 </div>
-<div id="outline-container-org8645509" class="outline-2">
-<h2 id="org8645509"><a href="#org8645509">関連</a></h2>
-<div class="outline-text-2" id="text-org8645509">
+<div id="outline-container-orga46f81f" class="outline-2">
+<h2 id="orga46f81f"><a href="#orga46f81f">関連</a></h2>
+<div class="outline-text-2" id="text-orga46f81f">
 <ul class="org-ul">
 <li>疑問: 設計の短所を書く</li>
 </ul>

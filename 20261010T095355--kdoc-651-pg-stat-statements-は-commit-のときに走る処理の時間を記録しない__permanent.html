@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-11T22:53:33Z -->
+<!-- 2026-10-12T22:10:23Z -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' /><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP&display=swap' rel='stylesheet'>
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +15,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</h1>
-<div id="outline-container-org003c4f5" class="outline-2">
-<h2 id="org003c4f5"><a href="#org003c4f5">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org003c4f5">
+<div id="outline-container-org448dd35" class="outline-2">
+<h2 id="org448dd35"><a href="#org448dd35">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org448dd35">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +30,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgebdaf00" class="outline-2">
-<h2 id="orgebdaf00"><a href="#orgebdaf00">概要</a></h2>
-<div class="outline-text-2" id="text-orgebdaf00">
+<div id="outline-container-orgec95e73" class="outline-2">
+<h2 id="orgec95e73"><a href="#orgec95e73">概要</a></h2>
+<div class="outline-text-2" id="text-orgec95e73">
 <p>
 Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
 </p>
@@ -46,7 +46,7 @@ COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label><pre class="src src-sql" id="org835e191"><span class="org-keyword">CREATE</span> EXTENSION pg_stat_statements;
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label><pre class="src src-sql" id="orgad38c9e"><span class="org-keyword">CREATE</span> EXTENSION pg_stat_statements;
 <span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">t</span> (id <span class="org-type">int</span>);
 
 <span class="org-comment-delimiter">-- </span><span class="org-comment">COMMIT &#12398;&#12392;&#12365;&#12395;1&#31186;&#12363;&#12363;&#12427;&#20966;&#29702;&#12434;&#20316;&#12427;
@@ -60,7 +60,7 @@ COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label><pre class="src src-sql" id="org5e2c19d"><span class="org-keyword">SELECT</span> pg_stat_statements_reset() <span class="org-keyword">IS</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">AS</span> reset;
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label><pre class="src src-sql" id="orge29c3ba"><span class="org-keyword">SELECT</span> pg_stat_statements_reset() <span class="org-keyword">IS</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">AS</span> reset;
 
 <span class="org-keyword">BEGIN</span>;
 <span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> t <span class="org-keyword">VALUES</span> (1);
@@ -218,18 +218,18 @@ COMMIT をはさんだ時間は約1秒なのに、pg_stat_statements が COMMIT 
 </p>
 </div>
 </div>
-<div id="outline-container-org8be6e7f" class="outline-2">
-<h2 id="org8be6e7f"><a href="#org8be6e7f">関連</a></h2>
-<div class="outline-text-2" id="text-org8be6e7f">
+<div id="outline-container-orgdad0e17" class="outline-2">
+<h2 id="orgdad0e17"><a href="#orgdad0e17">関連</a></h2>
+<div class="outline-text-2" id="text-orgdad0e17">
 <ul class="org-ul">
 <li>前提: <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ</a>。コミット処理の中で何を待っているか</li>
 <li>前提: <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org10d9e68" class="outline-2">
-<h2 id="org10d9e68"><a href="#org10d9e68">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org10d9e68">
+<div id="outline-container-org2c76cb5" class="outline-2">
+<h2 id="org2c76cb5"><a href="#org2c76cb5">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org2c76cb5">
 <ul class="org-ul">
 <li><a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
 </ul>
