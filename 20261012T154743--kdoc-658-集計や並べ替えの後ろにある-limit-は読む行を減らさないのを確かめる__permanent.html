@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-13T01:02:29Z -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</h1>
+<div id="outline-container-org5a85163" class="outline-2">
+<h2 id="org5a85163"><a href="#org5a85163">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org5a85163">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-13 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-13 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgf8a70ae" class="outline-2">
+<h2 id="orgf8a70ae"><a href="#orgf8a70ae">概要</a></h2>
+<div class="outline-text-2" id="text-orgf8a70ae">
+<p>
+集計や並べ替えの後ろにある LIMIT は、下の処理が全部の行を読み終えるまで効かないので、読む行を減らさないのを確かめる。
+</p>
+
+<p>
+ユーザー、注文、明細を結合し、ユーザーごとに金額を合計して、上位5件を取る。比べるため、集計と並べ替えを外して 5 件取る問い合わせも流す。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><span class="org-keyword">SET</span> max_parallel_workers_per_gather = 0;
+<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (id <span class="org-type">int</span> <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>, <span class="org-keyword">name</span> text);
+<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">orders</span> (id <span class="org-type">int</span> <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>, user_id <span class="org-type">int</span>);
+<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">items</span> (order_id <span class="org-type">int</span>, price <span class="org-type">int</span>);
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users
+<span class="org-keyword">SELECT</span> i, <span class="org-string">'user'</span> || i <span class="org-keyword">FROM</span> generate_series(1, 10000) i;
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> orders
+<span class="org-keyword">SELECT</span> i, i % 10000 + 1 <span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> items
+<span class="org-keyword">SELECT</span> i % 100000 + 1, i % 1000 <span class="org-keyword">FROM</span> generate_series(1, 300000) i;
+ANALYZE users;
+ANALYZE orders;
+ANALYZE items;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#38598;&#35336;&#12375;&#12390;&#20006;&#12409;&#26367;&#12360;&#12390;&#12363;&#12425; 5 &#20214;&#21462;&#12427;
+</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS <span class="org-keyword">OFF</span>, TIMING <span class="org-keyword">OFF</span>,
+         SUMMARY <span class="org-keyword">OFF</span>, BUFFERS <span class="org-keyword">OFF</span>)
+<span class="org-keyword">SELECT</span> u.<span class="org-keyword">name</span>, <span class="org-builtin">sum</span>(i.price) <span class="org-keyword">AS</span> total
+<span class="org-keyword">FROM</span> users u
+<span class="org-keyword">JOIN</span> orders o <span class="org-keyword">ON</span> o.user_id = u.id
+<span class="org-keyword">JOIN</span> items i <span class="org-keyword">ON</span> i.order_id = o.id
+<span class="org-keyword">WHERE</span> u.id &lt; 100
+<span class="org-keyword">GROUP</span> <span class="org-keyword">BY</span> u.<span class="org-keyword">name</span>
+<span class="org-keyword">ORDER</span> <span class="org-keyword">BY</span> total <span class="org-keyword">DESC</span>
+<span class="org-keyword">LIMIT</span> 5;
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">&#38598;&#35336;&#12418;&#20006;&#12409;&#26367;&#12360;&#12418;&#12379;&#12378;&#12395; 5 &#20214;&#21462;&#12427;
+</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS <span class="org-keyword">OFF</span>, TIMING <span class="org-keyword">OFF</span>,
+         SUMMARY <span class="org-keyword">OFF</span>, BUFFERS <span class="org-keyword">OFF</span>)
+<span class="org-keyword">SELECT</span> u.<span class="org-keyword">name</span>, i.price
+<span class="org-keyword">FROM</span> users u
+<span class="org-keyword">JOIN</span> orders o <span class="org-keyword">ON</span> o.user_id = u.id
+<span class="org-keyword">JOIN</span> items i <span class="org-keyword">ON</span> i.order_id = o.id
+<span class="org-keyword">WHERE</span> u.id &lt; 100
+<span class="org-keyword">LIMIT</span> 5;
+</pre>
+</div>
+
+<p>
+<img src="images/plan-2afc5d2495db.svg" alt="plan-2afc5d2495db.svg" class="org-svg">
+<img src="images/plan-3de4fc1f58c4.svg" alt="plan-3de4fc1f58c4.svg" class="org-svg">
+</p>
+
+<ul class="org-ul">
+<li>集計して並べ替えると、下の items の Seq Scan は 300,000 行をすべて読み、最後の Limit で 5 行に絞っている</li>
+<li>集計も並べ替えもしないと、items の Seq Scan は 5 行しか読まない。Limit が 5 行を受け取った時点で、下に行を要求するのをやめている。結合のしかたも Hash Join から、1 行ずつ相手を探す Nested Loop に変わった</li>
+</ul>
+
+<p>
+計画は上のノードが下のノードに 1 行ずつ要求し、行は下のノードで作られて上へ渡る。上が要求をやめれば、下も止まる。
+</p>
+
+<blockquote>
+<p>
+これは本質的に要求引き寄せ型（demand-pull）パイプライン機能です。 計画ノードが呼ばれる度にもう1つの行を引き渡すか、行を引き渡したことの報告を行わなければなりません。
+</p>
+
+<p>
+<a href="https://www.postgresql.jp/docs/18/executor.html">51.6. エグゼキュータ</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-org9a62aac" class="outline-2">
+<h2 id="org9a62aac"><a href="#org9a62aac">関連</a></h2>
+<div class="outline-text-2" id="text-org9a62aac">
+<ul class="org-ul">
+<li>前提: <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。文芸的に確認する道具</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
