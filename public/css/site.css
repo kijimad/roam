@@ -1,194 +1,322 @@
-@media screen and (min-width: 800px) {
-  div#content {
-    padding: 4% 2%;
-    max-width: 800px;
+/* ライセンス: fonts/izumi16-LICENSE.txt */
+@font-face {
+  font-family: "Izumi16";
+  src: url(fonts/izumi16.woff2) format("woff2");
+  font-display: swap;
+}
 
-    /* centering */
-    width: 60%;
-    margin-right: auto;
-    margin-left: auto;
-    font-size: 92%;
+:root {
+  --ink-strong: #fffbe9;
+  --ink: #d2ccbb;
+  --ink-soft: #aaa493;
+  --ink-muted: #7d7766;
+  --line: #3a3628;
+  --panel: rgba(20, 18, 12, .45);
+  /* text-stroke は字の内側にも描いてドットが細るので、影で縁取る */
+  --outline: -2px -2px 0 #000, 0 -2px 0 #000, 2px -2px 0 #000, 2px 0 0 #000,
+             2px 2px 0 #000, 0 2px 0 #000, -2px 2px 0 #000, -2px 0 0 #000, 3px 3px 0 #000;
+  --outline-bold: 1px 0 0 currentColor, -2px -2px 0 #000, 0 -2px 0 #000, 1px -2px 0 #000, 3px -2px 0 #000,
+                  3px 0 0 #000, 3px 2px 0 #000, 1px 2px 0 #000, 0 2px 0 #000, -2px 2px 0 #000, -2px 0 0 #000, 4px 3px 0 #000;
+}
 
-    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px, rgb(51, 51, 51) 0px 0px 0px 3px;
-    background-color: var(--bs-white);
-  }
+/* body に背景を付けると負の z-index の層が隠れる */
+html {
+  background: #000;
+}
+
+body {
+  background: transparent;
+  color: var(--ink);
+  font-family: "Izumi16", monospace;
+  font-size: 16px;
+  line-height: 2.1;
+  letter-spacing: .04em;
+}
+
+/* Bootstrap の code などの指定は * より強い */
+*, code, kbd, pre, samp {
+  font-family: "Izumi16", monospace;
+}
+
+body * {
+  text-shadow: var(--outline);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -2;
+  top: 4vh;
+  left: 50%;
+  translate: calc(-50% + 10px) 0;
+  width: 640px;
+  max-width: 90vw;
+  aspect-ratio: 832 / 884;
+  background: url(doc-paper.png) no-repeat center / contain;
+  opacity: .9;
+  filter: brightness(.85) contrast(1.05) blur(2px);
+  pointer-events: none;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    repeating-conic-gradient(rgba(0, 0, 0, .3) 0 25%, transparent 0 50%) 0 0 / 4px 4px,
+    radial-gradient(ellipse 760px 620px at 50% 45%, rgba(0, 0, 0, .1) 0%, rgba(0, 0, 0, .55) 70%, rgba(0, 0, 0, .85) 100%);
+  pointer-events: none;
+}
+
+/* filter を掛けると縁取りがぼやける */
+div#content {
+  width: min(661px, calc((100% - 32px) / 1.15));
+  margin: 0 auto;
+  padding: 120px 0 80px;
+  transform: scaleX(1.15);
+  transform-origin: top center;
+}
+
+#content img, #content svg:not(#main-graph svg, svg svg), #content iframe, #content video, #main-graph {
+  transform: scaleX(calc(1 / 1.15));
+  transform-origin: top center;
 }
 
 @media screen and (max-width: 799px) {
   div#content {
-    padding: 0 2%;
+    padding: 48px 0 40px;
   }
 }
 
-* {
-  font-family: "IBM Plex Sans JP", sans-serif;
+h1 {
+  margin: 0 0 64px;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: .06em;
+  text-align: left;
+  color: var(--ink-strong);
 }
 
-h1, .h1 {
-  font-size: 1.6em;
-  font-weight: 700;
+h2 {
+  margin: 72px 0 18px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: .08em;
+  color: var(--ink-strong);
 }
 
-h2, .h2 {
-  font-size: 1.2em;
-  font-weight: 700;
-  margin-top: 3em;
-  margin-bottom: 1em;
-}
-
-h3, .h3,
-h4, .h4,
-h5, .h5 {
-  font-size: 1.0em;
-  font-weight: 700;
+h3, h4, h5 {
+  margin: 48px 0 12px;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ink-strong);
 }
 
 h1 a, h2 a, h3 a, h4 a, h5 a {
-  color: var(--bs-dark);
+  color: inherit;
+  border-bottom: 0;
 }
 
-a {
+b, strong, dt {
+  color: var(--ink-strong);
+  text-shadow: var(--outline-bold);
+}
+
+b, strong, dt {
+  font-weight: 400;
+}
+
+p {
+  margin: 0 0 1.2em;
+}
+
+ul, ol {
+  margin: 0 0 1.2em;
+}
+
+li::marker {
+  color: var(--ink-muted);
+}
+
+ul > li {
+  list-style-type: "◆ ";
+}
+
+ul ul > li {
+  list-style-type: "◇ ";
+}
+
+li.on, li.off, li.trans {
+  list-style-type: none;
+}
+
+li.on > input[type="checkbox"], li.off > input[type="checkbox"], li.trans > input[type="checkbox"] {
+  margin-left: -1.6em;
+}
+
+/* 見出し内の外部リンクも h1 a などに負けないように */
+a, a[href^="http"] {
+  color: #e6e1d3;
+  font-weight: 400;
   text-decoration: none;
+  border-bottom: 2px dotted #8a8470;
 }
-
-p {}
-
-li {}
 
 a:hover {
-  text-decoration: none;
+  color: #fff;
+  border-bottom-color: #e6e1d3;
 }
 
-code {
-  color: var(--bs-dark);
-  background-color: var(--bs-light);
-  padding: 0.2em 0.4em;
-  border-radius: 6px;
-  font-size: 85%;
-  white-space: break-spaces;
+input[type="checkbox"] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin: 0 .4em 0 0;
+  vertical-align: -1px;
+  border: 2px solid var(--ink);
+  background: transparent;
+  box-shadow: 0 0 0 2px #000;
 }
 
-input {
-  accent-color: var(--bs-dark);
-}
-
-#content a[href^="http"],
-#content p a,
-#content ul a,
-#content dl a {
-  color: var(--bs-primary);
-  font-weight: 500;
-}
-
-kbd {
-  font-weight: 200;
-  color: var(--bs-dark);
-  background-color: var(--bs-light);
-  border: 1px solid;
-}
-
-label.org-src-name {
-  font-size: 0.8em;
-  padding: 2px;
-}
-
-/* 参考: https://github.com/fniessen/org-html-themes/blob/master/src/bigblow_theme/css/bigblow.css */
-table {
-  width: 100%;
-  margin: 1em 0em;
-  font-size: 0.8em;
-  border-collapse: collapse;
-}
-
-th {
-  border-width: 1px 2px;
-  border-color: var(--bs-white);
-  background-color: var(--bs-secondary);
-  color: var(--bs-white);
-}
-
-td {
-  padding: 0.8em;
-  text-align: left;
-  vertical-align:middle;
-  font-weight: 300;
-  color: var(--bs-dark);
-  border-bottom: solid 1px var(--bs-dark);
+input[type="checkbox"]:checked {
+  background: var(--ink);
+  box-shadow: inset 0 0 0 2px #000, 0 0 0 2px #000;
 }
 
 blockquote {
-  margin-bottom: 10px;
-  padding: 10px;
-  background-color: var(--bs-light);
-  border-left: 2px solid var(--bs-secondary);
-  font-style: italic;
-  margin-inline-start: 2em;
-  margin-inline-end: 2em;
+  margin: 28px 0;
+  padding: 0 0 0 24px;
+  border-left: 3px solid #4a4536;
+  color: var(--ink-soft);
 }
 
-/* quote内は<p>タグで変換される。<p>タグにmargin-bottomが設定されるので、末尾の<p>はblockquote(padding)+p(margin)で妙に空間ができてしまうのを防ぐ */
 blockquote p:last-child {
   margin-bottom: 0;
 }
 
-figcaption {
-  font: italic smaller sans-serif;
-  padding: 3px;
+code {
+  color: #e6cf8f;
+  font-size: 1em;
+  white-space: break-spaces;
+}
+
+pre code {
+  color: inherit;
+}
+
+label.org-src-name {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink-muted);
+}
+
+kbd {
+  color: var(--ink-strong);
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+}
+
+table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: .5em .8em;
+  vertical-align: top;
+}
+
+th {
+  background-color: #1c1a14;
+  color: var(--ink-strong);
+  border-bottom: 2px solid #4a4536;
+}
+
+td {
+  text-align: left;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+th.org-left, th.org-right {
+  text-align: center;
+}
+
+td.org-right {
   text-align: right;
 }
 
-/* Class ================ */
+.figure {
+  padding: 1em;
+}
 
-.todo {
-  border-radius: 4px;
-  padding: 2px;
+.figure p {
+  text-align: center;
+}
+
+.org-svg {
+  width: 90%;
+}
+
+.footpara {
+  display: inline;
+}
+
+.footdef {
+  margin-bottom: 1em;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+figcaption {
+  padding: 3px;
+  color: var(--ink-muted);
+  text-align: right;
+}
+
+.todo, .done, .DontKnow {
+  padding: 0 .4em;
+  border: 2px solid currentColor;
 }
 
 .todo.TODO {
-  background-color: var(--bs-danger);
-  color: white;
+  color: #e8a090;
 }
 
 .todo.WIP {
-  background-color: var(--bs-primary);
-  color: white;
-}
-
-.done {
-  border-radius: 4px;
-  padding: 2px;
+  color: #9fc4e8;
 }
 
 .done.DONE {
-  background-color: var(--bs-success);
-  color: white;
+  color: #9fd8a4;
 }
 
 .done.CLOSE {
-  background-color: var(--bs-dark);
-  color: white;
+  color: var(--ink-muted);
 }
 
-.DontKnow{
-  border: 1px solid;
-  border-radius: 4px;
-  padding: 2px;
+.timestamp {
+  color: var(--ink-muted);
 }
 
 footer.footer {
   margin-top: 8em;
 }
 
+footer .nav-link {
+  color: var(--ink-muted) !important;
+  border-bottom: 0;
+}
+
 .outline-3 {
   padding-bottom: 4em;
 }
-
-/* Emacs30のデフォルトだと、言語指定がない場合はこのクラスが付き非表示になってしまう対応 */
-.src-nil {
-  display: block;
-}
-
-/* Graph ================ */
 
 #main-graph {
   margin: 0 calc(50% - 50vw);
