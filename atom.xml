@@ -5,78 +5,561 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-10-13T01:03:20+09:00</updated>
+<updated>2026-10-13T20:24:47+09:00</updated>
 <entry>
-  <title>KDOC 644: Recordを外部値がくるところで使うとプロトタイプを書き換えられる</title>
+  <title>KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org05de5f9" class="outline-2">
- <h2 id="org05de5f9"> <a href="#org05de5f9">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org05de5f9">
+ <div id="outline-container-orgf0ea28a" class="outline-2">
+ <h2 id="orgf0ea28a"> <a href="#orgf0ea28a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgf0ea28a">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-03 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-03 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org94ce2bc" class="outline-2">
- <h2 id="org94ce2bc"> <a href="#org94ce2bc">概要</a></h2>
- <div class="outline-text-2" id="text-org94ce2bc">
+ <div id="outline-container-org62baf28" class="outline-2">
+ <h2 id="org62baf28"> <a href="#org62baf28">概要</a></h2>
+ <div class="outline-text-2" id="text-org62baf28">
  <p>
-TypeScriptのRecord型は型だけの存在で、実行時の値はプロトタイプを持つ普通のオブジェクトである。
+集計や並べ替えの後ろにある LIMIT は、下の処理が全部の行を読み終えるまで効かないので、読む行を減らさないのを確かめる。
+</p>
+
+ <p>
+ユーザー、注文、明細を結合し、ユーザーごとに金額を合計して、上位5件を取る。比べるため、集計と並べ替えを外して 5 件取る問い合わせも流す。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-sql"> <span class="org-keyword">SET</span> max_parallel_workers_per_gather = 0;
+ <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (id  <span class="org-type">int</span>  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,  <span class="org-keyword">name</span> text);
+ <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">orders</span> (id  <span class="org-type">int</span>  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>, user_id  <span class="org-type">int</span>);
+ <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">items</span> (order_id  <span class="org-type">int</span>, price  <span class="org-type">int</span>);
+ <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> users
+ <span class="org-keyword">SELECT</span> i,  <span class="org-string">'user'</span> || i  <span class="org-keyword">FROM</span> generate_series(1, 10000) i;
+ <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> orders
+ <span class="org-keyword">SELECT</span> i, i % 10000 + 1  <span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+ <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> items
+ <span class="org-keyword">SELECT</span> i % 100000 + 1, i % 1000  <span class="org-keyword">FROM</span> generate_series(1, 300000) i;
+ANALYZE users;
+ANALYZE orders;
+ANALYZE items;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">集計して並べ替えてから 5 件取る
+</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
+         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
+ <span class="org-keyword">SELECT</span> u. <span class="org-keyword">name</span>,  <span class="org-builtin">sum</span>(i.price)  <span class="org-keyword">AS</span> total
+ <span class="org-keyword">FROM</span> users u
+ <span class="org-keyword">JOIN</span> orders o  <span class="org-keyword">ON</span> o.user_id = u.id
+ <span class="org-keyword">JOIN</span> items i  <span class="org-keyword">ON</span> i.order_id = o.id
+ <span class="org-keyword">WHERE</span> u.id < 100
+ <span class="org-keyword">GROUP</span>  <span class="org-keyword">BY</span> u. <span class="org-keyword">name</span>
+ <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> total  <span class="org-keyword">DESC</span>
+ <span class="org-keyword">LIMIT</span> 5;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">集計も並べ替えもせずに 5 件取る
+</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
+         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
+ <span class="org-keyword">SELECT</span> u. <span class="org-keyword">name</span>, i.price
+ <span class="org-keyword">FROM</span> users u
+ <span class="org-keyword">JOIN</span> orders o  <span class="org-keyword">ON</span> o.user_id = u.id
+ <span class="org-keyword">JOIN</span> items i  <span class="org-keyword">ON</span> i.order_id = o.id
+ <span class="org-keyword">WHERE</span> u.id < 100
+ <span class="org-keyword">LIMIT</span> 5;
+</pre>
+</div>
+
+ <p>
+ <img src="images/plan-2afc5d2495db.svg" alt="plan-2afc5d2495db.svg" class="org-svg"></img> <img src="images/plan-3de4fc1f58c4.svg" alt="plan-3de4fc1f58c4.svg" class="org-svg"></img></p>
+
+ <ul class="org-ul"> <li>集計して並べ替えると、下の items の Seq Scan は 300,000 行をすべて読み、最後の Limit で 5 行に絞っている</li>
+ <li>集計も並べ替えもしないと、items の Seq Scan は 5 行しか読まない。Limit が 5 行を受け取った時点で、下に行を要求するのをやめている。結合のしかたも Hash Join から、1 行ずつ相手を探す Nested Loop に変わった</li>
+</ul> <p>
+計画は上のノードが下のノードに 1 行ずつ要求し、行は下のノードで作られて上へ渡る。上が要求をやめれば、下も止まる。
 </p>
 
  <blockquote>
  <p>
-Record<Keys, Type>はプロパティのキーがKeysであり、プロパティの値がTypeであるオブジェクトの型を作るユーティリティ型です。
+これは本質的に要求引き寄せ型（demand-pull）パイプライン機能です。 計画ノードが呼ばれる度にもう1つの行を引き渡すか、行を引き渡したことの報告を行わなければなりません。
 </p>
 
  <p>
- <a href="https://typescriptbook.jp/reference/type-reuse/utility-types/record">Record<Keys, Type> | TypeScript入門『サバイバルTypeScript』</a>
-</p>
-</blockquote>
-
- <p>
-オブジェクトはプロトタイプを持つので、 Record の値に外部から来たキーで書き込むと、プロトタイプを書き換えられる。
-</p>
-
- <blockquote>
- <p>
-Object Security
-</p>
-
- <p>
-Setting user-provided key-value pairs on an Object may allow an attacker to override the object’s prototype, which can lead to object injection attacks or prototype pollution attacks. Like the accidental keys issue, this can also be mitigated by using a null-prototype object.
-</p>
-
- <p>
- <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#objects_vs._maps">Map#objects vs maps - JavaScript | MDN</a>
+ <a href="https://www.postgresql.jp/docs/18/executor.html">51.6. エグゼキュータ</a>
 </p>
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org962699c" class="outline-2">
- <h2 id="org962699c"> <a href="#org962699c">関連</a></h2>
- <div class="outline-text-2" id="text-org962699c">
- <ul class="org-ul"> <li>追加調査: プロトタイプ汚染を試す</li>
+ <div id="outline-container-org6e94a0c" class="outline-2">
+ <h2 id="org6e94a0c"> <a href="#org6e94a0c">関連</a></h2>
+ <div class="outline-text-2" id="text-org6e94a0c">
+ <ul class="org-ul"> <li>前提:  <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。文芸的に確認する道具</li>
 </ul></div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html</id>
-  <updated>2026-10-13T10:03:19+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 656: データベースで列の並び順によってサイズが変わる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org0aca128" class="outline-2">
+ <h2 id="org0aca128"> <a href="#org0aca128">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0aca128">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org446d916" class="outline-2">
+ <h2 id="org446d916"> <a href="#org446d916">概要</a></h2>
+ <div class="outline-text-2" id="text-org446d916">
+ <p>
+データベースでも、プログラミング言語と同様に、フィールドのデータ型を定義する順序によって使うデータサイズが変わりうる。
+</p>
+
+ <p>
+型ごとに、値を置く位置の境界(整列)が決まっている。境界に合わないときは、前にパディングが入る。
+</p>
+
+ <blockquote>
+ <p>
+ディスク上の完全な行の表現のように、複数の値が隣接して格納される際には、指定された境界で始まるように、この型のデータの前にパディングが挿入されます。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/catalog-pg-type.html">52.64. pg_type</a>
+</p>
+</blockquote>
+
+ <p>
+同じ列を、並び順だけ変えた2つのテーブルで比べる。boolean は1バイトで整列なし、bigint は8バイトで8バイト境界(double 整列)である。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ列を並び順だけ変えて、1行の大きさを比べる</label> <pre class="src src-sql"> <span class="org-comment-delimiter">-- </span> <span class="org-comment">boolean と bigint を交互に並べる
+</span> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">padded</span>
+  (a  <span class="org-type">boolean</span>, b bigint, c  <span class="org-type">boolean</span>, d bigint);
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">bigint を先に、boolean をあとにまとめる
+</span> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">packed</span>
+  (b bigint, d bigint, a  <span class="org-type">boolean</span>, c  <span class="org-type">boolean</span>);
+
+ <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> padded  <span class="org-keyword">VALUES</span> ( <span class="org-keyword">true</span>, 1,  <span class="org-keyword">false</span>, 2);
+ <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> packed  <span class="org-keyword">VALUES</span> (1, 2,  <span class="org-keyword">true</span>,  <span class="org-keyword">false</span>);
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">列ごとの長さと整列
+</span> <span class="org-keyword">SELECT</span> format( <span class="org-string">'%s : %s : 長さ %s : 整列 %s'</span>,
+              attname, typname, typlen, typalign)
+        <span class="org-keyword">AS</span> cols
+ <span class="org-keyword">FROM</span> pg_attribute a
+ <span class="org-keyword">JOIN</span> pg_type t  <span class="org-keyword">ON</span> t.oid = a.atttypid
+ <span class="org-keyword">WHERE</span> attrelid =  <span class="org-string">'padded'</span>::regclass
+   <span class="org-keyword">AND</span> attnum > 0
+ <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> attnum;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">1行の大きさ(行ヘッダを含む)
+</span> <span class="org-keyword">SELECT</span> pg_column_size(p.*)  <span class="org-keyword">AS</span> padded  <span class="org-keyword">FROM</span> padded p;
+ <span class="org-keyword">SELECT</span> pg_column_size(p.*)  <span class="org-keyword">AS</span> packed  <span class="org-keyword">FROM</span> packed p;
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">|                                                       |
+|-------------------------------------------------------|
+| > CREATE TABLE padded                                 |
+| >   (a boolean, b bigint, c boolean, d bigint);       |
+| CREATE TABLE                                          |
+|                                                       |
+| > CREATE TABLE packed                                 |
+| >   (b bigint, d bigint, a boolean, c boolean);       |
+| CREATE TABLE                                          |
+|                                                       |
+| > INSERT INTO padded VALUES (true, 1, false, 2);      |
+| INSERT 0 1                                            |
+|                                                       |
+| > INSERT INTO packed VALUES (1, 2, true, false);      |
+| INSERT 0 1                                            |
+|                                                       |
+| > SELECT format('%s : %s : 長さ %s : 整列 %s',        |
+| >               attname, typname, typlen, typalign)   |
+| >        AS cols                                      |
+| > FROM pg_attribute a                                 |
+| > JOIN pg_type t ON t.oid = a.atttypid                |
+| > WHERE attrelid = 'padded'::regclass                 |
+| >   AND attnum > 0                                    |
+| > ORDER BY attnum;                                    |
+| cols                                                  |
+| a : bool : 長さ 1 : 整列 c                            |
+| b : int8 : 長さ 8 : 整列 d                            |
+| c : bool : 長さ 1 : 整列 c                            |
+| d : int8 : 長さ 8 : 整列 d                            |
+|                                                       |
+| > SELECT pg_column_size(p.*) AS padded FROM padded p; |
+| padded                                                |
+| 56                                                    |
+|                                                       |
+| > SELECT pg_column_size(p.*) AS packed FROM packed p; |
+| packed                                                |
+| 42                                                    |
+</pre>
+</div>
+
+ <p>
+padded は1行 56 バイト、packed は 42 バイトで、14 バイト違う。padded では、boolean(1バイト)のあとの bigint を8バイト境界へ置くため、7バイトのパディングが2回入る。その 7 × 2 = 14 バイトが差になる。
+</p>
+
+ <pre class="example" id="org88f148b">
+※行ヘッダを除く
+
+padded (boolean, bigint, boolean, bigint) : 32 バイト
+0        8        16       24       32
+|a.......|bbbbbbbb|c.......|dddddddd|
+  ^^^^^^^           ^^^^^^^
+  パディング 7      パディング 7
+
+packed (bigint, bigint, boolean, boolean) : 18 バイト
+0        8        16 18
+|bbbbbbbb|dddddddd|ac|
+
+a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = パディング
+</pre>
+</div>
+</div>
+ <div id="outline-container-orgc04f7de" class="outline-2">
+ <h2 id="orgc04f7de"> <a href="#orgc04f7de">関連</a></h2>
+ <div class="outline-text-2" id="text-orgc04f7de">
+ <ul class="org-ul"> <li>類似:  <a href="20240825T101916--kdoc-227-フィールド定義の順番によってメモリサイズが変わることがある__permanent.html#ID-20240825T101916">KDOC 227: フィールド定義の順番によってメモリサイズが変わることがある</a>。C言語での同様の例</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 655: 式の照合順序を変えて並び替えの結果を変える</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org8e974ca" class="outline-2">
+ <h2 id="org8e974ca"> <a href="#org8e974ca">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8e974ca">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgb9dc4fc" class="outline-2">
+ <h2 id="orgb9dc4fc"> <a href="#orgb9dc4fc">概要</a></h2>
+ <div class="outline-text-2" id="text-orgb9dc4fc">
+ <p>
+データベースシステムが並び替えや文字区別をする場合、データベースは入力の照合順序(collation)を使用する。
+</p>
+
+ <p>
+たとえば同じ文字列を並び替えても、どの照合順序(並び替えの規則)を使うかで結果が変わる。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ UTF8 の文字列を、照合順序だけ変えて並び替える</label> <pre class="src src-sql">SHOW server_encoding;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">コードポイントの値の順
+</span> <span class="org-keyword">SELECT</span> string_agg(x,  <span class="org-string">' '</span>  <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> x  <span class="org-keyword">COLLATE</span> "C")  <span class="org-keyword">AS</span> c
+ <span class="org-keyword">FROM</span> ( <span class="org-keyword">VALUES</span> ( <span class="org-string">'a'</span>), ( <span class="org-string">'B'</span>), ( <span class="org-string">'b'</span>), ( <span class="org-string">'A'</span>))  <span class="org-keyword">AS</span> v(x);
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">言語の規則の順(ICU)
+</span> <span class="org-keyword">SELECT</span> string_agg(x,  <span class="org-string">' '</span>  <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> x  <span class="org-keyword">COLLATE</span> "und-x-icu")  <span class="org-keyword">AS</span> und_x_icu
+ <span class="org-keyword">FROM</span> ( <span class="org-keyword">VALUES</span> ( <span class="org-string">'a'</span>), ( <span class="org-string">'B'</span>), ( <span class="org-string">'b'</span>), ( <span class="org-string">'A'</span>))  <span class="org-keyword">AS</span> v(x);
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">|                                                                         |
+|-------------------------------------------------------------------------|
+| > SHOW server_encoding;                                                 |
+| server_encoding                                                         |
+| UTF8                                                                    |
+|                                                                         |
+| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "C") AS c                 |
+| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| c                                                                       |
+| A B a b                                                                 |
+|                                                                         |
+| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "und-x-icu") AS und_x_icu |
+| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| und_x_icu                                                               |
+| a A b B                                                                 |
+</pre>
+</div>
+
+ <blockquote>
+ <p>
+概念的に照合可能なデータ型のそれぞれの式は、照合順序を保持しています （組み込みの照合可能なデータ型はtext、varchar、 charです。 ユーザ定義の基本型は照合可能とマーキングできます。もちろん照合可能なデータ型上のドメインは照合可能となります）。 もし、式が列参照である場合は、式の照合順序は列の定義された照合順序となります。 もし、式が定数である場合は、照合順序は定数のデータ型のデフォルトの照合順序となります。 より複雑な式の照合順序は、下記に示すように、その入力の照合順序から引き出されます。
+</p>
+
+ <p>
+(略)
+</p>
+
+ <p>
+データベースシステムが並べ替えや文字区別を行う場合、データベースは入力の照合順序を使用します。 これは、たとえばORDER BY句や < 演算子や関数を使用する際に発生します。 ORDER BY句に適用する照合順序は、単純にソートキーの照合順序です。 関数や演算子の呼び出しに対して適用される照合順序は、以下に述べるように引数により決まります。 比較演算子に加えて、照合順序はlower、upper、initcapといった小文字と大文字を変換する関数やパターンマッチングの演算子、to_char関連の関数で考慮されています。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/document/18/html/collation.html">23.2. 照合順序サポート</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org9702c50" class="outline-2">
+ <h2 id="org9702c50"> <a href="#org9702c50">関連</a></h2>
+ <div class="outline-text-2" id="text-org9702c50">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 653: var と := の違い</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org7bf11a3" class="outline-2">
+ <h2 id="org7bf11a3"> <a href="#org7bf11a3">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7bf11a3">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgd57283b" class="outline-2">
+ <h2 id="orgd57283b"> <a href="#orgd57283b">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd57283b">
+ <p>
+Go で当たり前に使っている  <code>var x = 1</code> と  <code>x := 1</code> の違いが気になった。微妙な違いがある。
+</p>
+
+ <blockquote>
+ <p>
+It is shorthand for a regular variable declaration with initializer expressions but no types:
+</p>
+
+ <p>
+“var” IdentifierList “=” ExpressionList .
+</p>
+
+ <p>
+Unlike regular variable declarations, a short variable declaration may redeclare variables provided they were originally declared earlier in the same block (or the parameter lists if the block is the function body) with the same type, and at least one of the non-blank variables is new. As a consequence, redeclaration can only appear in a multi-variable short declaration. Redeclaration does not introduce a new variable; it just assigns a new value to the original.
+</p>
+
+ <p>
+Short variable declarations may appear only inside functions. In some contexts such as the initializers for “if”, “for”, or “switch” statements, they can be used to declare local temporary variables.
+</p>
+
+ <p>
+訳
+</p>
+
+ <p>
+これは、初期化式を含むが型指定のない通常の変数宣言の省略形です：
+</p>
+
+ <p>
+“var” IdentifierList “=” ExpressionList .
+</p>
+
+ <p>
+通常の変数宣言とは異なり、短縮変数宣言では、同じブロック内（ブロックが関数本体である場合はパラメータリスト内）で以前に同じ型で宣言されており、かつ空白以外の変数のうち少なくとも1つが新規である場合に限り、変数を再宣言することができます。その結果、再宣言は多変数短縮宣言でのみ使用できます。再宣言によって新しい変数が導入されるわけではなく、元の変数に新しい値が代入されるだけです。
+</p>
+
+ <p>
+短縮変数宣言は関数内部でのみ使用できます。「if」、「for」、または「switch」文の初期化子など、一部の文脈では、ローカルの一時変数を宣言するために使用できます。
+</p>
+
+ <p>
+ <a href="https://go.dev/ref/spec#Short_variable_declarations">The Go Programming Language Specification - Short variable declarations</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org649e32b" class="outline-2">
+ <h2 id="org649e32b"> <a href="#org649e32b">関連</a></h2>
+ <div class="outline-text-2" id="text-org649e32b">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org4c89d08" class="outline-2">
+ <h2 id="org4c89d08"> <a href="#org4c89d08">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4c89d08">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org0248c49" class="outline-2">
+ <h2 id="org0248c49"> <a href="#org0248c49">概要</a></h2>
+ <div class="outline-text-2" id="text-org0248c49">
+ <p>
+Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
+</p>
+
+ <p>
+pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに pg_stat_activity でアクティブなセッションの文を数える。2つのセッションが同時に要るので、この実験は pgpg のプロキシを通さず、PostgreSQL に直接つなぐ。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label> <pre class="src src-shell"> <span class="org-comment-delimiter"># </span> <span class="org-comment">書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+</span> <span class="org-function-name">sample</span>() {
+  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F  <span class="org-string">' | '</span> << <span class="org-string">'SQL'</span> <span class="org-sh-heredoc">
+CREATE TABLE samples (query text, wait text);
+DO $$
+BEGIN
+  FOR i IN 1..400 LOOP
+    PERFORM pg_stat_clear_snapshot();
+    INSERT INTO samples
+    -- 待機イベントがなければ CPU で動いている
+    SELECT query, coalesce(wait_event_type || ':' || wait_event, 'CPU')
+    FROM pg_stat_activity
+    WHERE application_name = 'pgbench' AND state = 'active';
+    PERFORM pg_sleep(0.01);
+  END LOOP;
+END $$;
+SELECT query, wait, count(*) FROM samples GROUP BY 1, 2 ORDER BY 3 DESC;
+DROP TABLE samples;
+SQL
+</span>}
+
+ <span class="org-comment-delimiter"># </span> <span class="org-comment">$1: 説明、$2: pgbench に流す SQL、$3: pgbench のオプション
+</span> <span class="org-function-name">run</span>() {
+   <span class="org-builtin">echo</span>  <span class="org-string">"== $1"</span>
+  docker exec pgpg-postgres-1 psql -U postgres -qAt  <span class="org-sh-escaped-newline">\</span>
+    -c  <span class="org-string">"DROP TABLE IF EXISTS w"</span> -c  <span class="org-string">"CREATE TABLE w (id int, pad text)"</span>  <span class="org-sh-escaped-newline">\</span>
+    -c  <span class="org-string">"CREATE INDEX ON w (id)"</span> -c  <span class="org-string">"CREATE INDEX ON w (pad)"</span> 2>/dev/null
+  printf  <span class="org-string">"$2"</span> | docker exec -i pgpg-postgres-1 sh -c  <span class="org-string">'cat > /tmp/bench.sql'</span>
+   <span class="org-variable-name">out</span>=$(mktemp)
+   <span class="org-comment-delimiter"># </span> <span class="org-comment">拡張プロトコル(-M extended)で書き込む
+</span>  docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $ <span class="org-variable-name">3</span>  <span class="org-sh-escaped-newline">\</span>
+    -f /tmp/bench.sql postgres >  <span class="org-string">"$out"</span> 2>/dev/null &
+  sleep 0.3
+  sample
+   <span class="org-builtin">wait</span>
+  grep  <span class="org-string">'latency average'</span>  <span class="org-string">"$out"</span>
+  rm -f  <span class="org-string">"$out"</span>
+}
+
+run  <span class="org-string">"小さい INSERT を明示的なトランザクションで(4並列、5秒)"</span>  <span class="org-sh-escaped-newline">\</span>
+     <span class="org-string">'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n'</span>  <span class="org-string">"-c 4 -T 5"</span>
+run  <span class="org-string">"小さい INSERT を自動コミットで(4並列、5秒)"</span>  <span class="org-sh-escaped-newline">\</span>
+     <span class="org-string">'INSERT INTO w VALUES (1, md5(random()::text));\n'</span>  <span class="org-string">"-c 4 -T 5"</span>
+run  <span class="org-string">"50万行の INSERT を明示的なトランザクションで1回"</span>  <span class="org-sh-escaped-newline">\</span>
+     <span class="org-string">'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n'</span>  <span class="org-string">"-c 1 -t 1"</span>
+docker exec pgpg-postgres-1 psql -U postgres -qAt -c  <span class="org-string">"DROP TABLE w"</span>
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
+COMMIT; | LWLock:WALWrite | 1128
+COMMIT; | IO:WalSync | 395
+INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 21
+COMMIT; | CPU | 8
+INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 3
+BEGIN; | CPU | 3
+BEGIN; | Client:ClientRead | 2
+COMMIT; | IO:WalWrite | 2
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:DataFileExtend | 1
+latency average = 1.684 ms
+== 小さい INSERT を自動コミットで(4並列、5秒)
+INSERT INTO w VALUES (1, md5(random()::text)); | LWLock:WALWrite | 1144
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalSync | 394
+INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 38
+INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 6
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalWrite | 3
+latency average = 1.678 ms
+== 50万行の INSERT を明示的なトランザクションで1回
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | CPU | 148
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:DataFileExtend | 6
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalWrite | 4
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalSync | 4
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | LWLock:WALWrite | 3
+COMMIT; | IO:WalSync | 1
+latency average = 1934.744 ms
+</pre>
+</div>
+
+ <ul class="org-ul"> <li>小さい INSERT を明示的なトランザクションで繰り返すと、標本の約98%が COMMIT だった。COMMIT の標本のほとんどは、WAL の確定を待つ IO:WalSync と LWLock:WALWrite だった</li>
+ <li>同じ INSERT を自動コミットにすると、標本はすべて INSERT になった。待機イベントの内訳も、1回あたりの時間も変わらない</li>
+ <li>50万行の INSERT を1回でコミットすると、標本のほとんどは INSERT の CPU で、COMMIT は1回だけだった。INSERT の最中にも IO:WalWrite と IO:WalSync が出ている。</li>
+</ul> <blockquote>
+ <p>
+WalSync: WALファイルが永続的ストレージに達するのを待機しています。
+</p>
+
+ <p>
+WALWrite: WALバッファがディスクに書き込まれるのを待機しています。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/monitoring-stats.html#WAIT-EVENT-TABLE">27.2. 累積統計システム</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org4e361ed" class="outline-2">
+ <h2 id="org4e361ed"> <a href="#org4e361ed">関連</a></h2>
+ <div class="outline-text-2" id="text-org4e361ed">
+ <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
+ <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
+ <li>前提:  <a href="20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html#ID-20261010T095355">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgab83b97" class="outline-2">
- <h2 id="orgab83b97"> <a href="#orgab83b97">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgab83b97">
+ <div id="outline-container-org4e5a71f" class="outline-2">
+ <h2 id="org4e5a71f"> <a href="#org4e5a71f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4e5a71f">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -85,9 +568,9 @@ Setting user-provided key-value pairs on an Object may allow an attacker to over
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org04dab71" class="outline-2">
- <h2 id="org04dab71"> <a href="#org04dab71">概要</a></h2>
- <div class="outline-text-2" id="text-org04dab71">
+ <div id="outline-container-org32d130e" class="outline-2">
+ <h2 id="org32d130e"> <a href="#org32d130e">概要</a></h2>
+ <div class="outline-text-2" id="text-org32d130e">
  <p>
 Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
 </p>
@@ -101,7 +584,7 @@ COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label> <pre class="src src-sql" id="org7f0afae"> <span class="org-keyword">CREATE</span> EXTENSION pg_stat_statements;
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label> <pre class="src src-sql" id="org4eaaffd"> <span class="org-keyword">CREATE</span> EXTENSION pg_stat_statements;
  <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">t</span> (id  <span class="org-type">int</span>);
 
  <span class="org-comment-delimiter">-- </span> <span class="org-comment">COMMIT のときに1秒かかる処理を作る
@@ -115,7 +598,7 @@ COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT
 </div>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label> <pre class="src src-sql" id="orga3ca2e8"> <span class="org-keyword">SELECT</span> pg_stat_statements_reset()  <span class="org-keyword">IS</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>  <span class="org-keyword">AS</span> reset;
+ <label class="org-src-name"> <span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label> <pre class="src src-sql" id="org5985052"> <span class="org-keyword">SELECT</span> pg_stat_statements_reset()  <span class="org-keyword">IS</span>  <span class="org-keyword">NOT</span>  <span class="org-keyword">NULL</span>  <span class="org-keyword">AS</span> reset;
 
  <span class="org-keyword">BEGIN</span>;
  <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> t  <span class="org-keyword">VALUES</span> (1);
@@ -273,32 +756,32 @@ COMMIT をはさんだ時間は約1秒なのに、pg_stat_statements が COMMIT 
 </p>
 </div>
 </div>
- <div id="outline-container-org4060100" class="outline-2">
- <h2 id="org4060100"> <a href="#org4060100">関連</a></h2>
- <div class="outline-text-2" id="text-org4060100">
+ <div id="outline-container-org6c7dd7d" class="outline-2">
+ <h2 id="org6c7dd7d"> <a href="#org6c7dd7d">関連</a></h2>
+ <div class="outline-text-2" id="text-org6c7dd7d">
  <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ</a>。コミット処理の中で何を待っているか</li>
  <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
 </ul></div>
 </div>
- <div id="outline-container-org533fd43" class="outline-2">
- <h2 id="org533fd43"> <a href="#org533fd43">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org533fd43">
+ <div id="outline-container-org9682ed8" class="outline-2">
+ <h2 id="org9682ed8"> <a href="#org9682ed8">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org9682ed8">
  <ul class="org-ul"> <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html</id>
-  <updated>2026-10-13T10:03:14+09:00</updated>
+  <updated>2026-10-13T20:24:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org40f6fdf" class="outline-2">
- <h2 id="org40f6fdf"> <a href="#org40f6fdf">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org40f6fdf">
+ <div id="outline-container-orgb635b60" class="outline-2">
+ <h2 id="orgb635b60"> <a href="#orgb635b60">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgb635b60">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -307,9 +790,9 @@ COMMIT をはさんだ時間は約1秒なのに、pg_stat_statements が COMMIT 
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga45082f" class="outline-2">
- <h2 id="orga45082f"> <a href="#orga45082f">概要</a></h2>
- <div class="outline-text-2" id="text-orga45082f">
+ <div id="outline-container-org2b94821" class="outline-2">
+ <h2 id="org2b94821"> <a href="#org2b94821">概要</a></h2>
+ <div class="outline-text-2" id="text-org2b94821">
  <p>
 PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL)を作成する。COMMIT は書き込みがある場合は主にその記録の永続化を待ち、ページは書かない。Aurora だと待機イベント  <code>IO:XactSync</code> として現れる。
 </p>
@@ -319,17 +802,17 @@ PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL
 </p>
 </div>
 </div>
- <div id="outline-container-orga085f27" class="outline-2">
- <h2 id="orga085f27"> <a href="#orga085f27">関連</a></h2>
- <div class="outline-text-2" id="text-orga085f27">
+ <div id="outline-container-org26fd6c2" class="outline-2">
+ <h2 id="org26fd6c2"> <a href="#org26fd6c2">関連</a></h2>
+ <div class="outline-text-2" id="text-org26fd6c2">
  <ul class="org-ul"> <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-intro.html">28.3. 先行書き込みログ(WAL)</a></li>
  <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-configuration.html">28.5. WALの設定</a></li>
  <li>正典:  <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/AuroraUserGuide/apg-waits.xactsync.html">IO:XactSync - Amazon Aurora</a></li>
 </ul></div>
 </div>
- <div id="outline-container-org046c401" class="outline-2">
- <h2 id="org046c401"> <a href="#org046c401">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org046c401">
+ <div id="outline-container-orge5390da" class="outline-2">
+ <h2 id="orge5390da"> <a href="#orge5390da">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orge5390da">
  <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
  <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
 </ul></div>
@@ -337,572 +820,16 @@ PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html</id>
-  <updated>2026-10-13T10:03:11+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 640: 関連が少ないレコードで破壊的に時間がかかる現象</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org09fcd26" class="outline-2">
- <h2 id="org09fcd26"> <a href="#org09fcd26">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org09fcd26">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-30 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-30 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgef836e7" class="outline-2">
- <h2 id="orgef836e7"> <a href="#orgef836e7">概要</a></h2>
- <div class="outline-text-2" id="text-orgef836e7">
- <p>
-関連レコードが少ないユーザのほうが、多いユーザより100倍以上遅くなることがあった。
-</p>
-
- <p>
-結局、関連のある1レコードを辿るようなクエリになっていて、レコードが少ないほど発見しにくく全件取得していた。また、レコードが少ないとシーケンシャルに取得する実行計画が選ばれ、破壊的に遅くなった。
-</p>
-
- <p>
-事象のメモ。
-</p>
-
- <ul class="org-ul"> <li>ユーザに関連する特定のテーブルの SELECT が、破壊的に時間がかかることがある。もともと早くないところが100倍以上遅くなって、数分レベルで時間がかかる</li>
- <li>DBやインフラにスパイクや変わった点は一切なく、負荷や入出力に時間がかかっているようにも見えない。同時刻のほかのクエリは問題なく動く</li>
- <li>ユーザ × タイミングによって発生する
- <ul class="org-ul"> <li>最近会員登録したような、レコードが  <b>少ない</b> ユーザでのみ発生する</li>
-</ul></li>
- <li>そのテーブルの全レコード数は60万件程度で、ユーザ1人が関連するレコードは100件程度</li>
- <li>レコードが多いユーザと少ないユーザでパラメータだけ変えて SELECT すると、実行計画は異なっている。結合方法が異なっていて、多いユーザは Hash Join で子テーブルを1回だけ読む。少ないユーザは Nested Loop Semi Join で、親の1行ごとに子テーブルのインデックスを先頭から走査する</li>
-</ul> <p>
-異なる実行計画から明らかに遅そうには見えるのだが、100倍の速度低下は再現できなかった。なにか別の要因が組み合わさっているようにも見える。
-</p>
-</div>
-</div>
- <div id="outline-container-org2ae24f4" class="outline-2">
- <h2 id="org2ae24f4"> <a href="#org2ae24f4">関連</a></h2>
- <div class="outline-text-2" id="text-org2ae24f4">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260929T005900--kdoc-640-関連が少ないレコードで破壊的に時間がかかる現象__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260929T005900--kdoc-640-関連が少ないレコードで破壊的に時間がかかる現象__permanent.html</id>
-  <updated>2026-10-13T10:03:09+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 639: しょうけい館を観察する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org343bfbb" class="outline-2">
- <h2 id="org343bfbb"> <a href="#org343bfbb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org343bfbb">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-10 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-10 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orge5904cd" class="outline-2">
- <h2 id="orge5904cd"> <a href="#orge5904cd">概要</a></h2>
- <div class="outline-text-2" id="text-orge5904cd">
- <p>
-しょうけい館は、東京都千代田区にある、戦争における戦傷病者に関する史料館。
-</p>
-
- <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.18699342308!2d139.74853281198656!3d35.69701577246775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c6b4c390fff%3A0x1d43f78e820a337b!2sSh%C5%8Dkei-kan!5e0!3m2!1sen!2sjp!4v1790485287074!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-</div>
-</div>
- <div id="outline-container-org8ee8633" class="outline-2">
- <h2 id="org8ee8633"> <a href="#org8ee8633">メモ</a></h2>
- <div class="outline-text-2" id="text-org8ee8633">
- <ul class="org-ul"> <li>戦争が終わったらすべてハッピー、というわけでは当然ない。戦争で受けた傷があり、それぞれに続く人生がある。具体的な一人ひとりの例を知れた。戦病者数の割合などの展示もあって、具体と抽象の両方で戦争の重みを感じられる</li>
- <li>戦争の間だけをフォーカスしがちだが、前後の日常との切れ目があって、むしろ日常の方に目を向けることで、戦争の重大さを感じられるように見える</li>
- <li>被弾した物品、血液痕のついた衣服で、リアリティを感じられる</li>
- <li>義足や義手といった人口の装具を手に取ることができた。ずっしりと重みがあり、彼らの語る人生を理解する手助けになったように見える</li>
-</ul></div>
-</div>
- <div id="outline-container-org72a4eec" class="outline-2">
- <h2 id="org72a4eec"> <a href="#org72a4eec">関連</a></h2>
- <div class="outline-text-2" id="text-org72a4eec">
- <ul class="org-ul"> <li>類似:  <a href="20241103T172630--kdoc-265-昭和記念館を観察する__essay.html#ID-20241103T172630">KDOC 265: 昭和記念館を観察する</a>。同様に戦争関係の展示</li>
- <li>類似:  <a href="20250921T190642--kdoc-468-帰還者たちの記憶ミュージアムを観察する__essay.html#ID-20250921T190642">KDOC 468: 帰還者たちの記憶ミュージアムを観察する</a>。同様に戦争関係の展示。特に、戦争後にフォーカスした点で共通点がある</li>
-</ul></div>
-</div>
- <div id="outline-container-orgf52837c" class="outline-2">
- <h2 id="orgf52837c"> <a href="#orgf52837c">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgf52837c">
- <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260927T140029--kdoc-639-しょうけい館を観察する__essay.html"/>
-  <id>https://kijimad.github.io/roam/20260927T140029--kdoc-639-しょうけい館を観察する__essay.html</id>
-  <updated>2026-10-13T10:03:09+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 653: var と := の違い</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org0cc58f9" class="outline-2">
- <h2 id="org0cc58f9"> <a href="#org0cc58f9">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0cc58f9">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org5c389dd" class="outline-2">
- <h2 id="org5c389dd"> <a href="#org5c389dd">概要</a></h2>
- <div class="outline-text-2" id="text-org5c389dd">
- <p>
-Go で当たり前に使っている  <code>var x = 1</code> と  <code>x := 1</code> の違いが気になった。微妙な違いがある。
-</p>
-
- <blockquote>
- <p>
-It is shorthand for a regular variable declaration with initializer expressions but no types:
-</p>
-
- <p>
-“var” IdentifierList “=” ExpressionList .
-</p>
-
- <p>
-Unlike regular variable declarations, a short variable declaration may redeclare variables provided they were originally declared earlier in the same block (or the parameter lists if the block is the function body) with the same type, and at least one of the non-blank variables is new. As a consequence, redeclaration can only appear in a multi-variable short declaration. Redeclaration does not introduce a new variable; it just assigns a new value to the original.
-</p>
-
- <p>
-Short variable declarations may appear only inside functions. In some contexts such as the initializers for “if”, “for”, or “switch” statements, they can be used to declare local temporary variables.
-</p>
-
- <p>
-訳
-</p>
-
- <p>
-これは、初期化式を含むが型指定のない通常の変数宣言の省略形です：
-</p>
-
- <p>
-“var” IdentifierList “=” ExpressionList .
-</p>
-
- <p>
-通常の変数宣言とは異なり、短縮変数宣言では、同じブロック内（ブロックが関数本体である場合はパラメータリスト内）で以前に同じ型で宣言されており、かつ空白以外の変数のうち少なくとも1つが新規である場合に限り、変数を再宣言することができます。その結果、再宣言は多変数短縮宣言でのみ使用できます。再宣言によって新しい変数が導入されるわけではなく、元の変数に新しい値が代入されるだけです。
-</p>
-
- <p>
-短縮変数宣言は関数内部でのみ使用できます。「if」、「for」、または「switch」文の初期化子など、一部の文脈では、ローカルの一時変数を宣言するために使用できます。
-</p>
-
- <p>
- <a href="https://go.dev/ref/spec#Short_variable_declarations">The Go Programming Language Specification - Short variable declarations</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org6cc78da" class="outline-2">
- <h2 id="org6cc78da"> <a href="#org6cc78da">関連</a></h2>
- <div class="outline-text-2" id="text-org6cc78da">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html</id>
-  <updated>2026-10-13T10:03:05+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orga7491ae" class="outline-2">
- <h2 id="orga7491ae"> <a href="#orga7491ae">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga7491ae">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgb7f62f6" class="outline-2">
- <h2 id="orgb7f62f6"> <a href="#orgb7f62f6">概要</a></h2>
- <div class="outline-text-2" id="text-orgb7f62f6">
- <p>
-Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
-</p>
-
- <p>
-pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに pg_stat_activity でアクティブなセッションの文を数える。2つのセッションが同時に要るので、この実験は pgpg のプロキシを通さず、PostgreSQL に直接つなぐ。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label> <pre class="src src-shell"> <span class="org-comment-delimiter"># </span> <span class="org-comment">書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
-</span> <span class="org-function-name">sample</span>() {
-  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F  <span class="org-string">' | '</span> << <span class="org-string">'SQL'</span> <span class="org-sh-heredoc">
-CREATE TABLE samples (query text, wait text);
-DO $$
-BEGIN
-  FOR i IN 1..400 LOOP
-    PERFORM pg_stat_clear_snapshot();
-    INSERT INTO samples
-    -- 待機イベントがなければ CPU で動いている
-    SELECT query, coalesce(wait_event_type || ':' || wait_event, 'CPU')
-    FROM pg_stat_activity
-    WHERE application_name = 'pgbench' AND state = 'active';
-    PERFORM pg_sleep(0.01);
-  END LOOP;
-END $$;
-SELECT query, wait, count(*) FROM samples GROUP BY 1, 2 ORDER BY 3 DESC;
-DROP TABLE samples;
-SQL
-</span>}
-
- <span class="org-comment-delimiter"># </span> <span class="org-comment">$1: 説明、$2: pgbench に流す SQL、$3: pgbench のオプション
-</span> <span class="org-function-name">run</span>() {
-   <span class="org-builtin">echo</span>  <span class="org-string">"== $1"</span>
-  docker exec pgpg-postgres-1 psql -U postgres -qAt  <span class="org-sh-escaped-newline">\</span>
-    -c  <span class="org-string">"DROP TABLE IF EXISTS w"</span> -c  <span class="org-string">"CREATE TABLE w (id int, pad text)"</span>  <span class="org-sh-escaped-newline">\</span>
-    -c  <span class="org-string">"CREATE INDEX ON w (id)"</span> -c  <span class="org-string">"CREATE INDEX ON w (pad)"</span> 2>/dev/null
-  printf  <span class="org-string">"$2"</span> | docker exec -i pgpg-postgres-1 sh -c  <span class="org-string">'cat > /tmp/bench.sql'</span>
-   <span class="org-variable-name">out</span>=$(mktemp)
-   <span class="org-comment-delimiter"># </span> <span class="org-comment">拡張プロトコル(-M extended)で書き込む
-</span>  docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $ <span class="org-variable-name">3</span>  <span class="org-sh-escaped-newline">\</span>
-    -f /tmp/bench.sql postgres >  <span class="org-string">"$out"</span> 2>/dev/null &
-  sleep 0.3
-  sample
-   <span class="org-builtin">wait</span>
-  grep  <span class="org-string">'latency average'</span>  <span class="org-string">"$out"</span>
-  rm -f  <span class="org-string">"$out"</span>
-}
-
-run  <span class="org-string">"小さい INSERT を明示的なトランザクションで(4並列、5秒)"</span>  <span class="org-sh-escaped-newline">\</span>
-     <span class="org-string">'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n'</span>  <span class="org-string">"-c 4 -T 5"</span>
-run  <span class="org-string">"小さい INSERT を自動コミットで(4並列、5秒)"</span>  <span class="org-sh-escaped-newline">\</span>
-     <span class="org-string">'INSERT INTO w VALUES (1, md5(random()::text));\n'</span>  <span class="org-string">"-c 4 -T 5"</span>
-run  <span class="org-string">"50万行の INSERT を明示的なトランザクションで1回"</span>  <span class="org-sh-escaped-newline">\</span>
-     <span class="org-string">'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n'</span>  <span class="org-string">"-c 1 -t 1"</span>
-docker exec pgpg-postgres-1 psql -U postgres -qAt -c  <span class="org-string">"DROP TABLE w"</span>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
-COMMIT; | LWLock:WALWrite | 1128
-COMMIT; | IO:WalSync | 395
-INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 21
-COMMIT; | CPU | 8
-INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 3
-BEGIN; | CPU | 3
-BEGIN; | Client:ClientRead | 2
-COMMIT; | IO:WalWrite | 2
-INSERT INTO w VALUES (1, md5(random()::text)); | IO:DataFileExtend | 1
-latency average = 1.684 ms
-== 小さい INSERT を自動コミットで(4並列、5秒)
-INSERT INTO w VALUES (1, md5(random()::text)); | LWLock:WALWrite | 1144
-INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalSync | 394
-INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 38
-INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 6
-INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalWrite | 3
-latency average = 1.678 ms
-== 50万行の INSERT を明示的なトランザクションで1回
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | CPU | 148
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:DataFileExtend | 6
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalWrite | 4
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalSync | 4
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | LWLock:WALWrite | 3
-COMMIT; | IO:WalSync | 1
-latency average = 1934.744 ms
-</pre>
-</div>
-
- <ul class="org-ul"> <li>小さい INSERT を明示的なトランザクションで繰り返すと、標本の約98%が COMMIT だった。COMMIT の標本のほとんどは、WAL の確定を待つ IO:WalSync と LWLock:WALWrite だった</li>
- <li>同じ INSERT を自動コミットにすると、標本はすべて INSERT になった。待機イベントの内訳も、1回あたりの時間も変わらない</li>
- <li>50万行の INSERT を1回でコミットすると、標本のほとんどは INSERT の CPU で、COMMIT は1回だけだった。INSERT の最中にも IO:WalWrite と IO:WalSync が出ている。</li>
-</ul> <blockquote>
- <p>
-WalSync: WALファイルが永続的ストレージに達するのを待機しています。
-</p>
-
- <p>
-WALWrite: WALバッファがディスクに書き込まれるのを待機しています。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/monitoring-stats.html#WAIT-EVENT-TABLE">27.2. 累積統計システム</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-orgb8f287e" class="outline-2">
- <h2 id="orgb8f287e"> <a href="#orgb8f287e">関連</a></h2>
- <div class="outline-text-2" id="text-orgb8f287e">
- <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
- <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
- <li>前提:  <a href="20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html#ID-20261010T095355">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html</id>
-  <updated>2026-10-13T10:03:05+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 642: 実行計画は3つの結合を選ぶ</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgd2e3699" class="outline-2">
- <h2 id="orgd2e3699"> <a href="#orgd2e3699">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd2e3699">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org5bcbdc5" class="outline-2">
- <h2 id="org5bcbdc5"> <a href="#org5bcbdc5">概要</a></h2>
- <div class="outline-text-2" id="text-org5bcbdc5">
- <p>
-Postgres の実行計画では、リレーションを結合する方法には3つある。
-</p>
-
- <ul class="org-ul"> <li>ネステッドループ結合</li>
- <li>マージ結合</li>
- <li>ハッシュ結合</li>
-</ul></div>
-</div>
- <div id="outline-container-orgde080f6" class="outline-2">
- <h2 id="orgde080f6"> <a href="#orgde080f6">関連</a></h2>
- <div class="outline-text-2" id="text-orgde080f6">
- <ul class="org-ul"> <li>参照:  <a href="https://www.postgresql.jp/document/18/html/planner-optimizer.html">51.5. プランナ/オプティマイザ</a></li>
- <li>関連:  <a href="https://www.postgresql.jp/document/18/html/query-path.html">51.1. 問い合わせの経路</a></li>
- <li>関連:  <a href="https://www.postgresql.jp/document/18/html/using-explain.html">14.1. EXPLAINの利用</a></li>
- <li>関連:  <a href="https://www.postgresql.jp/document/18/html/planner-stats.html">14.2. プランナで使用される統計情報</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html</id>
-  <updated>2026-10-13T10:03:04+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 656: データベースで列の並び順によってサイズが変わる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org1fe691a" class="outline-2">
- <h2 id="org1fe691a"> <a href="#org1fe691a">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org1fe691a">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org7d5c20f" class="outline-2">
- <h2 id="org7d5c20f"> <a href="#org7d5c20f">概要</a></h2>
- <div class="outline-text-2" id="text-org7d5c20f">
- <p>
-データベースでも、プログラミング言語と同様に、フィールドのデータ型を定義する順序によって使うデータサイズが変わりうる。
-</p>
-
- <p>
-型ごとに、値を置く位置の境界(整列)が決まっている。境界に合わないときは、前にパディングが入る。
-</p>
-
- <blockquote>
- <p>
-ディスク上の完全な行の表現のように、複数の値が隣接して格納される際には、指定された境界で始まるように、この型のデータの前にパディングが挿入されます。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/catalog-pg-type.html">52.64. pg_type</a>
-</p>
-</blockquote>
-
- <p>
-同じ列を、並び順だけ変えた2つのテーブルで比べる。boolean は1バイトで整列なし、bigint は8バイトで8バイト境界(double 整列)である。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ列を並び順だけ変えて、1行の大きさを比べる</label> <pre class="src src-sql"> <span class="org-comment-delimiter">-- </span> <span class="org-comment">boolean と bigint を交互に並べる
-</span> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">padded</span>
-  (a  <span class="org-type">boolean</span>, b bigint, c  <span class="org-type">boolean</span>, d bigint);
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">bigint を先に、boolean をあとにまとめる
-</span> <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">packed</span>
-  (b bigint, d bigint, a  <span class="org-type">boolean</span>, c  <span class="org-type">boolean</span>);
-
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> padded  <span class="org-keyword">VALUES</span> ( <span class="org-keyword">true</span>, 1,  <span class="org-keyword">false</span>, 2);
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> packed  <span class="org-keyword">VALUES</span> (1, 2,  <span class="org-keyword">true</span>,  <span class="org-keyword">false</span>);
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">列ごとの長さと整列
-</span> <span class="org-keyword">SELECT</span> format( <span class="org-string">'%s : %s : 長さ %s : 整列 %s'</span>,
-              attname, typname, typlen, typalign)
-        <span class="org-keyword">AS</span> cols
- <span class="org-keyword">FROM</span> pg_attribute a
- <span class="org-keyword">JOIN</span> pg_type t  <span class="org-keyword">ON</span> t.oid = a.atttypid
- <span class="org-keyword">WHERE</span> attrelid =  <span class="org-string">'padded'</span>::regclass
-   <span class="org-keyword">AND</span> attnum > 0
- <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> attnum;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">1行の大きさ(行ヘッダを含む)
-</span> <span class="org-keyword">SELECT</span> pg_column_size(p.*)  <span class="org-keyword">AS</span> padded  <span class="org-keyword">FROM</span> padded p;
- <span class="org-keyword">SELECT</span> pg_column_size(p.*)  <span class="org-keyword">AS</span> packed  <span class="org-keyword">FROM</span> packed p;
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                       |
-|-------------------------------------------------------|
-| > CREATE TABLE padded                                 |
-| >   (a boolean, b bigint, c boolean, d bigint);       |
-| CREATE TABLE                                          |
-|                                                       |
-| > CREATE TABLE packed                                 |
-| >   (b bigint, d bigint, a boolean, c boolean);       |
-| CREATE TABLE                                          |
-|                                                       |
-| > INSERT INTO padded VALUES (true, 1, false, 2);      |
-| INSERT 0 1                                            |
-|                                                       |
-| > INSERT INTO packed VALUES (1, 2, true, false);      |
-| INSERT 0 1                                            |
-|                                                       |
-| > SELECT format('%s : %s : 長さ %s : 整列 %s',        |
-| >               attname, typname, typlen, typalign)   |
-| >        AS cols                                      |
-| > FROM pg_attribute a                                 |
-| > JOIN pg_type t ON t.oid = a.atttypid                |
-| > WHERE attrelid = 'padded'::regclass                 |
-| >   AND attnum > 0                                    |
-| > ORDER BY attnum;                                    |
-| cols                                                  |
-| a : bool : 長さ 1 : 整列 c                            |
-| b : int8 : 長さ 8 : 整列 d                            |
-| c : bool : 長さ 1 : 整列 c                            |
-| d : int8 : 長さ 8 : 整列 d                            |
-|                                                       |
-| > SELECT pg_column_size(p.*) AS padded FROM padded p; |
-| padded                                                |
-| 56                                                    |
-|                                                       |
-| > SELECT pg_column_size(p.*) AS packed FROM packed p; |
-| packed                                                |
-| 42                                                    |
-</pre>
-</div>
-
- <p>
-padded は1行 56 バイト、packed は 42 バイトで、14 バイト違う。padded では、boolean(1バイト)のあとの bigint を8バイト境界へ置くため、7バイトのパディングが2回入る。その 7 × 2 = 14 バイトが差になる。
-</p>
-
- <pre class="example" id="orgd622ac1">
-※行ヘッダを除く
-
-padded (boolean, bigint, boolean, bigint) : 32 バイト
-0        8        16       24       32
-|a.......|bbbbbbbb|c.......|dddddddd|
-  ^^^^^^^           ^^^^^^^
-  パディング 7      パディング 7
-
-packed (bigint, bigint, boolean, boolean) : 18 バイト
-0        8        16 18
-|bbbbbbbb|dddddddd|ac|
-
-a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = パディング
-</pre>
-</div>
-</div>
- <div id="outline-container-org046e3a5" class="outline-2">
- <h2 id="org046e3a5"> <a href="#org046e3a5">関連</a></h2>
- <div class="outline-text-2" id="text-org046e3a5">
- <ul class="org-ul"> <li>類似:  <a href="20240825T101916--kdoc-227-フィールド定義の順番によってメモリサイズが変わることがある__permanent.html#ID-20240825T101916">KDOC 227: フィールド定義の順番によってメモリサイズが変わることがある</a>。C言語での同様の例</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html</id>
-  <updated>2026-10-13T10:03:01+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 641: 大きなテーブルだとANALYZEで生成される統計情報はテーブルのランダムな標本から取り出される</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgb32020e" class="outline-2">
- <h2 id="orgb32020e"> <a href="#orgb32020e">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgb32020e">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org4cab362" class="outline-2">
- <h2 id="org4cab362"> <a href="#org4cab362">概要</a></h2>
- <div class="outline-text-2" id="text-org4cab362">
- <p>
-大きなテーブルだとANALYZEで生成される統計情報は、テーブルのランダムな標本から取り出される。そのため、同じクエリでも推定行数は ANALYZE のたびに少し変わる。
-</p>
-
- <blockquote>
- <p>
-この問い合わせが選択する実際の行数は7000です。 しかし、rowsの推定行数は概算値に過ぎません。 この実験を2回実行した場合、多少異なる推定値を得るかもしれません。 もっと言うと、これはANALYZEコマンドを行う度に変化することがあり得ます。 なぜなら、ANALYZEで生成される統計情報は、テーブルのランダムな標本から取り出されるからです。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/document/18/html/using-explain.html">14.1. EXPLAINの利用</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org9a7fb0d" class="outline-2">
- <h2 id="org9a7fb0d"> <a href="#org9a7fb0d">関連</a></h2>
- <div class="outline-text-2" id="text-org9a7fb0d">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20260930T084643--kdoc-641-大きなテーブルだとanalyzeで生成される統計情報はテーブルのランダムな標本から取り出される__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20260930T084643--kdoc-641-大きなテーブルだとanalyzeで生成される統計情報はテーブルのランダムな標本から取り出される__permanent.html</id>
-  <updated>2026-10-13T10:02:41+09:00</updated>
+  <updated>2026-10-13T20:24:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org9bf1e37" class="outline-2">
- <h2 id="org9bf1e37"> <a href="#org9bf1e37">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org9bf1e37">
+ <div id="outline-container-org6653c2a" class="outline-2">
+ <h2 id="org6653c2a"> <a href="#org6653c2a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6653c2a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-07 貴島</li>
 </ul></li>
@@ -911,9 +838,9 @@ a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = �
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orge531936" class="outline-2">
- <h2 id="orge531936"> <a href="#orge531936">概要</a></h2>
- <div class="outline-text-2" id="text-orge531936">
+ <div id="outline-container-orgbf9c5bd" class="outline-2">
+ <h2 id="orgbf9c5bd"> <a href="#orgbf9c5bd">概要</a></h2>
+ <div class="outline-text-2" id="text-orgbf9c5bd">
  <p>
 Go の  <code>select</code> では、複数の case が同時に進行できるときランダムに選ばれる。なので例えばシャットダウン用とキュー追加用の両方のチャネルに値が届いていると、どちらを処理するかはランダムになる。キュー追加をせずシャットダウンの後処理だけをやるなど、一貫させたほうがよいこともある。その場合、優先したい  <code>case</code> だけを  <code>default</code> 付きの  <code>select</code> で先に確かめ、なければ全部の  <code>case</code> を並べた  <code>select</code> で待つ。
 </p>
@@ -980,213 +907,25 @@ Go の  <code>select</code> では、複数の case が同時に進行できる�
 </div>
 </div>
 </div>
- <div id="outline-container-org41fff68" class="outline-2">
- <h2 id="org41fff68"> <a href="#org41fff68">関連</a></h2>
- <div class="outline-text-2" id="text-org41fff68">
+ <div id="outline-container-orgd4acfa8" class="outline-2">
+ <h2 id="orgd4acfa8"> <a href="#orgd4acfa8">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd4acfa8">
  <ul class="org-ul"> <li>前提:  <a href="20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html#ID-20261005T223831">KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html</id>
-  <updated>2026-10-13T10:02:40+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 655: 式の照合順序を変えて並び替えの結果を変える</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgbc55719" class="outline-2">
- <h2 id="orgbc55719"> <a href="#orgbc55719">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgbc55719">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org4730122" class="outline-2">
- <h2 id="org4730122"> <a href="#org4730122">概要</a></h2>
- <div class="outline-text-2" id="text-org4730122">
- <p>
-データベースシステムが並び替えや文字区別をする場合、データベースは入力の照合順序(collation)を使用する。
-</p>
-
- <p>
-たとえば同じ文字列を並び替えても、どの照合順序(並び替えの規則)を使うかで結果が変わる。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ UTF8 の文字列を、照合順序だけ変えて並び替える</label> <pre class="src src-sql">SHOW server_encoding;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">コードポイントの値の順
-</span> <span class="org-keyword">SELECT</span> string_agg(x,  <span class="org-string">' '</span>  <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> x  <span class="org-keyword">COLLATE</span> "C")  <span class="org-keyword">AS</span> c
- <span class="org-keyword">FROM</span> ( <span class="org-keyword">VALUES</span> ( <span class="org-string">'a'</span>), ( <span class="org-string">'B'</span>), ( <span class="org-string">'b'</span>), ( <span class="org-string">'A'</span>))  <span class="org-keyword">AS</span> v(x);
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">言語の規則の順(ICU)
-</span> <span class="org-keyword">SELECT</span> string_agg(x,  <span class="org-string">' '</span>  <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> x  <span class="org-keyword">COLLATE</span> "und-x-icu")  <span class="org-keyword">AS</span> und_x_icu
- <span class="org-keyword">FROM</span> ( <span class="org-keyword">VALUES</span> ( <span class="org-string">'a'</span>), ( <span class="org-string">'B'</span>), ( <span class="org-string">'b'</span>), ( <span class="org-string">'A'</span>))  <span class="org-keyword">AS</span> v(x);
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                                         |
-|-------------------------------------------------------------------------|
-| > SHOW server_encoding;                                                 |
-| server_encoding                                                         |
-| UTF8                                                                    |
-|                                                                         |
-| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "C") AS c                 |
-| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
-| c                                                                       |
-| A B a b                                                                 |
-|                                                                         |
-| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "und-x-icu") AS und_x_icu |
-| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
-| und_x_icu                                                               |
-| a A b B                                                                 |
-</pre>
-</div>
-
- <blockquote>
- <p>
-概念的に照合可能なデータ型のそれぞれの式は、照合順序を保持しています （組み込みの照合可能なデータ型はtext、varchar、 charです。 ユーザ定義の基本型は照合可能とマーキングできます。もちろん照合可能なデータ型上のドメインは照合可能となります）。 もし、式が列参照である場合は、式の照合順序は列の定義された照合順序となります。 もし、式が定数である場合は、照合順序は定数のデータ型のデフォルトの照合順序となります。 より複雑な式の照合順序は、下記に示すように、その入力の照合順序から引き出されます。
-</p>
-
- <p>
-(略)
-</p>
-
- <p>
-データベースシステムが並べ替えや文字区別を行う場合、データベースは入力の照合順序を使用します。 これは、たとえばORDER BY句や < 演算子や関数を使用する際に発生します。 ORDER BY句に適用する照合順序は、単純にソートキーの照合順序です。 関数や演算子の呼び出しに対して適用される照合順序は、以下に述べるように引数により決まります。 比較演算子に加えて、照合順序はlower、upper、initcapといった小文字と大文字を変換する関数やパターンマッチングの演算子、to_char関連の関数で考慮されています。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/document/18/html/collation.html">23.2. 照合順序サポート</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org11cd873" class="outline-2">
- <h2 id="org11cd873"> <a href="#org11cd873">関連</a></h2>
- <div class="outline-text-2" id="text-org11cd873">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html</id>
-  <updated>2026-10-13T10:02:31+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org5a85163" class="outline-2">
- <h2 id="org5a85163"> <a href="#org5a85163">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5a85163">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgf8a70ae" class="outline-2">
- <h2 id="orgf8a70ae"> <a href="#orgf8a70ae">概要</a></h2>
- <div class="outline-text-2" id="text-orgf8a70ae">
- <p>
-集計や並べ替えの後ろにある LIMIT は、下の処理が全部の行を読み終えるまで効かないので、読む行を減らさないのを確かめる。
-</p>
-
- <p>
-ユーザー、注文、明細を結合し、ユーザーごとに金額を合計して、上位5件を取る。比べるため、集計と並べ替えを外して 5 件取る問い合わせも流す。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <span class="org-keyword">SET</span> max_parallel_workers_per_gather = 0;
- <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">users</span> (id  <span class="org-type">int</span>  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>,  <span class="org-keyword">name</span> text);
- <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">orders</span> (id  <span class="org-type">int</span>  <span class="org-keyword">PRIMARY</span>  <span class="org-keyword">KEY</span>, user_id  <span class="org-type">int</span>);
- <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">items</span> (order_id  <span class="org-type">int</span>, price  <span class="org-type">int</span>);
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> users
- <span class="org-keyword">SELECT</span> i,  <span class="org-string">'user'</span> || i  <span class="org-keyword">FROM</span> generate_series(1, 10000) i;
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> orders
- <span class="org-keyword">SELECT</span> i, i % 10000 + 1  <span class="org-keyword">FROM</span> generate_series(1, 100000) i;
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> items
- <span class="org-keyword">SELECT</span> i % 100000 + 1, i % 1000  <span class="org-keyword">FROM</span> generate_series(1, 300000) i;
-ANALYZE users;
-ANALYZE orders;
-ANALYZE items;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">集計して並べ替えてから 5 件取る
-</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
-         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
- <span class="org-keyword">SELECT</span> u. <span class="org-keyword">name</span>,  <span class="org-builtin">sum</span>(i.price)  <span class="org-keyword">AS</span> total
- <span class="org-keyword">FROM</span> users u
- <span class="org-keyword">JOIN</span> orders o  <span class="org-keyword">ON</span> o.user_id = u.id
- <span class="org-keyword">JOIN</span> items i  <span class="org-keyword">ON</span> i.order_id = o.id
- <span class="org-keyword">WHERE</span> u.id < 100
- <span class="org-keyword">GROUP</span>  <span class="org-keyword">BY</span> u. <span class="org-keyword">name</span>
- <span class="org-keyword">ORDER</span>  <span class="org-keyword">BY</span> total  <span class="org-keyword">DESC</span>
- <span class="org-keyword">LIMIT</span> 5;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">集計も並べ替えもせずに 5 件取る
-</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
-         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
- <span class="org-keyword">SELECT</span> u. <span class="org-keyword">name</span>, i.price
- <span class="org-keyword">FROM</span> users u
- <span class="org-keyword">JOIN</span> orders o  <span class="org-keyword">ON</span> o.user_id = u.id
- <span class="org-keyword">JOIN</span> items i  <span class="org-keyword">ON</span> i.order_id = o.id
- <span class="org-keyword">WHERE</span> u.id < 100
- <span class="org-keyword">LIMIT</span> 5;
-</pre>
-</div>
-
- <p>
- <img src="images/plan-2afc5d2495db.svg" alt="plan-2afc5d2495db.svg" class="org-svg"></img> <img src="images/plan-3de4fc1f58c4.svg" alt="plan-3de4fc1f58c4.svg" class="org-svg"></img></p>
-
- <ul class="org-ul"> <li>集計して並べ替えると、下の items の Seq Scan は 300,000 行をすべて読み、最後の Limit で 5 行に絞っている</li>
- <li>集計も並べ替えもしないと、items の Seq Scan は 5 行しか読まない。Limit が 5 行を受け取った時点で、下に行を要求するのをやめている。結合のしかたも Hash Join から、1 行ずつ相手を探す Nested Loop に変わった</li>
-</ul> <p>
-計画は上のノードが下のノードに 1 行ずつ要求し、行は下のノードで作られて上へ渡る。上が要求をやめれば、下も止まる。
-</p>
-
- <blockquote>
- <p>
-これは本質的に要求引き寄せ型（demand-pull）パイプライン機能です。 計画ノードが呼ばれる度にもう1つの行を引き渡すか、行を引き渡したことの報告を行わなければなりません。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/executor.html">51.6. エグゼキュータ</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org9a62aac" class="outline-2">
- <h2 id="org9a62aac"> <a href="#org9a62aac">関連</a></h2>
- <div class="outline-text-2" id="text-org9a62aac">
- <ul class="org-ul"> <li>前提:  <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。文芸的に確認する道具</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html</id>
-  <updated>2026-10-13T10:02:29+09:00</updated>
+  <updated>2026-10-13T20:24:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org2965a74" class="outline-2">
- <h2 id="org2965a74"> <a href="#org2965a74">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2965a74">
+ <div id="outline-container-org0d9c34b" class="outline-2">
+ <h2 id="org0d9c34b"> <a href="#org0d9c34b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0d9c34b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -1195,9 +934,9 @@ ANALYZE items;
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc452ccc" class="outline-2">
- <h2 id="orgc452ccc"> <a href="#orgc452ccc">概要</a></h2>
- <div class="outline-text-2" id="text-orgc452ccc">
+ <div id="outline-container-orgab4c20d" class="outline-2">
+ <h2 id="orgab4c20d"> <a href="#orgab4c20d">概要</a></h2>
+ <div class="outline-text-2" id="text-orgab4c20d">
  <p>
 select は複数の case が同時に実行できる状態だとランダムに選ぶ。
 </p>
@@ -1210,33 +949,96 @@ If one or more of the communications can proceed, a single one that can proceed 
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgdeba3f2" class="outline-2">
- <h2 id="orgdeba3f2"> <a href="#orgdeba3f2">関連</a></h2>
- <div class="outline-text-2" id="text-orgdeba3f2">
+ <div id="outline-container-orge8a6b78" class="outline-2">
+ <h2 id="orge8a6b78"> <a href="#orge8a6b78">関連</a></h2>
+ <div class="outline-text-2" id="text-orge8a6b78">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgf13f0d2" class="outline-2">
- <h2 id="orgf13f0d2"> <a href="#orgf13f0d2">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgf13f0d2">
+ <div id="outline-container-orga259fdd" class="outline-2">
+ <h2 id="orga259fdd"> <a href="#orga259fdd">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orga259fdd">
  <ul class="org-ul"> <li> <a href="./20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html">KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html</id>
-  <updated>2026-10-13T10:02:28+09:00</updated>
+  <updated>2026-10-13T20:24:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 643: WHERE条件の大小によって実行計画が変わる例</title>
+  <title>KDOC 644: Recordを外部値がくるところで使うとプロトタイプを書き換えられる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org15f6271" class="outline-2">
- <h2 id="org15f6271"> <a href="#org15f6271">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org15f6271">
+ <div id="outline-container-orgd8dd5ab" class="outline-2">
+ <h2 id="orgd8dd5ab"> <a href="#orgd8dd5ab">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd8dd5ab">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-03 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-03 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgabd031a" class="outline-2">
+ <h2 id="orgabd031a"> <a href="#orgabd031a">概要</a></h2>
+ <div class="outline-text-2" id="text-orgabd031a">
+ <p>
+TypeScriptのRecord型は型だけの存在で、実行時の値はプロトタイプを持つ普通のオブジェクトである。
+</p>
+
+ <blockquote>
+ <p>
+Record<Keys, Type>はプロパティのキーがKeysであり、プロパティの値がTypeであるオブジェクトの型を作るユーティリティ型です。
+</p>
+
+ <p>
+ <a href="https://typescriptbook.jp/reference/type-reuse/utility-types/record">Record<Keys, Type> | TypeScript入門『サバイバルTypeScript』</a>
+</p>
+</blockquote>
+
+ <p>
+オブジェクトはプロトタイプを持つので、 Record の値に外部から来たキーで書き込むと、プロトタイプを書き換えられる。
+</p>
+
+ <blockquote>
+ <p>
+Object Security
+</p>
+
+ <p>
+Setting user-provided key-value pairs on an Object may allow an attacker to override the object’s prototype, which can lead to object injection attacks or prototype pollution attacks. Like the accidental keys issue, this can also be mitigated by using a null-prototype object.
+</p>
+
+ <p>
+ <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#objects_vs._maps">Map#objects vs maps - JavaScript | MDN</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org57e84fb" class="outline-2">
+ <h2 id="org57e84fb"> <a href="#org57e84fb">関連</a></h2>
+ <div class="outline-text-2" id="text-org57e84fb">
+ <ul class="org-ul"> <li>追加調査: プロトタイプ汚染を試す</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 642: 実行計画は3つの結合を選ぶ</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org4a77799" class="outline-2">
+ <h2 id="org4a77799"> <a href="#org4a77799">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4a77799">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -1245,9 +1047,537 @@ If one or more of the communications can proceed, a single one that can proceed 
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc282a93" class="outline-2">
- <h2 id="orgc282a93"> <a href="#orgc282a93">概要</a></h2>
- <div class="outline-text-2" id="text-orgc282a93">
+ <div id="outline-container-orgdd6fde5" class="outline-2">
+ <h2 id="orgdd6fde5"> <a href="#orgdd6fde5">概要</a></h2>
+ <div class="outline-text-2" id="text-orgdd6fde5">
+ <p>
+Postgres の実行計画では、リレーションを結合する方法には3つある。
+</p>
+
+ <ul class="org-ul"> <li>ネステッドループ結合</li>
+ <li>マージ結合</li>
+ <li>ハッシュ結合</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgf729d35" class="outline-2">
+ <h2 id="orgf729d35"> <a href="#orgf729d35">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf729d35">
+ <ul class="org-ul"> <li>参照:  <a href="https://www.postgresql.jp/document/18/html/planner-optimizer.html">51.5. プランナ/オプティマイザ</a></li>
+ <li>関連:  <a href="https://www.postgresql.jp/document/18/html/query-path.html">51.1. 問い合わせの経路</a></li>
+ <li>関連:  <a href="https://www.postgresql.jp/document/18/html/using-explain.html">14.1. EXPLAINの利用</a></li>
+ <li>関連:  <a href="https://www.postgresql.jp/document/18/html/planner-stats.html">14.2. プランナで使用される統計情報</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 641: 大きなテーブルだとANALYZEで生成される統計情報はテーブルのランダムな標本から取り出される</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org0f843f5" class="outline-2">
+ <h2 id="org0f843f5"> <a href="#org0f843f5">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0f843f5">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org22fc3f7" class="outline-2">
+ <h2 id="org22fc3f7"> <a href="#org22fc3f7">概要</a></h2>
+ <div class="outline-text-2" id="text-org22fc3f7">
+ <p>
+大きなテーブルだとANALYZEで生成される統計情報は、テーブルのランダムな標本から取り出される。そのため、同じクエリでも推定行数は ANALYZE のたびに少し変わる。
+</p>
+
+ <blockquote>
+ <p>
+この問い合わせが選択する実際の行数は7000です。 しかし、rowsの推定行数は概算値に過ぎません。 この実験を2回実行した場合、多少異なる推定値を得るかもしれません。 もっと言うと、これはANALYZEコマンドを行う度に変化することがあり得ます。 なぜなら、ANALYZEで生成される統計情報は、テーブルのランダムな標本から取り出されるからです。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/document/18/html/using-explain.html">14.1. EXPLAINの利用</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org6fb4400" class="outline-2">
+ <h2 id="org6fb4400"> <a href="#org6fb4400">関連</a></h2>
+ <div class="outline-text-2" id="text-org6fb4400">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260930T084643--kdoc-641-大きなテーブルだとanalyzeで生成される統計情報はテーブルのランダムな標本から取り出される__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260930T084643--kdoc-641-大きなテーブルだとanalyzeで生成される統計情報はテーブルのランダムな標本から取り出される__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 640: 関連が少ないレコードで破壊的に時間がかかる現象</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgcfb564d" class="outline-2">
+ <h2 id="orgcfb564d"> <a href="#orgcfb564d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgcfb564d">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-30 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-09-30 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org4a2939d" class="outline-2">
+ <h2 id="org4a2939d"> <a href="#org4a2939d">概要</a></h2>
+ <div class="outline-text-2" id="text-org4a2939d">
+ <p>
+関連レコードが少ないユーザのほうが、多いユーザより100倍以上遅くなることがあった。
+</p>
+
+ <p>
+結局、関連のある1レコードを辿るようなクエリになっていて、レコードが少ないほど発見しにくく全件取得していた。また、レコードが少ないとシーケンシャルに取得する実行計画が選ばれ、破壊的に遅くなった。
+</p>
+
+ <p>
+事象のメモ。
+</p>
+
+ <ul class="org-ul"> <li>ユーザに関連する特定のテーブルの SELECT が、破壊的に時間がかかることがある。もともと早くないところが100倍以上遅くなって、数分レベルで時間がかかる</li>
+ <li>DBやインフラにスパイクや変わった点は一切なく、負荷や入出力に時間がかかっているようにも見えない。同時刻のほかのクエリは問題なく動く</li>
+ <li>ユーザ × タイミングによって発生する
+ <ul class="org-ul"> <li>最近会員登録したような、レコードが  <b>少ない</b> ユーザでのみ発生する</li>
+</ul></li>
+ <li>そのテーブルの全レコード数は60万件程度で、ユーザ1人が関連するレコードは100件程度</li>
+ <li>レコードが多いユーザと少ないユーザでパラメータだけ変えて SELECT すると、実行計画は異なっている。結合方法が異なっていて、多いユーザは Hash Join で子テーブルを1回だけ読む。少ないユーザは Nested Loop Semi Join で、親の1行ごとに子テーブルのインデックスを先頭から走査する</li>
+</ul> <p>
+異なる実行計画から明らかに遅そうには見えるのだが、100倍の速度低下は再現できなかった。なにか別の要因が組み合わさっているようにも見える。
+</p>
+</div>
+</div>
+ <div id="outline-container-org5125d68" class="outline-2">
+ <h2 id="org5125d68"> <a href="#org5125d68">関連</a></h2>
+ <div class="outline-text-2" id="text-org5125d68">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260929T005900--kdoc-640-関連が少ないレコードで破壊的に時間がかかる現象__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20260929T005900--kdoc-640-関連が少ないレコードで破壊的に時間がかかる現象__permanent.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 639: しょうけい館を観察する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org8a78dc0" class="outline-2">
+ <h2 id="org8a78dc0"> <a href="#org8a78dc0">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8a78dc0">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-10 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-10 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org3d4ede5" class="outline-2">
+ <h2 id="org3d4ede5"> <a href="#org3d4ede5">概要</a></h2>
+ <div class="outline-text-2" id="text-org3d4ede5">
+ <p>
+しょうけい館は、東京都千代田区にある、戦争における戦傷病者に関する史料館。
+</p>
+
+ <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.18699342308!2d139.74853281198656!3d35.69701577246775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c6b4c390fff%3A0x1d43f78e820a337b!2sSh%C5%8Dkei-kan!5e0!3m2!1sen!2sjp!4v1790485287074!5m2!1sen!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+</div>
+</div>
+ <div id="outline-container-org47a5e92" class="outline-2">
+ <h2 id="org47a5e92"> <a href="#org47a5e92">メモ</a></h2>
+ <div class="outline-text-2" id="text-org47a5e92">
+ <ul class="org-ul"> <li>戦争が終わったらすべてハッピー、というわけでは当然ない。戦争で受けた傷があり、それぞれに続く人生がある。具体的な一人ひとりの例を知れた。戦病者数の割合などの展示もあって、具体と抽象の両方で戦争の重みを感じられる</li>
+ <li>戦争の間だけをフォーカスしがちだが、前後の日常との切れ目があって、むしろ日常の方に目を向けることで、戦争の重大さを感じられるように見える</li>
+ <li>被弾した物品、血液痕のついた衣服で、リアリティを感じられる</li>
+ <li>義足や義手といった人口の装具を手に取ることができた。ずっしりと重みがあり、彼らの語る人生を理解する手助けになったように見える</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgba7a945" class="outline-2">
+ <h2 id="orgba7a945"> <a href="#orgba7a945">関連</a></h2>
+ <div class="outline-text-2" id="text-orgba7a945">
+ <ul class="org-ul"> <li>類似:  <a href="20241103T172630--kdoc-265-昭和記念館を観察する__essay.html#ID-20241103T172630">KDOC 265: 昭和記念館を観察する</a>。同様に戦争関係の展示</li>
+ <li>類似:  <a href="20250921T190642--kdoc-468-帰還者たちの記憶ミュージアムを観察する__essay.html#ID-20250921T190642">KDOC 468: 帰還者たちの記憶ミュージアムを観察する</a>。同様に戦争関係の展示。特に、戦争後にフォーカスした点で共通点がある</li>
+</ul></div>
+</div>
+ <div id="outline-container-org0e6ac51" class="outline-2">
+ <h2 id="org0e6ac51"> <a href="#org0e6ac51">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org0e6ac51">
+ <ul class="org-ul"> <li> <a href="./20240908T180537--kdoc-238-他人の博物館を観察して参考にする__project.html">KDOC 238: 他人の博物館を観察して参考にする</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20260927T140029--kdoc-639-しょうけい館を観察する__essay.html"/>
+  <id>https://kijimad.github.io/roam/20260927T140029--kdoc-639-しょうけい館を観察する__essay.html</id>
+  <updated>2026-10-13T20:24:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 657: PostgreSQL 18のスキップスキャンを試す</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgccb4bf7" class="outline-2">
+ <h2 id="orgccb4bf7"> <a href="#orgccb4bf7">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgccb4bf7">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org6263c54" class="outline-2">
+ <h2 id="org6263c54"> <a href="#org6263c54">概要</a></h2>
+ <div class="outline-text-2" id="text-org6263c54">
+ <p>
+PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列に条件がないとき、先頭の列の値ごとにインデックスを探し直して、関係のない部分を読み飛ばせるようになった(スキップスキャン)。
+</p>
+
+ <blockquote>
+ <p>
+たとえば、(x, y)に対するインデックスと問い合わせ条件WHERE y = 7700では、B-treeインデックススキャンでスキップスキャン最適化を適用できる場合があります。 これは通常、問い合わせプランナがそのテーブルで使用可能なインデックスを考慮した時に、WHERE x = N AND y = 7700の検索を、Nで取り得るすべての値（または実際にインデックスに格納されているすべてのxの値）に対して繰り返す方法が最速であると想定している場合に発生します。 この方法は通常、xの個別値が非常に少なく、ほとんどのインデックスをスキップしてスキャンする（ほとんどのリーフページには関連するタプルが含まれないため）とプランナが期待する場合にのみ採用されます。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/indexes-multicolumn.html">11.3. 複数列インデックス</a>
+</p>
+</blockquote>
+
+ <p>
+同じ (x, y) のインデックスで、x の種類が 10 のテーブルと 10 万のテーブルを作り、WHERE y = 7700 の実行計画を比べる。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>先頭の列の種類の数を変えて、WHERE y = 7700 の実行計画を比べる</label> <pre class="src src-sql"> <span class="org-comment-delimiter">-- </span> <span class="org-comment">出力を短くするため、並列実行を切る
+</span> <span class="org-keyword">SET</span> max_parallel_workers_per_gather = 0;
+
+ <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">few</span> (x  <span class="org-type">int</span>, y  <span class="org-type">int</span>);
+ <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">many</span> (x  <span class="org-type">int</span>, y  <span class="org-type">int</span>);
+ <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> few
+ <span class="org-keyword">SELECT</span> i % 10, i  <span class="org-keyword">FROM</span> generate_series(1, 1000000) i;
+ <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> many
+ <span class="org-keyword">SELECT</span> i % 100000, i  <span class="org-keyword">FROM</span> generate_series(1, 1000000) i;
+ <span class="org-keyword">CREATE</span> INDEX  <span class="org-keyword">ON</span> few (x, y);
+ <span class="org-keyword">CREATE</span> INDEX  <span class="org-keyword">ON</span> many (x, y);
+ANALYZE few;
+ANALYZE many;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">x が 10 種類
+</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
+         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
+ <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> few  <span class="org-keyword">WHERE</span> y = 7700;
+
+ <span class="org-comment-delimiter">-- </span> <span class="org-comment">x が 10 万種類
+</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
+         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
+ <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> many  <span class="org-keyword">WHERE</span> y = 7700;
+</pre>
+</div>
+
+ <p>
+ <img src="images/plan-4cae88c75a42.svg" alt="plan-4cae88c75a42.svg" class="org-svg"></img> <img src="images/plan-29bbaf34ce5d.svg" alt="plan-29bbaf34ce5d.svg" class="org-svg"></img></p>
+
+ <ul class="org-ul"> <li>x が 10 種類のテーブルでは、WHERE に x の条件がないのに、(x, y) のインデックスで Index Only Scan になった。Index Searches は 12 である。 x の 10 種類の値ごとに近い値で、インデックスを探し直しているように見える</li>
+ <li>インデックスが使われないこともある。x が 10 万種類のテーブルでは、インデックスを使わず Seq Scan になった。x の値が 10 万種類あると、探し直す回数が多すぎてインデックスのほぼ全体を読むことになるので、プランナは Seq Scan を選んだようである</li>
+</ul> <blockquote>
+ <p>
+xの個別値が多い場合、インデックス全体のスキャンが必要になる状況になりうるため、ほとんどの場合プランナはインデックスを使用するよりもシーケンシャルスキャンを好みます。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/indexes-multicolumn.html">11.3. 複数列インデックス</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org4111f85" class="outline-2">
+ <h2 id="org4111f85"> <a href="#org4111f85">関連</a></h2>
+ <div class="outline-text-2" id="text-org4111f85">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html</id>
+  <updated>2026-10-13T20:23:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 654: Goはオブジェクト指向言語か?</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgdb20476" class="outline-2">
+ <h2 id="orgdb20476"> <a href="#orgdb20476">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgdb20476">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org00dbb7d" class="outline-2">
+ <h2 id="org00dbb7d"> <a href="#org00dbb7d">概要</a></h2>
+ <div class="outline-text-2" id="text-org00dbb7d">
+ <p>
+Goはオブジェクト指向言語か、の公式の回答は yes and no である。
+</p>
+
+ <blockquote>
+ <p>
+Is Go an object-oriented language?
+</p>
+
+ <p>
+Yes and no. Although Go has types and methods and allows an object-oriented style of programming, there is no type hierarchy.
+</p>
+
+ <p>
+ <a href="https://go.dev/doc/faq#Is_Go_an_object-oriented_language">Frequently Asked Questions (FAQ) - The Go Programming Language</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org9329125" class="outline-2">
+ <h2 id="org9329125"> <a href="#org9329125">関連</a></h2>
+ <div class="outline-text-2" id="text-org9329125">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html</id>
+  <updated>2026-10-13T20:23:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org2669e8c" class="outline-2">
+ <h2 id="org2669e8c"> <a href="#org2669e8c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2669e8c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org8c83861" class="outline-2">
+ <h2 id="org8c83861"> <a href="#org8c83861">概要</a></h2>
+ <div class="outline-text-2" id="text-org8c83861">
+ <p>
+RDS Performance Insights の値は何に由来しているのだろう、と考えた。PostgreSQL に同梱された拡張 pg_stat_statements の値を集計しているように見える。
+</p>
+
+ <blockquote>
+ <p>
+Performance Insights は、SQL 呼び出しごとおよびクエリが実行中の 1 秒ごとに SQL 統計を収集します。
+</p>
+
+ <p>
+(略)
+</p>
+
+ <p>
+SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_stat_statements ライブラリをロードする必要があります。
+</p>
+
+ <p>
+(略)
+</p>
+
+ <p>
+これらのメトリクスの詳細については、PostgreSQL ドキュメントの「pg_stat_statements」を参照してください。
+</p>
+
+ <p>
+ <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.UsingDashboard.AnalyzeDBLoad.AdditionalMetrics.PostgreSQL.html">RDS PostgreSQL での SQL 統計 - Amazon Relational Database Service</a>
+</p>
+</blockquote>
+
+ <p>
+いっぽうで DB Load (AAS) は pg_stat_statements になく、すべてそこから集計しているわけではない。
+</p>
+
+ <blockquote>
+ <p>
+毎秒、Database Insights は、クエリを同時に実行するセッションの数をサンプリングします。Database Insights は、アクティブなセッションごとに以下のデータを収集します。
+</p>
+
+ <ul class="org-ul"> <li>SQL ステートメント</li>
+ <li>セッション状態 (CPU で実行中または待機中)</li>
+ <li>ホスト</li>
+ <li>SQL を実行しているユーザー</li>
+</ul> <p>
+ <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷 - Amazon Relational Database Service</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org0ad33fc" class="outline-2">
+ <h2 id="org0ad33fc"> <a href="#org0ad33fc">関連</a></h2>
+ <div class="outline-text-2" id="text-org0ad33fc">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgb3e1134" class="outline-2">
+ <h2 id="orgb3e1134"> <a href="#orgb3e1134">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgb3e1134">
+ <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
+ <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html</id>
+  <updated>2026-10-13T20:23:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 646: require.Eventuallyは時間内で繰り返す</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org9bab97f" class="outline-2">
+ <h2 id="org9bab97f"> <a href="#org9bab97f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9bab97f">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org9ad8485" class="outline-2">
+ <h2 id="org9ad8485"> <a href="#org9ad8485">概要</a></h2>
+ <div class="outline-text-2" id="text-org9ad8485">
+ <p>
+Go のライブラリ testify に  <code>require.Eventually</code> 関数がある。非同期処理を含む非決定的な挙動のテストに便利である。
+</p>
+
+ <blockquote>
+ <p>
+func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick time.Duration, msgAndArgs …interface{})
+</p>
+</blockquote>
+
+ <p>
+呼び出し直後に1回確かめ、false のときだけ次の  <code>tick</code> を待って繰り返す。  <code>waitFor</code> の間に1度も  <code>condition</code> が true にならなければ失敗する。
+</p>
+</div>
+</div>
+ <div id="outline-container-org063dee8" class="outline-2">
+ <h2 id="org063dee8"> <a href="#org063dee8">関連</a></h2>
+ <div class="outline-text-2" id="text-org063dee8">
+ <ul class="org-ul"> <li>実例:  <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8754">sdk/log: add queue_full shutdown regression test by RedZapdos123 · Pull Request #8754 · open-telemetry/opentelemetry-go</a></li>
+ <li>正典:  <a href="https://pkg.go.dev/github.com/stretchr/testify/require#Eventually">require package - github.com/stretchr/testify/require - Go Packages</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html</id>
+  <updated>2026-10-13T20:23:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 645: sync.OnceFuncは1度だけ実行する関数を返す</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org10a6c70" class="outline-2">
+ <h2 id="org10a6c70"> <a href="#org10a6c70">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org10a6c70">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org4fabb05" class="outline-2">
+ <h2 id="org4fabb05"> <a href="#org4fabb05">概要</a></h2>
+ <div class="outline-text-2" id="text-org4fabb05">
+ <p>
+Go の  <code>sync.OnceFunc</code> は1度だけ実行される関数を返す。
+</p>
+
+ <p>
+並行処理する環境で1度だけ警告ログを出すときなどに便利である。
+</p>
+
+
+ <div class="org-src-container">
+ <pre class="src src-git-permalink">https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/record.go#L30-L32
+</pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil">var logAttrDropped = sync.OnceFunc(func() {
+	global.Warn("limit reached: dropping log Record attributes")
+})
+</pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-orge972da5" class="outline-2">
+ <h2 id="orge972da5"> <a href="#orge972da5">関連</a></h2>
+ <div class="outline-text-2" id="text-orge972da5">
+ <ul class="org-ul"> <li>正典:  <a href="https://pkg.go.dev/sync@go1.26.7#OnceFunc">sync package - sync - Go Packages</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html</id>
+  <updated>2026-10-13T20:23:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 643: WHERE条件の大小によって実行計画が変わる例</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org47dde5a" class="outline-2">
+ <h2 id="org47dde5a"> <a href="#org47dde5a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org47dde5a">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgf9d4974" class="outline-2">
+ <h2 id="orgf9d4974"> <a href="#orgf9d4974">概要</a></h2>
+ <div class="outline-text-2" id="text-orgf9d4974">
  <p>
 推定した取得行数によって、全部読むか一部だけ読むかの判断が変わって実行計画が変わるのを見る。
 </p>
@@ -1322,9 +1652,9 @@ If one or more of the communications can proceed, a single one that can proceed 
 </div>
 </div>
 </div>
- <div id="outline-container-orgb857fb3" class="outline-2">
- <h2 id="orgb857fb3"> <a href="#orgb857fb3">関連</a></h2>
- <div class="outline-text-2" id="text-orgb857fb3">
+ <div id="outline-container-org2cabd33" class="outline-2">
+ <h2 id="org2cabd33"> <a href="#org2cabd33">関連</a></h2>
+ <div class="outline-text-2" id="text-org2cabd33">
  <ul class="org-ul"> <li>参照:  <a href="https://www.postgresql.jp/docs/18/using-explain.html">14.1. EXPLAINの利用</a></li>
  <li>類似:  <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。実行計画に関する話題</li>
 </ul></div>
@@ -1332,336 +1662,6 @@ If one or more of the communications can proceed, a single one that can proceed 
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html</id>
-  <updated>2026-10-13T10:02:02+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 657: PostgreSQL 18のスキップスキャンを試す</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org3b03834" class="outline-2">
- <h2 id="org3b03834"> <a href="#org3b03834">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org3b03834">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org3782dca" class="outline-2">
- <h2 id="org3782dca"> <a href="#org3782dca">概要</a></h2>
- <div class="outline-text-2" id="text-org3782dca">
- <p>
-PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列に条件がないとき、先頭の列の値ごとにインデックスを探し直して、関係のない部分を読み飛ばせるようになった(スキップスキャン)。
-</p>
-
- <blockquote>
- <p>
-たとえば、(x, y)に対するインデックスと問い合わせ条件WHERE y = 7700では、B-treeインデックススキャンでスキップスキャン最適化を適用できる場合があります。 これは通常、問い合わせプランナがそのテーブルで使用可能なインデックスを考慮した時に、WHERE x = N AND y = 7700の検索を、Nで取り得るすべての値（または実際にインデックスに格納されているすべてのxの値）に対して繰り返す方法が最速であると想定している場合に発生します。 この方法は通常、xの個別値が非常に少なく、ほとんどのインデックスをスキップしてスキャンする（ほとんどのリーフページには関連するタプルが含まれないため）とプランナが期待する場合にのみ採用されます。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/indexes-multicolumn.html">11.3. 複数列インデックス</a>
-</p>
-</blockquote>
-
- <p>
-同じ (x, y) のインデックスで、x の種類が 10 のテーブルと 10 万のテーブルを作り、WHERE y = 7700 の実行計画を比べる。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>先頭の列の種類の数を変えて、WHERE y = 7700 の実行計画を比べる</label> <pre class="src src-sql"> <span class="org-comment-delimiter">-- </span> <span class="org-comment">出力を短くするため、並列実行を切る
-</span> <span class="org-keyword">SET</span> max_parallel_workers_per_gather = 0;
-
- <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">few</span> (x  <span class="org-type">int</span>, y  <span class="org-type">int</span>);
- <span class="org-keyword">CREATE</span>  <span class="org-keyword">TABLE</span>  <span class="org-function-name">many</span> (x  <span class="org-type">int</span>, y  <span class="org-type">int</span>);
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> few
- <span class="org-keyword">SELECT</span> i % 10, i  <span class="org-keyword">FROM</span> generate_series(1, 1000000) i;
- <span class="org-keyword">INSERT</span>  <span class="org-keyword">INTO</span> many
- <span class="org-keyword">SELECT</span> i % 100000, i  <span class="org-keyword">FROM</span> generate_series(1, 1000000) i;
- <span class="org-keyword">CREATE</span> INDEX  <span class="org-keyword">ON</span> few (x, y);
- <span class="org-keyword">CREATE</span> INDEX  <span class="org-keyword">ON</span> many (x, y);
-ANALYZE few;
-ANALYZE many;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">x が 10 種類
-</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
-         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
- <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> few  <span class="org-keyword">WHERE</span> y = 7700;
-
- <span class="org-comment-delimiter">-- </span> <span class="org-comment">x が 10 万種類
-</span>EXPLAIN (ANALYZE, FORMAT JSON, COSTS  <span class="org-keyword">OFF</span>, TIMING  <span class="org-keyword">OFF</span>,
-         SUMMARY  <span class="org-keyword">OFF</span>, BUFFERS  <span class="org-keyword">OFF</span>)
- <span class="org-keyword">SELECT</span> *  <span class="org-keyword">FROM</span> many  <span class="org-keyword">WHERE</span> y = 7700;
-</pre>
-</div>
-
- <p>
- <img src="images/plan-4cae88c75a42.svg" alt="plan-4cae88c75a42.svg" class="org-svg"></img> <img src="images/plan-29bbaf34ce5d.svg" alt="plan-29bbaf34ce5d.svg" class="org-svg"></img></p>
-
- <ul class="org-ul"> <li>x が 10 種類のテーブルでは、WHERE に x の条件がないのに、(x, y) のインデックスで Index Only Scan になった。Index Searches は 12 である。 x の 10 種類の値ごとに近い値で、インデックスを探し直しているように見える</li>
- <li>インデックスが使われないこともある。x が 10 万種類のテーブルでは、インデックスを使わず Seq Scan になった。x の値が 10 万種類あると、探し直す回数が多すぎてインデックスのほぼ全体を読むことになるので、プランナは Seq Scan を選んだようである</li>
-</ul> <blockquote>
- <p>
-xの個別値が多い場合、インデックス全体のスキャンが必要になる状況になりうるため、ほとんどの場合プランナはインデックスを使用するよりもシーケンシャルスキャンを好みます。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/indexes-multicolumn.html">11.3. 複数列インデックス</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org0f6a375" class="outline-2">
- <h2 id="org0f6a375"> <a href="#org0f6a375">関連</a></h2>
- <div class="outline-text-2" id="text-org0f6a375">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html</id>
-  <updated>2026-10-13T10:02:01+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 654: Goはオブジェクト指向言語か?</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org0744abf" class="outline-2">
- <h2 id="org0744abf"> <a href="#org0744abf">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0744abf">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org7a6e5a9" class="outline-2">
- <h2 id="org7a6e5a9"> <a href="#org7a6e5a9">概要</a></h2>
- <div class="outline-text-2" id="text-org7a6e5a9">
- <p>
-Goはオブジェクト指向言語か、の公式の回答は yes and no である。
-</p>
-
- <blockquote>
- <p>
-Is Go an object-oriented language?
-</p>
-
- <p>
-Yes and no. Although Go has types and methods and allows an object-oriented style of programming, there is no type hierarchy.
-</p>
-
- <p>
- <a href="https://go.dev/doc/faq#Is_Go_an_object-oriented_language">Frequently Asked Questions (FAQ) - The Go Programming Language</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-orgb66e62c" class="outline-2">
- <h2 id="orgb66e62c"> <a href="#orgb66e62c">関連</a></h2>
- <div class="outline-text-2" id="text-orgb66e62c">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html</id>
-  <updated>2026-10-13T10:01:59+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 646: require.Eventuallyは時間内で繰り返す</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orge71cc59" class="outline-2">
- <h2 id="orge71cc59"> <a href="#orge71cc59">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge71cc59">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgd5a1cf9" class="outline-2">
- <h2 id="orgd5a1cf9"> <a href="#orgd5a1cf9">概要</a></h2>
- <div class="outline-text-2" id="text-orgd5a1cf9">
- <p>
-Go のライブラリ testify に  <code>require.Eventually</code> 関数がある。非同期処理を含む非決定的な挙動のテストに便利である。
-</p>
-
- <blockquote>
- <p>
-func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick time.Duration, msgAndArgs …interface{})
-</p>
-</blockquote>
-
- <p>
-呼び出し直後に1回確かめ、false のときだけ次の  <code>tick</code> を待って繰り返す。  <code>waitFor</code> の間に1度も  <code>condition</code> が true にならなければ失敗する。
-</p>
-</div>
-</div>
- <div id="outline-container-org1c96783" class="outline-2">
- <h2 id="org1c96783"> <a href="#org1c96783">関連</a></h2>
- <div class="outline-text-2" id="text-org1c96783">
- <ul class="org-ul"> <li>実例:  <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8754">sdk/log: add queue_full shutdown regression test by RedZapdos123 · Pull Request #8754 · open-telemetry/opentelemetry-go</a></li>
- <li>正典:  <a href="https://pkg.go.dev/github.com/stretchr/testify/require#Eventually">require package - github.com/stretchr/testify/require - Go Packages</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html</id>
-  <updated>2026-10-13T10:01:58+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orge55676b" class="outline-2">
- <h2 id="orge55676b"> <a href="#orge55676b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge55676b">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgdcfd7d9" class="outline-2">
- <h2 id="orgdcfd7d9"> <a href="#orgdcfd7d9">概要</a></h2>
- <div class="outline-text-2" id="text-orgdcfd7d9">
- <p>
-RDS Performance Insights の値は何に由来しているのだろう、と考えた。PostgreSQL に同梱された拡張 pg_stat_statements の値を集計しているように見える。
-</p>
-
- <blockquote>
- <p>
-Performance Insights は、SQL 呼び出しごとおよびクエリが実行中の 1 秒ごとに SQL 統計を収集します。
-</p>
-
- <p>
-(略)
-</p>
-
- <p>
-SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_stat_statements ライブラリをロードする必要があります。
-</p>
-
- <p>
-(略)
-</p>
-
- <p>
-これらのメトリクスの詳細については、PostgreSQL ドキュメントの「pg_stat_statements」を参照してください。
-</p>
-
- <p>
- <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.UsingDashboard.AnalyzeDBLoad.AdditionalMetrics.PostgreSQL.html">RDS PostgreSQL での SQL 統計 - Amazon Relational Database Service</a>
-</p>
-</blockquote>
-
- <p>
-いっぽうで DB Load (AAS) は pg_stat_statements になく、すべてそこから集計しているわけではない。
-</p>
-
- <blockquote>
- <p>
-毎秒、Database Insights は、クエリを同時に実行するセッションの数をサンプリングします。Database Insights は、アクティブなセッションごとに以下のデータを収集します。
-</p>
-
- <ul class="org-ul"> <li>SQL ステートメント</li>
- <li>セッション状態 (CPU で実行中または待機中)</li>
- <li>ホスト</li>
- <li>SQL を実行しているユーザー</li>
-</ul> <p>
- <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷 - Amazon Relational Database Service</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org0caf257" class="outline-2">
- <h2 id="org0caf257"> <a href="#org0caf257">関連</a></h2>
- <div class="outline-text-2" id="text-org0caf257">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-orgb380aea" class="outline-2">
- <h2 id="orgb380aea"> <a href="#orgb380aea">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgb380aea">
- <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
- <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html</id>
-  <updated>2026-10-13T10:01:53+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 645: sync.OnceFuncは1度だけ実行する関数を返す</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgba48dfc" class="outline-2">
- <h2 id="orgba48dfc"> <a href="#orgba48dfc">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgba48dfc">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgef156d8" class="outline-2">
- <h2 id="orgef156d8"> <a href="#orgef156d8">概要</a></h2>
- <div class="outline-text-2" id="text-orgef156d8">
- <p>
-Go の  <code>sync.OnceFunc</code> は1度だけ実行される関数を返す。
-</p>
-
- <p>
-並行処理する環境で1度だけ警告ログを出すときなどに便利である。
-</p>
-
-
- <div class="org-src-container">
- <pre class="src src-git-permalink">https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/record.go#L30-L32
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">var logAttrDropped = sync.OnceFunc(func() {
-	global.Warn("limit reached: dropping log Record attributes")
-})
-</pre>
-</div>
-</div>
-</div>
- <div id="outline-container-org8162d7b" class="outline-2">
- <h2 id="org8162d7b"> <a href="#org8162d7b">関連</a></h2>
- <div class="outline-text-2" id="text-org8162d7b">
- <ul class="org-ul"> <li>正典:  <a href="https://pkg.go.dev/sync@go1.26.7#OnceFunc">sync package - sync - Go Packages</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html</id>
-  <updated>2026-10-13T10:01:52+09:00</updated>
+  <updated>2026-10-13T20:23:00+09:00</updated>
 </entry>
 </feed>
