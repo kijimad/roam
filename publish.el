@@ -158,6 +158,12 @@
    ;;  `(script (@ (src "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"))))
    ))
 
+;; 表は Bootstrap の見た目にする。HTML5 では org-html-table-default-attributes が使われないので、書き出した表にクラスを足す
+(defun kd/html-table-bootstrap (table backend _info)
+  (when (org-export-derived-backend-p backend 'html)
+    (replace-regexp-in-string "<table" "<table class=\"table\" data-bs-theme=\"dark\"" table t t)))
+(add-to-list 'org-export-filter-table-functions #'kd/html-table-bootstrap)
+
 (setq org-html-preamble  #'dw/site-header
       org-html-postamble #'dw/site-footer
       org-html-html5-fancy nil
