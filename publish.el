@@ -160,7 +160,6 @@
 
 (setq org-html-preamble  #'dw/site-header
       org-html-postamble #'dw/site-footer
-      org-html-metadata-timestamp-format "%Y-%m-%dT%H:%M:%SZ"
       org-html-html5-fancy nil
       org-html-htmlize-output-type 'css
       org-html-self-link-headlines t
