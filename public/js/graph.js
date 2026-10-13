@@ -491,7 +491,12 @@ d3.json("js/graph.json").then(function(data) {
         if (simulation.alpha() > simulation.alphaMin()) return setTimeout(settle);
         ticked();
         g.attr("visibility", null);
+        svg.select(".graph-loading").remove();
         simulation.on("tick", ticked);
     };
     settle();
+}).catch(() => {
+    const loading = d3.select("#main-graph .graph-loading");
+    loading.selectAll("rect").remove();
+    loading.append("text").attr("text-anchor", "middle").text("グラフを読み込めませんでした");
 });
