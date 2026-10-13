@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-14 水 00:08 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 661: AAS は標本の平均、AAE は実行時間の平均で、標本が多いとほぼ一致する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 661: AAS は標本の平均、AAE は実行時間の平均で、標本が多いとほぼ一致する</h1>
+<div id="outline-container-orgac4671d" class="outline-2">
+<h2 id="orgac4671d"><a href="#orgac4671d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgac4671d">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+
+<ul class="org-ul">
+<li>レビュー
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgcd7fbf9" class="outline-2">
+<h2 id="orgcd7fbf9"><a href="#orgcd7fbf9">概要</a></h2>
+<div class="outline-text-2" id="text-orgcd7fbf9">
+<p>
+AAS(平均アクティブセッション)と AAE(平均アクティブ実行)は、どちらも平均して、同時にいくつのクエリが動いていたかを表す。AAS は1秒ごとにアクティブなセッションを数えた標本から求め、AAE は実行時間の合計から求める。
+</p>
+
+<blockquote>
+<p>
+Database Insights は、特定期間の総セッション数を総サンプル数で割って AAS を計算します。
+</p>
+
+<p>
+(略)
+</p>
+
+<p>
+AAE を計算するために、Database Insights では、クエリの合計実行時間を時間間隔で割ります。
+</p>
+
+<p>
+<a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷 - Amazon Relational Database Service</a>
+</p>
+</blockquote>
+
+<p>
+4秒の間に、3秒かかるクエリ X が1回、0.2秒かかるクエリ Y が別のセッションで2回動き、1秒ごとに4回標本を取る例で、両方を手で計算する。
+</p>
+
+<pre class="example" id="org83543ee">
+時刻(秒)    0         1         2         3         4
+            +---------+---------+---------+---------+
+X (3秒)       [=============================]
+Y (0.2秒)                      [=]  [=]
+標本                  ^         ^         ^         ^
+</pre>
+
+<p>
+AAS は、1秒ごとの標本で動いているセッションを数え、その平均を取る。
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">標本</th>
+<th scope="col" class="org-left">時刻</th>
+<th scope="col" class="org-left">動いているクエリ</th>
+<th scope="col" class="org-right">セッション数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">1</td>
+<td class="org-left">1 秒</td>
+<td class="org-left">X</td>
+<td class="org-right">1</td>
+</tr>
+
+<tr>
+<td class="org-right">2</td>
+<td class="org-left">2 秒</td>
+<td class="org-left">X、Y</td>
+<td class="org-right">2</td>
+</tr>
+
+<tr>
+<td class="org-right">3</td>
+<td class="org-left">3 秒</td>
+<td class="org-left">X</td>
+<td class="org-right">1</td>
+</tr>
+
+<tr>
+<td class="org-right">4</td>
+<td class="org-left">4 秒</td>
+<td class="org-left">なし</td>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+この4秒の AAS は、(1 + 2 + 1 + 0) セッション / 4 標本 = 1 である。
+</p>
+
+<p>
+AAE は、クエリが動いていた時間の合計を、経過時間で割る。
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">クエリ</th>
+<th scope="col" class="org-left">動いていた時間</th>
+<th scope="col" class="org-left">実行時間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">X</td>
+<td class="org-left">0.2〜3.2 秒</td>
+<td class="org-left">3.0 秒</td>
+</tr>
+
+<tr>
+<td class="org-left">Y</td>
+<td class="org-left">1.9〜2.1 秒、2.4〜2.6 秒</td>
+<td class="org-left">0.4 秒</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+この4秒の AAE は、(3.0 + 0.4) 実行秒 / 4 経過秒 = 0.85 である。
+</p>
+
+<p>
+<a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷</a>の表は、同じ計算を標本や経過時間を1つずつ足しながら行い、途中の値も並べている。最後の行が、その期間全体の AAS と AAE になる。
+</p>
+
+<p>
+クエリごとに分けると、次のようになる。
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">クエリ</th>
+<th scope="col" class="org-right">標本に出た回数</th>
+<th scope="col" class="org-right">AAS</th>
+<th scope="col" class="org-left">実行時間の合計</th>
+<th scope="col" class="org-right">AAE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">X</td>
+<td class="org-right">3</td>
+<td class="org-right">0.75</td>
+<td class="org-left">3.0 秒</td>
+<td class="org-right">0.75</td>
+</tr>
+
+<tr>
+<td class="org-left">Y</td>
+<td class="org-right">1</td>
+<td class="org-right">0.25</td>
+<td class="org-left">0.4 秒</td>
+<td class="org-right">0.1</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="org-ul">
+<li>長いクエリ X は、AAS と AAE が一致した。動いている間の標本には必ず写る</li>
+<li>短いクエリ Y は、AAS が AAE より大きくなった。1.9〜2.1秒の Y がたまたま2秒の標本に当たり、2.4〜2.6秒の Y は標本と標本の間で写らなかった</li>
+<li>標本が少ないと、短いクエリの AAS はたまたま当たったかどうかで大きくぶれる。標本を増やすと、当たる割合が動いている時間の割合に近づき、AAS は AAE に近づく</li>
+</ul>
+
+<blockquote>
+<p>
+ほとんどの場合、クエリの AAS と AAE はほぼ同じです。ただし、計算への入力は異なるデータソースであるため、計算はわずかに異なります。
+</p>
+
+<p>
+<a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷 - Amazon Relational Database Service</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-orgb4cd939" class="outline-2">
+<h2 id="orgb4cd939"><a href="#orgb4cd939">関連</a></h2>
+<div class="outline-text-2" id="text-orgb4cd939">
+<ul class="org-ul">
+<li>正典: <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷 - Amazon Relational Database Service</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org6a1d7af" class="outline-2">
+<h2 id="org6a1d7af"><a href="#org6a1d7af">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org6a1d7af">
+<ul class="org-ul">
+<li><a href="./20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html">KDOC 660: Performance Insights で vCPU が重要な理由</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

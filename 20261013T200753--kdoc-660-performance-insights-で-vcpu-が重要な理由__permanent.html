@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-14 水 00:07 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 660: Performance Insights で vCPU が重要な理由</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 660: Performance Insights で vCPU が重要な理由</h1>
+<div id="outline-container-orgd53f054" class="outline-2">
+<h2 id="orgd53f054"><a href="#orgd53f054">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgd53f054">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-13 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-13 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgae05df2" class="outline-2">
+<h2 id="orgae05df2"><a href="#orgae05df2">概要</a></h2>
+<div class="outline-text-2" id="text-orgae05df2">
+<p>
+RDS Performance Insights ではvCPUが重要な指標というが、なぜ重要なのかを理解していなかった。
+</p>
+
+<p>
+<a href="https://pages.awscloud.com/rs/112-TZM-766/images/B3-04.pdf">Amazon RDSにおけるパフォーマンス最適化とパフォーマンス管理</a>の図がわかりやすい。
+</p>
+
+
+<div id="org99c1a16" class="figure">
+<p><img src="images/20261013-pi-wait-breakdown.svg" alt="20261013-pi-wait-breakdown.svg" class="org-svg">
+</p>
+<p><span class="figure-number">Figure 1: </span>セッションの状態を毎秒標本に取り、待機イベントごとに積み上げる。<a href="https://pages.awscloud.com/rs/112-TZM-766/images/B3-04.pdf">Amazon RDSにおけるパフォーマンス最適化とパフォーマンス管理</a>の19ページの図を描き直し、vCPU が 2 のときの最大 vCPU の線を足した</p>
+</div>
+
+<p>
+vCPU は一度に1つのプロセスしか動かせないので、CPU で動きたいセッションが vCPU の数を超えると、CPU の順番待ちが起きる。DB 負荷が vCPU の線を超え、その大半が CPU が必要なセッションだとCPU不足となる。
+</p>
+
+<p>
+図では、3本目・8本目・9本目の標本が CPU だけで線を超えていて、CPU の順番待ちが起きている。7本目の標本は合計 5 で線を大きく超えるが、CPU が 1 で残りが IO Write なので、CPU 不足ではない。CPU を増やしても速くならず、書き込みの待ちを減らす必要がある。
+</p>
+
+<blockquote>
+<p>
+vCPU では一度に 1 つのプロセスを実行できます。プロセスの数が vCPU の数を超えると、プロセスはキューイングを開始します。キューイングが増加すると、データベースのパフォーマンスが低下します。DB 負荷が [Max vCPU (最大 vCPU)] ラインをしばしば超過し、プライマリ待機状態が CPU である場合、CPU が過負荷になっています。
+</p>
+
+<p>
+<a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.MaxCPU.html">最大 CPU 容量 - Amazon Relational Database Service</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-org1a0a1b0" class="outline-2">
+<h2 id="org1a0a1b0"><a href="#org1a0a1b0">関連</a></h2>
+<div class="outline-text-2" id="text-org1a0a1b0">
+<ul class="org-ul">
+<li>前提: <a href="20261013T211643--kdoc-661-aas-は標本の平均、aae-は実行時間の平均で、標本が多いとほぼ一致する__draft_permanent.html#ID-20261013T211643">KDOC 661: AASとAAEを理解する</a>。DB 負荷の単位 AAS は同時に動いているセッション数の平均なので、vCPU の数と同じ単位で比べられる</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
