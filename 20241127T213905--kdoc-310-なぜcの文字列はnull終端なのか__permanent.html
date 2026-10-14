@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:41 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 310: なぜCの文字列はnull終端なのか?</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 310: なぜCの文字列はnull終端なのか?</h1>
-<div id="outline-container-org3f6fa21" class="outline-2">
-<h2 id="org3f6fa21"><a href="#org3f6fa21">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org3f6fa21">
+<div id="outline-container-org15a2140" class="outline-2">
+<h2 id="org15a2140"><a href="#org15a2140">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org15a2140">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org3223659" class="outline-2">
-<h2 id="org3223659"><a href="#org3223659">概要</a></h2>
-<div class="outline-text-2" id="text-org3223659">
+<div id="outline-container-org627f82e" class="outline-2">
+<h2 id="org627f82e"><a href="#org627f82e">概要</a></h2>
+<div class="outline-text-2" id="text-org627f82e">
 <p>
 C言語では文字列はchar型の配列である。文字列専用の組み込みデータ型はなく、そのまま配列を使う。Cの配列は単なるポインタであるから、サイズ情報は持っていない。
 </p>
@@ -42,13 +49,13 @@ C言語では文字列はchar型の配列である。文字列専用の組み込
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>charのサイズは1バイトなので、添字のバイトずつオフセットする</label><pre class="src src-C"><span class="org-type">char</span> <span class="org-variable-name">arr</span>[3] = {1, 2, 3};
-printf(<span class="org-string">"h\t%p\n"</span>, arr);
-printf(<span class="org-string">"0\t%p\n"</span>, &amp;arr[0]);
-printf(<span class="org-string">"1\t%p\n"</span>, &amp;arr[1]);
-printf(<span class="org-string">"2\t%p\n"</span>, &amp;arr[2]);
-printf(<span class="org-string">"16\t%p\n"</span>, &amp;arr[16]);
-printf(<span class="org-string">"-16\t%p\n"</span>, &amp;arr[-16]);
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>charのサイズは1バイトなので、添字のバイトずつオフセットする</label><pre class="src src-C">char arr[3] = {1, 2, 3};
+printf("h\t%p\n", arr);
+printf("0\t%p\n", &amp;arr[0]);
+printf("1\t%p\n", &amp;arr[1]);
+printf("2\t%p\n", &amp;arr[2]);
+printf("16\t%p\n", &amp;arr[16]);
+printf("-16\t%p\n", &amp;arr[-16]);
 </pre>
 </div>
 
@@ -63,17 +70,17 @@ printf(<span class="org-string">"-16\t%p\n"</span>, &amp;arr[-16]);
 </div>
 </div>
 </div>
-<div id="outline-container-org3a8bb0f" class="outline-2">
-<h2 id="org3a8bb0f"><a href="#org3a8bb0f">関連</a></h2>
-<div class="outline-text-2" id="text-org3a8bb0f">
+<div id="outline-container-orgc310512" class="outline-2">
+<h2 id="orgc310512"><a href="#orgc310512">関連</a></h2>
+<div class="outline-text-2" id="text-orgc310512">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-orgea525d6" class="outline-2">
-<h2 id="orgea525d6"><a href="#orgea525d6">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgea525d6">
+<div id="outline-container-orgc0b1a02" class="outline-2">
+<h2 id="orgc0b1a02"><a href="#orgc0b1a02">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgc0b1a02">
 <ul class="org-ul">
 <li><a href="./20241128T210636--kdoc-314-cの配列はメモリ効率のため長さを保持していない__permanent.html">KDOC 314: Cの配列はメモリ効率のため長さを保持していない</a></li>
 <li><a href="./20241128T214542--kdoc-315-文字列は長さを事前に決められないことが多い__permanent.html">KDOC 315: 文字列は長さを事前に決められないことが多い</a></li>

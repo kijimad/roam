@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 190: 『Rubyのしくみ Ruby Under a Microscope』</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 190: 『Rubyのしくみ Ruby Under a Microscope』</h1>
-<div id="outline-container-orgf6fb02b" class="outline-2">
-<h2 id="orgf6fb02b"><a href="#orgf6fb02b">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgf6fb02b">
+<div id="outline-container-org4d71cc5" class="outline-2">
+<h2 id="org4d71cc5"><a href="#org4d71cc5">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4d71cc5">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,23 +37,23 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc5f1b89" class="outline-2">
-<h2 id="orgc5f1b89"><a href="#orgc5f1b89">概要</a></h2>
-<div class="outline-text-2" id="text-orgc5f1b89">
+<div id="outline-container-org57d75b8" class="outline-2">
+<h2 id="org57d75b8"><a href="#org57d75b8">概要</a></h2>
+<div class="outline-text-2" id="text-org57d75b8">
 <p>
 <a href="https://tatsu-zine.com/books/ruby-under-a-microscope-ja">Rubyのしくみ Ruby Under a Microscope</a>は、Rubyの言語処理系を解説する本。
 </p>
 </div>
 </div>
-<div id="outline-container-org52d06d6" class="outline-2">
-<h2 id="org52d06d6"><a href="#org52d06d6">メモ</a></h2>
-<div class="outline-text-2" id="text-org52d06d6">
+<div id="outline-container-orgc057bf5" class="outline-2">
+<h2 id="orgc057bf5"><a href="#orgc057bf5">メモ</a></h2>
+<div class="outline-text-2" id="text-orgc057bf5">
 <ul class="org-ul">
 <li><code>RubyVM::InstructionSequence</code> を使うと、プログラム中からRubyのYARVエンジンにアクセスできる(p48)</li>
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(<span class="org-string">'1 + 2'</span>).disasm
+<pre class="src src-ruby">puts RubyVM::InstructionSequence.compile('1 + 2').disasm
 </pre>
 </div>
 
@@ -60,12 +67,12 @@
 </div>
 
 <div class="org-src-container">
-<pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<pre class="src src-ruby">code = &lt;&lt;END
 10.times do |n|
        puts n
 end
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -99,12 +106,12 @@ END
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>メソッド定義の処理</label><pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>メソッド定義の処理</label><pre class="src src-ruby">code = &lt;&lt;END
 def add_two(a, b)
     sum = a+b
 end
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -131,12 +138,12 @@ local table (size: 3, argc: 2 [opts: 0, rest: -1, post: 0, block: -1, kw: -1@-1,
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<pre class="src src-ruby">code = &lt;&lt;END
 def add_two_opt(a, b = 99)
     sum = a+b
 end
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -165,12 +172,12 @@ local table (size: 3, argc: 1 [opts: 1, rest: -1, post: 0, block: -1, kw: -1@-1,
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<pre class="src src-ruby">code = &lt;&lt;END
 def add_two_opt(a, b: 99)
     sum = a+b
 end
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -197,14 +204,14 @@ local table (size: 4, argc: 1 [opts: 0, rest: -1, post: 0, block: -1, kw: 1@0, k
 </ul>
 
 
-<div id="orgc52e041" class="figure">
+<div id="orgd10962b" class="figure">
 <p><img src="images/20240623-inner.drawio.svg" alt="20240623-inner.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 1: </span>YARV命令列、YARVが管理するフレーム、内部レジスタの関係図(p62参考)</p>
 </div>
 
 
-<div id="orgbad7d31" class="figure">
+<div id="org96b2977" class="figure">
 <p><img src="images/20240623-stack.drawio.svg" alt="20240623-stack.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 2: </span>スタックフレームの積み重なるイメージ(p62参考)</p>
@@ -225,12 +232,12 @@ local table (size: 4, argc: 1 [opts: 0, rest: -1, post: 0, block: -1, kw: 1@0, k
 </div>
 
 <div class="org-src-container">
-<pre class="src src-c"><span class="org-comment-delimiter">/* </span><span class="org-comment">put self.</span><span class="org-comment-delimiter"> */</span>
-<span class="org-type">DEFINE_INSN</span>
-<span class="org-function-name">putself</span>
+<pre class="src src-c">/* put self. */
+DEFINE_INSN
+putself
 ()
 ()
-(<span class="org-type">VALUE</span> <span class="org-variable-name">val</span>)
+(VALUE val)
 {
     val = GET_SELF();
 }
@@ -248,13 +255,13 @@ local table (size: 4, argc: 1 [opts: 0, rest: -1, post: 0, block: -1, kw: 1@0, k
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>ローカル変数アクセスの例。setlocalでスタックからstrの位置に保存する。後でEPとインデックス0を使って保存位置をたどれる</label><pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>ローカル変数アクセスの例。setlocalでスタックからstrの位置に保存する。後でEPとインデックス0を使って保存位置をたどれる</label><pre class="src src-ruby">code = &lt;&lt;END
 def display_string
     str1 = "Local access."
     puts str1
 end
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -277,7 +284,7 @@ local table (size: 1, argc: 0 [opts: 0, rest: -1, post: 0, block: -1, kw: -1@-1,
 </div>
 
 
-<div id="org1234770" class="figure">
+<div id="orgbdd1e81" class="figure">
 <p><img src="images/20240623-local.drawio.svg" alt="20240623-local.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 3: </span>setlocal, getlocalを図で見る</p>
@@ -291,7 +298,7 @@ local table (size: 1, argc: 0 [opts: 0, rest: -1, post: 0, block: -1, kw: -1@-1,
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>動的変数アクセスの例。putsメソッドがあるブロックのgetlocal_WC_1命令に注目。1はブロックのスコープからそれを呼んだメソッドのスコープに1つ戻ることを意味している</label><pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>動的変数アクセスの例。putsメソッドがあるブロックのgetlocal_WC_1命令に注目。1はブロックのスコープからそれを呼んだメソッドのスコープに1つ戻ることを意味している</label><pre class="src src-ruby">code = &lt;&lt;END
 def display_string
   str = "Dynamic access."
   10.times do
@@ -299,7 +306,7 @@ def display_string
   end
 end
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -336,14 +343,14 @@ local table (size: 1, argc: 0 [opts: 0, rest: -1, post: 0, block: -1, kw: -1@-1,
 </div>
 
 
-<div id="org2723937" class="figure">
+<div id="orge436fad" class="figure">
 <p><img src="images/20240623-dynamic.drawio.svg" alt="20240623-dynamic.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 4: </span>動的変数アクセス</p>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(<span class="org-string">'puts 1 + 2'</span>).disasm
+<pre class="src src-ruby">puts RubyVM::InstructionSequence.compile('puts 1 + 2').disasm
 </pre>
 </div>
 
@@ -364,16 +371,16 @@ local table (size: 1, argc: 0 [opts: 0, rest: -1, post: 0, block: -1, kw: -1@-1,
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>スコープごとに$&amp;を保持している</label><pre class="src src-ruby">str = <span class="org-string">"The quick brown fox jumps over the lazy dog"</span>
-<span class="org-string">/fox/</span>.match(str)
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>スコープごとに$&amp;を保持している</label><pre class="src src-ruby">str = "The quick brown fox jumps over the lazy dog"
+/fox/.match(str)
 
-<span class="org-keyword">def</span> <span class="org-function-name">search</span>(str)
-  <span class="org-string">/dog/</span>.match(str)
-  <span class="org-builtin">puts</span> <span class="org-string">"Value of $&amp; inside method: </span><span class="org-variable-name">#{$&amp;}</span><span class="org-string">"</span>
-<span class="org-keyword">end</span>
+def search(str)
+  /dog/.match(str)
+  puts "Value of $&amp; inside method: #{$&amp;}"
+end
 
 search(str)
-<span class="org-builtin">puts</span> <span class="org-string">"Value of $&amp; top level scope: </span><span class="org-variable-name">#{$&amp;}</span><span class="org-string">"</span>
+puts "Value of $&amp; top level scope: #{$&amp;}"
 </pre>
 </div>
 
@@ -384,22 +391,22 @@ Value of $&amp; top level scope: fox
 </div>
 
 
-<div id="org5f32255" class="figure">
+<div id="orgb729f88" class="figure">
 <p><img src="images/20240623-special.drawio.svg" alt="20240623-special.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 5: </span>各スタックフレームは専用の特殊変数のセットを持つ</p>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>ブロック内で実行されたdogの検索によってトップレベルスコープの$&amp;の値が上書きされる。Rubyは特殊変数に関してはトップレベルスコープとブロックの内側のスコープは同じとみなす、という(p86)</label><pre class="src src-ruby">str = <span class="org-string">"The quick brown fox jumped over the lazy dog.\n"</span>
-<span class="org-string">/fox/</span>.match(str)
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>ブロック内で実行されたdogの検索によってトップレベルスコープの$&amp;の値が上書きされる。Rubyは特殊変数に関してはトップレベルスコープとブロックの内側のスコープは同じとみなす、という(p86)</label><pre class="src src-ruby">str = "The quick brown fox jumped over the lazy dog.\n"
+/fox/.match(str)
 
-2.times <span class="org-keyword">do</span>
-  <span class="org-string">/dog/</span>.match(str)
-  <span class="org-builtin">puts</span> <span class="org-string">"Value of $&amp; inside block: </span><span class="org-variable-name">#{$&amp;}</span><span class="org-string">"</span>
-<span class="org-keyword">end</span>
+2.times do
+  /dog/.match(str)
+  puts "Value of $&amp; inside block: #{$&amp;}"
+end
 
-<span class="org-builtin">puts</span> <span class="org-string">"Value of $&amp; in the top-level scope: </span><span class="org-variable-name">#{$&amp;}</span><span class="org-string">"</span>
+puts "Value of $&amp; in the top-level scope: #{$&amp;}"
 </pre>
 </div>
 
@@ -436,14 +443,14 @@ case '\"':		/* $": already loaded files */
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 8: </span>ブロックをコンパイルしたコード内のthrow 2はYARVコード片のいずれかにつながるポインタのテーブル、捕捉テーブルを使ってYARV命令レベルで例外を送出するもの、だという(p96)</label><pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>ブロックをコンパイルしたコード内のthrow 2はYARVコード片のいずれかにつながるポインタのテーブル、捕捉テーブルを使ってYARV命令レベルで例外を送出するもの、だという(p96)</label><pre class="src src-ruby">code = &lt;&lt;END
   10.times do |n|
     puts n
     break
   end
     puts "continue from here."
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -490,12 +497,12 @@ END
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 9: </span>eachを使ってforループを実装しているのを確認する(p99)</label><pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<label class="org-src-name"><span class="listing-number">Listing 9: </span>eachを使ってforループを実装しているのを確認する(p99)</label><pre class="src src-ruby">code = &lt;&lt;END
      for i in 0..5
        puts i
      end
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -553,13 +560,13 @@ local table (size: 1, argc: 0 [opts: 0, rest: -1, post: 0, block: -1, kw: -1@-1,
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 10: </span>メソッド呼び出し。呼び出し元のコードとターゲットメソッドの両方がYARV命令列で構成されている(p104)</label><pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<label class="org-src-name"><span class="listing-number">Listing 10: </span>メソッド呼び出し。呼び出し元のコードとターゲットメソッドの両方がYARV命令列で構成されている(p104)</label><pre class="src src-ruby">code = &lt;&lt;END
   def display_message
     puts "The quick brown fox jumps over the lazy dog."
   end
   display_message
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -579,24 +586,24 @@ END
 </div>
 
 
-<div id="orge310a2d" class="figure">
+<div id="orgd65e23b" class="figure">
 <p><img src="images/20240623-method.drawio.svg" alt="20240623-method.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 6: </span>単純なメソッド呼び出しのスタックフレームの関係図(p104)</p>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 11: </span>引数タイプを調べる(p105)</label><pre class="src src-ruby">  <span class="org-keyword">def</span> <span class="org-function-name">five_argument_types</span>(a, b = 1, *args, c, &amp;d)
-    <span class="org-builtin">puts</span> <span class="org-string">"Standard argument </span><span class="org-variable-name">#{a.inspect}</span><span class="org-string">"</span>
-    <span class="org-builtin">puts</span> <span class="org-string">"Optional argument </span><span class="org-variable-name">#{b.inspect}</span><span class="org-string">"</span>
-    <span class="org-builtin">puts</span> <span class="org-string">"Splat argument array </span><span class="org-variable-name">#{args.inspect}</span><span class="org-string">"</span>
-    <span class="org-builtin">puts</span> <span class="org-string">"Post argument </span><span class="org-variable-name">#{c.inspect}</span><span class="org-string">"</span>
-    <span class="org-builtin">puts</span> <span class="org-string">"Block argument </span><span class="org-variable-name">#{d.inspect}</span><span class="org-string">"</span>
-  <span class="org-keyword">end</span>
+<label class="org-src-name"><span class="listing-number">Listing 11: </span>引数タイプを調べる(p105)</label><pre class="src src-ruby">  def five_argument_types(a, b = 1, *args, c, &amp;d)
+    puts "Standard argument #{a.inspect}"
+    puts "Optional argument #{b.inspect}"
+    puts "Splat argument array #{args.inspect}"
+    puts "Post argument #{c.inspect}"
+    puts "Block argument #{d.inspect}"
+  end
 
-five_argument_types(1, 2, 3, 4, 5, 6) <span class="org-keyword">do</span>
-  <span class="org-builtin">puts</span> <span class="org-string">"block"</span>
-<span class="org-keyword">end</span>
+five_argument_types(1, 2, 3, 4, 5, 6) do
+  puts "block"
+end
 </pre>
 </div>
 
@@ -623,7 +630,7 @@ Block argument #&lt;Proc:0x0000561ae7064340 -:9&gt;
 </ul>
 
 
-<div id="org9a81830" class="figure">
+<div id="org6b33963" class="figure">
 <p><img src="images/20240626-rbasic.drawio.svg" alt="20240626-rbasic.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 7: </span>RBasic構造体を使うRubyオブジェクト(p120)</p>
@@ -635,21 +642,21 @@ Block argument #&lt;Proc:0x0000561ae7064340 -:9&gt;
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 12: </span>新しいインスタンス変数を保存する時間を計測する。周期的に長く時間がかかっているのはインスタンス変数の保存の仕組みにある(p124)</label><pre class="src src-ruby"><span class="org-builtin">require</span> <span class="org-string">'benchmark'</span>
+<label class="org-src-name"><span class="listing-number">Listing 12: </span>新しいインスタンス変数を保存する時間を計測する。周期的に長く時間がかかっているのはインスタンス変数の保存の仕組みにある(p124)</label><pre class="src src-ruby">require 'benchmark'
 
-<span class="org-type">ITERATIONS</span> = 100000
-<span class="org-type">GC</span>.disable
-obj = <span class="org-type">ITERATIONS</span>.times.map { <span class="org-type">Class</span>.new.new }
+ITERATIONS = 100000
+GC.disable
+obj = ITERATIONS.times.map { Class.new.new }
 
-<span class="org-type">Benchmark</span>.bm <span class="org-keyword">do</span> |bench|
-  20.times <span class="org-keyword">do</span> |count|
-    bench.report(<span class="org-string">"adding instance variable number </span><span class="org-variable-name">#{count+1}</span><span class="org-string">"</span>) <span class="org-keyword">do</span>
-      <span class="org-type">ITERATIONS</span>.times <span class="org-keyword">do</span> |n|
-        obj[n].instance_variable_set(<span class="org-string">"@var</span><span class="org-variable-name">#{count}</span><span class="org-string">"</span>, <span class="org-string">"value"</span>)
-      <span class="org-keyword">end</span>
-    <span class="org-keyword">end</span>
-  <span class="org-keyword">end</span>
-<span class="org-keyword">end</span>
+Benchmark.bm do |bench|
+  20.times do |count|
+    bench.report("adding instance variable number #{count+1}") do
+      ITERATIONS.times do |n|
+        obj[n].instance_variable_set("@var#{count}", "value")
+      end
+    end
+  end
+end
 </pre>
 </div>
 
@@ -692,17 +699,17 @@ adding instance variable number 20  0.026045   0.003476   0.029521 (  0.029833)
 </ul>
 
 
-<div id="org03c593b" class="figure">
+<div id="org5e3bf15" class="figure">
 <p><img src="images/20240626-class.drawio.svg" alt="20240626-class.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 8: </span>クラスの内部的な表現(p139)</p>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 13: </span>クラスオブジェクト数をカウントする(p143)</label><pre class="src src-ruby">&gt; <span class="org-builtin">p</span> <span class="org-type">ObjectSpace</span>.count_objects[<span class="org-constant">:T_CLASS</span>]
+<label class="org-src-name"><span class="listing-number">Listing 13: </span>クラスオブジェクト数をカウントする(p143)</label><pre class="src src-ruby">&gt; p ObjectSpace.count_objects[:T_CLASS]
 =&gt; 1034
-&gt; <span class="org-keyword">class</span> <span class="org-type">Math</span>; <span class="org-keyword">end</span>
-&gt; <span class="org-builtin">p</span> <span class="org-type">ObjectSpace</span>.count_objects[<span class="org-constant">:T_CLASS</span>]
+&gt; class Math; end
+&gt; p ObjectSpace.count_objects[:T_CLASS]
 =&gt; 1036
 </pre>
 </div>
@@ -712,7 +719,7 @@ adding instance variable number 20  0.026045   0.003476   0.029521 (  0.029833)
 </ul>
 
 
-<div id="orgbaef92b" class="figure">
+<div id="org17c0c89" class="figure">
 <p><img src="images/20240626-ocm.drawio.svg" alt="20240626-ocm.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 9: </span>オブジェクトとクラスとメタクラス(p144)</p>
@@ -731,11 +738,11 @@ adding instance variable number 20  0.026045   0.003476   0.029521 (  0.029833)
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 14: </span>includeする</label><pre class="src src-ruby"><span class="org-keyword">module</span> <span class="org-type">Professor</span>
-<span class="org-keyword">end</span>
-<span class="org-keyword">class</span> <span class="org-type">Mathematician</span> &lt; <span class="org-type">Person</span>
-    <span class="org-builtin">include</span> <span class="org-type">Professor</span>
-<span class="org-keyword">end</span>
+<label class="org-src-name"><span class="listing-number">Listing 14: </span>includeする</label><pre class="src src-ruby">module Professor
+end
+class Mathematician &lt; Person
+    include Professor
+end
 </pre>
 </div>
 
@@ -744,7 +751,7 @@ adding instance variable number 20  0.026045   0.003476   0.029521 (  0.029833)
 </ul>
 
 
-<div id="org41cd954" class="figure">
+<div id="orgeb35e48" class="figure">
 <p><img src="images/20240707-include.drawio.svg" alt="20240707-include.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 10: </span>includeしたときに起こること(p150)</p>
@@ -760,7 +767,7 @@ adding instance variable number 20  0.026045   0.003476   0.029521 (  0.029833)
 </ul>
 
 
-<div id="orgaf527e6" class="figure">
+<div id="org21d5426" class="figure">
 <p><img src="images/20240707-prepend.drawio.svg" alt="20240707-prepend.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 11: </span>prependは対象クラスの前にモジュールを配置する(p166)</p>
@@ -823,7 +830,7 @@ rb_include_class_new(VALUE module, VALUE super)
 </ul>
 
 
-<div id="orgaf4c2ba" class="figure">
+<div id="orge2a1fc4" class="figure">
 <p><img src="images/20240707-hash.drawio.svg" alt="20240707-hash.drawio.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 12: </span>各st_table_entry構造体は同一のバケット内の次のエントリへのポインタを含んでいる(p195)</p>
@@ -835,30 +842,30 @@ rb_include_class_new(VALUE module, VALUE super)
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 16: </span>再ハッシュする実験。9回目や65回目の要素追加で大幅に時間がかかっているのがわかる(p198)</label><pre class="src src-ruby"><span class="org-builtin">require</span> <span class="org-string">'benchmark'</span>
+<label class="org-src-name"><span class="listing-number">Listing 16: </span>再ハッシュする実験。9回目や65回目の要素追加で大幅に時間がかかっているのがわかる(p198)</label><pre class="src src-ruby">require 'benchmark'
 
-100.times <span class="org-keyword">do</span> |size|
+100.times do |size|
   hashes = []
-  10000.times <span class="org-keyword">do</span>
+  10000.times do
     hash = {}
-    (1..size).each <span class="org-keyword">do</span>
-      hash[<span class="org-builtin">rand</span>] = <span class="org-builtin">rand</span>
-    <span class="org-keyword">end</span>
+    (1..size).each do
+      hash[rand] = rand
+    end
     hashes &lt;&lt; hash
-  <span class="org-keyword">end</span>
+  end
 
-  <span class="org-type">GC</span>.disable
+  GC.disable
 
-  <span class="org-type">Benchmark</span>.bm <span class="org-keyword">do</span> |bench|
-    bench.report(<span class="org-string">"adding element number </span><span class="org-variable-name">#{size+1}</span><span class="org-string">"</span>) <span class="org-keyword">do</span>
-      10000.times <span class="org-keyword">do</span> |n|
-        hashes[n][size] = <span class="org-builtin">rand</span>
-      <span class="org-keyword">end</span>
-    <span class="org-keyword">end</span>
-  <span class="org-keyword">end</span>
+  Benchmark.bm do |bench|
+    bench.report("adding element number #{size+1}") do
+      10000.times do |n|
+        hashes[n][size] = rand
+      end
+    end
+  end
 
-  <span class="org-type">GC</span>.enable
-<span class="org-keyword">end</span>
+  GC.enable
+end
 </pre>
 </div>
 
@@ -1071,20 +1078,20 @@ adding element number 100  0.001989   0.000000   0.001989 (  0.001988)
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 17: </span>while呼び出しのベンチマーク(p223)</label><pre class="src src-ruby"><span class="org-builtin">require</span> <span class="org-string">'benchmark'</span>
+<label class="org-src-name"><span class="listing-number">Listing 17: </span>while呼び出しのベンチマーク(p223)</label><pre class="src src-ruby">require 'benchmark'
 iters = 10000000
-<span class="org-type">Benchmark</span>.bm <span class="org-keyword">do</span> |bench|
-  bench.report(<span class="org-string">"iterationg from 1 to 10, many times"</span>) <span class="org-keyword">do</span>
-    iters.times <span class="org-keyword">do</span>
+Benchmark.bm do |bench|
+  bench.report("iterationg from 1 to 10, many times") do
+    iters.times do
       sum = 0
       i = 1
-      <span class="org-keyword">while</span> i &lt;= 10
+      while i &lt;= 10
         sum += i
         i += 1
-      <span class="org-keyword">end</span>
-    <span class="org-keyword">end</span>
-  <span class="org-keyword">end</span>
-<span class="org-keyword">end</span>
+      end
+    end
+  end
+end
 </pre>
 </div>
 
@@ -1095,18 +1102,18 @@ iterationg from 1 to 10, one million times  2.182566   0.000000   2.182566 (  2.
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 18: </span>each呼び出しのベンチマーク(p224)</label><pre class="src src-ruby"><span class="org-builtin">require</span> <span class="org-string">'benchmark'</span>
+<label class="org-src-name"><span class="listing-number">Listing 18: </span>each呼び出しのベンチマーク(p224)</label><pre class="src src-ruby">require 'benchmark'
 iters = 10000000
-<span class="org-type">Benchmark</span>.bm <span class="org-keyword">do</span> |bench|
-  bench.report(<span class="org-string">"iterationg from 1 to 10, many times"</span>) <span class="org-keyword">do</span>
-    iters.times <span class="org-keyword">do</span>
+Benchmark.bm do |bench|
+  bench.report("iterationg from 1 to 10, many times") do
+    iters.times do
       sum = 0
-      (1..10).each <span class="org-keyword">do</span> |i|
+      (1..10).each do |i|
         sum += i
-      <span class="org-keyword">end</span>
-    <span class="org-keyword">end</span>
-  <span class="org-keyword">end</span>
-<span class="org-keyword">end</span>
+      end
+    end
+  end
+end
 </pre>
 </div>
 
@@ -1134,16 +1141,16 @@ iterationg from 1 to 10, one million times  2.453038   0.000000   2.453038 (  2.
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 19: </span>lambdaによって作成されたスタック上の新しいコピーを編集できる</label><pre class="src src-ruby"><span class="org-keyword">def</span> <span class="org-function-name">message_function</span>
-  str = <span class="org-string">"The quick brown fox"</span>
-  func = <span class="org-builtin">lambda</span> <span class="org-keyword">do</span> |animal|
-    <span class="org-builtin">puts</span> <span class="org-string">"</span><span class="org-variable-name">#{str}</span><span class="org-string"> jumps over the lazy </span><span class="org-variable-name">#{animal}</span><span class="org-string">."</span>
-  <span class="org-keyword">end</span>
-  str = <span class="org-string">"The sly brown fox"</span>
+<label class="org-src-name"><span class="listing-number">Listing 19: </span>lambdaによって作成されたスタック上の新しいコピーを編集できる</label><pre class="src src-ruby">def message_function
+  str = "The quick brown fox"
+  func = lambda do |animal|
+    puts "#{str} jumps over the lazy #{animal}."
+  end
+  str = "The sly brown fox"
   func
-<span class="org-keyword">end</span>
+end
 function_value = message_function
-function_value.call(<span class="org-string">"dog"</span>)
+function_value.call("dog")
 </pre>
 </div>
 
@@ -1154,14 +1161,14 @@ function_value.call(<span class="org-string">"dog"</span>)
 
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 20: </span>同じスコープでラムダを1回以上呼び出す。同じヒープコピーとスタックを共有する</label><pre class="src src-ruby">i = 0
-increment_function = <span class="org-builtin">lambda</span> <span class="org-keyword">do</span>
-  <span class="org-builtin">puts</span> <span class="org-string">"incrementing from </span><span class="org-variable-name">#{i}</span><span class="org-string"> to </span><span class="org-variable-name">#{i+1}</span><span class="org-string">"</span>
+increment_function = lambda do
+  puts "incrementing from #{i} to #{i+1}"
   i += 1
-<span class="org-keyword">end</span>
-decrement_function = <span class="org-builtin">lambda</span> <span class="org-keyword">do</span>
+end
+decrement_function = lambda do
   i -= 1
-  <span class="org-builtin">puts</span> <span class="org-string">"decrementing from </span><span class="org-variable-name">#{i+1}</span><span class="org-string"> to </span><span class="org-variable-name">#{i}</span><span class="org-string">"</span>
-<span class="org-keyword">end</span>
+  puts "decrementing from #{i+1} to #{i}"
+end
 
 increment_function.call
 decrement_function.call
@@ -1199,11 +1206,11 @@ decrementing from 2 to 1
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 21: </span>evalもクロージャを介して周辺のスコープにアクセスする。周辺のローカル変数にアクセスしている(p264)</label><pre class="src src-ruby">a = 2
 b = 3
-str = <span class="org-string">"puts"</span>
-str += <span class="org-string">" a"</span>
-str += <span class="org-string">" +"</span>
-str += <span class="org-string">" b"</span>
-<span class="org-builtin">eval</span>(str)
+str = "puts"
+str += " a"
+str += " +"
+str += " b"
+eval(str)
 </pre>
 </div>
 
@@ -1215,9 +1222,9 @@ str += <span class="org-string">" b"</span>
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 22: </span>ブロック内のコードは周辺のスコープの変数にアクセスできる</label><pre class="src src-ruby">a = 2
 b = 3
-10.times <span class="org-keyword">do</span>
-  <span class="org-builtin">puts</span> a+b
-<span class="org-keyword">end</span>
+10.times do
+  puts a+b
+end
 </pre>
 </div>
 
@@ -1242,12 +1249,12 @@ evalメソッドは第2引数にバインディングを取れる。バインデ
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span class="org-keyword">def</span> <span class="org-function-name">get_binding</span>
+<pre class="src src-ruby">def get_binding
   a = 2
   b = 3
-  <span class="org-builtin">binding</span>
-<span class="org-keyword">end</span>
-<span class="org-builtin">eval</span>(<span class="org-string">"puts a+b"</span>, get_binding)
+  binding
+end
+eval("puts a+b", get_binding)
 </pre>
 </div>
 
@@ -1260,18 +1267,18 @@ evalメソッドは第2引数にバインディングを取れる。バインデ
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 23: </span>instance_evalの内部のコードはobjのインスタンス変数にアクセスする。@strはQuoteインスタンス、str2は周辺のスコープ(環境)から取得している(p268)</label><pre class="src src-ruby"><span class="org-keyword">class</span> <span class="org-type">Quote</span>
-  <span class="org-keyword">def</span> <span class="org-function-name">initialize</span>
-    <span class="org-variable-name">@str</span> = <span class="org-string">"The quick brown fox"</span>
-  <span class="org-keyword">end</span>
-<span class="org-keyword">end</span>
-str2 = <span class="org-string">"jumps over the lazy dog."</span>
-obj = <span class="org-type">Quote</span>.new
-obj.instance_eval <span class="org-keyword">do</span>
-  <span class="org-builtin">puts</span> <span class="org-string">"</span><span class="org-variable-name">#{@str}</span><span class="org-string"> </span><span class="org-variable-name">#{str2}</span><span class="org-string">"</span>
-<span class="org-keyword">end</span>
+<label class="org-src-name"><span class="listing-number">Listing 23: </span>instance_evalの内部のコードはobjのインスタンス変数にアクセスする。@strはQuoteインスタンス、str2は周辺のスコープ(環境)から取得している(p268)</label><pre class="src src-ruby">class Quote
+  def initialize
+    @str = "The quick brown fox"
+  end
+end
+str2 = "jumps over the lazy dog."
+obj = Quote.new
+obj.instance_eval do
+  puts "#{@str} #{str2}"
+end
 
-<span class="org-comment-delimiter"># </span><span class="org-comment">=&gt; The quick brown fox jumps over the lazy dog.</span>
+# =&gt; The quick brown fox jumps over the lazy dog.
 </pre>
 </div>
 
@@ -1286,10 +1293,10 @@ obj.instance_eval <span class="org-keyword">do</span>
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 24: </span>MRIは文字列リテラルを使用する際にYARV命令のdupを使う</label><pre class="src src-ruby">code = <span class="org-string">&lt;&lt;END
+<label class="org-src-name"><span class="listing-number">Listing 24: </span>MRIは文字列リテラルを使用する際にYARV命令のdupを使う</label><pre class="src src-ruby">code = &lt;&lt;END
    str = "hello"
 END
-</span><span class="org-builtin">puts</span> <span class="org-type">RubyVM</span>::<span class="org-type">InstructionSequence</span>.compile(code).disasm
+puts RubyVM::InstructionSequence.compile(code).disasm
 </pre>
 </div>
 
@@ -1324,17 +1331,17 @@ Rubiunisについて。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf97bab3" class="outline-2">
-<h2 id="orgf97bab3"><a href="#orgf97bab3">関連</a></h2>
-<div class="outline-text-2" id="text-orgf97bab3">
+<div id="outline-container-org6993b46" class="outline-2">
+<h2 id="org6993b46"><a href="#org6993b46">関連</a></h2>
+<div class="outline-text-2" id="text-org6993b46">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-org0dc0a31" class="outline-2">
-<h2 id="org0dc0a31"><a href="#org0dc0a31">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org0dc0a31">
+<div id="outline-container-org911cb49" class="outline-2">
+<h2 id="org911cb49"><a href="#org911cb49">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org911cb49">
 <ul class="org-ul">
 <li><a href="./20240623T212808--kdoc-193-プログラミング言語は共通言語として役立つ__essay.html">KDOC 193: プログラミング言語は共通言語として役立つ</a></li>
 <li><a href="./20241103T121759--kdoc-264-『yarv-maniacs』__book.html">KDOC 264: 『YARV Maniacs』</a></li>

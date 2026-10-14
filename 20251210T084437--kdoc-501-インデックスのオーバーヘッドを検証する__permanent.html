@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 501: インデックスのオーバーヘッドを検証する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 501: インデックスのオーバーヘッドを検証する</h1>
-<div id="outline-container-org38d6edf" class="outline-2">
-<h2 id="org38d6edf"><a href="#org38d6edf">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org38d6edf">
+<div id="outline-container-org108eebc" class="outline-2">
+<h2 id="org108eebc"><a href="#org108eebc">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org108eebc">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc9b2b7a" class="outline-2">
-<h2 id="orgc9b2b7a"><a href="#orgc9b2b7a">概要</a></h2>
-<div class="outline-text-2" id="text-orgc9b2b7a">
+<div id="outline-container-orgd151dd1" class="outline-2">
+<h2 id="orgd151dd1"><a href="#orgd151dd1">概要</a></h2>
+<div class="outline-text-2" id="text-orgd151dd1">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>のOver-Indexingを読んで、インデックスの具体的なオーバヘッドを知った。
 </p>
@@ -49,33 +56,33 @@
 これらをじっさいに試す。
 </p>
 </div>
-<div id="outline-container-org2ddeb4f" class="outline-3">
-<h3 id="org2ddeb4f"><a href="#org2ddeb4f">作成時のディスク容量</a></h3>
-<div class="outline-text-3" id="text-org2ddeb4f">
+<div id="outline-container-org032dd0d" class="outline-3">
+<h3 id="org032dd0d"><a href="#org032dd0d">作成時のディスク容量</a></h3>
+<div class="outline-text-3" id="text-org032dd0d">
 <p>
 レコードを作成して、インデックスのディスク容量を見る。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+<pre class="src src-sql">CREATE TABLE users (
+    name varchar(255)
 );
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
-</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+-- インデックスを追加する
+CREATE INDEX idx_users_name ON users(name);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25407;&#20837;&#12377;&#12427;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span>
-     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
-</span>     md5(random()::text) || md5(random()::text)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+-- レコード挿入する
+INSERT INTO users (name)
+SELECT
+     -- 32x2 文字
+     md5(random()::text) || md5(random()::text)
+FROM generate_series(1, 100000) i;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25968;&#12434;&#30906;&#35469;&#12377;&#12427;
-</span><span class="org-keyword">select</span> <span class="org-builtin">count</span>(*) <span class="org-keyword">from</span> users;
+-- レコード数を確認する
+select count(*) from users;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12469;&#12452;&#12474;&#12434;&#30906;&#35469;&#12377;&#12427;
-</span><span class="org-keyword">SELECT</span> pg_size_pretty(pg_relation_size(<span class="org-string">'idx_users_name'</span>));
+-- インデックスサイズを確認する
+SELECT pg_size_pretty(pg_relation_size('idx_users_name'));
 </pre>
 </div>
 
@@ -118,33 +125,33 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org14e555d" class="outline-3">
-<h3 id="org14e555d"><a href="#org14e555d">更新時のコスト</a></h3>
-<div class="outline-text-3" id="text-org14e555d">
+<div id="outline-container-org953b993" class="outline-3">
+<h3 id="org953b993"><a href="#org953b993">更新時のコスト</a></h3>
+<div class="outline-text-3" id="text-org953b993">
 <p>
 インデックスの有無を変えてレコードを更新したときの時間を見る。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+<pre class="src src-sql">CREATE TABLE users (
+    name varchar(255)
 );
 
 EXPLAIN ANALYZE
-<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span>
-     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
-</span>     md5(random()::text) || md5(random()::text)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+INSERT INTO users (name)
+SELECT
+     -- 32x2 文字
+     md5(random()::text) || md5(random()::text)
+FROM generate_series(1, 100000) i;
 
 EXPLAIN ANALYZE
-<span class="org-keyword">UPDATE</span> users <span class="org-keyword">SET</span> <span class="org-keyword">name</span> = <span class="org-string">'abc'</span>;
+UPDATE users SET name = 'abc';
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
-</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+-- インデックスを追加する
+CREATE INDEX idx_users_name ON users(name);
 
 EXPLAIN ANALYZE
-<span class="org-keyword">UPDATE</span> users <span class="org-keyword">SET</span> <span class="org-keyword">name</span> = <span class="org-string">'def'</span>;
+UPDATE users SET name = 'def';
 </pre>
 </div>
 
@@ -219,34 +226,34 @@ EXPLAIN ANALYZE
 </p>
 </div>
 </div>
-<div id="outline-container-org001ca62" class="outline-3">
-<h3 id="org001ca62"><a href="#org001ca62">計画時間のコスト</a></h3>
-<div class="outline-text-3" id="text-org001ca62">
+<div id="outline-container-org6853fbf" class="outline-3">
+<h3 id="org6853fbf"><a href="#org6853fbf">計画時間のコスト</a></h3>
+<div class="outline-text-3" id="text-org6853fbf">
 <div class="org-src-container">
-<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+<pre class="src src-sql">CREATE TABLE users (
+    name varchar(255)
 );
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25407;&#20837;&#12377;&#12427;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span>
-     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
-</span>     md5(random()::text) || md5(random()::text)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+-- レコード挿入する
+INSERT INTO users (name)
+SELECT
+     -- 32x2 文字
+     md5(random()::text) || md5(random()::text)
+FROM generate_series(1, 100000) i;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25968;&#12434;&#30906;&#35469;&#12377;&#12427;
-</span><span class="org-keyword">select</span> <span class="org-builtin">count</span>(*) <span class="org-keyword">from</span> users;
+-- レコード数を確認する
+select count(*) from users;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35336;&#30011;&#12398;&#35443;&#32048;&#12434;&#20986;&#12377;
-</span>EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)
-<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">name</span> = <span class="org-string">'NO_INDEX'</span>;
+-- 計画の詳細を出す
+EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)
+SELECT * FROM users WHERE name = 'NO_INDEX';
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
-</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+-- インデックスを追加する
+CREATE INDEX idx_users_name ON users(name);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35336;&#30011;&#12398;&#35443;&#32048;&#12434;&#20986;&#12377;
-</span>EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)
-<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">name</span> = <span class="org-string">'WITH_INDEX'</span>;
+-- 計画の詳細を出す
+EXPLAIN (ANALYZE, VERBOSE, COSTS, TIMING)
+SELECT * FROM users WHERE name = 'WITH_INDEX';
 </pre>
 </div>
 
@@ -313,74 +320,74 @@ EXPLAIN ANALYZE
 </p>
 </div>
 </div>
-<div id="outline-container-orgc10dff1" class="outline-3">
-<h3 id="orgc10dff1"><a href="#orgc10dff1">大量インデックスの計画コスト</a></h3>
-<div class="outline-text-3" id="text-orgc10dff1">
+<div id="outline-container-orgdd409c9" class="outline-3">
+<h3 id="orgdd409c9"><a href="#orgdd409c9">大量インデックスの計画コスト</a></h3>
+<div class="outline-text-3" id="text-orgdd409c9">
 <p>
 インデックス増加による計画時間の増加を見る。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    noindex <span class="org-type">varchar</span>(255),
-    name1 <span class="org-type">varchar</span>(255),
-    name2 <span class="org-type">varchar</span>(255),
-    name3 <span class="org-type">varchar</span>(255),
-    name4 <span class="org-type">varchar</span>(255),
-    name5 <span class="org-type">varchar</span>(255),
-    name6 <span class="org-type">varchar</span>(255),
-    name7 <span class="org-type">varchar</span>(255),
-    name8 <span class="org-type">varchar</span>(255),
-    name9 <span class="org-type">varchar</span>(255),
-    name10 <span class="org-type">varchar</span>(255),
-    name11 <span class="org-type">varchar</span>(255),
-    name12 <span class="org-type">varchar</span>(255),
-    name13 <span class="org-type">varchar</span>(255),
-    name14 <span class="org-type">varchar</span>(255),
-    name15 <span class="org-type">varchar</span>(255),
-    name16 <span class="org-type">varchar</span>(255),
-    name17 <span class="org-type">varchar</span>(255),
-    name18 <span class="org-type">varchar</span>(255),
-    name19 <span class="org-type">varchar</span>(255),
-    name20 <span class="org-type">varchar</span>(255)
+<pre class="src src-sql">CREATE TABLE users (
+    noindex varchar(255),
+    name1 varchar(255),
+    name2 varchar(255),
+    name3 varchar(255),
+    name4 varchar(255),
+    name5 varchar(255),
+    name6 varchar(255),
+    name7 varchar(255),
+    name8 varchar(255),
+    name9 varchar(255),
+    name10 varchar(255),
+    name11 varchar(255),
+    name12 varchar(255),
+    name13 varchar(255),
+    name14 varchar(255),
+    name15 varchar(255),
+    name16 varchar(255),
+    name17 varchar(255),
+    name18 varchar(255),
+    name19 varchar(255),
+    name20 varchar(255)
 );
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#25407;&#20837;&#12377;&#12427;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (name1)
-<span class="org-keyword">SELECT</span>
-     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
-</span>     md5(random()::text) || md5(random()::text)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+-- レコード挿入する
+INSERT INTO users (name1)
+SELECT
+     -- 32x2 文字
+     md5(random()::text) || md5(random()::text)
+FROM generate_series(1, 100000) i;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
-</span><span class="org-keyword">CREATE</span> INDEX idx_users_name1 <span class="org-keyword">ON</span> users(name1);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name2 <span class="org-keyword">ON</span> users(name2);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name3 <span class="org-keyword">ON</span> users(name3);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name4 <span class="org-keyword">ON</span> users(name4);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name5 <span class="org-keyword">ON</span> users(name5);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name6 <span class="org-keyword">ON</span> users(name6);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name7 <span class="org-keyword">ON</span> users(name7);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name8 <span class="org-keyword">ON</span> users(name8);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name9 <span class="org-keyword">ON</span> users(name9);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name10 <span class="org-keyword">ON</span> users(name10);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name11 <span class="org-keyword">ON</span> users(name11);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name12 <span class="org-keyword">ON</span> users(name12);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name13 <span class="org-keyword">ON</span> users(name13);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name14 <span class="org-keyword">ON</span> users(name14);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name15 <span class="org-keyword">ON</span> users(name15);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name16 <span class="org-keyword">ON</span> users(name16);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name17 <span class="org-keyword">ON</span> users(name17);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name18 <span class="org-keyword">ON</span> users(name18);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name19 <span class="org-keyword">ON</span> users(name19);
-<span class="org-keyword">CREATE</span> INDEX idx_users_name20 <span class="org-keyword">ON</span> users(name20);
+-- インデックスを追加する
+CREATE INDEX idx_users_name1 ON users(name1);
+CREATE INDEX idx_users_name2 ON users(name2);
+CREATE INDEX idx_users_name3 ON users(name3);
+CREATE INDEX idx_users_name4 ON users(name4);
+CREATE INDEX idx_users_name5 ON users(name5);
+CREATE INDEX idx_users_name6 ON users(name6);
+CREATE INDEX idx_users_name7 ON users(name7);
+CREATE INDEX idx_users_name8 ON users(name8);
+CREATE INDEX idx_users_name9 ON users(name9);
+CREATE INDEX idx_users_name10 ON users(name10);
+CREATE INDEX idx_users_name11 ON users(name11);
+CREATE INDEX idx_users_name12 ON users(name12);
+CREATE INDEX idx_users_name13 ON users(name13);
+CREATE INDEX idx_users_name14 ON users(name14);
+CREATE INDEX idx_users_name15 ON users(name15);
+CREATE INDEX idx_users_name16 ON users(name16);
+CREATE INDEX idx_users_name17 ON users(name17);
+CREATE INDEX idx_users_name18 ON users(name18);
+CREATE INDEX idx_users_name19 ON users(name19);
+CREATE INDEX idx_users_name20 ON users(name20);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#12394;&#12356;&#12418;&#12398;&#12434;&#26908;&#32034;&#12377;&#12427;
-</span>EXPLAIN (ANALYZE)
-<span class="org-keyword">SELECT</span> noindex <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> noindex = <span class="org-string">'xx'</span>;
+-- インデックスがないものを検索する
+EXPLAIN (ANALYZE)
+SELECT noindex FROM users WHERE noindex = 'xx';
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#12354;&#12427;&#12418;&#12398;&#12434;&#26908;&#32034;&#12377;&#12427;
-</span>EXPLAIN (ANALYZE)
-<span class="org-keyword">SELECT</span> name1 <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> name1 = <span class="org-string">'xx'</span>;
+-- インデックスがあるものを検索する
+EXPLAIN (ANALYZE)
+SELECT name1 FROM users WHERE name1 = 'xx';
 </pre>
 </div>
 
@@ -516,40 +523,40 @@ EXPLAIN ANALYZE
 </ul>
 </div>
 </div>
-<div id="outline-container-org8771e2e" class="outline-3">
-<h3 id="org8771e2e"><a href="#org8771e2e">挿入時のコスト</a></h3>
-<div class="outline-text-3" id="text-org8771e2e">
+<div id="outline-container-org641aa52" class="outline-3">
+<h3 id="org641aa52"><a href="#org641aa52">挿入時のコスト</a></h3>
+<div class="outline-text-3" id="text-org641aa52">
 <p>
 インデックスの有無を変えてレコードを挿入したときの時間を見る。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255)
+<pre class="src src-sql">CREATE TABLE users (
+    name varchar(255)
 );
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12394;&#12375;&#12391;&#25407;&#20837;&#12377;&#12427;
-</span><span class="org-keyword">BEGIN</span>;
+-- インデックスなしで挿入する
+BEGIN;
 EXPLAIN ANALYZE
-<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span>
-     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
-</span>     md5(random()::text) || md5(random()::text)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
-<span class="org-keyword">ROLLBACK</span>;
+INSERT INTO users (name)
+SELECT
+     -- 32x2 文字
+     md5(random()::text) || md5(random()::text)
+FROM generate_series(1, 100000) i;
+ROLLBACK;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12434;&#36861;&#21152;&#12377;&#12427;
-</span><span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>);
+-- インデックスを追加する
+CREATE INDEX idx_users_name ON users(name);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12354;&#12426;&#12391;&#25407;&#20837;&#12377;&#12427;
-</span><span class="org-keyword">BEGIN</span>;
+-- インデックスありで挿入する
+BEGIN;
 EXPLAIN ANALYZE
-<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span>
-     <span class="org-comment-delimiter">-- </span><span class="org-comment">32x2 &#25991;&#23383;
-</span>     md5(random()::text) || md5(random()::text)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
-<span class="org-keyword">ROLLBACK</span>;
+INSERT INTO users (name)
+SELECT
+     -- 32x2 文字
+     md5(random()::text) || md5(random()::text)
+FROM generate_series(1, 100000) i;
+ROLLBACK;
 </pre>
 </div>
 
@@ -618,9 +625,9 @@ Execution Time が 118.892 ms -&gt; 267.930 ms 。
 </div>
 </div>
 </div>
-<div id="outline-container-org6bb53bc" class="outline-2">
-<h2 id="org6bb53bc"><a href="#org6bb53bc">関連</a></h2>
-<div class="outline-text-2" id="text-org6bb53bc">
+<div id="outline-container-org73340c7" class="outline-2">
+<h2 id="org73340c7"><a href="#org73340c7">関連</a></h2>
+<div class="outline-text-2" id="text-org73340c7">
 <ul class="org-ul">
 <li>疑問: 計画時にオプション評価のコストがかかるというが、どのような状況で問題になるのだろうか。もっと端的に増えていくケースがあるのだろうか。調べた限りだとオーバーヘッドになっているのは確かだが、実行時間の削減量に比べてわずかで、あまり問題となるように見えない</li>
 </ul>

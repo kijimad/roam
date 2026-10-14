@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DB Design</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">DB Design</h1>
-<div id="outline-container-orgba11652" class="outline-2">
-<h2 id="orgba11652"><a href="#orgba11652">概要</a></h2>
-<div class="outline-text-2" id="text-orgba11652">
+<div id="outline-container-org14fc922" class="outline-2">
+<h2 id="org14fc922"><a href="#org14fc922">概要</a></h2>
+<div class="outline-text-2" id="text-org14fc922">
 <p>
 データベース(DB)の設計に関してまとめる。
 DBはシステムの核となるもので、DBが先にあって周辺プログラムが存在する。
@@ -29,21 +36,21 @@ DBはシステムの核となるもので、DBが先にあって周辺プログ�
 </p>
 </div>
 </div>
-<div id="outline-container-org9b8f509" class="outline-2">
-<h2 id="org9b8f509"><a href="#org9b8f509">Memo</a></h2>
-<div class="outline-text-2" id="text-org9b8f509">
+<div id="outline-container-org361a5bf" class="outline-2">
+<h2 id="org361a5bf"><a href="#org361a5bf">Memo</a></h2>
+<div class="outline-text-2" id="text-org361a5bf">
 </div>
-<div id="outline-container-orgcaabe12" class="outline-3">
-<h3 id="orgcaabe12"><a href="#orgcaabe12"><a href="https://dbconcept.hatenablog.com/entry/2021/07/05/162437">リレーションとリレーションシップの誤用に注意 - 設計者の発言</a></a></h3>
-<div class="outline-text-3" id="text-orgcaabe12">
+<div id="outline-container-orged54680" class="outline-3">
+<h3 id="orged54680"><a href="#orged54680"><a href="https://dbconcept.hatenablog.com/entry/2021/07/05/162437">リレーションとリレーションシップの誤用に注意 - 設計者の発言</a></a></h3>
+<div class="outline-text-3" id="text-orged54680">
 <p>
 違うんだ。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd08013c" class="outline-3">
-<h3 id="orgd08013c"><a href="#orgd08013c"><a href="https://www.slideshare.net/t_wada/sql-antipatterns-digest">SQLアンチパターン - 開発者を待ち受ける25の落とし穴 (拡大版)</a></a></h3>
-<div class="outline-text-3" id="text-orgd08013c">
+<div id="outline-container-org884398b" class="outline-3">
+<h3 id="org884398b"><a href="#org884398b"><a href="https://www.slideshare.net/t_wada/sql-antipatterns-digest">SQLアンチパターン - 開発者を待ち受ける25の落とし穴 (拡大版)</a></a></h3>
+<div class="outline-text-3" id="text-org884398b">
 <ul class="org-ul">
 <li>アンチパターン</li>
 <li>継承・ポリモーフィックに注意する。commentsテーブルにtype(bug, feature)フィールドがあって、分岐させてるような場合
@@ -71,23 +78,23 @@ comments ||--o{ feature_comments: ""
 </div>
 
 
-<div id="org7eff7c4" class="figure">
+<div id="org3ab1ab2" class="figure">
 <p><img src="images/20230206232618-LujVM0typy.png" alt="20230206232618-LujVM0typy.png">
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-orgf8c599b" class="outline-3">
-<h3 id="orgf8c599b"><a href="#orgf8c599b"><a href="https://eh-career.com/engineerhub/entry/2018/12/11/110000#%E3%83%87%E3%83%BC%E3%82%BF%E3%81%A8%E6%83%85%E5%A0%B1%E3%81%AE%E9%81%95%E3%81%84">DBの寿命はアプリより長い！長生きするDBに必要な設計とリファクタリングを実践から学ぶ</a></a></h3>
-<div class="outline-text-3" id="text-orgf8c599b">
+<div id="outline-container-org1b5305a" class="outline-3">
+<h3 id="org1b5305a"><a href="#org1b5305a"><a href="https://eh-career.com/engineerhub/entry/2018/12/11/110000#%E3%83%87%E3%83%BC%E3%82%BF%E3%81%A8%E6%83%85%E5%A0%B1%E3%81%AE%E9%81%95%E3%81%84">DBの寿命はアプリより長い！長生きするDBに必要な設計とリファクタリングを実践から学ぶ</a></a></h3>
+<div class="outline-text-3" id="text-org1b5305a">
 <ul class="org-ul">
 <li>年齢は事実ではない。毎年カウントアップされ、変化するので情報。生年月日は変化しないのでデータ。データベースに保存するべきはデータ、事実</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd8718ec" class="outline-3">
-<h3 id="orgd8718ec"><a href="#orgd8718ec"><a href="https://www.slideshare.net/kawasima/ss-250716400">イミュータブルデータモデルの極意</a></a></h3>
-<div class="outline-text-3" id="text-orgd8718ec">
+<div id="outline-container-org41ea31f" class="outline-3">
+<h3 id="org41ea31f"><a href="#org41ea31f"><a href="https://www.slideshare.net/kawasima/ss-250716400">イミュータブルデータモデルの極意</a></a></h3>
+<div class="outline-text-3" id="text-org41ea31f">
 <ul class="org-ul">
 <li>Event(コト)
 <ul class="org-ul">
@@ -118,7 +125,7 @@ comments ||--o{ feature_comments: ""
 </div>
 
 
-<div id="org9e3ace0" class="figure">
+<div id="orgd3ba204" class="figure">
 <p><img src="images/20230206232204-zkfeUoQcQh.png" alt="20230206232204-zkfeUoQcQh.png">
 </p>
 </div>
@@ -135,9 +142,9 @@ comments ||--o{ feature_comments: ""
 </ul>
 </div>
 </div>
-<div id="outline-container-orgdbd4f01" class="outline-3">
-<h3 id="orgdbd4f01"><a href="#orgdbd4f01"><a href="https://www.slideshare.net/kawasima/ss-40471672">イミュータブルデータモデル(入門編)</a></a></h3>
-<div class="outline-text-3" id="text-orgdbd4f01">
+<div id="outline-container-orgd225ca0" class="outline-3">
+<h3 id="orgd225ca0"><a href="#orgd225ca0"><a href="https://www.slideshare.net/kawasima/ss-40471672">イミュータブルデータモデル(入門編)</a></a></h3>
+<div class="outline-text-3" id="text-orgd225ca0">
 <ul class="org-ul">
 <li>モデルの複雑性を生むのは、UPDATEに関する要件</li>
 <li>モデルに対するデータの更新を極限まで削ることで、拡張に対して開いていて、修正に対して閉じている堅牢なものにする</li>
@@ -153,9 +160,9 @@ comments ||--o{ feature_comments: ""
 </ul>
 </div>
 </div>
-<div id="outline-container-org88640c2" class="outline-3">
-<h3 id="org88640c2"><a href="#org88640c2"><a href="https://www.slideshare.net/kawasima/ss-44958468">イミュータブルデータモデル(世代編)</a></a></h3>
-<div class="outline-text-3" id="text-org88640c2">
+<div id="outline-container-org9cbd088" class="outline-3">
+<h3 id="org9cbd088"><a href="#org9cbd088"><a href="https://www.slideshare.net/kawasima/ss-44958468">イミュータブルデータモデル(世代編)</a></a></h3>
+<div class="outline-text-3" id="text-org9cbd088">
 <ul class="org-ul">
 <li>世代の設計方法</li>
 <li>イベントは更新不可
@@ -169,21 +176,21 @@ comments ||--o{ feature_comments: ""
 </ul>
 </div>
 </div>
-<div id="outline-container-orgec3e419" class="outline-3">
-<h3 id="orgec3e419"><a href="#orgec3e419"><a href="https://www.amazon.co.jp/%E6%A5%BD%E3%80%85ERD%E3%83%AC%E3%83%83%E3%82%B9%E3%83%B3-CodeZine-BOOKS-%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%AD%E3%82%B8%E3%83%83%E3%82%AF-%E7%BE%BD%E7%94%9F/dp/4798110663">楽々ERDレッスン (CodeZine BOOKS) | (株)スターロジック 羽生 章洋 |本 | 通販 | Amazon</a></a></h3>
-<div class="outline-text-3" id="text-orgec3e419">
+<div id="outline-container-orga9ce1b1" class="outline-3">
+<h3 id="orga9ce1b1"><a href="#orga9ce1b1"><a href="https://www.amazon.co.jp/%E6%A5%BD%E3%80%85ERD%E3%83%AC%E3%83%83%E3%82%B9%E3%83%B3-CodeZine-BOOKS-%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%AD%E3%82%B8%E3%83%83%E3%82%AF-%E7%BE%BD%E7%94%9F/dp/4798110663">楽々ERDレッスン (CodeZine BOOKS) | (株)スターロジック 羽生 章洋 |本 | 通販 | Amazon</a></a></h3>
+<div class="outline-text-3" id="text-orga9ce1b1">
 </div>
-<div id="outline-container-orga8e15ed" class="outline-4">
-<h4 id="orga8e15ed"><a href="#orga8e15ed">所属はイベント</a></h4>
-<div class="outline-text-4" id="text-orga8e15ed">
+<div id="outline-container-org3228faf" class="outline-4">
+<h4 id="org3228faf"><a href="#org3228faf">所属はイベント</a></h4>
+<div class="outline-text-4" id="text-org3228faf">
 <p>
 社員が組織に所属していることから直感的に、組織 -&lt; 社員 としたくなるが、これは誤り。組織がなくなっても社員が消えることはない。所属はイベントとして扱い、組織 -&lt; 所属 &gt;- 社員 とするのが正しい。組織と社員は互いに独立したエンティティ。
 </p>
 </div>
 </div>
-<div id="outline-container-org17e6fef" class="outline-4">
-<h4 id="org17e6fef"><a href="#org17e6fef">DB設計の手順</a></h4>
-<div class="outline-text-4" id="text-org17e6fef">
+<div id="outline-container-org8e445cc" class="outline-4">
+<h4 id="org8e445cc"><a href="#org8e445cc">DB設計の手順</a></h4>
+<div class="outline-text-4" id="text-org8e445cc">
 <ul class="org-ul">
 <li>大まかにブロック分けを行う(業務単位か部門単位)</li>
 <li>それぞれのブロックごとにイベント系を洗い出す
@@ -201,9 +208,9 @@ comments ||--o{ feature_comments: ""
 </ul>
 </div>
 </div>
-<div id="outline-container-org5350b0d" class="outline-4">
-<h4 id="org5350b0d"><a href="#org5350b0d">実績系・計画系・分析系の違い</a></h4>
-<div class="outline-text-4" id="text-org5350b0d">
+<div id="outline-container-org450adb2" class="outline-4">
+<h4 id="org450adb2"><a href="#org450adb2">実績系・計画系・分析系の違い</a></h4>
+<div class="outline-text-4" id="text-org450adb2">
 <ul class="org-ul">
 <li>基幹系
 <ul class="org-ul">
@@ -220,9 +227,9 @@ comments ||--o{ feature_comments: ""
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb12a37c" class="outline-4">
-<h4 id="orgb12a37c"><a href="#orgb12a37c">データライフサイクル</a></h4>
-<div class="outline-text-4" id="text-orgb12a37c">
+<div id="outline-container-org25156fd" class="outline-4">
+<h4 id="org25156fd"><a href="#org25156fd">データライフサイクル</a></h4>
+<div class="outline-text-4" id="text-org25156fd">
 <ul class="org-ul">
 <li>データにはライフサイクルがある。CRUD。</li>
 <li>データ構造とトランザクションの間に、CRUDを通じてマトリックスが書ける。各処理で、どのライフサイクルの処理を行うのか</li>
@@ -336,63 +343,63 @@ comments ||--o{ feature_comments: ""
 </div>
 </div>
 </div>
-<div id="outline-container-org210636e" class="outline-2">
-<h2 id="org210636e"><a href="#org210636e">Tasks</a></h2>
-<div class="outline-text-2" id="text-org210636e">
+<div id="outline-container-org6e7ac94" class="outline-2">
+<h2 id="org6e7ac94"><a href="#org6e7ac94">Tasks</a></h2>
+<div class="outline-text-2" id="text-org6e7ac94">
 </div>
-<div id="outline-container-orga8c12c0" class="outline-3">
-<h3 id="orga8c12c0"><a href="#orga8c12c0"><span class="todo TODO">TODO</span> <a href="https://zenn.dev/rebi/articles/28c7f1fee5730a">RDBのデータモデリング・テーブル設計の際に参考にしている考え方と資料</a></a></h3>
-<div class="outline-text-3" id="text-orga8c12c0">
+<div id="outline-container-orgdd636b0" class="outline-3">
+<h3 id="orgdd636b0"><a href="#orgdd636b0"><span class="todo TODO">TODO</span> <a href="https://zenn.dev/rebi/articles/28c7f1fee5730a">RDBのデータモデリング・テーブル設計の際に参考にしている考え方と資料</a></a></h3>
+<div class="outline-text-3" id="text-orgdd636b0">
 <p>
 データベース設計のリンク集。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org0f7421d" class="outline-2">
-<h2 id="org0f7421d"><a href="#org0f7421d">Reference</a></h2>
-<div class="outline-text-2" id="text-org0f7421d">
+<div id="outline-container-org238187e" class="outline-2">
+<h2 id="org238187e"><a href="#org238187e">Reference</a></h2>
+<div class="outline-text-2" id="text-org238187e">
 </div>
-<div id="outline-container-org9970fed" class="outline-3">
-<h3 id="org9970fed"><a href="#org9970fed"><a href="https://qiita.com/kawasima/items/8dd7eda743f2fdcad78e">業務システムにおけるロールベースアクセス制御 - Qiita</a></a></h3>
-<div class="outline-text-3" id="text-org9970fed">
+<div id="outline-container-orga9f87e4" class="outline-3">
+<h3 id="orga9f87e4"><a href="#orga9f87e4"><a href="https://qiita.com/kawasima/items/8dd7eda743f2fdcad78e">業務システムにおけるロールベースアクセス制御 - Qiita</a></a></h3>
+<div class="outline-text-3" id="text-orga9f87e4">
 <p>
 redmineのER図の例。
 </p>
 </div>
 </div>
-<div id="outline-container-org00c1cb0" class="outline-3">
-<h3 id="org00c1cb0"><a href="#org00c1cb0"><a href="https://kenfdev.hateblo.jp/entry/2020/01/13/115032">アプリケーションにおける権限設計の課題 - kenfdev’s blog</a></a></h3>
-<div class="outline-text-3" id="text-org00c1cb0">
+<div id="outline-container-org7836d4d" class="outline-3">
+<h3 id="org7836d4d"><a href="#org7836d4d"><a href="https://kenfdev.hateblo.jp/entry/2020/01/13/115032">アプリケーションにおける権限設計の課題 - kenfdev’s blog</a></a></h3>
+<div class="outline-text-3" id="text-org7836d4d">
 <p>
 権限設定の詳しい文章。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org662400d" class="outline-2">
-<h2 id="org662400d"><a href="#org662400d">Archives</a></h2>
-<div class="outline-text-2" id="text-org662400d">
+<div id="outline-container-orge2202ab" class="outline-2">
+<h2 id="orge2202ab"><a href="#orge2202ab">Archives</a></h2>
+<div class="outline-text-2" id="text-orge2202ab">
 </div>
-<div id="outline-container-orgf5eb47a" class="outline-3">
-<h3 id="orgf5eb47a"><a href="#orgf5eb47a"><span class="done DONE">DONE</span> <a href="https://www.amazon.co.jp/dp/B00EE1XPAI/ref=dp-kindle-redirect?_encoding=UTF8&amp;btkr=1">Amazon.co.jp: 達人に学ぶDB設計 徹底指南書 eBook : ミック: Kindle Store</a></a></h3>
-<div class="outline-text-3" id="text-orgf5eb47a">
-</div>
-</div>
-<div id="outline-container-orga94cb75" class="outline-3">
-<h3 id="orga94cb75"><a href="#orga94cb75"><span class="done DONE">DONE</span> <a href="https://engineers.weddingpark.co.jp/mysql-database-design/">【DB設計入門|ER図|MySQL】コンビニレシートから学ぶ！データモデリング手法 | Wedding Park CREATORS Blog</a></a></h3>
-<div class="outline-text-3" id="text-orga94cb75">
+<div id="outline-container-org87a5218" class="outline-3">
+<h3 id="org87a5218"><a href="#org87a5218"><span class="done DONE">DONE</span> <a href="https://www.amazon.co.jp/dp/B00EE1XPAI/ref=dp-kindle-redirect?_encoding=UTF8&amp;btkr=1">Amazon.co.jp: 達人に学ぶDB設計 徹底指南書 eBook : ミック: Kindle Store</a></a></h3>
+<div class="outline-text-3" id="text-org87a5218">
 </div>
 </div>
-<div id="outline-container-org488c980" class="outline-3">
-<h3 id="org488c980"><a href="#org488c980"><span class="done DONE">DONE</span> レシートで設計練習</a></h3>
-<div class="outline-text-3" id="text-org488c980">
+<div id="outline-container-org2061ca5" class="outline-3">
+<h3 id="org2061ca5"><a href="#org2061ca5"><span class="done DONE">DONE</span> <a href="https://engineers.weddingpark.co.jp/mysql-database-design/">【DB設計入門|ER図|MySQL】コンビニレシートから学ぶ！データモデリング手法 | Wedding Park CREATORS Blog</a></a></h3>
+<div class="outline-text-3" id="text-org2061ca5">
+</div>
+</div>
+<div id="outline-container-org1ce6f33" class="outline-3">
+<h3 id="org1ce6f33"><a href="#org1ce6f33"><span class="done DONE">DONE</span> レシートで設計練習</a></h3>
+<div class="outline-text-3" id="text-org1ce6f33">
 </div>
 </div>
 </div>
-<div id="outline-container-org299bfa3" class="outline-2">
-<h2 id="org299bfa3"><a href="#org299bfa3">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org299bfa3">
+<div id="outline-container-orgc7d1a47" class="outline-2">
+<h2 id="orgc7d1a47"><a href="#orgc7d1a47">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgc7d1a47">
 <ul class="org-ul">
 <li><a href="./20211201010904-template.html">template</a></li>
 </ul>

@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 272: バイトコード変換は型情報が必須ではない</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 272: バイトコード変換は型情報が必須ではない</h1>
-<div id="outline-container-org211e544" class="outline-2">
-<h2 id="org211e544"><a href="#org211e544">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org211e544">
+<div id="outline-container-org6bd6f1b" class="outline-2">
+<h2 id="org6bd6f1b"><a href="#org6bd6f1b">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org6bd6f1b">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfbf3145" class="outline-2">
-<h2 id="orgfbf3145"><a href="#orgfbf3145">概要</a></h2>
-<div class="outline-text-2" id="text-orgfbf3145">
+<div id="outline-container-org367543d" class="outline-2">
+<h2 id="org367543d"><a href="#org367543d">概要</a></h2>
+<div class="outline-text-2" id="text-org367543d">
 <p>
 バイトコードは定義からいって中間表現(仮想マシンの機械語)であり、ハードウェアとしてのCPUが直接解釈するわけでない。抽象化されており、番地まで指定してのメモリ操作などは行わない。したがって具体的なメモリサイズを考える必要がない。
 </p>
@@ -42,17 +49,17 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org4c76736" class="outline-2">
-<h2 id="org4c76736"><a href="#org4c76736">関連</a></h2>
-<div class="outline-text-2" id="text-org4c76736">
+<div id="outline-container-orge1364ef" class="outline-2">
+<h2 id="orge1364ef"><a href="#orge1364ef">関連</a></h2>
+<div class="outline-text-2" id="text-orge1364ef">
 <ul class="org-ul">
 <li><a href="20241104T091512--kdoc-270-動的型付け言語ではなぜバイトコードにコンパイルすることが多いか__permanent.html#ID-20241104T091512">KDOC 270: 動的型付け言語ではなぜバイトコードにコンパイルすることが多いか?</a>。疑問を考えた</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org5adc86b" class="outline-2">
-<h2 id="org5adc86b"><a href="#org5adc86b">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org5adc86b">
+<div id="outline-container-org1457942" class="outline-2">
+<h2 id="org1457942"><a href="#org1457942">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org1457942">
 <ul class="org-ul">
 <li><a href="./20241115T154906--kdoc-287-バイトコードにメモリサイズが書かれていないことを確認する__permanent.html">KDOC 287: バイトコードにメモリサイズが書かれていないことを確認する</a></li>
 </ul>

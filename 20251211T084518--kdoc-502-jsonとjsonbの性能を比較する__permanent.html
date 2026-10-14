@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 502: jsonとjsonbの性能を比較する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 502: jsonとjsonbの性能を比較する</h1>
-<div id="outline-container-org1e450e2" class="outline-2">
-<h2 id="org1e450e2"><a href="#org1e450e2">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org1e450e2">
+<div id="outline-container-org77a70f9" class="outline-2">
+<h2 id="org77a70f9"><a href="#org77a70f9">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org77a70f9">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org479c838" class="outline-2">
-<h2 id="org479c838"><a href="#org479c838">概要</a></h2>
-<div class="outline-text-2" id="text-org479c838">
+<div id="outline-container-org892c088" class="outline-2">
+<h2 id="org892c088"><a href="#org892c088">概要</a></h2>
+<div class="outline-text-2" id="text-org892c088">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>でjsonとjsonbについて説明していた。じっさいに使ってみて読み書き性能を試してみる。
 </p>
@@ -61,40 +68,40 @@ jsonデータ型は入力テキストの正確なコピーで格納し、処理�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users1</span> (
+<pre class="src src-sql">CREATE TABLE users1 (
     test JSON
 );
-<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users2</span> (
+CREATE TABLE users2 (
     test JSONB
 );
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#26908;&#35388;&#12487;&#12540;&#12479;&#25407;&#20837; ================
-</span>EXPLAIN ANALYZE
-<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users1 (test)
-<span class="org-keyword">SELECT</span> jsonb_build_object(
-    <span class="org-string">'a'</span>, md5(random()::text)::text,
-    <span class="org-string">'b'</span>, md5(random()::text)::text
+-- 検証データ挿入 ================
+EXPLAIN ANALYZE
+INSERT INTO users1 (test)
+SELECT jsonb_build_object(
+    'a', md5(random()::text)::text,
+    'b', md5(random()::text)::text
 )
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+FROM generate_series(1, 100000) i;
 
 EXPLAIN ANALYZE
-<span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users2 (test)
-<span class="org-keyword">SELECT</span> jsonb_build_object(
-    <span class="org-string">'a'</span>, md5(random()::text)::text,
-    <span class="org-string">'b'</span>, md5(random()::text)::text
+INSERT INTO users2 (test)
+SELECT jsonb_build_object(
+    'a', md5(random()::text)::text,
+    'b', md5(random()::text)::text
 )
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+FROM generate_series(1, 100000) i;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#30906;&#35469;
-</span><span class="org-keyword">select</span> test <span class="org-keyword">from</span> users1 <span class="org-keyword">limit</span> 3;
-<span class="org-keyword">select</span> test <span class="org-keyword">from</span> users2 <span class="org-keyword">limit</span> 3;
+-- 確認
+select test from users1 limit 3;
+select test from users2 limit 3;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">JSON/JSONB&#12501;&#12451;&#12540;&#12523;&#12489;&#12398;&#29305;&#23450;&#12461;&#12540;&#12434;&#21462;&#24471; ================
-</span>EXPLAIN ANALYZE
-<span class="org-keyword">SELECT</span> test-&gt;&gt;<span class="org-string">'a'</span> <span class="org-keyword">FROM</span> users1;
+-- JSON/JSONBフィールドの特定キーを取得 ================
+EXPLAIN ANALYZE
+SELECT test-&gt;&gt;'a' FROM users1;
 
 EXPLAIN ANALYZE
-<span class="org-keyword">SELECT</span> test-&gt;&gt;<span class="org-string">'a'</span> <span class="org-keyword">FROM</span> users2;
+SELECT test-&gt;&gt;'a' FROM users2;
 </pre>
 </div>
 
@@ -207,9 +214,9 @@ EXPLAIN ANALYZE
 </ul>
 </div>
 </div>
-<div id="outline-container-org82942c9" class="outline-2">
-<h2 id="org82942c9"><a href="#org82942c9">関連</a></h2>
-<div class="outline-text-2" id="text-org82942c9">
+<div id="outline-container-orge8eb180" class="outline-2">
+<h2 id="orge8eb180"><a href="#orge8eb180">関連</a></h2>
+<div class="outline-text-2" id="text-orge8eb180">
 <ul class="org-ul">
 <li>追加調査: 書き込みはJSONが早いはずだが、この例だとなぜかJSONBのほうがなぜか少し早かった。複雑なJSON構造の場合はどうなるか確かめる</li>
 </ul>

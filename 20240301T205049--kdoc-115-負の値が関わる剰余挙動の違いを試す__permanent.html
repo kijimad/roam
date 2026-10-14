@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 115: 負の値が関わる剰余挙動の違いを試す</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 115: 負の値が関わる剰余挙動の違いを試す</h1>
-<div id="outline-container-org231ced1" class="outline-2">
-<h2 id="org231ced1"><a href="#org231ced1">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org231ced1">
+<div id="outline-container-orgf79a77c" class="outline-2">
+<h2 id="orgf79a77c"><a href="#orgf79a77c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf79a77c">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd992c1a" class="outline-2">
-<h2 id="orgd992c1a"><a href="#orgd992c1a">言語によって異なる挙動</a></h2>
-<div class="outline-text-2" id="text-orgd992c1a">
+<div id="outline-container-org3058888" class="outline-2">
+<h2 id="org3058888"><a href="#org3058888">言語によって異なる挙動</a></h2>
+<div class="outline-text-2" id="text-org3058888">
 <p>
 負の値に対する剰余をしたときの値は、プログラミング言語によって異なる。軽く試したところ2パターンあった。
 </p>
@@ -58,8 +65,8 @@ fmt.Println(8 % -5)
 </p>
 
 <div class="org-src-container">
-<pre class="src src-C">printf(<span class="org-string">"%d\n"</span>, -8 % 5);
-printf(<span class="org-string">"%d\n"</span>, 8 % -5);
+<pre class="src src-C">printf("%d\n", -8 % 5);
+printf("%d\n", 8 % -5);
 </pre>
 </div>
 
@@ -74,7 +81,7 @@ printf(<span class="org-string">"%d\n"</span>, 8 % -5);
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(format <span class="org-string">"%s\n%s"</span> (number-to-string (% -8 5)) (number-to-string (% 8 -5)))
+<pre class="src src-emacs-lisp">(format "%s\n%s" (number-to-string (% -8 5)) (number-to-string (% 8 -5)))
 </pre>
 </div>
 
@@ -89,8 +96,8 @@ printf(<span class="org-string">"%d\n"</span>, 8 % -5);
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python"><span class="org-builtin">print</span>(<span class="org-operator">-</span>8 <span class="org-operator">%</span> 5)
-<span class="org-builtin">print</span>(8 <span class="org-operator">%</span> <span class="org-operator">-</span>5)
+<pre class="src src-python">print(-8 % 5)
+print(8 % -5)
 </pre>
 </div>
 
@@ -105,7 +112,7 @@ printf(<span class="org-string">"%d\n"</span>, 8 % -5);
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span class="org-builtin">sprintf</span>(<span class="org-string">"%d\n%d"</span>, -8 % 5, 8 % -5)
+<pre class="src src-ruby">sprintf("%d\n%d", -8 % 5, 8 % -5)
 </pre>
 </div>
 
@@ -116,17 +123,17 @@ printf(<span class="org-string">"%d\n"</span>, 8 % -5);
 </div>
 </div>
 </div>
-<div id="outline-container-orgf220798" class="outline-2">
-<h2 id="orgf220798"><a href="#orgf220798">関連</a></h2>
-<div class="outline-text-2" id="text-orgf220798">
+<div id="outline-container-org65f90ee" class="outline-2">
+<h2 id="org65f90ee"><a href="#org65f90ee">関連</a></h2>
+<div class="outline-text-2" id="text-org65f90ee">
 <ul class="org-ul">
 <li>疑問: 試した2パターン以外が存在するか</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org7a547f9" class="outline-2">
-<h2 id="org7a547f9"><a href="#org7a547f9">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org7a547f9">
+<div id="outline-container-org5223840" class="outline-2">
+<h2 id="org5223840"><a href="#org5223840">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org5223840">
 <ul class="org-ul">
 <li><a href="./20250902T214241--kdoc-440-余りがマイナスになるか正の数になるかの方式の名前を見る__permanent.html">KDOC 440: 余りがマイナスになるか正の数になるかの方式の名前を見る</a></li>
 </ul>

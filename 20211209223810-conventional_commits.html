@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Conventional Commits</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">Conventional Commits</h1>
-<div id="outline-container-orgd6fc93b" class="outline-2">
-<h2 id="orgd6fc93b"><a href="#orgd6fc93b">概要</a></h2>
-<div class="outline-text-2" id="text-orgd6fc93b">
+<div id="outline-container-org1ea8509" class="outline-2">
+<h2 id="org1ea8509"><a href="#org1ea8509">概要</a></h2>
+<div class="outline-text-2" id="text-org1ea8509">
 <p>
 Conventional Commitsは<a href="20210901104129-git.html#ID-90c6b715-9324-46ce-a354-63d09403b066">Git</a>などVCSのコミットメッセージのための規約。
 規則に従うことで自動化ツールを利用しやすくなる。
@@ -28,16 +35,16 @@ Conventional Commitsは<a href="20210901104129-git.html#ID-90c6b715-9324-46ce-a3
 </p>
 </div>
 </div>
-<div id="outline-container-org074492e" class="outline-2">
-<h2 id="org074492e"><a href="#org074492e">コード化</a></h2>
-<div class="outline-text-2" id="text-org074492e">
+<div id="outline-container-org4aa8e76" class="outline-2">
+<h2 id="org4aa8e76"><a href="#org4aa8e76">コード化</a></h2>
+<div class="outline-text-2" id="text-org4aa8e76">
 <p>
 <a href="20210901104129-git.html#ID-90c6b715-9324-46ce-a354-63d09403b066">Git</a>フックを使ってコード化すると、自然に慣らしていくことができる。
 </p>
 </div>
-<div id="outline-container-org7f3bd2c" class="outline-3">
-<h3 id="org7f3bd2c"><a href="#org7f3bd2c">フォーマットを強制する</a></h3>
-<div class="outline-text-3" id="text-org7f3bd2c">
+<div id="outline-container-org7e74e3d" class="outline-3">
+<h3 id="org7e74e3d"><a href="#org7e74e3d">フォーマットを強制する</a></h3>
+<div class="outline-text-3" id="text-org7e74e3d">
 <p>
 フォーマットに合ってないとき、コミットできないようにする。
 </p>
@@ -46,15 +53,15 @@ Conventional Commitsは<a href="20210901104129-git.html#ID-90c6b715-9324-46ce-a3
 .githooks/commit-msgを作成する。
 </p>
 <div class="org-src-container">
-<pre class="src src-shell"><span class="org-comment-delimiter">#</span><span class="org-comment">!/bin/</span><span class="org-keyword">sh</span><span class="org-comment">
-</span><span class="org-keyword">if</span> <span class="org-negation-char">!</span> head -1 <span class="org-string">"$1"</span> | grep -qE <span class="org-string">"^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+?\))?: .{1,}$"</span>; <span class="org-keyword">then</span>
-    <span class="org-builtin">echo</span> <span class="org-string">"Aborting commit. Your commit message is invalid."</span> &gt;&amp;2
-    <span class="org-keyword">exit</span> 1
-<span class="org-keyword">fi</span>
-<span class="org-keyword">if</span> <span class="org-negation-char">!</span> head -1 <span class="org-string">"$1"</span> | grep -qE <span class="org-string">"^.{1,50}$"</span>; <span class="org-keyword">then</span>
-    <span class="org-builtin">echo</span> <span class="org-string">"Aborting commit. Your commit message is too long."</span> &gt;&amp;2
-    <span class="org-keyword">exit</span> 1
-<span class="org-keyword">fi</span>
+<pre class="src src-shell">#!/bin/sh
+if ! head -1 "$1" | grep -qE "^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+?\))?: .{1,}$"; then
+    echo "Aborting commit. Your commit message is invalid." &gt;&amp;2
+    exit 1
+fi
+if ! head -1 "$1" | grep -qE "^.{1,50}$"; then
+    echo "Aborting commit. Your commit message is too long." &gt;&amp;2
+    exit 1
+fi
 </pre>
 </div>
 
@@ -65,9 +72,9 @@ $ chmod -R +x .githooks/
 </div>
 </div>
 </div>
-<div id="outline-container-orge450256" class="outline-3">
-<h3 id="orge450256"><a href="#orge450256">チートシートを表示する</a></h3>
-<div class="outline-text-3" id="text-orge450256">
+<div id="outline-container-org1b32d4f" class="outline-3">
+<h3 id="org1b32d4f"><a href="#org1b32d4f">チートシートを表示する</a></h3>
+<div class="outline-text-3" id="text-org1b32d4f">
 <p>
 慣れてないとtypeにどういうのがあったか忘れる。
 コミット画面で、チートシートを表示する。
@@ -103,26 +110,26 @@ $ chmod -R +x .githooks/
 </div>
 </div>
 </div>
-<div id="outline-container-org3b6bcfc" class="outline-2">
-<h2 id="org3b6bcfc"><a href="#org3b6bcfc">Tasks</a></h2>
+<div id="outline-container-org023ba0f" class="outline-2">
+<h2 id="org023ba0f"><a href="#org023ba0f">Tasks</a></h2>
 </div>
-<div id="outline-container-orgf07233a" class="outline-2">
-<h2 id="orgf07233a"><a href="#orgf07233a">Reference</a></h2>
-<div class="outline-text-2" id="text-orgf07233a">
+<div id="outline-container-orgde07a94" class="outline-2">
+<h2 id="orgde07a94"><a href="#orgde07a94">Reference</a></h2>
+<div class="outline-text-2" id="text-orgde07a94">
 <ul class="org-ul">
 <li><a href="https://www.conventionalcommits.org/ja/v1.0.0/">Conventional Commits</a>
 日本語ドキュメント。</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org2019cbe" class="outline-2">
-<h2 id="org2019cbe"><a href="#org2019cbe">Archives</a></h2>
+<div id="outline-container-org1b16001" class="outline-2">
+<h2 id="org1b16001"><a href="#org1b16001">Archives</a></h2>
 </div>
 
 
-<div id="outline-container-org03ec4a3" class="outline-2">
-<h2 id="org03ec4a3"><a href="#org03ec4a3">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org03ec4a3">
+<div id="outline-container-orge3b408a" class="outline-2">
+<h2 id="orge3b408a"><a href="#orge3b408a">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orge3b408a">
 <ul class="org-ul">
 <li><a href="./20210508234743-emacs.html">Emacs</a></li>
 <li><a href="./20211201010904-template.html">template</a></li>

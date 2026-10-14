@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 454: シェルでバイナリが文字列表示されるのはなぜか?</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 454: シェルでバイナリが文字列表示されるのはなぜか?</h1>
-<div id="outline-container-org24d54b0" class="outline-2">
-<h2 id="org24d54b0"><a href="#org24d54b0">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org24d54b0">
+<div id="outline-container-org953b961" class="outline-2">
+<h2 id="org953b961"><a href="#org953b961">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org953b961">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf1c37f7" class="outline-2">
-<h2 id="orgf1c37f7"><a href="#orgf1c37f7">概要</a></h2>
-<div class="outline-text-2" id="text-orgf1c37f7">
+<div id="outline-container-org90f3aa2" class="outline-2">
+<h2 id="org90f3aa2"><a href="#org90f3aa2">概要</a></h2>
+<div class="outline-text-2" id="text-org90f3aa2">
 <p>
 xxdでASCIIコードを渡して文字列表示できる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>変換する</label><pre class="src src-shell"><span class="org-builtin">echo</span> -n <span class="org-string">"6865 6c6c 6f0a"</span> | xxd -r -p
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>変換する</label><pre class="src src-shell">echo -n "6865 6c6c 6f0a" | xxd -r -p
 </pre>
 </div>
 
@@ -61,9 +68,9 @@ xxdでASCIIコードを渡して文字列表示できる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>バイナリを書き込んで表示する</label><pre class="src src-shell">printf <span class="org-string">'\x61'</span> &gt; a.bin
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>バイナリを書き込んで表示する</label><pre class="src src-shell">printf '\x61' &gt; a.bin
 cat a.bin
-rm a.bin <span class="org-comment-delimiter"># </span><span class="org-comment">&#29255;&#20184;&#12369;</span>
+rm a.bin # 片付け
 </pre>
 </div>
 
@@ -81,9 +88,9 @@ rm a.bin <span class="org-comment-delimiter"># </span><span class="org-comment">
 </p>
 </div>
 </div>
-<div id="outline-container-orgefa1f76" class="outline-2">
-<h2 id="orgefa1f76"><a href="#orgefa1f76">関連</a></h2>
-<div class="outline-text-2" id="text-orgefa1f76">
+<div id="outline-container-org0726f73" class="outline-2">
+<h2 id="org0726f73"><a href="#org0726f73">関連</a></h2>
+<div class="outline-text-2" id="text-org0726f73">
 <ul class="org-ul">
 <li>追加調査: 仮定を確認する方法を調べる</li>
 <li>追加調査: シェルのバイナリ表示の仕様を調べる</li>

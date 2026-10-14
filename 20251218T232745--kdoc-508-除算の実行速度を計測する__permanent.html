@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 508: 除算の実行速度を計測する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 508: 除算の実行速度を計測する</h1>
-<div id="outline-container-orga78b965" class="outline-2">
-<h2 id="orga78b965"><a href="#orga78b965">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orga78b965">
+<div id="outline-container-orgecf9bfd" class="outline-2">
+<h2 id="orgecf9bfd"><a href="#orgecf9bfd">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgecf9bfd">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org434dbab" class="outline-2">
-<h2 id="org434dbab"><a href="#org434dbab">概要</a></h2>
-<div class="outline-text-2" id="text-org434dbab">
+<div id="outline-container-org7454360" class="outline-2">
+<h2 id="org7454360"><a href="#org7454360">概要</a></h2>
+<div class="outline-text-2" id="text-org7454360">
 <p>
 除算というのは負荷の大きな演算であり、加算などの演算に比べると、実行に要する時間がはるかに長い(p51)。
 </p>
@@ -50,44 +57,44 @@
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 1: </span>ベンチマーク</label><pre class="src src-shell">go install golang.org/x/perf/cmd/benchstat@latest
 
-<span class="org-variable-name">tmpdir</span>=$(mktemp -d)
-<span class="org-builtin">cd</span> $<span class="org-variable-name">tmpdir</span>
+tmpdir=$(mktemp -d)
+cd $tmpdir
 
-cat &gt; $<span class="org-variable-name">tmpdir</span>/bench_test.go &lt;&lt;EOF<span class="org-sh-heredoc">
+cat &gt; $tmpdir/bench_test.go &lt;&lt;EOF
   package main
 
   import "testing"
 
   func BenchmarkAdd(b *testing.B) {
-        for i := 0; i &lt; b.N; i++ {
-                _ = add(42)
-        }
+  	for i := 0; i &lt; b.N; i++ {
+  		_ = add(42)
+  	}
   }
 
   func BenchmarkDiv(b *testing.B) {
-        for i := 0; i &lt; b.N; i++ {
-                _ = div(42)
-        }
+  	for i := 0; i &lt; b.N; i++ {
+  		_ = div(42)
+  	}
   }
 
   //go:noinline
   func add(a int) int {
-        return a + a
+  	return a + a
   }
 
   //go:noinline
   func div(a int) int {
-        return a / a
+  	return a / a
   }
 EOF
-</span>
+
 go mod init bench
 go mod tidy
 go test -bench=. -benchmem -count=10 &gt; exec.log
 
 benchstat exec.log 2&gt;&amp;1
 
-rm -rf $<span class="org-variable-name">tmpdir</span>
+rm -rf $tmpdir
 </pre>
 </div>
 
@@ -123,17 +130,17 @@ geomean              ¹
 </p>
 </div>
 </div>
-<div id="outline-container-org44b74d5" class="outline-2">
-<h2 id="org44b74d5"><a href="#org44b74d5">関連</a></h2>
-<div class="outline-text-2" id="text-org44b74d5">
+<div id="outline-container-org3d7b8ac" class="outline-2">
+<h2 id="org3d7b8ac"><a href="#org3d7b8ac">関連</a></h2>
+<div class="outline-text-2" id="text-org3d7b8ac">
 <ul class="org-ul">
 <li>参照: <a href="20240810T122445--kdoc-217-『基礎からきっちり覚える-機械語入門』__book.html#ID-20240810T122445">KDOC 217: 『基礎からきっちり覚える 機械語入門』</a>から</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org64383cb" class="outline-2">
-<h2 id="org64383cb"><a href="#org64383cb">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org64383cb">
+<div id="outline-container-org1163866" class="outline-2">
+<h2 id="org1163866"><a href="#org1163866">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org1163866">
 <ul class="org-ul">
 <li><a href="./20251224T090149--kdoc-520-goコンパイラは定数除算を乗算に変換する__permanent.html">KDOC 520: Goコンパイラは定数除算を乗算に変換する</a></li>
 </ul>

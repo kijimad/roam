@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:08 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 335: 消しても新しいバージョンがダウンロードされていた</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 335: 消しても新しいバージョンがダウンロードされていた</h1>
-<div id="outline-container-orgcbe0da2" class="outline-2">
-<h2 id="orgcbe0da2"><a href="#orgcbe0da2">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgcbe0da2">
+<div id="outline-container-org2417eda" class="outline-2">
+<h2 id="org2417eda"><a href="#org2417eda">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org2417eda">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,18 +37,18 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org59c8719" class="outline-2">
-<h2 id="org59c8719"><a href="#org59c8719">概要</a></h2>
-<div class="outline-text-2" id="text-org59c8719">
+<div id="outline-container-org086f40a" class="outline-2">
+<h2 id="org086f40a"><a href="#org086f40a">概要</a></h2>
+<div class="outline-text-2" id="text-org086f40a">
 <p>
 Emacsでパッケージのバージョンを固定する必要があった。 <code>use-package</code> でインストールするのをやめて、コミットしておいて直接ファイルを読み込むようにしたかった。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>変更内容</label><pre class="src src-diff"><span class="org-diff-indicator-removed">-</span><span class="org-diff-removed"> (use-package denote
-</span><span class="org-diff-indicator-removed">-</span><span class="org-diff-removed">   :straight (:host github :repo "protesilaos/denote"))
-</span><span class="org-diff-indicator-added">+</span><span class="org-diff-added"> (add-to-list 'load-path "~/.emacs.d/vendor/denote-2.0.0")
-</span>+ (require 'denote)
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>変更内容</label><pre class="src src-diff">- (use-package denote
+-   :straight (:host github :repo "protesilaos/denote"))
++ (add-to-list 'load-path "~/.emacs.d/vendor/denote-2.0.0")
++ (require 'denote)
 </pre>
 </div>
 
@@ -54,15 +61,15 @@ Emacsでパッケージのバージョンを固定する必要があった。 <c
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>削除したら復活しなくなった</label><pre class="src src-emacs-lisp">(<span class="org-keyword">use-package</span> denote-menu
-  <span class="org-builtin">:straight</span> (<span class="org-builtin">:host</span> github <span class="org-builtin">:repo</span> <span class="org-string">"namilus/denote-menu"</span>))
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>削除したら復活しなくなった</label><pre class="src src-emacs-lisp">(use-package denote-menu
+  :straight (:host github :repo "namilus/denote-menu"))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org41f7bf7" class="outline-2">
-<h2 id="org41f7bf7"><a href="#org41f7bf7">関連</a></h2>
-<div class="outline-text-2" id="text-org41f7bf7">
+<div id="outline-container-orgb0b7e58" class="outline-2">
+<h2 id="orgb0b7e58"><a href="#orgb0b7e58">関連</a></h2>
+<div class="outline-text-2" id="text-orgb0b7e58">
 <p>
 なし。
 </p>

@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 659: 1秒より短いクエリも Performance Insights の負荷には実行時間どおりに出る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 659: 1秒より短いクエリも Performance Insights の負荷には実行時間どおりに出る</h1>
-<div id="outline-container-org9be2e78" class="outline-2">
-<h2 id="org9be2e78"><a href="#org9be2e78">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org9be2e78">
+<div id="outline-container-org4daa4bb" class="outline-2">
+<h2 id="org4daa4bb"><a href="#org4daa4bb">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4daa4bb">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org037aba2" class="outline-2">
-<h2 id="org037aba2"><a href="#org037aba2">概要</a></h2>
-<div class="outline-text-2" id="text-org037aba2">
+<div id="outline-container-org611b6fe" class="outline-2">
+<h2 id="org611b6fe"><a href="#org611b6fe">概要</a></h2>
+<div class="outline-text-2" id="text-org611b6fe">
 <p>
 RDS Performance Insights は1秒間隔でサンプリングするが、1秒かからないクエリはどうなるのかと考えた。たしかに1回ずつは確率的にしか標本に出ないが、標本が多ければ負荷の大きさは実行時間どおりに出て問題ない。
 </p>
@@ -64,11 +71,11 @@ AAE を計算するために、Database Insights では、クエリの合計実�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>1秒ごとの標本から求めた負荷(AAS)と、実行時間から求めた負荷(AAE)を比べる</label><pre class="src src-shell"><span class="org-comment-delimiter"># </span><span class="org-comment">&#36000;&#33655;&#12434;&#27969;&#12377;&#20596;&#12392;&#27161;&#26412;&#12434;&#21462;&#12427;&#20596;&#12398;2&#12388;&#12398;&#12475;&#12483;&#12471;&#12519;&#12531;&#12364;&#21516;&#26178;&#12395;&#35201;&#12427;&#12398;&#12391;&#12289;pgpg &#12398;&#12503;&#12525;&#12461;&#12471;&#12434;&#36890;&#12373;&#12378; PostgreSQL &#12395;&#30452;&#25509;(15433)&#12388;&#12394;&#12368;
-</span><span class="org-function-name">sample</span>() {
-  psql -h localhost -p 15433 -U postgres -d postgres -qAt &lt;&lt;<span class="org-string">'SQL'</span><span class="org-sh-heredoc">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>1秒ごとの標本から求めた負荷(AAS)と、実行時間から求めた負荷(AAE)を比べる</label><pre class="src src-shell"># 負荷を流す側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+sample() {
+  psql -h localhost -p 15433 -U postgres -d postgres -qAt &lt;&lt;'SQL'
 CREATE TEMP TABLE samples (query_id bigint);
--- Performance Insights &#12392;&#21516;&#12376;&#12367;&#12289;1&#31186;&#12372;&#12392;&#12395;&#12450;&#12463;&#12486;&#12451;&#12502;&#12394;&#12475;&#12483;&#12471;&#12519;&#12531;&#12434;300&#22238;&#25968;&#12360;&#12427;
+-- Performance Insights と同じく、1秒ごとにアクティブなセッションを300回数える
 DO $$
 BEGIN
   FOR i IN 1..300 LOOP
@@ -79,7 +86,7 @@ BEGIN
     PERFORM pg_sleep(1);
   END LOOP;
 END $$;
--- &#23455;&#34892;&#26178;&#38291;&#12363;&#12425;&#27714;&#12417;&#12383;&#36000;&#33655;(AAE)&#12392;&#12289;&#27161;&#26412;&#12363;&#12425;&#27714;&#12417;&#12383;&#36000;&#33655;(AAS)&#12434;&#20006;&#12409;&#12427;
+-- 実行時間から求めた負荷(AAE)と、標本から求めた負荷(AAS)を並べる
 SELECT format('| %s ms | %s | %s | %s | %s |',
               round(s.mean_exec_time), s.calls, round((s.total_exec_time / 1000 / 300)::numeric, 3),
               n, round(n / 300.0, 3))
@@ -88,22 +95,22 @@ FROM pg_stat_statements s,
 WHERE s.query LIKE 'SELECT%pg_sleep%'
 ORDER BY s.mean_exec_time DESC;
 SQL
-</span>}
+}
 
-docker exec pgpg-postgres-1 psql -U postgres -qAt -c <span class="org-string">"SELECT pg_stat_statements_reset()"</span> &gt; /dev/null
-<span class="org-comment-delimiter"># </span><span class="org-comment">pg_stat_statements &#12399;&#23450;&#25968;&#12434;&#12414;&#12392;&#12417;&#12427;&#12398;&#12391;&#12289;&#25991;&#12398;&#24418;&#12434;&#22793;&#12360;&#12390;&#21029;&#12398;&#25991;&#12392;&#12375;&#12390;&#25968;&#12360;&#12373;&#12379;&#12427;
-</span>printf <span class="org-string">'SELECT pg_sleep(1);\n'</span> | docker exec -i pgpg-postgres-1 sh -c <span class="org-string">'cat &gt; /tmp/s1000.sql'</span>
-printf <span class="org-string">'SELECT 1 FROM pg_sleep(0.1);\n'</span> | docker exec -i pgpg-postgres-1 sh -c <span class="org-string">'cat &gt; /tmp/s100.sql'</span>
-printf <span class="org-string">'SELECT 1, 2 FROM pg_sleep(0.01);\n'</span> | docker exec -i pgpg-postgres-1 sh -c <span class="org-string">'cat &gt; /tmp/s10.sql'</span>
-<span class="org-comment-delimiter"># </span><span class="org-comment">&#12393;&#12428;&#12418;&#23455;&#34892;&#26178;&#38291;&#12398;&#21512;&#35336;&#12364;&#32076;&#36942;&#26178;&#38291;&#12398;1&#21106;(AAE 0.1)&#12395;&#12394;&#12427;&#12424;&#12358;&#12395;&#12289;1&#22238;&#12398;&#26178;&#38291;&#12395;&#21453;&#27604;&#20363;&#12375;&#12383;&#38971;&#24230;&#12391;&#27969;&#12377;
-</span>docker exec pgpg-postgres-1 pgbench -U postgres -n -R 0.1 -T 301 -f /tmp/s1000.sql postgres &gt; /dev/null 2&gt;&amp;1 &amp;
+docker exec pgpg-postgres-1 psql -U postgres -qAt -c "SELECT pg_stat_statements_reset()" &gt; /dev/null
+# pg_stat_statements は定数をまとめるので、文の形を変えて別の文として数えさせる
+printf 'SELECT pg_sleep(1);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/s1000.sql'
+printf 'SELECT 1 FROM pg_sleep(0.1);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/s100.sql'
+printf 'SELECT 1, 2 FROM pg_sleep(0.01);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/s10.sql'
+# どれも実行時間の合計が経過時間の1割(AAE 0.1)になるように、1回の時間に反比例した頻度で流す
+docker exec pgpg-postgres-1 pgbench -U postgres -n -R 0.1 -T 301 -f /tmp/s1000.sql postgres &gt; /dev/null 2&gt;&amp;1 &amp;
 docker exec pgpg-postgres-1 pgbench -U postgres -n -R 1 -T 301 -f /tmp/s100.sql postgres &gt; /dev/null 2&gt;&amp;1 &amp;
 docker exec pgpg-postgres-1 pgbench -U postgres -n -R 10 -T 301 -f /tmp/s10.sql postgres &gt; /dev/null 2&gt;&amp;1 &amp;
 sleep 0.5
-<span class="org-builtin">echo</span> <span class="org-string">'| &#25991;&#12398;&#26178;&#38291; | &#21628;&#12403;&#20986;&#12375; | AAE | &#27161;&#26412;(300&#22238;&#20013;) | AAS |'</span>
-<span class="org-builtin">echo</span> <span class="org-string">'|-'</span>
+echo '| 文の時間 | 呼び出し | AAE | 標本(300回中) | AAS |'
+echo '|-'
 sample
-<span class="org-builtin">wait</span>
+wait
 </pre>
 </div>
 
@@ -165,16 +172,16 @@ sample
 </ul>
 
 
-<div id="org8dee954" class="figure">
+<div id="org2778a67" class="figure">
 <p><img src="images/20261013-pi-sampling.svg" alt="20261013-pi-sampling.svg" class="org-svg">
 </p>
 <p><span class="figure-number">Figure 1: </span>1秒ごとの標本に捕まる実行の模式図。短い文ほど1回ずつは捕まりにくいが、回数が多いので、捕まる数は同じくらいになる</p>
 </div>
 </div>
 </div>
-<div id="outline-container-org89dcf4c" class="outline-2">
-<h2 id="org89dcf4c"><a href="#org89dcf4c">関連</a></h2>
-<div class="outline-text-2" id="text-org89dcf4c">
+<div id="outline-container-org2dcfc45" class="outline-2">
+<h2 id="org2dcfc45"><a href="#org2dcfc45">関連</a></h2>
+<div class="outline-text-2" id="text-org2dcfc45">
 <ul class="org-ul">
 <li>前提: <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
 </ul>

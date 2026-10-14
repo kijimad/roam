@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:08 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 411: スタックは積み重ねて取り出して解放する。ではヒープは?</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 411: スタックは積み重ねて取り出して解放する。ではヒープは?</h1>
-<div id="outline-container-org39f11f6" class="outline-2">
-<h2 id="org39f11f6"><a href="#org39f11f6">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org39f11f6">
+<div id="outline-container-orgddb80c9" class="outline-2">
+<h2 id="orgddb80c9"><a href="#orgddb80c9">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgddb80c9">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb594aee" class="outline-2">
-<h2 id="orgb594aee"><a href="#orgb594aee">概要</a></h2>
-<div class="outline-text-2" id="text-orgb594aee">
+<div id="outline-container-orgde22910" class="outline-2">
+<h2 id="orgde22910"><a href="#orgde22910">概要</a></h2>
+<div class="outline-text-2" id="text-orgde22910">
 <p>
 スタックとヒープについて聞かれた。
 </p>
@@ -61,18 +68,18 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org4bed52a" class="outline-2">
-<h2 id="org4bed52a"><a href="#org4bed52a">関連</a></h2>
-<div class="outline-text-2" id="text-org4bed52a">
+<div id="outline-container-orgf8ad906" class="outline-2">
+<h2 id="orgf8ad906"><a href="#orgf8ad906">関連</a></h2>
+<div class="outline-text-2" id="text-orgf8ad906">
 <ul class="org-ul">
 <li>参照: <a href="https://ja.wikipedia.org/wiki/%E3%83%92%E3%83%BC%E3%83%97%E9%A0%98%E5%9F%9F">ヒープ領域 - Wikipedia</a></li>
 <li>具体例: <a href="20240427T120833--kdoc-141-cのポインタ操作をアセンブリで見る__permanent.html#ID-20240427T120833">KDOC 141: Cのポインタ操作をアセンブリで見る</a>。アセンブラで観察する例</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org63835c5" class="outline-2">
-<h2 id="org63835c5"><a href="#org63835c5">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org63835c5">
+<div id="outline-container-org8cf2bd6" class="outline-2">
+<h2 id="org8cf2bd6"><a href="#org8cf2bd6">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org8cf2bd6">
 <ul class="org-ul">
 <li><a href="./20250630T192238--kdoc-412-ヒープ管理方法の変遷を見る__permanent.html">KDOC 412: ヒープ管理方法の変遷を見る</a></li>
 <li><a href="./20250701T174437--kdoc-413-ローカル変数がヒープにエスケープされるのを見る__permanent.html">KDOC 413: ローカル変数がヒープにエスケープされるのを見る</a></li>

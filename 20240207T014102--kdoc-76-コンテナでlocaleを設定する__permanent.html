@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 76: コンテナでLocaleを設定する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 76: コンテナでLocaleを設定する</h1>
-<div id="outline-container-orgc9f36ee" class="outline-2">
-<h2 id="orgc9f36ee"><a href="#orgc9f36ee">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgc9f36ee">
+<div id="outline-container-org1c8593e" class="outline-2">
+<h2 id="org1c8593e"><a href="#org1c8593e">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1c8593e">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,17 +37,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb78e192" class="outline-2">
-<h2 id="orgb78e192"><a href="#orgb78e192">概要</a></h2>
-<div class="outline-text-2" id="text-orgb78e192">
+<div id="outline-container-org3396c59" class="outline-2">
+<h2 id="org3396c59"><a href="#org3396c59">概要</a></h2>
+<div class="outline-text-2" id="text-org3396c59">
 <p>
 コンテナでLocaleを設定する方法をまとめる。普段ホストマシンとして動かしていると問題になることはないが、<a href="20210805005543-docker.html#ID-1658782a-d331-464b-9fd7-1f8233b8b7f8">Docker</a>コンテナでは設定されていないので問題になることがある。たとえばファイル名に日本語が含まれるときに英語のままだと検索にかからなかったりする。
 </p>
 </div>
 </div>
-<div id="outline-container-org7dc867c" class="outline-2">
-<h2 id="org7dc867c"><a href="#org7dc867c">イントロ</a></h2>
-<div class="outline-text-2" id="text-org7dc867c">
+<div id="outline-container-org6c47b92" class="outline-2">
+<h2 id="org6c47b92"><a href="#org6c47b92">イントロ</a></h2>
+<div class="outline-text-2" id="text-org6c47b92">
 <p>
 Localeとは「その地域で使われる言語や通貨の単位などのまとまり」<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>のことである。
 </p>
@@ -67,9 +74,9 @@ Localeとは「その地域で使われる言語や通貨の単位などのま�
 </div>
 </div>
 </div>
-<div id="outline-container-orgd21738b" class="outline-2">
-<h2 id="orgd21738b"><a href="#orgd21738b">手順</a></h2>
-<div class="outline-text-2" id="text-orgd21738b">
+<div id="outline-container-orgeb0f9f3" class="outline-2">
+<h2 id="orgeb0f9f3"><a href="#orgeb0f9f3">手順</a></h2>
+<div class="outline-text-2" id="text-orgeb0f9f3">
 <p>
 手順は2段階である。Docker環境は公式のubuntuイメージで確認した。
 </p>
@@ -123,7 +130,7 @@ Localeは環境変数で設定できるので、コマンド実行時にexport�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>Localeを日本に設定する</label><pre class="src src-shell"><span class="org-builtin">export</span> <span class="org-variable-name">LC_ALL</span>=ja_JP.UTF-8
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>Localeを日本に設定する</label><pre class="src src-shell">export LC_ALL=ja_JP.UTF-8
 </pre>
 </div>
 
@@ -132,33 +139,33 @@ Locale前後でファイル名の日本語が正しく表示できるのを確�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>ファイル名を正しく表示できる</label><pre class="src src-shell"><span class="org-comment-delimiter"># </span><span class="org-comment">&#35373;&#23450;&#21069;
-</span>touch &#12354;
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>ファイル名を正しく表示できる</label><pre class="src src-shell"># 設定前
+touch あ
 ls
-<span class="org-comment-delimiter"># </span><span class="org-comment">=&gt; ''$'\343\201\202'
-</span>
-<span class="org-comment-delimiter"># </span><span class="org-comment">================
-</span><span class="org-comment-delimiter"># </span><span class="org-comment">...
-</span><span class="org-comment-delimiter"># </span><span class="org-comment">================
-</span>
-<span class="org-comment-delimiter"># </span><span class="org-comment">&#35373;&#23450;&#24460;
-</span>ls
-<span class="org-comment-delimiter"># </span><span class="org-comment">=&gt; &#12354;</span>
+# =&gt; ''$'\343\201\202'
+
+# ================
+# ...
+# ================
+
+# 設定後
+ls
+# =&gt; あ
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orga433778" class="outline-2">
-<h2 id="orga433778"><a href="#orga433778">関連</a></h2>
-<div class="outline-text-2" id="text-orga433778">
+<div id="outline-container-orgc66eb42" class="outline-2">
+<h2 id="orgc66eb42"><a href="#orgc66eb42">関連</a></h2>
+<div class="outline-text-2" id="text-orgc66eb42">
 <ul class="org-ul">
 <li>未解決: このケースでなぜ文字化けするのか。デフォルトでASCIIで処理しているということか</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf2faff8" class="outline-2">
-<h2 id="orgf2faff8"><a href="#orgf2faff8">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgf2faff8">
+<div id="outline-container-orgbaa4c93" class="outline-2">
+<h2 id="orgbaa4c93"><a href="#orgbaa4c93">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgbaa4c93">
 <ul class="org-ul">
 <li><a href="./20240207T201038--kdoc-79-localeの標準的な紙のサイズとは__permanent.html">KDOC 79: Localeの標準的な紙のサイズとは</a></li>
 <li><a href="./20240207T203227--kdoc-80-「あ」がどうして343-201-202になるのか__permanent.html">KDOC 80: 「あ」がどうして343 201 202になるのか</a></li>

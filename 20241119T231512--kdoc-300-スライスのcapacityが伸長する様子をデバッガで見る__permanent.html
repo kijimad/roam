@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 300: スライスのcapacityが伸長する様子をデバッガで見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 300: スライスのcapacityが伸長する様子をデバッガで見る</h1>
-<div id="outline-container-org0f0f186" class="outline-2">
-<h2 id="org0f0f186"><a href="#org0f0f186">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org0f0f186">
+<div id="outline-container-org7a8de26" class="outline-2">
+<h2 id="org7a8de26"><a href="#org7a8de26">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7a8de26">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb830d8f" class="outline-2">
-<h2 id="orgb830d8f"><a href="#orgb830d8f">概要</a></h2>
-<div class="outline-text-2" id="text-orgb830d8f">
+<div id="outline-container-org5ad9e39" class="outline-2">
+<h2 id="org5ad9e39"><a href="#org5ad9e39">概要</a></h2>
+<div class="outline-text-2" id="text-org5ad9e39">
 <p>
 Go言語でスライスが伸長する様子をデバッガで確認する。
 </p>
@@ -64,19 +71,19 @@ Goのデバッガdlvを使って、見る。
 
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 2: </span>dlvでの操作。途中の出力は省略している</label><pre class="src src-shell">$ dlv debug main.go
-<span class="org-comment-delimiter"># </span><span class="org-comment">&#21021;&#26399;&#21270;&#20966;&#29702;&#12391;&#12398;growslice&#12395;&#12502;&#12524;&#12540;&#12463;&#12377;&#12427;&#12398;&#12391;&#12289;print&#12414;&#12391;&#39131;&#12400;&#12377;
-</span>
-<span class="org-comment-delimiter"># </span><span class="org-comment">&#32068;&#12415;&#36796;&#12415;&#38306;&#25968;print&#12399;&#12467;&#12531;&#12497;&#12452;&#12523;&#24460;&#12399;printstring&#12395;&#12394;&#12387;&#12390;&#12356;&#12427;
-</span>(dlv) b runtime.printstring
+# 初期化処理でのgrowsliceにブレークするので、printまで飛ばす
 
-<span class="org-comment-delimiter"># </span><span class="org-comment">&#39131;&#12400;&#12377;
-</span>(dlv) n
+# 組み込み関数printはコンパイル後はprintstringになっている
+(dlv) b runtime.printstring
 
-<span class="org-comment-delimiter"># </span><span class="org-comment">print&#12414;&#12391;&#39131;&#12400;&#12375;&#12383;&#26178;&#28857;&#12391;&#20181;&#25499;&#12369;&#12427;
-</span>(dlv) b runtime.growslice
+# 飛ばす
+(dlv) n
 
-<span class="org-comment-delimiter"># </span><span class="org-comment">cap1&#12398;&#12473;&#12521;&#12452;&#12473;&#12394;&#12398;&#12391;&#12289;&#12523;&#12540;&#12503;&#12398;&#26368;&#21021;&#12398;1&#22238;&#12399;&#24341;&#12387;&#12363;&#12363;&#12425;&#12394;&#12356;
-</span><span class="org-comment-delimiter"># </span><span class="org-comment">&#12523;&#12540;&#12503;&#12398;2&#22238;&#30446;&#12391;&#12399;growslice&#12391;&#27490;&#12414;&#12427;</span>
+# printまで飛ばした時点で仕掛ける
+(dlv) b runtime.growslice
+
+# cap1のスライスなので、ループの最初の1回は引っかからない
+# ループの2回目ではgrowsliceで止まる
 </pre>
 </div>
 
@@ -85,9 +92,9 @@ Goのデバッガdlvを使って、見る。
 </p>
 </div>
 </div>
-<div id="outline-container-orgdf1c2b5" class="outline-2">
-<h2 id="orgdf1c2b5"><a href="#orgdf1c2b5">関連</a></h2>
-<div class="outline-text-2" id="text-orgdf1c2b5">
+<div id="outline-container-orgbc6cc84" class="outline-2">
+<h2 id="orgbc6cc84"><a href="#orgbc6cc84">関連</a></h2>
+<div class="outline-text-2" id="text-orgbc6cc84">
 <ul class="org-ul">
 <li>動機: <a href="20241119T084548--kdoc-299-appendはコンパイルするとruntimegrowsliceになる__permanent.html#ID-20241119T084548">KDOC 299: appendはコンパイルすると消える</a>。growsliceが確かに呼ばれているのを確認した</li>
 </ul>

@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:41 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Emacs Lisp</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 <script>
   window.MathJax = {
     tex: {
@@ -47,22 +54,22 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">Emacs Lisp</h1>
-<div id="outline-container-org944b734" class="outline-2">
-<h2 id="org944b734"><a href="#org944b734">概要</a></h2>
-<div class="outline-text-2" id="text-org944b734">
+<div id="outline-container-org10e4d52" class="outline-2">
+<h2 id="org10e4d52"><a href="#org10e4d52">概要</a></h2>
+<div class="outline-text-2" id="text-org10e4d52">
 <p>
 <a href="20210508234743-emacs.html#ID-1ad8c3d5-97ba-4905-be11-e6f2626127ad">Emacs</a>で使われている<a href="20210509101246-programming_language.html#ID-868ac56a-2d42-48d7-ab7f-7047c85a8f39">Programming Language</a>、Lispの方言。
 Emacs自体のコードの多くがEmacs Lispで構成されているほか、拡張するために用いる。
 </p>
 </div>
 </div>
-<div id="outline-container-org23b7371" class="outline-2">
-<h2 id="org23b7371"><a href="#org23b7371">Memo</a></h2>
-<div class="outline-text-2" id="text-org23b7371">
+<div id="outline-container-org1034555" class="outline-2">
+<h2 id="org1034555"><a href="#org1034555">Memo</a></h2>
+<div class="outline-text-2" id="text-org1034555">
 </div>
-<div id="outline-container-orga4966c8" class="outline-3">
-<h3 id="orga4966c8"><a href="#orga4966c8">M-xで引数を割り当てる</a></h3>
-<div class="outline-text-3" id="text-orga4966c8">
+<div id="outline-container-orgfb240bc" class="outline-3">
+<h3 id="orgfb240bc"><a href="#orgfb240bc">M-xで引数を割り当てる</a></h3>
+<div class="outline-text-3" id="text-orgfb240bc">
 <p>
 M-x <code>ert-run-tests-interactively</code> は実行できるが、 <code>(ert-run-tests-interactively)</code> は引数足りないエラーで実行できない。
 </p>
@@ -80,7 +87,7 @@ interactive special formが関係している。interactiveの引数はarg-descr
 </pre>
 </div>
 
-<div class="results" id="org9b84dbf">
+<div class="results" id="org2122349">
 <p>
 DEFUN (&ldquo;interactive&rdquo;, Finteractive, Sinteractive, 0, UNEVALLED, 0,
 </p>
@@ -96,13 +103,13 @@ interactiveに渡したリストが、関数定義の引数に割り当てられ
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>M-xで実行できる</label><pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">interactive-test</span> (select)
-  (<span class="org-keyword">interactive</span> '(<span class="org-string">"test"</span>))
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>M-xで実行できる</label><pre class="src src-emacs-lisp">(defun interactive-test (select)
+  (interactive '("test"))
   (insert select))
 </pre>
 </div>
 
-<div class="results" id="orga167589">
+<div class="results" id="org55c24fb">
 <p>
 interactive-test
 </p>
@@ -110,17 +117,17 @@ interactive-test
 </div>
 </div>
 </div>
-<div id="outline-container-orgb8f3fb8" class="outline-3">
-<h3 id="orgb8f3fb8"><a href="#orgb8f3fb8">defunを読む&#xa0;&#xa0;&#xa0;<span class="tag"><span class="DontKnow">DontKnow</span></span></a></h3>
-<div class="outline-text-3" id="text-orgb8f3fb8">
+<div id="outline-container-org970684f" class="outline-3">
+<h3 id="org970684f"><a href="#org970684f">defunを読む&#xa0;&#xa0;&#xa0;<span class="tag"><span class="DontKnow">DontKnow</span></span></a></h3>
+<div class="outline-text-3" id="text-org970684f">
 <p>
 defunは関数定義でよく使うマクロ。どのような仕組みになっているのだろうか。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb18f406" class="outline-3">
-<h3 id="orgb18f406"><a href="#orgb18f406">プロパティはなにか</a></h3>
-<div class="outline-text-3" id="text-orgb18f406">
+<div id="outline-container-org0c43c4f" class="outline-3">
+<h3 id="org0c43c4f"><a href="#org0c43c4f">プロパティはなにか</a></h3>
+<div class="outline-text-3" id="text-org0c43c4f">
 <p>
 任意のオブジェクトに情報を付加し、後で取り出せる仕組み。
 </p>
@@ -132,7 +139,7 @@ defunは関数定義でよく使うマクロ。どのような仕組みになっ
 </pre>
 </div>
 
-<div class="results" id="org2a66d1b">
+<div class="results" id="orgfe7d22f">
 <p>
 (1 2 3)
 </p>
@@ -140,9 +147,9 @@ defunは関数定義でよく使うマクロ。どのような仕組みになっ
 </div>
 </div>
 </div>
-<div id="outline-container-org8614c4d" class="outline-3">
-<h3 id="org8614c4d"><a href="#org8614c4d">関数とはlambdaで始まるリスト</a></h3>
-<div class="outline-text-3" id="text-org8614c4d">
+<div id="outline-container-orgcf24548" class="outline-3">
+<h3 id="orgcf24548"><a href="#orgcf24548">関数とはlambdaで始まるリスト</a></h3>
+<div class="outline-text-3" id="text-orgcf24548">
 <ul class="org-ul">
 <li><a href="http://quruli.ivory.ne.jp/document/elisp_20.3/elisp_12.html">http://quruli.ivory.ne.jp/document/elisp_20.3/elisp_12.html</a></li>
 </ul>
@@ -162,7 +169,7 @@ Lispでは, 関数とは, lambdaで始まるリスト, そのようなリスト�
 </pre>
 </div>
 
-<div class="results" id="org366a13e">
+<div class="results" id="org8a524ea">
 <p>
 (defmacro defun (name arglist &amp;rest body)
   "Define NAME as a function.
@@ -213,9 +220,9 @@ The return value is undefined.
 </div>
 </div>
 </div>
-<div id="outline-container-org6daf4b9" class="outline-3">
-<h3 id="org6daf4b9"><a href="#org6daf4b9">interactiveモードか判定する変数</a></h3>
-<div class="outline-text-3" id="text-org6daf4b9">
+<div id="outline-container-org61aeed9" class="outline-3">
+<h3 id="org61aeed9"><a href="#org61aeed9">interactiveモードか判定する変数</a></h3>
+<div class="outline-text-3" id="text-org61aeed9">
 <ul class="org-ul">
 <li>noninteractive 変数
 <ul class="org-ul">
@@ -224,29 +231,29 @@ The return value is undefined.
 </ul>
 </div>
 </div>
-<div id="outline-container-org252f177" class="outline-3">
-<h3 id="org252f177"><a href="#org252f177">defmacroの短い例</a></h3>
-<div class="outline-text-3" id="text-org252f177">
+<div id="outline-container-org57b5a17" class="outline-3">
+<h3 id="org57b5a17"><a href="#org57b5a17">defmacroの短い例</a></h3>
+<div class="outline-text-3" id="text-org57b5a17">
 <p>
 macroを理解するには、それが必要な状況をイメージできるとわかりやすい。bodyを未評価の状態で渡すのが必要なので、defmacroを使う。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defmacro</span> <span class="org-function-name">cask--shut-up-unless-debug</span> (<span class="org-type">&amp;rest</span> body)
-  <span class="org-doc">"The shut-up module is singularly designed to defeat *every*
- attempt at making your elisp package tractable."</span>
-  (<span class="org-keyword">declare</span> (indent defun))
-  `(<span class="org-keyword">if</span> debug-on-error
-       (<span class="org-keyword">cl-flet</span> ((shut-up-current-output () (ignore)))
-         ,@body)
+<pre class="src src-emacs-lisp">(defmacro cask--shut-up-unless-debug (&amp;rest body)
+  "The shut-up module is singularly designed to defeat *every*
+ attempt at making your elisp package tractable."
+  (declare (indent defun))
+  `(if debug-on-error
+       (cl-flet ((shut-up-current-output () (ignore)))
+	 ,@body)
      (shut-up ,@body)))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgda195eb" class="outline-3">
-<h3 id="orgda195eb"><a href="#orgda195eb">letfを関数モックとして使う</a></h3>
-<div class="outline-text-3" id="text-orgda195eb">
+<div id="outline-container-org4ea3d9a" class="outline-3">
+<h3 id="org4ea3d9a"><a href="#org4ea3d9a">letfを関数モックとして使う</a></h3>
+<div class="outline-text-3" id="text-org4ea3d9a">
 <p>
 モックとして使える。princをinsertに置き換えて、テスト可能にする例。
 </p>
@@ -256,7 +263,7 @@ macroを理解するには、それが必要な状況をイメージできると
 </pre>
 </div>
 
-<div class="results" id="orgac38813">
+<div class="results" id="org8ce6d0b">
 <p>
 (ert-deftest cask-cli-test/print-table-with-links ()
   (cask-test/with-bundle
@@ -274,9 +281,9 @@ macroを理解するには、それが必要な状況をイメージできると
 </div>
 </div>
 </div>
-<div id="outline-container-org574f581" class="outline-3">
-<h3 id="org574f581"><a href="#org574f581">インデントマクロ</a></h3>
-<div class="outline-text-3" id="text-org574f581">
+<div id="outline-container-orgdd0ec9f" class="outline-3">
+<h3 id="orgdd0ec9f"><a href="#orgdd0ec9f">インデントマクロ</a></h3>
+<div class="outline-text-3" id="text-orgdd0ec9f">
 <p>
 マクロ呼び出しをTABがどのようにインデントするべきか定義するために、declareフォームを使うことができる。
 </p>
@@ -286,9 +293,9 @@ macroを理解するには、それが必要な状況をイメージできると
 </ul>
 </div>
 </div>
-<div id="outline-container-orgcdde174" class="outline-3">
-<h3 id="orgcdde174"><a href="#orgcdde174">バッファの開き方を分岐させるときの書き方</a></h3>
-<div class="outline-text-3" id="text-orgcdde174">
+<div id="outline-container-org8bac2d1" class="outline-3">
+<h3 id="org8bac2d1"><a href="#org8bac2d1">バッファの開き方を分岐させるときの書き方</a></h3>
+<div class="outline-text-3" id="text-org8bac2d1">
 <p>
 動作の異なる関数を分岐で代入して、funcallで評価する。
 </p>
@@ -298,7 +305,7 @@ macroを理解するには、それが必要な状況をイメージできると
 </pre>
 </div>
 
-<div class="results" id="orgcc8b63e">
+<div class="results" id="org9f1dd24">
 <p>
     (display-buffer-fn (if other-window
 			   #'switch-to-buffer-other-window
@@ -310,17 +317,17 @@ macroを理解するには、それが必要な状況をイメージできると
 </div>
 </div>
 </div>
-<div id="outline-container-org69930b6" class="outline-3">
-<h3 id="org69930b6"><a href="#org69930b6">modus-themeを切り替える</a></h3>
-<div class="outline-text-3" id="text-org69930b6">
+<div id="outline-container-org1dd9ebc" class="outline-3">
+<h3 id="org1dd9ebc"><a href="#org1dd9ebc">modus-themeを切り替える</a></h3>
+<div class="outline-text-3" id="text-org1dd9ebc">
 <p>
 modus-themes-toggleでダークテーマ、ライトテーマを切り替えられる。便利。
 </p>
 </div>
 </div>
-<div id="outline-container-orga126dbc" class="outline-3">
-<h3 id="orga126dbc"><a href="#orga126dbc">現在のメジャーモードの調べ方</a></h3>
-<div class="outline-text-3" id="text-orga126dbc">
+<div id="outline-container-org0a2a3c7" class="outline-3">
+<h3 id="org0a2a3c7"><a href="#org0a2a3c7">現在のメジャーモードの調べ方</a></h3>
+<div class="outline-text-3" id="text-org0a2a3c7">
 <p>
 判定や使いかたを調べるのに使える。
 </p>
@@ -335,9 +342,9 @@ modus-themes-toggleでダークテーマ、ライトテーマを切り替えら�
 </div>
 </div>
 </div>
-<div id="outline-container-org15c1961" class="outline-3">
-<h3 id="org15c1961"><a href="#org15c1961"><code>format-spec</code> で設定の幅を広げる</a></h3>
-<div class="outline-text-3" id="text-org15c1961">
+<div id="outline-container-org124bb3b" class="outline-3">
+<h3 id="org124bb3b"><a href="#org124bb3b"><code>format-spec</code> で設定の幅を広げる</a></h3>
+<div class="outline-text-3" id="text-org124bb3b">
 <p>
 <code>(format-spec)</code> で文字と関数をマッピングして、ユーザが設定しやすくできる。
 </p>
@@ -347,21 +354,21 @@ modus-themes-toggleでダークテーマ、ライトテーマを切り替えら�
 </ul>
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(format-spec
-     magit-buffer-name-format <span class="org-comment-delimiter">;; </span><span class="org-comment">"%x%M%v: %t%x"
-</span>     `((?m . ,m)
-       (?M . ,(<span class="org-keyword">if</span> (eq mode 'magit-status-mode) <span class="org-string">"magit"</span> m))
-       (?v . ,(<span class="org-keyword">or</span> v <span class="org-string">""</span>))
-       (?V . ,(<span class="org-keyword">if</span> v (concat <span class="org-string">" "</span> v) <span class="org-string">""</span>))
+     magit-buffer-name-format ;; "%x%M%v: %t%x"
+     `((?m . ,m)
+       (?M . ,(if (eq mode 'magit-status-mode) "magit" m))
+       (?v . ,(or v ""))
+       (?V . ,(if v (concat " " v) ""))
        (?t . ,n)
-       (?x . ,(<span class="org-keyword">if</span> magit-uniquify-buffer-names <span class="org-string">""</span> <span class="org-string">"*"</span>))
-       (?T . ,(<span class="org-keyword">if</span> magit-uniquify-buffer-names n (concat n <span class="org-string">"*"</span>)))))
+       (?x . ,(if magit-uniquify-buffer-names "" "*"))
+       (?T . ,(if magit-uniquify-buffer-names n (concat n "*")))))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org116e840" class="outline-3">
-<h3 id="org116e840"><a href="#org116e840">必須ではない依存パッケージの書き方</a></h3>
-<div class="outline-text-3" id="text-org116e840">
+<div id="outline-container-org0786e10" class="outline-3">
+<h3 id="org0786e10"><a href="#org0786e10">必須ではない依存パッケージの書き方</a></h3>
+<div class="outline-text-3" id="text-org0786e10">
 <p>
 変数なら
 (defvar w3m-current-url)
@@ -377,17 +384,17 @@ modus-themes-toggleでダークテーマ、ライトテーマを切り替えら�
 </p>
 </div>
 </div>
-<div id="outline-container-org17c6c12" class="outline-3">
-<h3 id="org17c6c12"><a href="#org17c6c12">依存インストール</a></h3>
-<div class="outline-text-3" id="text-org17c6c12">
+<div id="outline-container-org9fe3420" class="outline-3">
+<h3 id="org9fe3420"><a href="#org9fe3420">依存インストール</a></h3>
+<div class="outline-text-3" id="text-org9fe3420">
 <p>
 requireかと思いがちだが、一番上の <code>;; Package-Requires: ((emacs "25.1"))</code> で依存インストールに利用されてる。requireはあくまでパッケージを読み込むだけ。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd2aa76a" class="outline-3">
-<h3 id="orgd2aa76a"><a href="#orgd2aa76a">アクションと検索をわける</a></h3>
-<div class="outline-text-3" id="text-orgd2aa76a">
+<div id="outline-container-orgc3c3a99" class="outline-3">
+<h3 id="orgc3c3a99"><a href="#orgc3c3a99">アクションと検索をわける</a></h3>
+<div class="outline-text-3" id="text-orgc3c3a99">
 <p>
 ace-link.elを見ていて、アクションとリンク検索を分けていた。リンク検索する → 決定を押したときのアクションを、それぞれのメジャーモードで判断するというわけだ。
 単純で強力。
@@ -402,86 +409,86 @@ ace-link.elを見ていて、アクションとリンク検索を分けていた
 <li>(ace-link&#x2013;info-collect) - リンクに番号をふる</li>
 </ul>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">ace-link-info</span> ()
-  <span class="org-doc">"Open a visible link in an `</span><span class="org-doc"><span class="org-constant">Info-mode</span></span><span class="org-doc">' buffer."</span>
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((pt (avy-with ace-link-info
+<pre class="src src-emacs-lisp">(defun ace-link-info ()
+  "Open a visible link in an `Info-mode' buffer."
+  (interactive)
+  (let ((pt (avy-with ace-link-info
               (avy-process
                (mapcar #'cdr
                        (ace-link--info-collect))
                (avy--style-fn avy-style)))))
     (ace-link--info-action pt)))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">ace-link--info-action</span> (pt)
-  (<span class="org-keyword">when</span> (numberp pt)
+(defun ace-link--info-action (pt)
+  (when (numberp pt)
     (push-mark)
     (goto-char pt)
-    (<span class="org-keyword">let</span> ((we (window-end)))
-      (<span class="org-keyword">while</span> (not (<span class="org-keyword">ignore-errors</span>
+    (let ((we (window-end)))
+      (while (not (ignore-errors
                     (Info-follow-nearest-node)))
         (forward-char 1)
-        (<span class="org-keyword">when</span> (&gt; (point) we)
-          (<span class="org-warning">error</span> <span class="org-string">"Could not follow link"</span>))))))
+        (when (&gt; (point) we)
+          (error "Could not follow link"))))))
 
-(<span class="org-keyword">declare-function</span> Info-follow-nearest-node <span class="org-string">"info"</span>)
-(<span class="org-keyword">declare-function</span> Info-next-reference <span class="org-string">"info"</span>)
-(<span class="org-keyword">declare-function</span> Info-try-follow-nearest-node <span class="org-string">"info"</span>)
-(<span class="org-keyword">declare-function</span> Info-goto-node <span class="org-string">"info"</span>)
+(declare-function Info-follow-nearest-node "info")
+(declare-function Info-next-reference "info")
+(declare-function Info-try-follow-nearest-node "info")
+(declare-function Info-goto-node "info")
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">ace-link--info-current</span> ()
-  <span class="org-doc">"Return the node at point."</span>
-  (cons (<span class="org-keyword">cl-letf</span> (((symbol-function #'Info-goto-node)
-                   (<span class="org-keyword">lambda</span> (node _) node))
+(defun ace-link--info-current ()
+  "Return the node at point."
+  (cons (cl-letf (((symbol-function #'Info-goto-node)
+                   (lambda (node _) node))
                   (browse-url-browser-function
-                   (<span class="org-keyword">lambda</span> (url <span class="org-type">&amp;rest</span> _) url)))
+                   (lambda (url &amp;rest _) url)))
           (Info-try-follow-nearest-node))
         (point)))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">ace-link--info-collect</span> ()
-  <span class="org-doc">"Collect the positions of visible links in the current `</span><span class="org-doc"><span class="org-constant">Info-mode</span></span><span class="org-doc">' buffer."</span>
-  (<span class="org-keyword">let</span> ((end (window-end))
+(defun ace-link--info-collect ()
+  "Collect the positions of visible links in the current `Info-mode' buffer."
+  (let ((end (window-end))
         points)
-    (<span class="org-keyword">save-excursion</span>
+    (save-excursion
       (goto-char (window-start))
-      (<span class="org-keyword">when</span> (<span class="org-keyword">ignore-errors</span> (Info-next-reference) t)
-        (<span class="org-keyword">push</span> (ace-link--info-current) points)
+      (when (ignore-errors (Info-next-reference) t)
+        (push (ace-link--info-current) points)
         (Info-next-reference)
-        (<span class="org-keyword">while</span> (<span class="org-keyword">and</span> (&lt; (point) end)
+        (while (and (&lt; (point) end)
                     (&gt; (point) (cdar points)))
-          (<span class="org-keyword">push</span> (ace-link--info-current) points)
+          (push (ace-link--info-current) points)
           (Info-next-reference))
         (nreverse points)))))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgf9388a5" class="outline-3">
-<h3 id="orgf9388a5"><a href="#orgf9388a5">マッピング</a></h3>
-<div class="outline-text-3" id="text-orgf9388a5">
+<div id="outline-container-orgbac7a01" class="outline-3">
+<h3 id="orgbac7a01"><a href="#orgbac7a01">マッピング</a></h3>
+<div class="outline-text-3" id="text-orgbac7a01">
 <p>
 (ace-link-setup-default)でマッピングしているところを見つけた。参考になる。
 </p>
 </div>
 </div>
-<div id="outline-container-orge3abb07" class="outline-3">
-<h3 id="orge3abb07"><a href="#orge3abb07">ディレクトリ探索</a></h3>
-<div class="outline-text-3" id="text-orge3abb07">
+<div id="outline-container-orgc91b9ac" class="outline-3">
+<h3 id="orgc91b9ac"><a href="#orgc91b9ac">ディレクトリ探索</a></h3>
+<div class="outline-text-3" id="text-orgc91b9ac">
 <p>
 (add-node-modules-path)はディレクトリ探索の参考になる。1つづつ上がって、node_modules/binを探索する。
 コードが短いのも良い。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc3aac8b" class="outline-3">
-<h3 id="orgc3aac8b"><a href="#orgc3aac8b">名前変換</a></h3>
-<div class="outline-text-3" id="text-orgc3aac8b">
+<div id="outline-container-orgfc2b40e" class="outline-3">
+<h3 id="orgfc2b40e"><a href="#orgfc2b40e">名前変換</a></h3>
+<div class="outline-text-3" id="text-orgfc2b40e">
 <p>
 引数の、関数のsymbolを取得する関数。いいな。
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">all-the-icons--data-name</span> (name)
-  <span class="org-doc">"Get the symbol for an icon family function for icon set NAME."</span>
-  (intern (concat <span class="org-string">"all-the-icons-"</span> (downcase (symbol-name name)) <span class="org-string">"-data"</span>)))
+<pre class="src src-emacs-lisp">(defun all-the-icons--data-name (name)
+  "Get the symbol for an icon family function for icon set NAME."
+  (intern (concat "all-the-icons-" (downcase (symbol-name name)) "-data")))
 </pre>
 </div>
 
@@ -495,29 +502,29 @@ ace-link.elを見ていて、アクションとリンク検索を分けていた
 </div>
 </div>
 </div>
-<div id="outline-container-org820fc75" class="outline-3">
-<h3 id="org820fc75"><a href="#org820fc75">mapcar</a></h3>
-<div class="outline-text-3" id="text-org820fc75">
+<div id="outline-container-org628ae55" class="outline-3">
+<h3 id="org628ae55"><a href="#org628ae55">mapcar</a></h3>
+<div class="outline-text-3" id="text-org628ae55">
 <p>
 関数引数の関数はミソ。
 </p>
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">Function: mapcar function sequence
 
-&#12371;&#12398;&#38306;&#25968;&#12399;&#12289;sequence &#12398;&#21508;&#35201;&#32032;&#12395; function &#12434;&#36969;&#29992;(&#35379;&#27880;&#65306;apply)&#12375;&#12289;&#12381;&#12398;&#32080;&#26524;&#12398;&#12522;&#12473;&#12488;&#12434;&#36820;&#12375;&#12414;&#12377;&#12290;sequence &#12364; nil &#12391;&#32066;&#12427;&#12522;&#12473;&#12488;&#12391;&#12394;&#12356;&#22580;&#21512;&#12289;&#12456;&#12521;&#12540;&#12395;&#12394;&#12426;&#12414;&#12377;&#12290;
+この関数は、sequence の各要素に function を適用(訳注：apply)し、その結果のリストを返します。sequence が nil で終るリストでない場合、エラーになります。
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(mapcar (<span class="org-keyword">function</span> car) '((a b) (c d) (e f)))
+<pre class="src src-emacs-lisp">(mapcar (function car) '((a b) (c d) (e f)))
 =&gt; (a c e)
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgea51b42" class="outline-3">
-<h3 id="orgea51b42"><a href="#orgea51b42">debugger を起動しないようにする</a></h3>
-<div class="outline-text-3" id="text-orgea51b42">
+<div id="outline-container-org5b7ade1" class="outline-3">
+<h3 id="org5b7ade1"><a href="#org5b7ade1">debugger を起動しないようにする</a></h3>
+<div class="outline-text-3" id="text-org5b7ade1">
 <p>
 何かの拍子に、debugger実行されるようになり、普通に実行できなくなった。
 (debugger-list-functions)
@@ -526,9 +533,9 @@ ace-link.elを見ていて、アクションとリンク検索を分けていた
 </p>
 </div>
 </div>
-<div id="outline-container-org0bdd896" class="outline-3">
-<h3 id="org0bdd896"><a href="#org0bdd896">すべてdebug対象に</a></h3>
-<div class="outline-text-3" id="text-org0bdd896">
+<div id="outline-container-orgd776e86" class="outline-3">
+<h3 id="orgd776e86"><a href="#orgd776e86">すべてdebug対象に</a></h3>
+<div class="outline-text-3" id="text-orgd776e86">
 <p>
 (edebug-all-defs)
 でevalしただけで対象にするように設定する。→ 結局 C-uつけないとできない気が。
@@ -541,9 +548,9 @@ regionを選択して、 C-u M-x eval-region
 </p>
 </div>
 </div>
-<div id="outline-container-org55313fb" class="outline-3">
-<h3 id="org55313fb"><a href="#org55313fb">外部コマンド系パッケージ</a></h3>
-<div class="outline-text-3" id="text-org55313fb">
+<div id="outline-container-org854d7b1" class="outline-3">
+<h3 id="org854d7b1"><a href="#org854d7b1">外部コマンド系パッケージ</a></h3>
+<div class="outline-text-3" id="text-org854d7b1">
 <ol class="org-ol">
 <li>ユーザ入力やフラグを通してひたすら引数を収集して、compilation に渡す。</li>
 <li>コマンドを実行する。</li>
@@ -551,61 +558,61 @@ regionを選択して、 C-u M-x eval-region
 </ol>
 </div>
 </div>
-<div id="outline-container-orgb749575" class="outline-3">
-<h3 id="orgb749575"><a href="#orgb749575">avyの流れ</a></h3>
-<div class="outline-text-3" id="text-orgb749575">
+<div id="outline-container-orgdc0c005" class="outline-3">
+<h3 id="orgdc0c005"><a href="#orgdc0c005">avyの流れ</a></h3>
+<div class="outline-text-3" id="text-orgdc0c005">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">let</span> ((pt (avy-with ace-link-custom
+<pre class="src src-emacs-lisp">(let ((pt (avy-with ace-link-custom
             (avy-process
-             (ace-link--custom-collect) <span class="org-comment-delimiter">; </span><span class="org-comment">&#20803;&#12496;&#12483;&#12501;&#12449;&#12363;&#12425;&#12522;&#12531;&#12463;&#12434;&#21454;&#38598;&#12375;&#12390;((&#21517;&#21069;1 . &#20301;&#32622;1) (&#21517;&#21069;2 . &#20301;&#32622;2)...)&#12522;&#12473;&#12488;&#12395;&#12377;&#12427;
-</span>             (avy--style-fn avy-style))))) <span class="org-comment-delimiter">; </span><span class="org-comment">&#12522;&#12531;&#12463;&#25991;&#23383;&#12434;&#34920;&#31034;&#12375;&#12390;&#25805;&#20316;&#12434;&#24453;&#12388;&#12290;
-</span>  (ace-link--custom-action pt)) <span class="org-comment-delimiter">; </span><span class="org-comment">&#12450;&#12463;&#12471;&#12519;&#12531;</span>
+             (ace-link--custom-collect) ; 元バッファからリンクを収集して((名前1 . 位置1) (名前2 . 位置2)...)リストにする
+             (avy--style-fn avy-style))))) ; リンク文字を表示して操作を待つ。
+  (ace-link--custom-action pt)) ; アクション
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgf1ff673" class="outline-3">
-<h3 id="orgf1ff673"><a href="#orgf1ff673">リストのcustomの例</a></h3>
-<div class="outline-text-3" id="text-orgf1ff673">
+<div id="outline-container-orgf64ac85" class="outline-3">
+<h3 id="orgf64ac85"><a href="#orgf64ac85">リストのcustomの例</a></h3>
+<div class="outline-text-3" id="text-orgf64ac85">
 <p>
 あとから追加、削除、編集が自由にできる。
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defcustom</span> <span class="org-variable-name">devdocs-alist</span>
-  '((c-mode           . <span class="org-string">"c"</span>)
-    (c++-mode         . <span class="org-string">"c++"</span>)
-    (clojure-mode     . <span class="org-string">"clojure"</span>)
-    (coffee-mode      . <span class="org-string">"CoffeeScript"</span>)
-    (common-lisp-mode . <span class="org-string">"lisp"</span>)
-    (cperl-mode       . <span class="org-string">"perl"</span>)
-    (css-mode         . <span class="org-string">"css"</span>)
-    (elixir-mode      . <span class="org-string">"elixir"</span>)
-    (enh-ruby-mode    . <span class="org-string">"ruby"</span>)
-    (erlang-mode      . <span class="org-string">"erlang"</span>)
-    (gfm-mode         . <span class="org-string">"markdown"</span>)
-    (go-mode          . <span class="org-string">"go"</span>)
-    (groovy-mode      . <span class="org-string">"groovy"</span>)
-    (haskell-mode     . <span class="org-string">"haskell"</span>)
-    (html-mode        . <span class="org-string">"html"</span>)
-    (java-mode        . <span class="org-string">"java"</span>)
-    (js2-mode         . <span class="org-string">"javascript"</span>)
-    (js3-mode         . <span class="org-string">"javascript"</span>)
-    (less-css-mode    . <span class="org-string">"less"</span>)
-    (lua-mode         . <span class="org-string">"lua"</span>)
-    (markdown-mode    . <span class="org-string">"markdown"</span>)
-    (perl-mode        . <span class="org-string">"perl"</span>)
-    (php-mode         . <span class="org-string">"php"</span>)
-    (processing-mode  . <span class="org-string">"processing"</span>)
-    (puppet-mode      . <span class="org-string">"puppet"</span>)
-    (python-mode      . <span class="org-string">"python"</span>)
-    (ruby-mode        . <span class="org-string">"ruby"</span>)
-    (sass-mode        . <span class="org-string">"sass"</span>)
-    (scala-mode       . <span class="org-string">"scala"</span>)
-    (tcl-mode         . <span class="org-string">"tcl"</span>))
-  <span class="org-doc">"Alist which maps major modes to names of DevDocs documentations."</span>
-  <span class="org-builtin">:type</span> '(repeat (cons (symbol <span class="org-builtin">:tag</span> <span class="org-string">"Major mode"</span>)
-                       (string <span class="org-builtin">:tag</span> <span class="org-string">"DevDocs documentation"</span>)))
-  <span class="org-builtin">:group</span> 'devdocs)
+<pre class="src src-emacs-lisp">(defcustom devdocs-alist
+  '((c-mode           . "c")
+    (c++-mode         . "c++")
+    (clojure-mode     . "clojure")
+    (coffee-mode      . "CoffeeScript")
+    (common-lisp-mode . "lisp")
+    (cperl-mode       . "perl")
+    (css-mode         . "css")
+    (elixir-mode      . "elixir")
+    (enh-ruby-mode    . "ruby")
+    (erlang-mode      . "erlang")
+    (gfm-mode         . "markdown")
+    (go-mode          . "go")
+    (groovy-mode      . "groovy")
+    (haskell-mode     . "haskell")
+    (html-mode        . "html")
+    (java-mode        . "java")
+    (js2-mode         . "javascript")
+    (js3-mode         . "javascript")
+    (less-css-mode    . "less")
+    (lua-mode         . "lua")
+    (markdown-mode    . "markdown")
+    (perl-mode        . "perl")
+    (php-mode         . "php")
+    (processing-mode  . "processing")
+    (puppet-mode      . "puppet")
+    (python-mode      . "python")
+    (ruby-mode        . "ruby")
+    (sass-mode        . "sass")
+    (scala-mode       . "scala")
+    (tcl-mode         . "tcl"))
+  "Alist which maps major modes to names of DevDocs documentations."
+  :type '(repeat (cons (symbol :tag "Major mode")
+                       (string :tag "DevDocs documentation")))
+  :group 'devdocs)
 </pre>
 </div>
 
@@ -614,41 +621,41 @@ regionを選択して、 C-u M-x eval-region
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defcustom</span> <span class="org-variable-name">devdocs-build-search-pattern-function</span>
+<pre class="src src-emacs-lisp">(defcustom devdocs-build-search-pattern-function
   'devdocs-build-search-pattern-function
-  <span class="org-doc">"A function to be called by `</span><span class="org-doc"><span class="org-constant">devdocs-search</span></span><span class="org-doc">'.
-It builds search pattern base on some context."</span>
-  <span class="org-builtin">:type</span> 'function
-  <span class="org-builtin">:group</span> 'devdocs)
+  "A function to be called by `devdocs-search'.
+It builds search pattern base on some context."
+  :type 'function
+  :group 'devdocs)
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org3e7bf79" class="outline-3">
-<h3 id="org3e7bf79"><a href="#org3e7bf79">Gitリポジトリを調べる</a></h3>
-<div class="outline-text-3" id="text-org3e7bf79">
+<div id="outline-container-orga18161a" class="outline-3">
+<h3 id="orga18161a"><a href="#orga18161a">Gitリポジトリを調べる</a></h3>
+<div class="outline-text-3" id="text-orga18161a">
 <p>
 (locate-dominating-file directory file)
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">cl-defun</span> <span class="org-function-name">eshell-git-prompt--git-root-dir</span>
-    (<span class="org-type">&amp;optional</span> (directory default-directory))
-  <span class="org-doc">"Return Git root directory name if exist, otherwise, return nil."</span>
-  (<span class="org-keyword">let</span> ((root (locate-dominating-file directory <span class="org-string">".git"</span>)))
-    (<span class="org-keyword">and</span> root (file-name-as-directory root))))
+<pre class="src src-emacs-lisp">(cl-defun eshell-git-prompt--git-root-dir
+    (&amp;optional (directory default-directory))
+  "Return Git root directory name if exist, otherwise, return nil."
+  (let ((root (locate-dominating-file directory ".git")))
+    (and root (file-name-as-directory root))))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org284e47b" class="outline-3">
-<h3 id="org284e47b"><a href="#org284e47b">変数が束縛されていれば、という表現</a></h3>
-<div class="outline-text-3" id="text-org284e47b">
+<div id="outline-container-org87ea439" class="outline-3">
+<h3 id="org87ea439"><a href="#org87ea439">変数が束縛されていれば、という表現</a></h3>
+<div class="outline-text-3" id="text-org87ea439">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">eshell-git-prompt-last-command-status</span> ()
-  <span class="org-doc">"Return Eshell last command execution status.
-When Eshell just launches, `</span><span class="org-doc"><span class="org-constant">eshell-last-command-status</span></span><span class="org-doc">' is not defined yet,
-return 0 (i.e., success)."</span>
-  (<span class="org-keyword">if</span> (not (boundp 'eshell-last-command-status))
+<pre class="src src-emacs-lisp">(defun eshell-git-prompt-last-command-status ()
+  "Return Eshell last command execution status.
+When Eshell just launches, `eshell-last-command-status' is not defined yet,
+return 0 (i.e., success)."
+  (if (not (boundp 'eshell-last-command-status))
       0
     eshell-last-command-status))
 </pre>
@@ -656,9 +663,9 @@ return 0 (i.e., success)."</span>
 </div>
 </div>
 </div>
-<div id="outline-container-org78f3088" class="outline-2">
-<h2 id="org78f3088"><a href="#org78f3088">arielコードメモ</a></h2>
-<div class="outline-text-2" id="text-org78f3088">
+<div id="outline-container-orgc451704" class="outline-2">
+<h2 id="orgc451704"><a href="#orgc451704">arielコードメモ</a></h2>
+<div class="outline-text-2" id="text-orgc451704">
 <p>
 <a href="http://dev.ariel-networks.com/articles/workshop/emacs-lisp-basic/">http://dev.ariel-networks.com/articles/workshop/emacs-lisp-basic/</a>
 の元の内容に、たまにコメントをつけて読んだ。
@@ -668,9 +675,9 @@ return 0 (i.e., success)."</span>
 <li>わかりやすい例</li>
 </ul>
 </div>
-<div id="outline-container-org464978f" class="outline-3">
-<h3 id="org464978f"><a href="#org464978f">ring</a></h3>
-<div class="outline-text-3" id="text-org464978f">
+<div id="outline-container-orgc9b4efb" class="outline-3">
+<h3 id="orgc9b4efb"><a href="#orgc9b4efb">ring</a></h3>
+<div class="outline-text-3" id="text-orgc9b4efb">
 <p>
 データ型定義のやり方。型述語の実装。
 </p>
@@ -679,7 +686,7 @@ return 0 (i.e., success)."</span>
 </pre>
 </div>
 
-<div class="results" id="org60fee9b">
+<div class="results" id="org355520a">
 <p>
 (defun ring-p (x)
   &ldquo;Return t if X is a ring; nil otherwise.&rdquo;
@@ -691,17 +698,17 @@ return 0 (i.e., success)."</span>
 </div>
 </div>
 </div>
-<div id="outline-container-org951d461" class="outline-3">
-<h3 id="org951d461"><a href="#org951d461">eww</a></h3>
-<div class="outline-text-3" id="text-org951d461">
+<div id="outline-container-orga63b509" class="outline-3">
+<h3 id="orga63b509"><a href="#orga63b509">eww</a></h3>
+<div class="outline-text-3" id="text-orga63b509">
 <p>
 <a href="https://github.com/kijimaD/emacs/blob/master/lisp/net/eww.el#L1">https://github.com/kijimaD/emacs/blob/master/lisp/net/eww.el#L1</a>
 </p>
 </div>
 </div>
-<div id="outline-container-org418641a" class="outline-3">
-<h3 id="org418641a"><a href="#org418641a">lisp.h</a></h3>
-<div class="outline-text-3" id="text-org418641a">
+<div id="outline-container-org5420315" class="outline-3">
+<h3 id="org5420315"><a href="#org5420315">lisp.h</a></h3>
+<div class="outline-text-3" id="text-org5420315">
 <p>
 lispシンボルの実装。
 <a href="https://github.com/kijimaD/emacs/blob/master/src/lisp.h#L798">https://github.com/kijimaD/emacs/blob/master/src/lisp.h#L798</a>
@@ -712,7 +719,7 @@ lispシンボルの実装。
 =&gt;integer
 (type-of 3.14)
 =&gt; float
-(type-of <span class="org-string">"foo"</span>)
+(type-of "foo")
 =&gt; string
 (type-of '(1 2))
 =&gt; cons
@@ -720,26 +727,26 @@ lispシンボルの実装。
 =&gt; vector
 (type-of 'foo)
 =&gt; symbol
-(type-of ?a)  <span class="org-comment-delimiter">; </span><span class="org-comment">C&#12398;'</span><span class="org-comment"><span class="org-constant">a</span></span><span class="org-comment">'&#30456;&#24403;&#12290;&#20869;&#37096;&#30340;&#12395;&#12399;&#25968;&#20516;
-</span>=&gt; integer
+(type-of ?a)  ; Cの'a'相当。内部的には数値
+=&gt; integer
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org185f061" class="outline-3">
-<h3 id="org185f061"><a href="#org185f061">中で起こってること</a></h3>
-<div class="outline-text-3" id="text-org185f061">
+<div id="outline-container-org5b01fb2" class="outline-3">
+<h3 id="org5b01fb2"><a href="#org5b01fb2">中で起こってること</a></h3>
+<div class="outline-text-3" id="text-org5b01fb2">
 <p>
 <code>(setq foo "FOO")</code> したとき、symbolオブジェクトは以下のようにセットされます。
 </p>
 <div class="org-src-container">
-<pre class="src src-c"><span class="org-comment-delimiter">// </span><span class="org-comment">lisp.h
-</span><span class="org-keyword">struct</span> <span class="org-type">Lisp_Symbol</span>
+<pre class="src src-c">// lisp.h
+struct Lisp_Symbol
 {
-  <span class="org-keyword">struct</span> <span class="org-type">Lisp_String</span> *<span class="org-variable-name">name</span>;  =&gt; <span class="org-string">"foo"</span>
-    Lisp_Object value;  =&gt; <span class="org-string">"FOO"</span>&#12398;&#20516;&#12434;&#25345;&#12388;&#25991;&#23383;&#21015;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12434;&#25351;&#12377;
-    Lisp_Object function;  =&gt; &#31354;
-    &#30053;
+  struct Lisp_String *name;  =&gt; "foo"
+    Lisp_Object value;  =&gt; "FOO"の値を持つ文字列オブジェクトを指す
+    Lisp_Object function;  =&gt; 空
+    略
     };
 </pre>
 </div>
@@ -749,25 +756,25 @@ lispシンボルの実装。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(symbolp 'foo)    <span class="org-comment-delimiter">; </span><span class="org-comment">&#12471;&#12531;&#12508;&#12523;&#12363;&#21542;&#12363;&#12398;&#21028;&#23450;&#12290;t&#12364;&#30495;&#12290;nil&#12364;&#20605;&#12290;(&#24460;&#36848;)
-</span>=&gt; t
+<pre class="src src-emacs-lisp">(symbolp 'foo)    ; シンボルか否かの判定。tが真。nilが偽。(後述)
+=&gt; t
 (symbol-name 'foo)
-=&gt; <span class="org-string">"foo"</span>
+=&gt; "foo"
 (symbol-value 'foo)
-=&gt; <span class="org-string">"FOO"</span>
-(boundp 'foo)   <span class="org-comment-delimiter">; </span><span class="org-comment">&#20516;&#12475;&#12523;&#12395;&#20516;&#12364;&#12354;&#12428;&#12400;t&#12289;&#12394;&#12369;&#12428;&#12400;nil
-</span>=&gt; t
-(fboundp 'foo)  <span class="org-comment-delimiter">; </span><span class="org-comment">&#38306;&#25968;&#12475;&#12523;&#12395;&#38306;&#25968;&#12364;&#12354;&#12428;&#12400;t&#12289;&#12394;&#12369;&#12428;&#12400;nil
-</span>=&gt; nil
+=&gt; "FOO"
+(boundp 'foo)   ; 値セルに値があればt、なければnil
+=&gt; t
+(fboundp 'foo)  ; 関数セルに関数があればt、なければnil
+=&gt; nil
 (symbol-function 'foo)
-                                        <span class="org-comment-delimiter">; </span><span class="org-comment">&#12414;&#12384;&#35373;&#23450;&#12375;&#12390;&#12356;&#12394;&#12356;&#12398;&#12391;&#12289;&#20170;&#12399;&#12456;&#12521;&#12540;</span>
+                                        ; まだ設定していないので、今はエラー
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgb6994cc" class="outline-3">
-<h3 id="orgb6994cc"><a href="#orgb6994cc">クォートの意味</a></h3>
-<div class="outline-text-3" id="text-orgb6994cc">
+<div id="outline-container-org7da9c8a" class="outline-3">
+<h3 id="org7da9c8a"><a href="#org7da9c8a">クォートの意味</a></h3>
+<div class="outline-text-3" id="text-org7da9c8a">
 <blockquote>
 <p>
 クォートは「評価しない」ことを指示します。クォートしないと、基本的に評価されてしまいます。
@@ -778,7 +785,7 @@ lispシンボルの実装。
 <pre class="src src-emacs-lisp">(type-of 'foo)
 =&gt; symbol
 (type-of foo)
-=&gt; string   <span class="org-comment-delimiter">; </span><span class="org-comment">&#35413;&#20385;&#24460;&#12289;&#12388;&#12414;&#12426;&#20516;&#12475;&#12523;&#12398;&#25351;&#12377;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12398;&#22411;&#12364;&#20986;&#21147;&#12373;&#12428;&#12414;&#12377;</span>
+=&gt; string   ; 評価後、つまり値セルの指すオブジェクトの型が出力されます
 </pre>
 </div>
 
@@ -787,9 +794,9 @@ lispシンボルの実装。
 </p>
 </div>
 </div>
-<div id="outline-container-org33d2097" class="outline-3">
-<h3 id="org33d2097"><a href="#org33d2097">シンボルのまとめ</a></h3>
-<div class="outline-text-3" id="text-org33d2097">
+<div id="outline-container-orgab2d104" class="outline-3">
+<h3 id="orgab2d104"><a href="#orgab2d104">シンボルのまとめ</a></h3>
+<div class="outline-text-3" id="text-orgab2d104">
 <blockquote>
 <p>
 ここまでで分かったこと
@@ -803,9 +810,9 @@ lispシンボルの実装。
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org6d0812d" class="outline-3">
-<h3 id="org6d0812d"><a href="#org6d0812d">コンスセルの表記</a></h3>
-<div class="outline-text-3" id="text-org6d0812d">
+<div id="outline-container-org7650a2a" class="outline-3">
+<h3 id="org7650a2a"><a href="#org7650a2a">コンスセルの表記</a></h3>
+<div class="outline-text-3" id="text-org7650a2a">
 <blockquote>
 <p>
 コンスセルとはふたつのポインタ(*)を持ったオブジェクトです。
@@ -817,26 +824,26 @@ lispシンボルの実装。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-c"><span class="org-keyword">struct</span> <span class="org-type">Lisp_Cons</span>
+<pre class="src src-c">struct Lisp_Cons
 {
-  <span class="org-keyword">union</span>
+  union
   {
-    <span class="org-keyword">struct</span>
+    struct
     {
-      <span class="org-comment-delimiter">/* </span><span class="org-comment">Car of this cons cell.</span><span class="org-comment-delimiter">  */</span>
-      <span class="org-type">Lisp_Object</span> <span class="org-variable-name">car</span>;
+      /* Car of this cons cell.  */
+      Lisp_Object car;
 
-      <span class="org-keyword">union</span>
+      union
       {
-        <span class="org-comment-delimiter">/* </span><span class="org-comment">Cdr of this cons cell.</span><span class="org-comment-delimiter">  */</span>
-        <span class="org-type">Lisp_Object</span> <span class="org-variable-name">cdr</span>;
+        /* Cdr of this cons cell.  */
+        Lisp_Object cdr;
 
-        <span class="org-comment-delimiter">/* </span><span class="org-comment">Used to chain conses on a free list.</span><span class="org-comment-delimiter">  */</span>
-        <span class="org-keyword">struct</span> <span class="org-type">Lisp_Cons</span> *<span class="org-variable-name">chain</span>;
-      } <span class="org-variable-name">u</span>;
-    } <span class="org-variable-name">s</span>;
+        /* Used to chain conses on a free list.  */
+        struct Lisp_Cons *chain;
+      } u;
+    } s;
     GCALIGNED_UNION_MEMBER
-  } <span class="org-variable-name">u</span>;
+  } u;
 };
 </pre>
 </div>
@@ -855,18 +862,18 @@ lispシンボルの実装。
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org401d376" class="outline-3">
-<h3 id="org401d376"><a href="#org401d376">コンスセルの表記</a></h3>
-<div class="outline-text-3" id="text-org401d376">
+<div id="outline-container-orgd5ffa73" class="outline-3">
+<h3 id="orgd5ffa73"><a href="#orgd5ffa73">コンスセルの表記</a></h3>
+<div class="outline-text-3" id="text-orgd5ffa73">
 <p>
 <code>("foo" . "bar")</code>
 これは内部的に。
 </p>
 <div class="org-src-container">
-<pre class="src src-c"><span class="org-keyword">struct</span> <span class="org-type">Lisp_Cons</span>
+<pre class="src src-c">struct Lisp_Cons
 {
-  <span class="org-type">Lisp_Object</span> <span class="org-variable-name">car</span>;  =&gt; <span class="org-string">"foo"</span>&#25991;&#23383;&#21015;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12434;&#25351;&#12377;
-    Lisp_Object cdr;  =&gt; <span class="org-string">"bar"</span>&#25991;&#23383;&#21015;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12434;&#25351;&#12377;
+  Lisp_Object car;  =&gt; "foo"文字列オブジェクトを指す
+    Lisp_Object cdr;  =&gt; "bar"文字列オブジェクトを指す
     };
 </pre>
 </div>
@@ -876,12 +883,12 @@ lispシンボルの実装。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc006f4f" class="outline-3">
-<h3 id="orgc006f4f"><a href="#orgc006f4f">コンスセルの生成</a></h3>
-<div class="outline-text-3" id="text-orgc006f4f">
+<div id="outline-container-org7a73e88" class="outline-3">
+<h3 id="org7a73e88"><a href="#org7a73e88">コンスセルの生成</a></h3>
+<div class="outline-text-3" id="text-org7a73e88">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(cons <span class="org-string">"foo"</span> <span class="org-string">"bar"</span>)
-=&gt; (<span class="org-string">"foo"</span> . <span class="org-string">"bar"</span>)
+<pre class="src src-emacs-lisp">(cons "foo" "bar")
+=&gt; ("foo" . "bar")
 </pre>
 </div>
 
@@ -890,9 +897,9 @@ lispシンボルの実装。
 </ul>
 </div>
 </div>
-<div id="outline-container-org8b76856" class="outline-3">
-<h3 id="org8b76856"><a href="#org8b76856">コンスセルの値</a></h3>
-<div class="outline-text-3" id="text-org8b76856">
+<div id="outline-container-org89eb8a0" class="outline-3">
+<h3 id="org89eb8a0"><a href="#org89eb8a0">コンスセルの値</a></h3>
+<div class="outline-text-3" id="text-org89eb8a0">
 <p>
 コンスセルの値にアクセスするには <code>car</code> と <code>cdr</code> だけ使える。getterメソッドみたいなもの。
 </p>
@@ -908,10 +915,10 @@ car、cdr以外にコンスセルの中を参照する手段はありません�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(car '(<span class="org-string">"foo"</span> . <span class="org-string">"bar"</span>))
-=&gt; <span class="org-string">"foo"</span>
-(cdr '(<span class="org-string">"foo"</span> . <span class="org-string">"bar"</span>))
-=&gt; <span class="org-string">"bar"</span>
+<pre class="src src-emacs-lisp">(car '("foo" . "bar"))
+=&gt; "foo"
+(cdr '("foo" . "bar"))
+=&gt; "bar"
 </pre>
 </div>
 
@@ -922,9 +929,9 @@ Java風に言えば、コンスセルはふたつのprivateフィールドとふ
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgc73c0c0" class="outline-3">
-<h3 id="orgc73c0c0"><a href="#orgc73c0c0">プログラム自体がオブジェクト</a></h3>
-<div class="outline-text-3" id="text-orgc73c0c0">
+<div id="outline-container-org230dd06" class="outline-3">
+<h3 id="org230dd06"><a href="#org230dd06">プログラム自体がオブジェクト</a></h3>
+<div class="outline-text-3" id="text-org230dd06">
 <blockquote>
 <p>
 厳密に言えば、(&ldquo;foo&rdquo; . &ldquo;bar&rdquo;) という文字列は、コンスセルの(Java風に言えば)シリアライズ化した表現です。
@@ -939,20 +946,20 @@ Java風に言えば、コンスセルはふたつのprivateフィールドとふ
 </ul>
 </div>
 </div>
-<div id="outline-container-org95561ff" class="outline-3">
-<h3 id="org95561ff"><a href="#org95561ff">なんでもオブジェクト</a></h3>
-<div class="outline-text-3" id="text-org95561ff">
+<div id="outline-container-orge3434f3" class="outline-3">
+<h3 id="orge3434f3"><a href="#orge3434f3">なんでもオブジェクト</a></h3>
+<div class="outline-text-3" id="text-orge3434f3">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> foo '(<span class="org-string">"foo"</span> . 42))  <span class="org-comment-delimiter">; </span><span class="org-comment">car&#12395;&#25991;&#23383;&#21015;&#12289;cdr&#12395;&#25968;&#20516;&#12398;&#12467;&#12531;&#12473;&#12475;&#12523;&#12434;&#25351;&#12377;&#12471;&#12531;&#12508;&#12523;foo
-</span>=&gt; (<span class="org-string">"foo"</span> . 42)
-(<span class="org-keyword">setq</span> bar '(foo . foo))   <span class="org-comment-delimiter">; </span><span class="org-comment">quote&#12399;&#20840;&#20307;&#12395;&#21177;&#12356;&#12390;&#12356;&#12427;&#12398;&#12391;&#12289;car&#12392;cdr&#12398;&#20001;&#26041;&#12364;&#12471;&#12531;&#12508;&#12523;foo
-</span>=&gt; (foo . foo)
+<pre class="src src-emacs-lisp">(setq foo '("foo" . 42))  ; carに文字列、cdrに数値のコンスセルを指すシンボルfoo
+=&gt; ("foo" . 42)
+(setq bar '(foo . foo))   ; quoteは全体に効いているので、carとcdrの両方がシンボルfoo
+=&gt; (foo . foo)
 (symbol-value (car bar))
-=&gt; (<span class="org-string">"foo"</span> . 42)
+=&gt; ("foo" . 42)
 (symbol-value (cdr bar))
-=&gt; (<span class="org-string">"foo"</span> . 42)
-(<span class="org-keyword">setq</span> bar `(,foo . foo))  <span class="org-comment-delimiter">; </span><span class="org-comment">backquote&#12398;&#20363;
-</span>=&gt; ((<span class="org-string">"foo"</span> . 42) . foo)   <span class="org-comment-delimiter">; </span><span class="org-comment">,&#12398;&#12388;&#12356;&#12383;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12399;&#35413;&#20385;&#12290;&#12381;&#12358;&#12391;&#12394;&#12356;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12399;&#26410;&#35413;&#20385;</span>
+=&gt; ("foo" . 42)
+(setq bar `(,foo . foo))  ; backquoteの例
+=&gt; (("foo" . 42) . foo)   ; ,のついたオブジェクトは評価。そうでないオブジェクトは未評価
 </pre>
 </div>
 
@@ -965,12 +972,12 @@ bar -&gt; foo -&gt; &ldquo;foo&rdquo; -&gt; 42
 </p>
 </div>
 </div>
-<div id="outline-container-orgfd1e138" class="outline-3">
-<h3 id="orgfd1e138"><a href="#orgfd1e138">cdrが別のコンスセル</a></h3>
-<div class="outline-text-3" id="text-orgfd1e138">
+<div id="outline-container-org42c2352" class="outline-3">
+<h3 id="org42c2352"><a href="#org42c2352">cdrが別のコンスセル</a></h3>
+<div class="outline-text-3" id="text-org42c2352">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(cons <span class="org-string">"foo"</span> '(<span class="org-string">"bar"</span> . <span class="org-string">"baz"</span>))
-=&gt; (<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> . <span class="org-string">"baz"</span>)
+<pre class="src src-emacs-lisp">(cons "foo" '("bar" . "baz"))
+=&gt; ("foo" "bar" . "baz")
 </pre>
 </div>
 
@@ -979,21 +986,21 @@ bar -&gt; foo -&gt; &ldquo;foo&rdquo; -&gt; 42
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">'(<span class="org-string">"foo"</span> . (<span class="org-string">"bar"</span> . <span class="org-string">"baz"</span>))
-<span class="org-comment-delimiter">;; </span><span class="org-comment">=&gt; ("foo" "bar" . "baz")</span>
+<pre class="src src-emacs-lisp">'("foo" . ("bar" . "baz"))
+;; =&gt; ("foo" "bar" . "baz")
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgb254394" class="outline-3">
-<h3 id="orgb254394"><a href="#orgb254394">リスト化</a></h3>
-<div class="outline-text-3" id="text-orgb254394">
+<div id="outline-container-org378a4b7" class="outline-3">
+<h3 id="org378a4b7"><a href="#org378a4b7">リスト化</a></h3>
+<div class="outline-text-3" id="text-org378a4b7">
 <p>
 最期のcdrをnilにするとリストに。
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(cons <span class="org-string">"foo"</span> '(<span class="org-string">"bar"</span> . nil))
-<span class="org-comment-delimiter">;; </span><span class="org-comment">=&gt; ("foo" "bar")</span>
+<pre class="src src-emacs-lisp">(cons "foo" '("bar" . nil))
+;; =&gt; ("foo" "bar")
 </pre>
 </div>
 
@@ -1001,23 +1008,23 @@ bar -&gt; foo -&gt; &ldquo;foo&rdquo; -&gt; 42
 nilじゃないとコンスセルになる(前の節の通り)。
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(cons <span class="org-string">"foo"</span> '(<span class="org-string">"bar"</span> . <span class="org-string">"aaa"</span>))
-(<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> . <span class="org-string">"aaa"</span>)
+<pre class="src src-emacs-lisp">(cons "foo" '("bar" . "aaa"))
+("foo" "bar" . "aaa")
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org017bff0" class="outline-3">
-<h3 id="org017bff0"><a href="#org017bff0">リスト操作</a></h3>
-<div class="outline-text-3" id="text-org017bff0">
+<div id="outline-container-org9ead0ea" class="outline-3">
+<h3 id="org9ead0ea"><a href="#org9ead0ea">リスト操作</a></h3>
+<div class="outline-text-3" id="text-org9ead0ea">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(car '(<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>))
-=&gt; <span class="org-string">"foo"</span>
-(cdr '(<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>))
-=&gt; (<span class="org-string">"bar"</span> <span class="org-string">"baz"</span>)
-(cdr (cdr '(<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>)))
-=&gt; (<span class="org-string">"baz"</span>)    <span class="org-comment-delimiter">; </span><span class="org-comment">dotted pair notation&#12391;&#26360;&#12369;&#12400; ("baz" . nil)
-</span>(cdr (cdr (cdr '(<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>))))
+<pre class="src src-emacs-lisp">(car '("foo" "bar" "baz"))
+=&gt; "foo"
+(cdr '("foo" "bar" "baz"))
+=&gt; ("bar" "baz")
+(cdr (cdr '("foo" "bar" "baz")))
+=&gt; ("baz")    ; dotted pair notationで書けば ("baz" . nil)
+(cdr (cdr (cdr '("foo" "bar" "baz"))))
 =&gt; nil
 </pre>
 </div>
@@ -1027,29 +1034,29 @@ nilじゃないとコンスセルになる(前の節の通り)。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> foo <span class="org-string">"a"</span>)
-(<span class="org-keyword">setq</span> foo (cons <span class="org-string">"value"</span> foo))   <span class="org-comment-delimiter">; </span><span class="org-comment">&#12522;&#12473;&#12488;foo&#12395;&#35201;&#32032;&#12434;prepend
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">=&gt; ("value" . "a")
-</span>(<span class="org-keyword">setq</span> foo (cons <span class="org-string">"value"</span> foo))   <span class="org-comment-delimiter">; </span><span class="org-comment">&#12373;&#12425;&#12395;prepend
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">=&gt; ("value" "value" . "a")
-</span>(<span class="org-keyword">setq</span> load-path (cons (expand-file-name <span class="org-string">"~/elisp"</span>) load-path))
+<pre class="src src-emacs-lisp">(setq foo "a")
+(setq foo (cons "value" foo))   ; リストfooに要素をprepend
+;; =&gt; ("value" . "a")
+(setq foo (cons "value" foo))   ; さらにprepend
+;; =&gt; ("value" "value" . "a")
+(setq load-path (cons (expand-file-name "~/elisp") load-path))
 
-(list <span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>)  <span class="org-comment-delimiter">; </span><span class="org-comment">&#24341;&#25968;&#12434;&#35201;&#32032;&#12395;&#25345;&#12388;&#12522;&#12473;&#12488;&#12434;&#29983;&#25104;
-</span>=&gt; (<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>)
+(list "foo" "bar" "baz")  ; 引数を要素に持つリストを生成
+=&gt; ("foo" "bar" "baz")
 
-(append '(<span class="org-string">"foo"</span> <span class="org-string">"bar"</span>) '(<span class="org-string">"baz"</span>))  <span class="org-comment-delimiter">; </span><span class="org-comment">&#36899;&#25509;&#12375;&#12383;&#12522;&#12473;&#12488;&#12434;&#29983;&#25104;
-</span>=&gt; (<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>)
-(<span class="org-keyword">setq</span> load-path (append load-path (list (expand-file-name <span class="org-string">"~/elisp"</span>))))
+(append '("foo" "bar") '("baz"))  ; 連接したリストを生成
+=&gt; ("foo" "bar" "baz")
+(setq load-path (append load-path (list (expand-file-name "~/elisp"))))
 
-(car (nthcdr 1 '(<span class="org-string">"foo"</span> <span class="org-string">"bar"</span> <span class="org-string">"baz"</span>)))   <span class="org-comment-delimiter">; </span><span class="org-comment">N&#30058;&#30446;&#12398;&#35201;&#32032;&#12398;&#21462;&#24471;
-</span>=&gt; <span class="org-string">"bar"</span>
+(car (nthcdr 1 '("foo" "bar" "baz")))   ; N番目の要素の取得
+=&gt; "bar"
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgf195727" class="outline-3">
-<h3 id="orgf195727"><a href="#orgf195727">評価</a></h3>
-<div class="outline-text-3" id="text-orgf195727">
+<div id="outline-container-org698132e" class="outline-3">
+<h3 id="org698132e"><a href="#org698132e">評価</a></h3>
+<div class="outline-text-3" id="text-org698132e">
 <blockquote>
 <p>
 コンスセルの評価は次のように行います。
@@ -1073,12 +1080,12 @@ nilじゃないとコンスセルになる(前の節の通り)。
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">plus1</span> (n)
+<pre class="src src-emacs-lisp">(defun plus1 (n)
   (+ n 1))
 =&gt; plus1
 (plus1 10)
 =&gt; 11
-(<span class="org-keyword">defun</span> <span class="org-function-name">my-plus</span> (m n)
+(defun my-plus (m n)
   (+ m n))
 =&gt; my-plus
 (my-plus 2 5)
@@ -1097,9 +1104,9 @@ nilじゃないとコンスセルになる(前の節の通り)。
 </p>
 </div>
 </div>
-<div id="outline-container-org133c691" class="outline-3">
-<h3 id="org133c691"><a href="#org133c691">関数に名前はない</a></h3>
-<div class="outline-text-3" id="text-org133c691">
+<div id="outline-container-orgc6342d6" class="outline-3">
+<h3 id="orgc6342d6"><a href="#orgc6342d6">関数に名前はない</a></h3>
+<div class="outline-text-3" id="text-orgc6342d6">
 <blockquote>
 <p>
 defunを見て、関数に名前があると思うのは間違いです。
@@ -1115,13 +1122,13 @@ defunは、シンボルを作って、その関数セルが関数定義を指す
 </p>
 
 <div class="org-src-container">
-<pre class="src src-c"><span class="org-comment-delimiter">// </span><span class="org-comment">lisp.h
-</span><span class="org-keyword">struct</span> <span class="org-type">Lisp_Symbol</span>
+<pre class="src src-c">// lisp.h
+struct Lisp_Symbol
 {
-  <span class="org-keyword">struct</span> <span class="org-type">Lisp_String</span> *<span class="org-variable-name">name</span>;  =&gt; <span class="org-string">"foo"</span>
-    Lisp_Object value;  =&gt; <span class="org-string">"FOO"</span>&#12398;&#20516;&#12434;&#25345;&#12388;&#25991;&#23383;&#21015;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12434;&#25351;&#12377;
-    Lisp_Object function;  =&gt; &#31354;
-    &#30053;
+  struct Lisp_String *name;  =&gt; "foo"
+    Lisp_Object value;  =&gt; "FOO"の値を持つ文字列オブジェクトを指す
+    Lisp_Object function;  =&gt; 空
+    略
     };
 </pre>
 </div>
@@ -1131,26 +1138,26 @@ defunは、シンボルを作って、その関数セルが関数定義を指す
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">foo</span> () (message <span class="org-string">"a"</span>))
+<pre class="src src-emacs-lisp">(defun foo () (message "a"))
 (symbolp 'foo)
 =&gt; t
 (symbol-name 'foo)
-=&gt; <span class="org-string">"foo"</span>
+=&gt; "foo"
 (symbol-value 'foo)
 =&gt; error: (void-variable foo)
 (symbol-function 'foo)
-=&gt; (<span class="org-keyword">lambda</span> nil (message <span class="org-string">"a"</span>))
+=&gt; (lambda nil (message "a"))
 (boundp 'foo)
 =&gt; nil
-(fboundp 'foo) <span class="org-comment-delimiter">; </span><span class="org-comment">&#38306;&#25968;&#23450;&#32681;
-</span>=&gt; t
+(fboundp 'foo) ; 関数定義
+=&gt; t
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgef44b10" class="outline-3">
-<h3 id="orgef44b10"><a href="#orgef44b10">既存関数も同じ</a></h3>
-<div class="outline-text-3" id="text-orgef44b10">
+<div id="outline-container-orgfa767ba" class="outline-3">
+<h3 id="orgfa767ba"><a href="#orgfa767ba">既存関数も同じ</a></h3>
+<div class="outline-text-3" id="text-orgfa767ba">
 <p>
 どれもシンボルで、関数定義を指しています。
 </p>
@@ -1179,9 +1186,9 @@ subrそうだったのか。 <code>#&lt;&gt;</code> はどういう意味なの�
 </p>
 </div>
 </div>
-<div id="outline-container-org43441d7" class="outline-3">
-<h3 id="org43441d7"><a href="#org43441d7">fset</a></h3>
-<div class="outline-text-3" id="text-org43441d7">
+<div id="outline-container-orgecc6279" class="outline-3">
+<h3 id="orgecc6279"><a href="#orgecc6279">fset</a></h3>
+<div class="outline-text-3" id="text-orgecc6279">
 <blockquote>
 <p>
 値セルにsetqやsetがあったように、関数セルにはfsetがあります(fsetqはありません)。
@@ -1190,8 +1197,8 @@ subrそうだったのか。 <code>#&lt;&gt;</code> はどういう意味なの�
 
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(fset 'my-plus2
-      '(lambda (n) (+ n 2)))   <span class="org-comment-delimiter">; </span><span class="org-comment">defun&#12392;&#21516;&#12376;
-</span>=&gt; (<span class="org-keyword">lambda</span> (n) (+ n 2))
+      '(lambda (n) (+ n 2)))   ; defunと同じ
+=&gt; (lambda (n) (+ n 2))
 (my-plus2 10)
 =&gt; 12
 </pre>
@@ -1202,25 +1209,25 @@ subrそうだったのか。 <code>#&lt;&gt;</code> はどういう意味なの�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> foo <span class="org-string">"foo"</span>)
-=&gt; <span class="org-string">"foo"</span>
-(fset 'foo '(lambda (s) (concat s <span class="org-string">"bar"</span>))) <span class="org-comment-delimiter">; </span><span class="org-comment">&#21517;&#21069;&#12392;&#12522;&#12473;&#12488;&#12398;&#32068;&#12415;&#21512;&#12431;&#12379;&#12290;&#12393;&#12385;&#12425;&#12418;&#26410;&#35413;&#20385;&#12391;&#28193;&#12377;&#12290;
-</span>=&gt; (<span class="org-keyword">lambda</span> (s) (concat s <span class="org-string">"bar"</span>))
+<pre class="src src-emacs-lisp">(setq foo "foo")
+=&gt; "foo"
+(fset 'foo '(lambda (s) (concat s "bar"))) ; 名前とリストの組み合わせ。どちらも未評価で渡す。
+=&gt; (lambda (s) (concat s "bar"))
 (foo foo)
-=&gt; <span class="org-string">"foobar"</span>
+=&gt; "foobar"
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org1cc5d27" class="outline-3">
-<h3 id="org1cc5d27"><a href="#org1cc5d27">lambda</a></h3>
-<div class="outline-text-3" id="text-org1cc5d27">
+<div id="outline-container-org86350ef" class="outline-3">
+<h3 id="org86350ef"><a href="#org86350ef">lambda</a></h3>
+<div class="outline-text-3" id="text-org86350ef">
 <p>
 <a href="https://github.com/kijimaD/emacs/blob/master/lisp/subr.el#L106">https://github.com/kijimaD/emacs/blob/master/lisp/subr.el#L106</a>
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">lambda</span> (&#24341;&#25968; ...) (&#38306;&#25968;&#26412;&#20307;))
+<pre class="src src-emacs-lisp">(lambda (引数 ...) (関数本体))
 </pre>
 </div>
 
@@ -1229,7 +1236,7 @@ subrそうだったのか。 <code>#&lt;&gt;</code> はどういう意味なの�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">((<span class="org-keyword">lambda</span> (m n) (+ m n)) 2 5)
+<pre class="src src-emacs-lisp">((lambda (m n) (+ m n)) 2 5)
 =&gt; 7
 </pre>
 </div>
@@ -1239,26 +1246,26 @@ subrそうだったのか。 <code>#&lt;&gt;</code> はどういう意味なの�
 引数cdr(処理したい内容)でコンスセルを作って、関数セルと組み合わせてリストを作ります。なので名前はありません。
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defmacro</span> <span class="org-function-name">lambda</span> (<span class="org-type">&amp;rest</span> cdr)
+<pre class="src src-emacs-lisp">(defmacro lambda (&amp;rest cdr)
   (list 'function (cons 'lambda cdr)))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org9e6cee3" class="outline-3">
-<h3 id="org9e6cee3"><a href="#org9e6cee3">関数とは何か</a></h3>
-<div class="outline-text-3" id="text-org9e6cee3">
+<div id="outline-container-org235650b" class="outline-3">
+<h3 id="org235650b"><a href="#org235650b">関数とは何か</a></h3>
+<div class="outline-text-3" id="text-org235650b">
 <p>
 述語関数から見てます。この方法いいですね。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">                                        <span class="org-comment-delimiter">; </span><span class="org-comment">subr.el
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">functionp</span> (object)
-  <span class="org-doc">"Non-nil if OBJECT is a type of object that can be called as a function."</span>
-  (<span class="org-keyword">or</span> (subrp object) (byte-code-function-p object)
+<pre class="src src-emacs-lisp">                                        ; subr.el
+(defun functionp (object)
+  "Non-nil if OBJECT is a type of object that can be called as a function."
+  (or (subrp object) (byte-code-function-p object)
       (eq (car-safe object) 'lambda)
-      (<span class="org-keyword">and</span> (symbolp object) (fboundp object))))
+      (and (symbolp object) (fboundp object))))
 </pre>
 </div>
 
@@ -1276,9 +1283,9 @@ elispにとって、「関数」とは次の4つのいずれかであること�
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgadbda86" class="outline-3">
-<h3 id="orgadbda86"><a href="#orgadbda86">関数呼び出し</a></h3>
-<div class="outline-text-3" id="text-orgadbda86">
+<div id="outline-container-org10385e5" class="outline-3">
+<h3 id="org10385e5"><a href="#org10385e5">関数呼び出し</a></h3>
+<div class="outline-text-3" id="text-org10385e5">
 <blockquote>
 <p>
 リストの先頭要素に「関数」があれば、関数呼び出しになります。
@@ -1290,17 +1297,17 @@ elispにとって、「関数」とは次の4つのいずれかであること�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(my-plus 1 3)   <span class="org-comment-delimiter">; </span><span class="org-comment">&#12471;&#12531;&#12508;&#12523;&#12391;&#12354;&#12428;&#12400;&#38306;&#25968;&#12475;&#12523;&#12398;&#25351;&#12377;&#38306;&#25968;&#12434;&#21628;&#12403;&#20986;&#12377;
-</span>=&gt; 4
-((<span class="org-keyword">lambda</span> (m n) (+ m n)) 1 3)   <span class="org-comment-delimiter">; </span><span class="org-comment">&#12471;&#12531;&#12508;&#12523;lambda&#12391;&#22987;&#12414;&#12427;&#12522;&#12473;&#12488;&#12418;&#12300;&#38306;&#25968;&#12301;
-</span>=&gt; 4
+<pre class="src src-emacs-lisp">(my-plus 1 3)   ; シンボルであれば関数セルの指す関数を呼び出す
+=&gt; 4
+((lambda (m n) (+ m n)) 1 3)   ; シンボルlambdaで始まるリストも「関数」
+=&gt; 4
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org1ca9d6e" class="outline-3">
-<h3 id="org1ca9d6e"><a href="#org1ca9d6e">funcall</a></h3>
-<div class="outline-text-3" id="text-org1ca9d6e">
+<div id="outline-container-orga71452f" class="outline-3">
+<h3 id="orga71452f"><a href="#orga71452f">funcall</a></h3>
+<div class="outline-text-3" id="text-orga71452f">
 <blockquote>
 <p>
 funcall関数は引数の1番目を関数として呼びます。
@@ -1328,25 +1335,25 @@ funcall関数は引数の1番目を関数として呼びます。
 
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(funcall '(lambda () (+ 1 2)))
-(<span class="org-keyword">if</span> (eq 1 (+ 1)) 1) <span class="org-comment-delimiter">; </span><span class="org-comment">1
-</span>(<span class="org-keyword">if</span> (eq 1 '(+ 1)) 1) <span class="org-comment-delimiter">; </span><span class="org-comment">nil
-</span>
-(+ (+ 1) 1) <span class="org-comment-delimiter">; </span><span class="org-comment">2
-</span>(+ '(+ 1) 1) <span class="org-comment-delimiter">; </span><span class="org-comment">(wrong-type-argument number-or-marker-p (+ 1))</span>
+(if (eq 1 (+ 1)) 1) ; 1
+(if (eq 1 '(+ 1)) 1) ; nil
+
+(+ (+ 1) 1) ; 2
+(+ '(+ 1) 1) ; (wrong-type-argument number-or-marker-p (+ 1))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org406c4fc" class="outline-3">
-<h3 id="org406c4fc"><a href="#org406c4fc">値セルにlambda</a></h3>
-<div class="outline-text-3" id="text-org406c4fc">
+<div id="outline-container-org593bdba" class="outline-3">
+<h3 id="org593bdba"><a href="#org593bdba">値セルにlambda</a></h3>
+<div class="outline-text-3" id="text-org593bdba">
 <p>
 つまり、値を関数でも呼び出せます。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> foo '(lambda (m n) (+ m n)))
-=&gt; (<span class="org-keyword">lambda</span> (m n) (+ m n))
+<pre class="src src-emacs-lisp">(setq foo '(lambda (m n) (+ m n)))
+=&gt; (lambda (m n) (+ m n))
 (funcall foo 2 5)
 =&gt; 7
 </pre>
@@ -1357,9 +1364,9 @@ funcall関数は引数の1番目を関数として呼びます。
 </p>
 </div>
 </div>
-<div id="outline-container-org3e7ea12" class="outline-3">
-<h3 id="org3e7ea12"><a href="#org3e7ea12">明示的に空にする</a></h3>
-<div class="outline-text-3" id="text-org3e7ea12">
+<div id="outline-container-orgfd0b188" class="outline-3">
+<h3 id="orgfd0b188"><a href="#orgfd0b188">明示的に空にする</a></h3>
+<div class="outline-text-3" id="text-orgfd0b188">
 <blockquote>
 <p>
 (makunbound &rsquo;foo)   ;値セルを空にする
@@ -1370,11 +1377,11 @@ funcall関数は引数の1番目を関数として呼びます。
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org067778b" class="outline-3">
-<h3 id="org067778b"><a href="#org067778b">連想リスト(association list)</a></h3>
-<div class="outline-text-3" id="text-org067778b">
+<div id="outline-container-org68f639d" class="outline-3">
+<h3 id="org68f639d"><a href="#org68f639d">連想リスト(association list)</a></h3>
+<div class="outline-text-3" id="text-org68f639d">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">'((<span class="org-string">"foo"</span> . <span class="org-string">"FOO"</span>) (<span class="org-string">"bar"</span> . <span class="org-string">"BAR"</span>) (<span class="org-string">"baz"</span> . <span class="org-string">"BAZ"</span>))
+<pre class="src src-emacs-lisp">'(("foo" . "FOO") ("bar" . "BAR") ("baz" . "BAZ"))
 </pre>
 </div>
 
@@ -1383,9 +1390,9 @@ funcall関数は引数の1番目を関数として呼びます。
 </p>
 </div>
 </div>
-<div id="outline-container-org68d10e2" class="outline-3">
-<h3 id="org68d10e2"><a href="#org68d10e2">配列</a></h3>
-<div class="outline-text-3" id="text-org68d10e2">
+<div id="outline-container-orgf8e2a7e" class="outline-3">
+<h3 id="orgf8e2a7e"><a href="#orgf8e2a7e">配列</a></h3>
+<div class="outline-text-3" id="text-orgf8e2a7e">
 <blockquote>
 <p>
 配列は次の4つに分類できます。
@@ -1406,15 +1413,15 @@ funcall関数は引数の1番目を関数として呼びます。
 </blockquote>
 
 <div class="org-src-container">
-<pre class="src src-c"><span class="org-comment-delimiter">// </span><span class="org-comment">data.c
-</span>DEFUN (<span class="org-string">"arrayp"</span>, Farrayp, Sarrayp, 1, 1, 0, <span class="org-string">"Return t if OBJECT is an array (string or vector)."</span>)
+<pre class="src src-c">// data.c
+DEFUN ("arrayp", Farrayp, Sarrayp, 1, 1, 0, "Return t if OBJECT is an array (string or vector).")
   (object)
-  <span class="org-type">Lisp_Object</span> <span class="org-variable-name">object</span>;
+  Lisp_Object object;
 {
-  <span class="org-keyword">if</span> (VECTORP (object) || STRINGP (object)
+  if (VECTORP (object) || STRINGP (object)
       || CHAR_TABLE_P (object) || BOOL_VECTOR_P (object))
-    <span class="org-keyword">return</span> Qt;
-  <span class="org-keyword">return</span> Qnil;
+    return Qt;
+  return Qnil;
 }
 </pre>
 </div>
@@ -1424,53 +1431,53 @@ funcall関数は引数の1番目を関数として呼びます。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(arrayp '(1 2)) <span class="org-comment-delimiter">; </span><span class="org-comment">nil
-</span>(arrayp <span class="org-string">"aaa"</span>)  <span class="org-comment-delimiter">; </span><span class="org-comment">t</span>
+<pre class="src src-emacs-lisp">(arrayp '(1 2)) ; nil
+(arrayp "aaa")  ; t
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org15a8052" class="outline-3">
-<h3 id="org15a8052"><a href="#org15a8052">ベクタ</a></h3>
-<div class="outline-text-3" id="text-org15a8052">
+<div id="outline-container-org1efbbf6" class="outline-3">
+<h3 id="org1efbbf6"><a href="#org1efbbf6">ベクタ</a></h3>
+<div class="outline-text-3" id="text-org1efbbf6">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">[1 3 5]
 =&gt; [1 3 5]
 (vectorp [1 3 5])
 =&gt; t
-(<span class="org-keyword">setq</span> foo [1 3 5])    <span class="org-comment-delimiter">; </span><span class="org-comment">quote&#12375;&#12390;&#12418;&#12375;&#12394;&#12367;&#12390;&#12418;&#21516;&#12376;
-</span>=&gt; [1 3 5]
+(setq foo [1 3 5])    ; quoteしてもしなくても同じ
+=&gt; [1 3 5]
 (vectorp foo)
 =&gt; t
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org4fa5da0" class="outline-3">
-<h3 id="org4fa5da0"><a href="#org4fa5da0">ベクタの操作</a></h3>
-<div class="outline-text-3" id="text-org4fa5da0">
+<div id="outline-container-org6a31611" class="outline-3">
+<h3 id="org6a31611"><a href="#org6a31611">ベクタの操作</a></h3>
+<div class="outline-text-3" id="text-org6a31611">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orge5c2538" class="outline-3">
-<h3 id="orge5c2538"><a href="#orge5c2538">元ページ再掲</a></h3>
-<div class="outline-text-3" id="text-orge5c2538">
+<div id="outline-container-orgba35536" class="outline-3">
+<h3 id="orgba35536"><a href="#orgba35536">元ページ再掲</a></h3>
+<div class="outline-text-3" id="text-orgba35536">
 <p>
 <a href="http://dev.ariel-networks.com/articles/workshop/emacs-lisp-basic/">http://dev.ariel-networks.com/articles/workshop/emacs-lisp-basic/</a>
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org0ec1c5f" class="outline-2">
-<h2 id="org0ec1c5f"><a href="#org0ec1c5f">リスト遊び</a></h2>
-<div class="outline-text-2" id="text-org0ec1c5f">
+<div id="outline-container-org106e95b" class="outline-2">
+<h2 id="org106e95b"><a href="#org106e95b">リスト遊び</a></h2>
+<div class="outline-text-2" id="text-org106e95b">
 </div>
-<div id="outline-container-orgc904e3c" class="outline-3">
-<h3 id="orgc904e3c"><a href="#orgc904e3c">リスト</a></h3>
-<div class="outline-text-3" id="text-orgc904e3c">
+<div id="outline-container-orgb35904a" class="outline-3">
+<h3 id="orgb35904a"><a href="#orgb35904a">リスト</a></h3>
+<div class="outline-text-3" id="text-orgb35904a">
 <ul class="org-ul">
 <li>リストを構成するセルのCDRは <code>m</code> ，セルかnilを指している。</li>
 </ul>
@@ -1497,43 +1504,43 @@ nilで終端しないセルはドット対で表記する。
 </p>
 </div>
 </div>
-<div id="outline-container-orga3d83cc" class="outline-3">
-<h3 id="orga3d83cc"><a href="#orga3d83cc">Lispのデータ</a></h3>
-<div class="outline-text-3" id="text-orga3d83cc">
+<div id="outline-container-org34d3544" class="outline-3">
+<h3 id="org34d3544"><a href="#org34d3544">Lispのデータ</a></h3>
+<div class="outline-text-3" id="text-org34d3544">
 <ul class="org-ul">
 <li>セル(1対のポインタ。consで作られる。CARとCDRが指しているポインタが指すデータを見るには、carとcdrを用いる)</li>
 <li>アトム(セル以外。整数とか)</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org0f9bdd7" class="outline-3">
-<h3 id="org0f9bdd7"><a href="#org0f9bdd7">Lispの評価</a></h3>
-<div class="outline-text-3" id="text-org0f9bdd7">
+<div id="outline-container-orga5c28c4" class="outline-3">
+<h3 id="orga5c28c4"><a href="#orga5c28c4">Lispの評価</a></h3>
+<div class="outline-text-3" id="text-orga5c28c4">
 <ul class="org-ul">
 <li>式がセルなら関数を呼び出す。第1要素のシンボルの指す関数を実行する。引数は評価する。</li>
 <li>式がアトムならその値を返す。</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org3658cf0" class="outline-3">
-<h3 id="org3658cf0"><a href="#org3658cf0">quote</a></h3>
-<div class="outline-text-3" id="text-org3658cf0">
+<div id="outline-container-org51110f2" class="outline-3">
+<h3 id="org51110f2"><a href="#org51110f2">quote</a></h3>
+<div class="outline-text-3" id="text-org51110f2">
 <p>
 クオートをつけると評価せずそのまま返す。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">quote</span> (1 2))
+<pre class="src src-emacs-lisp">(quote (1 2))
 =&gt; (1 2)
 
-&#21516;&#12376;&#24847;&#21619;:
+同じ意味:
 '(1 2)
 
-(<span class="org-keyword">setq</span> dog 5)
+(setq dog 5)
 dog
-=&gt; 5   <span class="org-comment-delimiter">; </span><span class="org-comment">&#35413;&#20385;&#32080;&#26524;
-</span>'dog
-=&gt; dog <span class="org-comment-delimiter">; </span><span class="org-comment">&#12471;&#12531;&#12508;&#12523;&#33258;&#36523;&#12434;&#34920;&#29694;&#12377;&#12427;</span>
+=&gt; 5   ; 評価結果
+'dog
+=&gt; dog ; シンボル自身を表現する
 </pre>
 </div>
 
@@ -1543,32 +1550,32 @@ dog
 </p>
 </div>
 </div>
-<div id="outline-container-org745aba3" class="outline-3">
-<h3 id="org745aba3"><a href="#org745aba3">ポインタ</a></h3>
-<div class="outline-text-3" id="text-org745aba3">
+<div id="outline-container-orgee3e5ee" class="outline-3">
+<h3 id="orgee3e5ee"><a href="#orgee3e5ee">ポインタ</a></h3>
+<div class="outline-text-3" id="text-orgee3e5ee">
 <p>
 変数から変数への代入は、ポインタを複製するということ。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> x 'dog)
-(<span class="org-keyword">setq</span> y 'dog)
+<pre class="src src-emacs-lisp">(setq x 'dog)
+(setq y 'dog)
 (eq x y)
 =&gt; t
-(<span class="org-keyword">setq</span> z y)
+(setq z y)
 (eq y z)
 =&gt; t
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> x <span class="org-string">"dog"</span>)
-(<span class="org-keyword">setq</span> y <span class="org-string">"dog"</span>)
+<pre class="src src-emacs-lisp">(setq x "dog")
+(setq y "dog")
 (eq x y)
-=&gt; nil <span class="org-comment-delimiter">; </span><span class="org-comment">&#21516;&#12376;&#20013;&#36523;&#12398;&#25991;&#23383;&#21015;&#12384;&#12364;&#12289;&#25351;&#12375;&#12390;&#12356;&#12427;&#12509;&#12452;&#12531;&#12479;&#12364;&#30064;&#12394;&#12427;&#12383;&#12417;&#12290;
-</span>(<span class="org-keyword">setq</span> z y)
+=&gt; nil ; 同じ中身の文字列だが、指しているポインタが異なるため。
+(setq z y)
 (eq y z)
-=&gt; t   <span class="org-comment-delimiter">; </span><span class="org-comment">&#25351;&#12375;&#12390;&#12356;&#12427;&#12509;&#12452;&#12531;&#12479;&#12364;&#21516;&#12376;&#12383;&#12417;</span>
+=&gt; t   ; 指しているポインタが同じため
 </pre>
 </div>
 
@@ -1578,21 +1585,21 @@ dog
 </div>
 </div>
 </div>
-<div id="outline-container-orgd2b6bf5" class="outline-2">
-<h2 id="orgd2b6bf5"><a href="#orgd2b6bf5">On Lisp</a></h2>
-<div class="outline-text-2" id="text-orgd2b6bf5">
+<div id="outline-container-org4030337" class="outline-2">
+<h2 id="org4030337"><a href="#org4030337">On Lisp</a></h2>
+<div class="outline-text-2" id="text-org4030337">
 <p>
 <a href="http://www.asahi-net.or.jp/~kc7k-nd/onlispjhtml/preface.html">On Lisp &#x2014; 前書き</a>
 </p>
 </div>
-<div id="outline-container-orgcbaaeac" class="outline-3">
-<h3 id="orgcbaaeac"><a href="#orgcbaaeac">もう1つの関数定義</a></h3>
-<div class="outline-text-3" id="text-orgcbaaeac">
+<div id="outline-container-orgef62f82" class="outline-3">
+<h3 id="orgef62f82"><a href="#orgef62f82">もう1つの関数定義</a></h3>
+<div class="outline-text-3" id="text-orgef62f82">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">double</span> (x) (* x 2))
-#'double <span class="org-comment-delimiter">; </span><span class="org-comment">&#38306;&#25968;&#12458;&#12502;&#12472;&#12455;&#12463;&#12488;&#12434;&#24471;&#12427;
-</span>
-#'(<span class="org-keyword">lambda</span> (x) (* x 2))
+<pre class="src src-emacs-lisp">(defun double (x) (* x 2))
+#'double ; 関数オブジェクトを得る
+
+#'(lambda (x) (* x 2))
 </pre>
 </div>
 
@@ -1611,7 +1618,7 @@ dog
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> x #'append)
+<pre class="src src-emacs-lisp">(setq x #'append)
 </pre>
 </div>
 
@@ -1619,10 +1626,10 @@ dog
 2つの式は大体同じことをしている。
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">double</span> (x) (* x 2))
+<pre class="src src-emacs-lisp">(defun double (x) (* x 2))
 
-(<span class="org-keyword">setf</span> (symbol-function 'double)
-      #'(<span class="org-keyword">lambda</span> (x) (* x 2)))
+(setf (symbol-function 'double)
+      #'(lambda (x) (* x 2)))
 </pre>
 </div>
 
@@ -1649,17 +1656,17 @@ applyは、オブジェクトを関数として実行する。
 <pre class="src src-emacs-lisp">(+ 1 2)
 (apply #'+ '(1 2))
 (apply (symbol-function '+) '(1 2))
-(apply #'(<span class="org-keyword">lambda</span> (x y) (+ x y)) '(1 2))
+(apply #'(lambda (x y) (+ x y)) '(1 2))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org4376437" class="outline-3">
-<h3 id="org4376437"><a href="#org4376437">クロージャ</a></h3>
-<div class="outline-text-3" id="text-org4376437">
+<div id="outline-container-org44f5d52" class="outline-3">
+<h3 id="org44f5d52"><a href="#org44f5d52">クロージャ</a></h3>
+<div class="outline-text-3" id="text-org44f5d52">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">make-adder</span> (n)
-  #'(<span class="org-keyword">lambda</span> (x) (+ x n)))
+<pre class="src src-emacs-lisp">(defun make-adder (n)
+  #'(lambda (x) (+ x n)))
 </pre>
 </div>
 
@@ -1669,7 +1676,7 @@ applyは、オブジェクトを関数として実行する。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">&gt; (<span class="org-keyword">setq</span> add2 (make-adder 2)
+<pre class="src src-emacs-lisp">&gt; (setq add2 (make-adder 2)
         add10 (make-adder 10))
 #&lt;Interpreted-Function BF162E&gt;
 &gt; (funcall add2 5)
@@ -1684,23 +1691,23 @@ applyは、オブジェクトを関数として実行する。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">make-dbms</span> (db)
+<pre class="src src-emacs-lisp">(defun make-dbms (db)
   (list
-   #'(<span class="org-keyword">lambda</span> (key)
+   #'(lambda (key)
        (cdr (assoc key db)))
-   #'(<span class="org-keyword">lambda</span> (key val)
-       (<span class="org-keyword">push</span> (cons key val) db)
+   #'(lambda (key val)
+       (push (cons key val) db)
        key)
-   #'(<span class="org-keyword">lambda</span> (key)
-       (<span class="org-keyword">setf</span> db (delete key db <span class="org-builtin">:key</span> #'car))
+   #'(lambda (key)
+       (setf db (delete key db :key #'car))
        key)))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org5e0263f" class="outline-3">
-<h3 id="org5e0263f"><a href="#org5e0263f">末尾再帰</a></h3>
-<div class="outline-text-3" id="text-org5e0263f">
+<div id="outline-container-orgec6698d" class="outline-3">
+<h3 id="orgec6698d"><a href="#orgec6698d">末尾再帰</a></h3>
+<div class="outline-text-3" id="text-orgec6698d">
 <p>
 再帰関数とは自分自身を呼び出す関数だ． そして関数呼び出しの後に行うべき
 作業が残っていなければ， その呼び出しは\emph{末尾再帰}だ． 次の関数は末
@@ -1708,8 +1715,8 @@ applyは、オブジェクトを関数として実行する。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">our-length</span> (lst)
-  (<span class="org-keyword">if</span> (null lst)
+<pre class="src src-emacs-lisp">(defun our-length (lst)
+  (if (null lst)
       0
     (1+ (our-length (cdr lst)))))
 
@@ -1722,43 +1729,43 @@ applyは、オブジェクトを関数として実行する。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">our-find-if</span> (fn lst)
-  (<span class="org-keyword">if</span> (funcall fn (car lst))
+<pre class="src src-emacs-lisp">(defun our-find-if (fn lst)
+  (if (funcall fn (car lst))
       (car lst)
     (our-find-if fn (cdr lst))))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orga9a44f4" class="outline-3">
-<h3 id="orga9a44f4"><a href="#orga9a44f4">抽象化</a></h3>
-<div class="outline-text-3" id="text-orga9a44f4">
+<div id="outline-container-orgc00ef4c" class="outline-3">
+<h3 id="orgc00ef4c"><a href="#orgc00ef4c">抽象化</a></h3>
+<div class="outline-text-3" id="text-orgc00ef4c">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">1st</span> (exp) (car exp))
-(<span class="org-keyword">defun</span> <span class="org-function-name">2nd</span> (exp) (car (cdr exp)))
-(<span class="org-keyword">defun</span> <span class="org-function-name">3rd</span> (exp) (car (cdr (cdr exp))))
+<pre class="src src-emacs-lisp">(defun 1st (exp) (car exp))
+(defun 2nd (exp) (car (cdr exp)))
+(defun 3rd (exp) (car (cdr (cdr exp))))
 
-(<span class="org-keyword">setq</span> order-func1 '((OP . 2nd) (ARG1 . 1st) (ARG2 . 3rd)))
-(<span class="org-keyword">setq</span> order-func2 '((OP . 1st) (ARG1 . 2nd) (ARG2 . 3rd)))
+(setq order-func1 '((OP . 2nd) (ARG1 . 1st) (ARG2 . 3rd)))
+(setq order-func2 '((OP . 1st) (ARG1 . 2nd) (ARG2 . 3rd)))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">order-func</span> (sym odr-db)
+(defun order-func (sym odr-db)
   (cdr (assq sym odr-db)))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">op</span> (exp order-db)
+(defun op (exp order-db)
   (funcall (order-func 'OP order-db) exp))
-(<span class="org-keyword">defun</span> <span class="org-function-name">arg1</span> (exp order-db)
+(defun arg1 (exp order-db)
   (funcall (order-func 'ARG1 order-db) exp))
-(<span class="org-keyword">defun</span> <span class="org-function-name">arg2</span> (exp order-db)
+(defun arg2 (exp order-db)
   (funcall (order-func 'ARG2 order-db) exp))
 
-(<span class="org-keyword">setq</span> op-func1 '((+ . +) (- . -) (* . *)))
-(<span class="org-keyword">setq</span> op-func2 '((add . +) (sub . -) (mul . *)))
+(setq op-func1 '((+ . +) (- . -) (* . *)))
+(setq op-func2 '((add . +) (sub . -) (mul . *)))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">op-func</span> (sym op-db)
+(defun op-func (sym op-db)
   (cdr (assq sym op-db)))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">calc</span> (exp op-db odr-db)
-  (<span class="org-keyword">cond</span>
+(defun calc (exp op-db odr-db)
+  (cond
    ((atom exp) exp)
    (t (funcall
        (op-func (op exp odr-db) op-db)
@@ -1771,9 +1778,9 @@ applyは、オブジェクトを関数として実行する。
 </div>
 </div>
 </div>
-<div id="outline-container-org4b4b09e" class="outline-3">
-<h3 id="org4b4b09e"><a href="#org4b4b09e">関数</a></h3>
-<div class="outline-text-3" id="text-org4b4b09e">
+<div id="outline-container-org45f0bc6" class="outline-3">
+<h3 id="org45f0bc6"><a href="#org45f0bc6">関数</a></h3>
+<div class="outline-text-3" id="text-org45f0bc6">
 <p>
 <a href="http://www.asahi-net.or.jp/~kc7k-nd/onlispjhtml/functions.html">On Lisp &#x2014; 関数</a>
 </p>
@@ -1846,7 +1853,7 @@ rplaca rplacd rotatef shiftf remf remprop remhash
 を返せ．」
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">fun</span> (x)
+<pre class="src src-emacs-lisp">(defun fun (x)
   (list 'a (expt (car x) 2)))
 </pre>
 </div>
@@ -1856,10 +1863,10 @@ rplaca rplacd rotatef shiftf remf remprop remhash
 してaと，先程2乗した値から成るリストを返せ．」
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">imp</span> (x)
-  (<span class="org-keyword">let</span> (y sqr)
-    (<span class="org-keyword">setq</span> y (car x))
-    (<span class="org-keyword">setq</span> sqr (expt y 2))
+<pre class="src src-emacs-lisp">(defun imp (x)
+  (let (y sqr)
+    (setq y (car x))
+    (setq sqr (expt y 2))
     (list 'a sqr)))
 </pre>
 </div>
@@ -1886,9 +1893,9 @@ rplaca rplacd rotatef shiftf remf remprop remhash
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgf15c69f" class="outline-3">
-<h3 id="orgf15c69f"><a href="#orgf15c69f">ユーティリティ関数</a></h3>
-<div class="outline-text-3" id="text-orgf15c69f">
+<div id="outline-container-org449c26e" class="outline-3">
+<h3 id="org449c26e"><a href="#org449c26e">ユーティリティ関数</a></h3>
+<div class="outline-text-3" id="text-org449c26e">
 <p>
 <a href="http://www.asahi-net.or.jp/~kc7k-nd/onlispjhtml/utilityFunctions.html">On Lisp &#x2014; ユーティリティ関数</a>
 </p>
@@ -1912,11 +1919,11 @@ Common Lispのオペレータは3種類に分かれる： 関数にマクロ（�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">find-books</span> (towns)
-  (<span class="org-keyword">if</span> (null towns)
+<pre class="src src-emacs-lisp">(defun find-books (towns)
+  (if (null towns)
       nil
-    (<span class="org-keyword">let</span> ((shops (bookshops (car towns))))
-      (<span class="org-keyword">if</span> shops
+    (let ((shops (bookshops (car towns))))
+      (if shops
           (values (car towns) shops)
         (find-books (cdr towns))))))
 </pre>
@@ -1928,11 +1935,11 @@ Common Lispのオペレータは3種類に分かれる： 関数にマクロ（�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">find2</span> (fn lst)
-  (<span class="org-keyword">if</span> (null lst)
+<pre class="src src-emacs-lisp">(defun find2 (fn lst)
+  (if (null lst)
       nil
-    (<span class="org-keyword">let</span> ((val (funcall fn (car lst))))
-      (<span class="org-keyword">if</span> val
+    (let ((val (funcall fn (car lst))))
+      (if val
           (values (car lst) val)
         (find2 fn (cdr lst))))))
 </pre>
@@ -1973,37 +1980,37 @@ nil値が返されるような要素全てをリストにして返す。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">&gt; (filter #'(<span class="org-keyword">lambda</span> (x) (<span class="org-keyword">if</span> (numberp x) (1+ x)))
+<pre class="src src-emacs-lisp">&gt; (filter #'(lambda (x) (if (numberp x) (1+ x)))
           '(a 1 2 b 3 c d 4))
 (2 3 4 5)
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">longer</span> (x y)
+<pre class="src src-emacs-lisp">(defun longer (x y)
   (labels ((compare (x y)
-                    (<span class="org-keyword">and</span> (consp x)
-                         (<span class="org-keyword">or</span> (null y)
+                    (and (consp x)
+                         (or (null y)
                              (compare (cdr x) (cdr y))))))
-    (<span class="org-keyword">if</span> (<span class="org-keyword">and</span> (listp x) (listp y))
+    (if (and (listp x) (listp y))
         (compare x y)
       (&gt; (length x) (length y)))))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">filter</span> (fn lst)
-  (<span class="org-keyword">let</span> ((acc nil))
-    (<span class="org-keyword">dolist</span> (x lst)
-      (<span class="org-keyword">let</span> ((val (funcall fn x)))
-        (<span class="org-keyword">if</span> val (<span class="org-keyword">push</span> val acc))))
+(defun filter (fn lst)
+  (let ((acc nil))
+    (dolist (x lst)
+      (let ((val (funcall fn x)))
+        (if val (push val acc))))
     (nreverse acc)))
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">group</span> (source n)
-  (<span class="org-keyword">if</span> (zerop n) (<span class="org-warning">error</span> <span class="org-string">"zero length"</span>))
+(defun group (source n)
+  (if (zerop n) (error "zero length"))
   (labels ((rec (source acc)
-                (<span class="org-keyword">let</span> ((rest (nthcdr n source)))
-                  (<span class="org-keyword">if</span> (consp rest)
+                (let ((rest (nthcdr n source)))
+                  (if (consp rest)
                       (rec rest (cons (subseq source 0 n) acc))
                     (nreverse (cons source acc))))))
-    (<span class="org-keyword">if</span> source (rec source nil) nil)))
+    (if source (rec source nil) nil)))
 </pre>
 </div>
 
@@ -2012,7 +2019,7 @@ nil値が返されるような要素全てをリストにして返す。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">&gt; (split-if #'(<span class="org-keyword">lambda</span> (x) (&gt; x 4))
+<pre class="src src-emacs-lisp">&gt; (split-if #'(lambda (x) (&gt; x 4))
             '(1 2 3 4 5 6 7 8 9 10))
 (1 2 3 4)
 (5 6 7 8 9 10)
@@ -2020,11 +2027,11 @@ nil値が返されるような要素全てをリストにして返す。
 </div>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">mapa-b</span> (fn a b <span class="org-type">&amp;optional</span> (step 1)
+<pre class="src src-emacs-lisp">(defun mapa-b (fn a b &amp;optional (step 1)
                   (map-&gt; fn
                          a
-                         #'(<span class="org-keyword">lambda</span> (x) (&gt; x b))
-                         #'(<span class="org-keyword">lambda</span> (x) (+ x step)))
+                         #'(lambda (x) (&gt; x b))
+                         #'(lambda (x) (+ x step)))
 </pre>
 </div>
 
@@ -2034,18 +2041,18 @@ nil値が返されるような要素全てをリストにして返す。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">map-&gt;</span> (fn start test-fn succ-fn)
+<pre class="src src-emacs-lisp">(defun map-&gt; (fn start test-fn succ-fn)
   (do ((i start (funcall succ-fn i))
        (result nil))
       ((funcall test-fn i) (nreverse result))
-    (<span class="org-keyword">push</span> (funcall fn i) result)))
+    (push (funcall fn i) result)))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgfd66faf" class="outline-3">
-<h3 id="orgfd66faf"><a href="#orgfd66faf">シンボルとストリング</a></h3>
-<div class="outline-text-3" id="text-orgfd66faf">
+<div id="outline-container-org303964b" class="outline-3">
+<h3 id="org303964b"><a href="#org303964b">シンボルとストリング</a></h3>
+<div class="outline-text-3" id="text-org303964b">
 <p>
 新しく作るユーティリティについて。
 </p>
@@ -2074,9 +2081,9 @@ nil値が返されるような要素全てをリストにして返す。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb2b8139" class="outline-3">
-<h3 id="orgb2b8139"><a href="#orgb2b8139">返り値としての関数</a></h3>
-<div class="outline-text-3" id="text-orgb2b8139">
+<div id="outline-container-org4e6d8c3" class="outline-3">
+<h3 id="org4e6d8c3"><a href="#org4e6d8c3">返り値としての関数</a></h3>
+<div class="outline-text-3" id="text-org4e6d8c3">
 <p>
 <a href="http://www.asahi-net.or.jp/~kc7k-nd/onlispjhtml/returningFunctions.html">On Lisp &#x2014; 返り値としての関数</a>
 </p>
@@ -2091,7 +2098,7 @@ nil値が返されるような要素全てをリストにして返す。
 </blockquote>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">joiner</span> (obj)
+<pre class="src src-emacs-lisp">(defun joiner (obj)
   (typecase obj
     (cons #'append)
     (number #'+)))
@@ -2110,8 +2117,8 @@ nil値が返されるような要素全てをリストにして返す。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">complement</span> (fn)
-  #'(<span class="org-keyword">lambda</span> (<span class="org-type">&amp;rest</span> args) (not (apply fn args))))
+<pre class="src src-emacs-lisp">(defun complement (fn)
+  #'(lambda (&amp;rest args) (not (apply fn args))))
 &gt; (remove-if (complement #'oddp) '(1 2 3 4 5 6))
 (1 3 5)
 </pre>
@@ -2131,13 +2138,13 @@ nil値が返されるような要素全てをリストにして返す。
 </div>
 </div>
 </div>
-<div id="outline-container-org7c48337" class="outline-2">
-<h2 id="org7c48337"><a href="#org7c48337">関数メモ</a></h2>
-<div class="outline-text-2" id="text-org7c48337">
+<div id="outline-container-orgdc8edb0" class="outline-2">
+<h2 id="orgdc8edb0"><a href="#orgdc8edb0">関数メモ</a></h2>
+<div class="outline-text-2" id="text-orgdc8edb0">
 </div>
-<div id="outline-container-org89561eb" class="outline-3">
-<h3 id="org89561eb"><a href="#org89561eb">&#x2013;map</a></h3>
-<div class="outline-text-3" id="text-org89561eb">
+<div id="outline-container-org05d0703" class="outline-3">
+<h3 id="org05d0703"><a href="#org05d0703">&#x2013;map</a></h3>
+<div class="outline-text-3" id="text-org05d0703">
 <p>
 <code>map(FORM LIST)</code> はフォームとリストを引数にとり、リストにフォームを適用していく関数。
 </p>
@@ -2147,7 +2154,7 @@ nil値が返されるような要素全てをリストにして返す。
 </pre>
 </div>
 
-<div class="results" id="org5944299">
+<div class="results" id="org0e6929f">
 <p>
 (10 20 30 40 50)
 </p>
@@ -2155,9 +2162,9 @@ nil値が返されるような要素全てをリストにして返す。
 </div>
 </div>
 </div>
-<div id="outline-container-org241794b" class="outline-3">
-<h3 id="org241794b"><a href="#org241794b">seq-some</a></h3>
-<div class="outline-text-3" id="text-org241794b">
+<div id="outline-container-orge11d341" class="outline-3">
+<h3 id="orge11d341"><a href="#orge11d341">seq-some</a></h3>
+<div class="outline-text-3" id="text-orge11d341">
 <p>
 <code>seq-some (pred sequence)</code> は述語関数とリストを引数にとり、述語をリストに適用して1つでも条件を満たせば <code>t</code> を返す関数。
 </p>
@@ -2167,7 +2174,7 @@ nil値が返されるような要素全てをリストにして返す。
 </pre>
 </div>
 
-<div class="results" id="org7ca55c1">
+<div class="results" id="org12079a6">
 <p>
 t
 </p>
@@ -2179,7 +2186,7 @@ t
 </pre>
 </div>
 
-<div class="results" id="org4a48b7e">
+<div class="results" id="orgc74f99a">
 <p>
 nil
 </p>
@@ -2187,9 +2194,9 @@ nil
 </div>
 </div>
 </div>
-<div id="outline-container-org4e0b0b6" class="outline-3">
-<h3 id="org4e0b0b6"><a href="#org4e0b0b6">macroexp-progn</a></h3>
-<div class="outline-text-3" id="text-org4e0b0b6">
+<div id="outline-container-orgb138bf1" class="outline-3">
+<h3 id="orgb138bf1"><a href="#orgb138bf1">macroexp-progn</a></h3>
+<div class="outline-text-3" id="text-orgb138bf1">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(macroexp-progn '(1
                   2
@@ -2198,7 +2205,7 @@ nil
 </pre>
 </div>
 
-<div class="results" id="org4e71bb7">
+<div class="results" id="org5670b5f">
 <p>
 (progn 1 2 3 (* 2 2))
 </p>
@@ -2213,7 +2220,7 @@ nil
 </pre>
 </div>
 
-<div class="results" id="org1f42cf8">
+<div class="results" id="org143a3ee">
 <p>
 4
 </p>
@@ -2221,9 +2228,9 @@ nil
 </div>
 </div>
 </div>
-<div id="outline-container-org554f359" class="outline-3">
-<h3 id="org554f359"><a href="#org554f359">&#x2013;some(form list)</a></h3>
-<div class="outline-text-3" id="text-org554f359">
+<div id="outline-container-orge63d4c9" class="outline-3">
+<h3 id="orge63d4c9"><a href="#orge63d4c9">&#x2013;some(form list)</a></h3>
+<div class="outline-text-3" id="text-orge63d4c9">
 <p>
 dashライブラリに含まれる関数。
 </p>
@@ -2234,13 +2241,13 @@ LIST要素はitにバインドされる。マクロすごいな。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 8: </span>リスト1つ1つがitにバインドされる</label><pre class="src src-emacs-lisp">(--some (evenp it) '(2 4))  <span class="org-comment-delimiter">;; </span><span class="org-comment">=&gt; t
-</span>(--some (evenp it) '(1 3)) <span class="org-comment-delimiter">;; </span><span class="org-comment">=&gt; nil
-</span>(--some (evenp it) '(1 3 2)) <span class="org-comment-delimiter">;; </span><span class="org-comment">=&gt; t</span>
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>リスト1つ1つがitにバインドされる</label><pre class="src src-emacs-lisp">(--some (evenp it) '(2 4))  ;; =&gt; t
+(--some (evenp it) '(1 3)) ;; =&gt; nil
+(--some (evenp it) '(1 3 2)) ;; =&gt; t
 </pre>
 </div>
 
-<div class="results" id="org707b658">
+<div class="results" id="org7f85c12">
 <p>
 t
 </p>
@@ -2252,26 +2259,26 @@ t
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 9: </span>itは出てない</label><pre class="src src-emacs-lisp">(<span class="org-keyword">defmacro</span> <span class="org-function-name">--some</span> (form list)
-  <span class="org-doc">"Return non-nil if FORM evals to non-nil for at least one item in LIST.
+<label class="org-src-name"><span class="listing-number">Listing 9: </span>itは出てない</label><pre class="src src-emacs-lisp">(defmacro --some (form list)
+  "Return non-nil if FORM evals to non-nil for at least one item in LIST.
 If so, return the first such result of FORM.
-Each element of LIST in turn is bound to `</span><span class="org-doc"><span class="org-constant">it</span></span><span class="org-doc">' and its index
-within LIST to `</span><span class="org-doc"><span class="org-constant">it-index</span></span><span class="org-doc">' before evaluating FORM.
-This is the anaphoric counterpart to `</span><span class="org-doc"><span class="org-constant">-some</span></span><span class="org-doc">'."</span>
-  (<span class="org-keyword">declare</span> (debug (form form)))
-  (<span class="org-keyword">let</span> ((n (make-symbol <span class="org-string">"needle"</span>)))
-    `(<span class="org-keyword">let</span> (,n)
-       (--each-while ,list (not (<span class="org-keyword">setq</span> ,n ,form)))
+Each element of LIST in turn is bound to `it' and its index
+within LIST to `it-index' before evaluating FORM.
+This is the anaphoric counterpart to `-some'."
+  (declare (debug (form form)))
+  (let ((n (make-symbol "needle")))
+    `(let (,n)
+       (--each-while ,list (not (setq ,n ,form)))
        ,n)))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org2b48055" class="outline-3">
-<h3 id="org2b48055"><a href="#org2b48055">apply-partially</a></h3>
-<div class="outline-text-3" id="text-org2b48055">
+<div id="outline-container-org8cad89d" class="outline-3">
+<h3 id="org8cad89d"><a href="#org8cad89d">apply-partially</a></h3>
+<div class="outline-text-3" id="text-org8cad89d">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(apropos <span class="org-string">"apply-partially"</span>)
+<pre class="src src-emacs-lisp">(apropos "apply-partially")
 </pre>
 </div>
 
@@ -2280,13 +2287,13 @@ This is the anaphoric counterpart to `</span><span class="org-doc"><span class="
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-apply-partially</span> (fun <span class="org-type">&amp;rest</span> args)
-  (<span class="org-keyword">lambda</span> (<span class="org-type">&amp;rest</span> args2)
+<pre class="src src-emacs-lisp">(defun my-apply-partially (fun &amp;rest args)
+  (lambda (&amp;rest args2)
     (apply fun (append args args2))))
 </pre>
 </div>
 
-<div class="results" id="org9ba2d80">
+<div class="results" id="org631807c">
 <p>
 my-apply-partially
 </p>
@@ -2298,17 +2305,17 @@ my-apply-partially
 </p>
 </div>
 </div>
-<div id="outline-container-org4ccafac" class="outline-3">
-<h3 id="org4ccafac"><a href="#org4ccafac">buffer-read-only</a></h3>
-<div class="outline-text-3" id="text-org4ccafac">
+<div id="outline-container-org6ed63f5" class="outline-3">
+<h3 id="org6ed63f5"><a href="#org6ed63f5">buffer-read-only</a></h3>
+<div class="outline-text-3" id="text-org6ed63f5">
 <p>
 バッファが読み込み専用なら <code>t</code> を返す。
 </p>
 </div>
 </div>
-<div id="outline-container-org8eb0c95" class="outline-3">
-<h3 id="org8eb0c95"><a href="#org8eb0c95">called-interactively-p</a></h3>
-<div class="outline-text-3" id="text-org8eb0c95">
+<div id="outline-container-orgf7e2ba7" class="outline-3">
+<h3 id="orgf7e2ba7"><a href="#orgf7e2ba7">called-interactively-p</a></h3>
+<div class="outline-text-3" id="text-orgf7e2ba7">
 <p>
 直に実行してほしくないことがある。privateメソッドのように。
 <a href="20210922005248-magit.html#ID-5ba43a42-93cb-48fa-8578-0558c757493f">magit</a>のコードから取ってきた。
@@ -2316,23 +2323,23 @@ my-apply-partially
 
 <div class="org-src-container">
 <label class="org-src-name"><span class="listing-number">Listing 10: </span>called-interactively-pを使う</label><pre class="src src-emacs-lisp">(magit-blame-mode
- (<span class="org-keyword">when</span> (called-interactively-p 'any)
-   (<span class="org-keyword">setq</span> magit-blame-mode nil)
-   (<span class="org-warning">user-error</span>
-    (concat <span class="org-string">"Don't call `</span><span class="org-string"><span class="org-constant">magit-blame-mode</span></span><span class="org-string">' directly; "</span>
-            <span class="org-string">"instead use `</span><span class="org-string"><span class="org-constant">magit-blame</span></span><span class="org-string">'"</span>))))
+ (when (called-interactively-p 'any)
+   (setq magit-blame-mode nil)
+   (user-error
+    (concat "Don't call `magit-blame-mode' directly; "
+            "instead use `magit-blame'"))))
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org889c600" class="outline-3">
-<h3 id="org889c600"><a href="#org889c600">cl-block</a></h3>
+<div id="outline-container-orgaadc90f" class="outline-3">
+<h3 id="orgaadc90f"><a href="#orgaadc90f">cl-block</a></h3>
 </div>
-<div id="outline-container-org41429a0" class="outline-3">
-<h3 id="org41429a0"><a href="#org41429a0">declare</a></h3>
-<div class="outline-text-3" id="text-org41429a0">
+<div id="outline-container-org5981819" class="outline-3">
+<h3 id="org5981819"><a href="#org5981819">declare</a></h3>
+<div class="outline-text-3" id="text-org5981819">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(apropos <span class="org-string">"declare"</span>)
+<pre class="src src-emacs-lisp">(apropos "declare")
 </pre>
 </div>
 
@@ -2341,11 +2348,11 @@ my-apply-partially
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 11: </span>よく見かける書き方</label><pre class="src src-emacs-lisp">(<span class="org-keyword">declare</span> (indent 2))
+<label class="org-src-name"><span class="listing-number">Listing 11: </span>よく見かける書き方</label><pre class="src src-emacs-lisp">(declare (indent 2))
 </pre>
 </div>
 
-<div class="results" id="org4a6b0b3">
+<div class="results" id="org5493195">
 <p>
 nil
 </p>
@@ -2353,19 +2360,19 @@ nil
 </div>
 </div>
 </div>
-<div id="outline-container-orgb1801ae" class="outline-3">
-<h3 id="orgb1801ae"><a href="#orgb1801ae">dolist</a></h3>
-<div class="outline-text-3" id="text-orgb1801ae">
+<div id="outline-container-org9a360d9" class="outline-3">
+<h3 id="org9a360d9"><a href="#org9a360d9">dolist</a></h3>
+<div class="outline-text-3" id="text-org9a360d9">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 12: </span>numはリストを構成する要素の名前。(dolist (var list) body)</label><pre class="src src-emacs-lisp">(<span class="org-keyword">let</span> ((nums '(1 2 3 4 5))
+<label class="org-src-name"><span class="listing-number">Listing 12: </span>numはリストを構成する要素の名前。(dolist (var list) body)</label><pre class="src src-emacs-lisp">(let ((nums '(1 2 3 4 5))
       (sum 0))
-      (<span class="org-keyword">dolist</span> (num nums)
-            (<span class="org-keyword">setq</span> sum (+ sum num)))
+      (dolist (num nums)
+            (setq sum (+ sum num)))
       sum)
 </pre>
 </div>
 
-<div class="results" id="org66855f2">
+<div class="results" id="orgbecf3b4">
 <p>
 15
 </p>
@@ -2373,16 +2380,16 @@ nil
 </div>
 </div>
 </div>
-<div id="outline-container-orgb985c83" class="outline-3">
-<h3 id="orgb985c83"><a href="#orgb985c83">format-spec</a></h3>
-<div class="outline-text-3" id="text-orgb985c83">
+<div id="outline-container-orgfd302cc" class="outline-3">
+<h3 id="orgfd302cc"><a href="#orgfd302cc">format-spec</a></h3>
+<div class="outline-text-3" id="text-orgfd302cc">
 <p>
 フォーマット文字列を入れ込みたいときに使う。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 13: </span>定数としてフォーマット文字列を決めておいて、あとから埋め込む</label><pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> my-format <span class="org-string">"%h:%m"</span>)
-(<span class="org-keyword">defun</span> <span class="org-function-name">my-format-time</span> (hour minute)
+<label class="org-src-name"><span class="listing-number">Listing 13: </span>定数としてフォーマット文字列を決めておいて、あとから埋め込む</label><pre class="src src-emacs-lisp">(setq my-format "%h:%m")
+(defun my-format-time (hour minute)
   (format-spec my-format
                `((?h . ,hour)
                  (?m . ,minute))))
@@ -2391,7 +2398,7 @@ nil
 </pre>
 </div>
 
-<div class="results" id="org1d40cc4">
+<div class="results" id="org2c96b8c">
 <p>
 12:59
 </p>
@@ -2399,9 +2406,9 @@ nil
 </div>
 </div>
 </div>
-<div id="outline-container-orgdc4d50f" class="outline-3">
-<h3 id="orgdc4d50f"><a href="#orgdc4d50f">line-number-at-pos</a></h3>
-<div class="outline-text-3" id="text-orgdc4d50f">
+<div id="outline-container-orgd84a564" class="outline-3">
+<h3 id="orgd84a564"><a href="#orgd84a564">line-number-at-pos</a></h3>
+<div class="outline-text-3" id="text-orgd84a564">
 <p>
 行数を求める関数。
 </p>
@@ -2411,7 +2418,7 @@ nil
 </pre>
 </div>
 
-<div class="results" id="org1634e96">
+<div class="results" id="org780d2f3">
 <p>
 1204
 </p>
@@ -2419,15 +2426,15 @@ nil
 </div>
 </div>
 </div>
-<div id="outline-container-org2f5cc92" class="outline-3">
-<h3 id="org2f5cc92"><a href="#org2f5cc92">looking-at</a></h3>
-<div class="outline-text-3" id="text-org2f5cc92">
+<div id="outline-container-org7688644" class="outline-3">
+<h3 id="org7688644"><a href="#org7688644">looking-at</a></h3>
+<div class="outline-text-3" id="text-org7688644">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 15: </span>現在のカーソル位置からあとにマッチするものがあればt</label><pre class="src src-emacs-lisp">(looking-at <span class="org-string">"."</span>)
+<label class="org-src-name"><span class="listing-number">Listing 15: </span>現在のカーソル位置からあとにマッチするものがあればt</label><pre class="src src-emacs-lisp">(looking-at ".")
 </pre>
 </div>
 
-<div class="results" id="org4115692">
+<div class="results" id="org3c865a6">
 <p>
 t
 </p>
@@ -2435,11 +2442,11 @@ t
 </div>
 </div>
 </div>
-<div id="outline-container-orgddc1c92" class="outline-3">
-<h3 id="orgddc1c92"><a href="#orgddc1c92">open-line</a></h3>
-<div class="outline-text-3" id="text-orgddc1c92">
+<div id="outline-container-org8f2ac03" class="outline-3">
+<h3 id="org8f2ac03"><a href="#org8f2ac03">open-line</a></h3>
+<div class="outline-text-3" id="text-org8f2ac03">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(apropos <span class="org-string">"open-line"</span>)
+<pre class="src src-emacs-lisp">(apropos "open-line")
 </pre>
 </div>
 
@@ -2453,9 +2460,9 @@ open-lineは改行するコマンド。カーソルは移動しない。
 </div>
 </div>
 </div>
-<div id="outline-container-org00956d9" class="outline-3">
-<h3 id="org00956d9"><a href="#org00956d9">push</a></h3>
-<div class="outline-text-3" id="text-org00956d9">
+<div id="outline-container-orgf048d2d" class="outline-3">
+<h3 id="orgf048d2d"><a href="#orgf048d2d">push</a></h3>
+<div class="outline-text-3" id="text-orgf048d2d">
 <p>
 (push NEWELT PLACE)
 リストを先頭にくっつける関数。
@@ -2463,12 +2470,12 @@ open-lineは改行するコマンド。カーソルは移動しない。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 17: </span>リストを作成する</label><pre class="src src-emacs-lisp">(<span class="org-keyword">let</span> ((l '(a b c)))
-  (<span class="org-keyword">push</span> 'new l))
+<label class="org-src-name"><span class="listing-number">Listing 17: </span>リストを作成する</label><pre class="src src-emacs-lisp">(let ((l '(a b c)))
+  (push 'new l))
 </pre>
 </div>
 
-<div class="results" id="org2f60513">
+<div class="results" id="orga8cb545">
 <p>
 (new a b c)
 </p>
@@ -2476,39 +2483,39 @@ open-lineは改行するコマンド。カーソルは移動しない。
 </div>
 </div>
 </div>
-<div id="outline-container-org037064e" class="outline-3">
-<h3 id="org037064e"><a href="#org037064e">repeat</a></h3>
-<div class="outline-text-3" id="text-org037064e">
+<div id="outline-container-orgd74cd37" class="outline-3">
+<h3 id="orgd74cd37"><a href="#orgd74cd37">repeat</a></h3>
+<div class="outline-text-3" id="text-orgd74cd37">
 <p>
 最後に実行したコマンドを繰り返す。
 </p>
 </div>
 </div>
-<div id="outline-container-org7b11a73" class="outline-3">
-<h3 id="org7b11a73"><a href="#org7b11a73">user-error</a></h3>
-<div class="outline-text-3" id="text-org7b11a73">
+<div id="outline-container-org4f609ba" class="outline-3">
+<h3 id="org4f609ba"><a href="#org4f609ba">user-error</a></h3>
+<div class="outline-text-3" id="text-org4f609ba">
 <p>
 エラーを出力する。
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 18: </span>処理を止め、メッセージを出す</label><pre class="src src-emacs-lisp">(<span class="org-warning">user-error</span> <span class="org-string">"this is error!"</span>)
+<label class="org-src-name"><span class="listing-number">Listing 18: </span>処理を止め、メッセージを出す</label><pre class="src src-emacs-lisp">(user-error "this is error!")
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org5aa68f2" class="outline-3">
-<h3 id="org5aa68f2"><a href="#org5aa68f2">with-demoted-errors</a></h3>
-<div class="outline-text-3" id="text-org5aa68f2">
+<div id="outline-container-org2b37df6" class="outline-3">
+<h3 id="org2b37df6"><a href="#org2b37df6">with-demoted-errors</a></h3>
+<div class="outline-text-3" id="text-org2b37df6">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(apropos <span class="org-string">"with-demoted-errors"</span>)
+<pre class="src src-emacs-lisp">(apropos "with-demoted-errors")
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">with-demoted-errors</span> <span class="org-string">"&#12371;&#12428;&#12399;&#12456;&#12521;&#12540; %S"</span> (/ 1 0))
+<pre class="src src-emacs-lisp">(with-demoted-errors "これはエラー %S" (/ 1 0))
 </pre>
 </div>
-<div class="results" id="orgf7ce52a">
+<div class="results" id="org45bb628">
 <p>
 nil
 </p>
@@ -2517,21 +2524,21 @@ nil
 </div>
 </div>
 </div>
-<div id="outline-container-org7acfa81" class="outline-2">
-<h2 id="org7acfa81"><a href="#org7acfa81">Tasks</a></h2>
-<div class="outline-text-2" id="text-org7acfa81">
+<div id="outline-container-org5f9d741" class="outline-2">
+<h2 id="org5f9d741"><a href="#org5f9d741">Tasks</a></h2>
+<div class="outline-text-2" id="text-org5f9d741">
 </div>
-<div id="outline-container-orgb31bed0" class="outline-3">
-<h3 id="orgb31bed0"><a href="#orgb31bed0"><span class="todo TODO">TODO</span> <a href="https://qiita.com/kawabata@github/items/9a1a1e211c57a56578d8">Emacs Lispの汎変数 - Qiita</a></a></h3>
-<div class="outline-text-3" id="text-orgb31bed0">
+<div id="outline-container-org2467ab5" class="outline-3">
+<h3 id="org2467ab5"><a href="#org2467ab5"><span class="todo TODO">TODO</span> <a href="https://qiita.com/kawabata@github/items/9a1a1e211c57a56578d8">Emacs Lispの汎変数 - Qiita</a></a></h3>
+<div class="outline-text-3" id="text-org2467ab5">
 <p>
 汎変数の解説。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc61c281" class="outline-3">
-<h3 id="orgc61c281"><a href="#orgc61c281"><span class="todo TODO">TODO</span> 末尾再帰を調べる</a></h3>
-<div class="outline-text-3" id="text-orgc61c281">
+<div id="outline-container-org3e45cc6" class="outline-3">
+<h3 id="org3e45cc6"><a href="#org3e45cc6"><span class="todo TODO">TODO</span> 末尾再帰を調べる</a></h3>
+<div class="outline-text-3" id="text-org3e45cc6">
 <p>
 Schemeでは実装仕様で末尾再帰を要求してくるとのこと。
 </p>
@@ -2541,9 +2548,9 @@ Schemeでは実装仕様で末尾再帰を要求してくるとのこと。
 </div>
 </div>
 </div>
-<div id="outline-container-orgf711e18" class="outline-2">
-<h2 id="orgf711e18"><a href="#orgf711e18">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgf711e18">
+<div id="outline-container-org81bb645" class="outline-2">
+<h2 id="org81bb645"><a href="#org81bb645">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org81bb645">
 <ul class="org-ul">
 <li><a href="./20210508234743-emacs.html">Emacs</a></li>
 <li><a href="./20210512001700-create_link.html">create-link</a></li>

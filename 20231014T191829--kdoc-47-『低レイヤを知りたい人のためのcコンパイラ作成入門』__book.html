@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 47: 『低レイヤを知りたい人のためのCコンパイラ作成入門』</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -18,9 +25,9 @@
 <p>
 <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a>は、<a href="20230816114747-compiler.html#ID-6cbcac25-a12b-47c0-8183-62d18799835d">compiler</a>の作り方の本。
 </p>
-<div id="outline-container-org963bd22" class="outline-2">
-<h2 id="org963bd22"><a href="#org963bd22">メモ</a></h2>
-<div class="outline-text-2" id="text-org963bd22">
+<div id="outline-container-org9843692" class="outline-2">
+<h2 id="org9843692"><a href="#org9843692">メモ</a></h2>
+<div class="outline-text-2" id="text-org9843692">
 <ul class="org-ul">
 <li>最低限の実装からインクリメンタルに開発していく流れがよい</li>
 <li>コンパイラが動作するマシンのことを「ホスト」、コンパイラが出力したコードが動作するマシンのことを「ターゲット」という</li>
@@ -33,7 +40,7 @@
 </p>
 
 
-<div id="orgaea44d8" class="figure">
+<div id="org4f89913" class="figure">
 <p><img src="./images/20230816-tree.drawio.svg" alt="20230816-tree.drawio.svg" class="org-svg">
 </p>
 </div>
@@ -52,11 +59,11 @@
 結果として、以下のようなアセンブリが出力される。
 </p>
 <div class="org-src-container">
-<pre class="src src-asm"><span class="org-function-name">PUSH</span> <span class="org-keyword">2</span>
-<span class="org-function-name">PUSH</span> <span class="org-keyword">3</span>
-<span class="org-function-name">PUSH</span> <span class="org-keyword">4</span>
-<span class="org-function-name">MUL</span>
-<span class="org-function-name">ADD</span>
+<pre class="src src-asm">PUSH 2
+PUSH 3
+PUSH 4
+MUL
+ADD
 </pre>
 </div>
 
@@ -66,14 +73,14 @@
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-asm"><span class="org-function-name">push</span> <span class="org-keyword">1</span>
-<span class="org-function-name">push</span> <span class="org-keyword">2</span>
+<pre class="src src-asm">push 1
+push 2
 
-<span class="org-function-name">pop</span> <span class="org-keyword">rdi</span>
-<span class="org-function-name">pop</span> <span class="org-keyword">rax</span>
-<span class="org-function-name">add</span> <span class="org-keyword">rax</span>, rdi
+pop rdi
+pop rax
+add rax, rdi
 
-<span class="org-function-name">push</span> <span class="org-keyword">rax</span>
+push rax
 </pre>
 </div>
 
@@ -86,29 +93,29 @@
 </p>
 
 <div class="org-src-container">
-<pre class="src src-asm"><span class="org-comment-delimiter">// </span><span class="org-comment">2*3&#12434;&#35336;&#31639;&#12375;&#12390;&#32080;&#26524;&#12434;&#12473;&#12479;&#12483;&#12463;&#12395;&#12503;&#12483;&#12471;&#12517;
-</span><span class="org-function-name">push</span> <span class="org-keyword">2</span>
-<span class="org-function-name">push</span> <span class="org-keyword">3</span>
+<pre class="src src-asm">// 2*3を計算して結果をスタックにプッシュ
+push 2
+push 3
 
-<span class="org-function-name">pop</span> <span class="org-keyword">rdi</span>
-<span class="org-function-name">pop</span> <span class="org-keyword">rax</span>
-<span class="org-function-name">mul</span> <span class="org-keyword">rax</span>, rdi
-<span class="org-function-name">push</span> <span class="org-keyword">rax</span>
+pop rdi
+pop rax
+mul rax, rdi
+push rax
 
-<span class="org-comment-delimiter">// </span><span class="org-comment">4*5&#12434;&#35336;&#31639;&#12375;&#12390;&#32080;&#26524;&#12434;&#12473;&#12479;&#12483;&#12463;&#12395;&#12503;&#12483;&#12471;&#12517;
-</span><span class="org-function-name">push</span> <span class="org-keyword">4</span>
-<span class="org-function-name">push</span> <span class="org-keyword">5</span>
+// 4*5を計算して結果をスタックにプッシュ
+push 4
+push 5
 
-<span class="org-function-name">pop</span> <span class="org-keyword">rdi</span>
-<span class="org-function-name">pop</span> <span class="org-keyword">rax</span>
-<span class="org-function-name">mul</span> <span class="org-keyword">rax</span>, rdi
-<span class="org-function-name">push</span> <span class="org-keyword">rax</span>
+pop rdi
+pop rax
+mul rax, rdi
+push rax
 
-<span class="org-comment-delimiter">// </span><span class="org-comment">&#12473;&#12479;&#12483;&#12463;&#12488;&#12483;&#12503;&#12398;2&#12388;&#12398;&#20516;&#12434;&#36275;&#12377;
-</span><span class="org-function-name">pop</span> <span class="org-keyword">rdi</span>
-<span class="org-function-name">pop</span> <span class="org-keyword">rax</span>
-<span class="org-function-name">add</span> <span class="org-keyword">rax</span>, rdi
-<span class="org-function-name">push</span> <span class="org-keyword">rax</span>
+// スタックトップの2つの値を足す
+pop rdi
+pop rax
+add rax, rdi
+push rax
 </pre>
 </div>
 
@@ -127,11 +134,11 @@ cmp命令。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-asm"><span class="org-function-name">pop</span> <span class="org-keyword">rdi</span>
-<span class="org-function-name">pop</span> <span class="org-keyword">rax</span>
-<span class="org-function-name">cmp</span> <span class="org-keyword">rax</span>, rdi
-<span class="org-function-name">sete</span> <span class="org-keyword">al</span>
-<span class="org-function-name">movzb</span> <span class="org-keyword">rax</span>, al
+<pre class="src src-asm">pop rdi
+pop rax
+cmp rax, rdi
+sete al
+movzb rax, al
 </pre>
 </div>
 
@@ -196,25 +203,25 @@ cmp命令。
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>グローバル変数を定義する</label><pre class="src src-C"><span class="org-type">int</span> <span class="org-variable-name">x</span>;
-<span class="org-type">int</span> <span class="org-variable-name">y</span>[20];
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>グローバル変数を定義する</label><pre class="src src-C">int x;
+int y[20];
 
-<span class="org-type">int</span> <span class="org-function-name">main</span>() {
-    <span class="org-keyword">return</span> x + y[5];
+int main() {
+    return x + y[5];
 }
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>ラベル(メモリ番地に名前をつける)に定義されている</label><pre class="src src-asm"><span class="org-function-name">x</span>:
-  <span class="org-keyword">.zero</span> 4
-<span class="org-function-name">y</span>:
-  <span class="org-keyword">.zero</span> 80
-<span class="org-function-name">main</span>:
-  <span class="org-keyword">movl</span> y+20(<span class="org-variable-name">%rip</span>), <span class="org-variable-name">%edx</span>
-  <span class="org-keyword">movl</span> x(<span class="org-variable-name">%rip</span>), <span class="org-variable-name">%eax</span>
-  <span class="org-keyword">addl</span> <span class="org-variable-name">%edx</span>, <span class="org-variable-name">%eax</span>
-  <span class="org-keyword">ret</span>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>ラベル(メモリ番地に名前をつける)に定義されている</label><pre class="src src-asm">x:
+  .zero 4
+y:
+  .zero 80
+main:
+  movl y+20(%rip), %edx
+  movl x(%rip), %eax
+  addl %edx, %eax
+  ret
 </pre>
 </div>
 
@@ -223,21 +230,21 @@ cmp命令。
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-C"><span class="org-type">int</span> <span class="org-function-name">main</span>() {
-    <span class="org-type">int</span> <span class="org-variable-name">a</span> = 1;
-    <span class="org-keyword">return</span> a;
+<pre class="src src-C">int main() {
+    int a = 1;
+    return a;
 }
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-asm"><span class="org-function-name">main</span>:
-  <span class="org-keyword">pushq</span> <span class="org-variable-name">%rbp</span>
-  <span class="org-keyword">movq</span> <span class="org-variable-name">%rsp</span>, <span class="org-variable-name">%rbp</span>
-  <span class="org-keyword">movl</span> $1, -4(<span class="org-variable-name">%rbp</span>)
-  <span class="org-keyword">movl</span> -4(<span class="org-variable-name">%rbp</span>), <span class="org-variable-name">%eax</span>
-  <span class="org-keyword">popq</span> <span class="org-variable-name">%rbp</span>
-  <span class="org-keyword">ret</span>
+<pre class="src src-asm">main:
+  pushq %rbp
+  movq %rsp, %rbp
+  movl $1, -4(%rbp)
+  movl -4(%rbp), %eax
+  popq %rbp
+  ret
 </pre>
 </div>
 
@@ -249,7 +256,7 @@ cmp命令。
 </ul>
 
 
-<div id="org5b26a08" class="figure">
+<div id="org98a9fc1" class="figure">
 <p><img src="./images/20231014-exec.drawio.svg" alt="20231014-exec.drawio.svg" class="org-svg">
 </p>
 </div>
@@ -281,7 +288,7 @@ cmp命令。
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>signal関数は一見なにかまったくわからない型</label><pre class="src src-C"><span class="org-type">void</span> (*<span class="org-function-name">signal</span>(<span class="org-type">int</span>, <span class="org-type">void</span> (*)(<span class="org-type">int</span>)))(<span class="org-type">int</span>);
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>signal関数は一見なにかまったくわからない型</label><pre class="src src-C">void (*signal(int, void (*)(int)))(int);
 </pre>
 </div>
 
@@ -309,18 +316,18 @@ cmp命令。
 </ul>
 </div>
 </div>
-<div id="outline-container-org71b044b" class="outline-2">
-<h2 id="org71b044b"><a href="#org71b044b">関連</a></h2>
-<div class="outline-text-2" id="text-org71b044b">
+<div id="outline-container-orgd66f93c" class="outline-2">
+<h2 id="orgd66f93c"><a href="#orgd66f93c">関連</a></h2>
+<div class="outline-text-2" id="text-orgd66f93c">
 <ul class="org-ul">
 <li>追加調査: RSPレジスタはスタックポインタとして使うことを念頭に置いて設計されている、とあるが、具体的にどのような設計があるか。ほかのレジスタと何が違うのか</li>
 <li>補足: <a href="20231014T171444--kdoc-46-goの宣言構文がcと異なる理由を見る__permanent.html#ID-20231014T171444">KDOC 46: Goの宣言構文がCと異なる理由を見る</a>。Cの宣言構文を詳しく見る</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc70fa7c" class="outline-2">
-<h2 id="orgc70fa7c"><a href="#orgc70fa7c">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgc70fa7c">
+<div id="outline-container-orged34bd6" class="outline-2">
+<h2 id="orged34bd6"><a href="#orged34bd6">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orged34bd6">
 <ul class="org-ul">
 <li><a href="./20231014T125935--kdoc-45-プログラミング言語の内部的な違いをアセンブリから調べる__permanent.html">KDOC 45: プログラミング言語の内部的な違いをアセンブリから調べる</a></li>
 <li><a href="./20231014T171444--kdoc-46-goの宣言構文がcと異なる理由を見る__permanent.html">KDOC 46: Goの宣言構文がCと異なる理由を見る</a></li>

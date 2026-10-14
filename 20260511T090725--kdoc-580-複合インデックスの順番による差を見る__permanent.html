@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 580: 複合インデックスの順番による差を見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 580: 複合インデックスの順番による差を見る</h1>
-<div id="outline-container-org043795c" class="outline-2">
-<h2 id="org043795c"><a href="#org043795c">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org043795c">
+<div id="outline-container-org55437f8" class="outline-2">
+<h2 id="org55437f8"><a href="#org55437f8">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org55437f8">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,46 +37,46 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org6a1cea7" class="outline-2">
-<h2 id="org6a1cea7"><a href="#org6a1cea7">概要</a></h2>
-<div class="outline-text-2" id="text-org6a1cea7">
+<div id="outline-container-org2bb089c" class="outline-2">
+<h2 id="org2bb089c"><a href="#org2bb089c">概要</a></h2>
+<div class="outline-text-2" id="text-org2bb089c">
 <ul class="org-ul">
 <li>日付範囲、外部キーの2つのフィールドで検索する</li>
 <li>その場合、複合インデックスにつけた順番がインデックス使用および速度に影響をもたらすか調べる</li>
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>id、日付範囲の順でインデックスをつける</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">customers</span> (
-  id   <span class="org-type">INT</span> <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
-  <span class="org-keyword">name</span> TEXT
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>id、日付範囲の順でインデックスをつける</label><pre class="src src-sql">CREATE TABLE customers (
+  id   INT PRIMARY KEY,
+  name TEXT
 );
 
-<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">orders</span> (
-  id          SERIAL <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
-  customer_id <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">REFERENCES</span> customers(id),
-  ordered_at  <span class="org-type">DATE</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>,
-  amount      <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>
+CREATE TABLE orders (
+  id          SERIAL PRIMARY KEY,
+  customer_id INT NOT NULL REFERENCES customers(id),
+  ordered_at  DATE NOT NULL,
+  amount      INT NOT NULL
 );
 
-<span class="org-keyword">CREATE</span> INDEX idx_cust_date <span class="org-keyword">ON</span> orders (customer_id, ordered_at);
+CREATE INDEX idx_cust_date ON orders (customer_id, ordered_at);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#39015;&#23458;&#12434;1000&#20154;&#20316;&#25104;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> customers (id, <span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span> i, <span class="org-string">'customer_'</span> || i
-<span class="org-keyword">FROM</span> generate_series(1, 1000) <span class="org-keyword">AS</span> i;
+-- 顧客を1000人作成
+INSERT INTO customers (id, name)
+SELECT i, 'customer_' || i
+FROM generate_series(1, 1000) AS i;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#27880;&#25991;&#12434;100&#19975;&#34892;&#20316;&#25104;&#65288;&#39015;&#23458;1&#12316;1000&#12289;&#26085;&#20184;&#12399;2024-01-01&#12316;2026-05-11&#12398;&#31684;&#22258;&#65289;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> orders (customer_id, ordered_at, amount)
-<span class="org-keyword">SELECT</span>
-  (random() * 999 + 1)::<span class="org-type">int</span>,
-  <span class="org-string">'2024-01-01'</span>::<span class="org-type">date</span> + (random() * 860)::<span class="org-type">int</span>,
-  (random() * 10000 + 100)::<span class="org-type">int</span>
-<span class="org-keyword">FROM</span> generate_series(1, 1000000);
+-- 注文を100万行作成（顧客1〜1000、日付は2024-01-01〜2026-05-11の範囲）
+INSERT INTO orders (customer_id, ordered_at, amount)
+SELECT
+  (random() * 999 + 1)::int,
+  '2024-01-01'::date + (random() * 860)::int,
+  (random() * 10000 + 100)::int
+FROM generate_series(1, 1000000);
 
 EXPLAIN ANALYZE
-<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> orders
-<span class="org-keyword">WHERE</span> customer_id = 3
-<span class="org-keyword">AND</span> ordered_at <span class="org-keyword">BETWEEN</span> <span class="org-string">'2026-01-01'</span> <span class="org-keyword">AND</span> <span class="org-string">'2026-03-31'</span>;
+SELECT * FROM orders
+WHERE customer_id = 3
+AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
 </pre>
 </div>
 
@@ -127,37 +134,37 @@ EXPLAIN ANALYZE
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>日付範囲、idの順でインデックスをつける</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">customers</span> (
-  id   <span class="org-type">INT</span> <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
-  <span class="org-keyword">name</span> TEXT
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>日付範囲、idの順でインデックスをつける</label><pre class="src src-sql">CREATE TABLE customers (
+  id   INT PRIMARY KEY,
+  name TEXT
 );
 
-<span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">orders</span> (
-  id          SERIAL <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
-  customer_id <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span> <span class="org-keyword">REFERENCES</span> customers(id),
-  ordered_at  <span class="org-type">DATE</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>,
-  amount      <span class="org-type">INT</span> <span class="org-keyword">NOT</span> <span class="org-keyword">NULL</span>
+CREATE TABLE orders (
+  id          SERIAL PRIMARY KEY,
+  customer_id INT NOT NULL REFERENCES customers(id),
+  ordered_at  DATE NOT NULL,
+  amount      INT NOT NULL
 );
 
-<span class="org-keyword">CREATE</span> INDEX idx_date_cust <span class="org-keyword">ON</span> orders (ordered_at, customer_id);
+CREATE INDEX idx_date_cust ON orders (ordered_at, customer_id);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#39015;&#23458;&#12434;1000&#20154;&#20316;&#25104;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> customers (id, <span class="org-keyword">name</span>)
-<span class="org-keyword">SELECT</span> i, <span class="org-string">'customer_'</span> || i
-<span class="org-keyword">FROM</span> generate_series(1, 1000) <span class="org-keyword">AS</span> i;
+-- 顧客を1000人作成
+INSERT INTO customers (id, name)
+SELECT i, 'customer_' || i
+FROM generate_series(1, 1000) AS i;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#27880;&#25991;&#12434;100&#19975;&#34892;&#20316;&#25104;&#65288;&#39015;&#23458;1&#12316;1000&#12289;&#26085;&#20184;&#12399;2024-01-01&#12316;2026-05-11&#12398;&#31684;&#22258;&#65289;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> orders (customer_id, ordered_at, amount)
-<span class="org-keyword">SELECT</span>
-  (random() * 999 + 1)::<span class="org-type">int</span>,
-  <span class="org-string">'2024-01-01'</span>::<span class="org-type">date</span> + (random() * 860)::<span class="org-type">int</span>,
-  (random() * 10000 + 100)::<span class="org-type">int</span>
-<span class="org-keyword">FROM</span> generate_series(1, 1000000);
+-- 注文を100万行作成（顧客1〜1000、日付は2024-01-01〜2026-05-11の範囲）
+INSERT INTO orders (customer_id, ordered_at, amount)
+SELECT
+  (random() * 999 + 1)::int,
+  '2024-01-01'::date + (random() * 860)::int,
+  (random() * 10000 + 100)::int
+FROM generate_series(1, 1000000);
 
 EXPLAIN ANALYZE
-<span class="org-keyword">SELECT</span> * <span class="org-keyword">FROM</span> orders
-<span class="org-keyword">WHERE</span> customer_id = 3
-<span class="org-keyword">AND</span> ordered_at <span class="org-keyword">BETWEEN</span> <span class="org-string">'2026-01-01'</span> <span class="org-keyword">AND</span> <span class="org-string">'2026-03-31'</span>;
+SELECT * FROM orders
+WHERE customer_id = 3
+AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
 </pre>
 </div>
 
@@ -220,9 +227,9 @@ EXPLAIN ANALYZE
 </ul>
 </div>
 </div>
-<div id="outline-container-org6767fb0" class="outline-2">
-<h2 id="org6767fb0"><a href="#org6767fb0">関連</a></h2>
-<div class="outline-text-2" id="text-org6767fb0">
+<div id="outline-container-orged7ea1a" class="outline-2">
+<h2 id="orged7ea1a"><a href="#orged7ea1a">関連</a></h2>
+<div class="outline-text-2" id="text-orged7ea1a">
 <p>
 なし。
 </p>

@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>denote: Simple notes with an efficient file-naming scheme</title>
 <meta name="author" content="Protesilaos Stavrou" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -517,13 +524,13 @@ Templates can be written directly as one large string.  For example (the
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> denote-templates
-      '((report . <span class="org-string">"* Some heading\n\n* Another heading"</span>)
-        (memo . <span class="org-string">"* Some heading
+<pre class="src src-emacs-lisp">(setq denote-templates
+      '((report . "* Some heading\n\n* Another heading")
+        (memo . "* Some heading
 
 * Another heading
 
-"</span>)))
+")))
 </pre>
 </div>
 
@@ -536,12 +543,12 @@ previous example:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> denote-templates
-      `((report . <span class="org-string">"* Some heading\n\n* Another heading"</span>)
-        (memo . ,(concat <span class="org-string">"* Some heading"</span>
-                         <span class="org-string">"\n\n"</span>
-                         <span class="org-string">"* Another heading"</span>
-                         <span class="org-string">"\n\n"</span>))))
+<pre class="src src-emacs-lisp">(setq denote-templates
+      `((report . "* Some heading\n\n* Another heading")
+        (memo . ,(concat "* Some heading"
+                         "\n\n"
+                         "* Another heading"
+                         "\n\n"))))
 </pre>
 </div>
 
@@ -688,17 +695,17 @@ example:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">denote-subdirectory</span> ()
-  <span class="org-doc">"Create note while prompting for a subdirectory.
+<pre class="src src-emacs-lisp">(defun denote-subdirectory ()
+  "Create note while prompting for a subdirectory.
 
 Available candidates include the value of the variable
-`</span><span class="org-doc"><span class="org-constant">denote-directory</span></span><span class="org-doc">' and any subdirectory thereof.
+`denote-directory' and any subdirectory thereof.
 
-This is equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote</span></span><span class="org-doc">' when `</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is
-set to '(subdirectory title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(subdirectory title keywords)))
+This is equivalent to calling `denote' when `denote-prompts' is
+set to '(subdirectory title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(subdirectory title keywords)))
     (call-interactively #'denote)))
 </pre>
 </div>
@@ -726,15 +733,15 @@ command a unique name:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">Like `</span><span class="org-comment"><span class="org-constant">denote-subdirectory</span></span><span class="org-comment">' but also ask for a template
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-subdirectory-with-template</span> ()
-  <span class="org-doc">"Create note while also prompting for a template and subdirectory.
+<pre class="src src-emacs-lisp">;; Like `denote-subdirectory' but also ask for a template
+(defun denote-subdirectory-with-template ()
+  "Create note while also prompting for a template and subdirectory.
 
-This is equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote</span></span><span class="org-doc">' when `</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is
-set to '(template subdirectory title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(template subdirectory title keywords)))
+This is equivalent to calling `denote' when `denote-prompts' is
+set to '(template subdirectory title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(template subdirectory title keywords)))
     (call-interactively #'denote)))
 </pre>
 </div>
@@ -797,15 +804,15 @@ template.  Such as:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">with-eval-after-load</span> 'org-capture
+<pre class="src src-emacs-lisp">(with-eval-after-load 'org-capture
   (add-to-list 'org-capture-templates
-               '(<span class="org-string">"n"</span> <span class="org-string">"New note (with Denote)"</span> plain
+               '("n" "New note (with Denote)" plain
                  (file denote-last-path)
                  #'denote-org-capture
-                 <span class="org-builtin">:no-save</span> t
-                 <span class="org-builtin">:immediate-finish</span> nil
-                 <span class="org-builtin">:kill-buffer</span> t
-                 <span class="org-builtin">:jump-to-captured</span> t)))
+                 :no-save t
+                 :immediate-finish nil
+                 :kill-buffer t
+                 :jump-to-captured t)))
 </pre>
 </div>
 
@@ -839,7 +846,7 @@ the function <code>denote-org-capture</code>.  Example with our default value:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> denote-org-capture-specifiers <span class="org-string">"%l\n%i\n%?"</span>)
+<pre class="src src-emacs-lisp">(setq denote-org-capture-specifiers "%l\n%i\n%?")
 </pre>
 </div>
 
@@ -918,41 +925,41 @@ treated the same as <code>:title</code> or <code>t</code>).
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">This prompts for TITLE, KEYWORDS, and SUBDIRECTORY
-</span>(add-to-list 'org-capture-templates
-             '(<span class="org-string">"N"</span> <span class="org-string">"New note with prompts (with denote.el)"</span> plain
+<pre class="src src-emacs-lisp">;; This prompts for TITLE, KEYWORDS, and SUBDIRECTORY
+(add-to-list 'org-capture-templates
+             '("N" "New note with prompts (with denote.el)" plain
                (file denote-last-path)
-               (<span class="org-keyword">function</span>
-                (<span class="org-keyword">lambda</span> ()
-                  (denote-org-capture-with-prompts <span class="org-builtin">:title</span> <span class="org-builtin">:keywords</span> <span class="org-builtin">:subdirectory</span>)))
-               <span class="org-builtin">:no-save</span> t
-               <span class="org-builtin">:immediate-finish</span> nil
-               <span class="org-builtin">:kill-buffer</span> t
-               <span class="org-builtin">:jump-to-captured</span> t))
+               (function
+                (lambda ()
+                  (denote-org-capture-with-prompts :title :keywords :subdirectory)))
+               :no-save t
+               :immediate-finish nil
+               :kill-buffer t
+               :jump-to-captured t))
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">This prompts only for SUBDIRECTORY
-</span>(add-to-list 'org-capture-templates
-             '(<span class="org-string">"N"</span> <span class="org-string">"New note with prompts (with denote.el)"</span> plain
+;; This prompts only for SUBDIRECTORY
+(add-to-list 'org-capture-templates
+             '("N" "New note with prompts (with denote.el)" plain
                (file denote-last-path)
-               (<span class="org-keyword">function</span>
-                (<span class="org-keyword">lambda</span> ()
-                  (denote-org-capture-with-prompts nil nil <span class="org-builtin">:subdirectory</span>)))
-               <span class="org-builtin">:no-save</span> t
-               <span class="org-builtin">:immediate-finish</span> nil
-               <span class="org-builtin">:kill-buffer</span> t
-               <span class="org-builtin">:jump-to-captured</span> t))
+               (function
+                (lambda ()
+                  (denote-org-capture-with-prompts nil nil :subdirectory)))
+               :no-save t
+               :immediate-finish nil
+               :kill-buffer t
+               :jump-to-captured t))
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">This prompts for TITLE and SUBDIRECTORY
-</span>(add-to-list 'org-capture-templates
-             '(<span class="org-string">"N"</span> <span class="org-string">"New note with prompts (with denote.el)"</span> plain
+;; This prompts for TITLE and SUBDIRECTORY
+(add-to-list 'org-capture-templates
+             '("N" "New note with prompts (with denote.el)" plain
                (file denote-last-path)
-               (<span class="org-keyword">function</span>
-                (<span class="org-keyword">lambda</span> ()
-                  (denote-org-capture-with-prompts <span class="org-builtin">:title</span> nil <span class="org-builtin">:subdirectory</span>)))
-               <span class="org-builtin">:no-save</span> t
-               <span class="org-builtin">:immediate-finish</span> nil
-               <span class="org-builtin">:kill-buffer</span> t
-               <span class="org-builtin">:jump-to-captured</span> t))
+               (function
+                (lambda ()
+                  (denote-org-capture-with-prompts :title nil :subdirectory)))
+               :no-save t
+               :immediate-finish nil
+               :kill-buffer t
+               :jump-to-captured t))
 </pre>
 </div>
 </div>
@@ -982,10 +989,10 @@ file, with the following contents:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;;; </span><span class="org-comment">Directory Local Variables.  For more information evaluate:
-</span><span class="org-comment-delimiter">;;;</span><span class="org-comment">
-</span><span class="org-comment-delimiter">;;;     </span><span class="org-comment">(info "(emacs) Directory Variables")
-</span>
+<pre class="src src-emacs-lisp">;;; Directory Local Variables.  For more information evaluate:
+;;;
+;;;     (info "(emacs) Directory Variables")
+
 ((nil . ((denote-directory . default-directory))))
 </pre>
 </div>
@@ -1008,7 +1015,7 @@ In concrete terms, this is a representation of the directory structures
 (notice the <code>.dir-locals.el</code> file is needed only for the silos):
 </p>
 
-<pre class="example" id="org68ef8ec">
+<pre class="example" id="org9075302">
 ;; This is the global value of 'denote-directory' (no need for a .dir-locals.el)
 ~/Documents/notes
 |-- 20210303T120534--this-is-a-test__journal_philosophy.txt
@@ -1037,12 +1044,12 @@ silo-specific value.  For example, this one changes the
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;;; </span><span class="org-comment">Directory Local Variables.  For more information evaluate:
-</span><span class="org-comment-delimiter">;;;</span><span class="org-comment">
-</span><span class="org-comment-delimiter">;;;     </span><span class="org-comment">(info "(emacs) Directory Variables")
-</span>
+<pre class="src src-emacs-lisp">;;; Directory Local Variables.  For more information evaluate:
+;;;
+;;;     (info "(emacs) Directory Variables")
+
 ((nil . ((denote-directory . default-directory)
-         (denote-known-keywords . (<span class="org-string">"food"</span> <span class="org-string">"drink"</span>)))))
+         (denote-known-keywords . ("food" "drink")))))
 </pre>
 </div>
 
@@ -1051,12 +1058,12 @@ This one is like the above, but also disables <code>denote-infer-keywords</code>
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;;; </span><span class="org-comment">Directory Local Variables.  For more information evaluate:
-</span><span class="org-comment-delimiter">;;;</span><span class="org-comment">
-</span><span class="org-comment-delimiter">;;;     </span><span class="org-comment">(info "(emacs) Directory Variables")
-</span>
+<pre class="src src-emacs-lisp">;;; Directory Local Variables.  For more information evaluate:
+;;;
+;;;     (info "(emacs) Directory Variables")
+
 ((nil . ((denote-directory . default-directory)
-         (denote-known-keywords . (<span class="org-string">"food"</span> <span class="org-string">"drink"</span>))
+         (denote-known-keywords . ("food" "drink"))
          (denote-infer-keywords . nil))))
 </pre>
 </div>
@@ -1067,12 +1074,12 @@ modes, we can do something like this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;;; </span><span class="org-comment">Directory Local Variables.  For more information evaluate:
-</span><span class="org-comment-delimiter">;;;</span><span class="org-comment">
-</span><span class="org-comment-delimiter">;;;     </span><span class="org-comment">(info "(emacs) Directory Variables")
-</span>
+<pre class="src src-emacs-lisp">;;; Directory Local Variables.  For more information evaluate:
+;;;
+;;;     (info "(emacs) Directory Variables")
+
 ((nil . ((denote-directory . default-directory)
-         (denote-known-keywords . (<span class="org-string">"food"</span> <span class="org-string">"drink"</span>))
+         (denote-known-keywords . ("food" "drink"))
          (denote-infer-keywords . nil)))
  (org-mode . ((org-hide-emphasis-markers . t)
               (org-hide-macro-markers . t)
@@ -1089,11 +1096,11 @@ directory. For example:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;;; </span><span class="org-comment">Directory Local Variables.  For more information evaluate:
-</span><span class="org-comment-delimiter">;;;</span><span class="org-comment">
-</span><span class="org-comment-delimiter">;;;     </span><span class="org-comment">(info "(emacs) Directory Variables")
-</span>  ((nil . ((denote-directory . <span class="org-string">"~/my-silo"</span>)
-           (denote-known-keywords . (<span class="org-string">"food"</span> <span class="org-string">"drink"</span>))
+<pre class="src src-emacs-lisp">;;; Directory Local Variables.  For more information evaluate:
+;;;
+;;;     (info "(emacs) Directory Variables")
+  ((nil . ((denote-directory . "~/my-silo")
+           (denote-known-keywords . ("food" "drink"))
            (denote-infer-keywords . nil)))
    (org-mode . ((org-hide-emphasis-markers . t)
                 (org-hide-macro-markers . t)
@@ -1147,36 +1154,36 @@ added to the user&rsquo;s Denote configuration:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defvar</span> <span class="org-variable-name">my-denote-silo-directories</span>
-  `(<span class="org-string">"/home/prot/Videos/recordings"</span>
-    <span class="org-string">"/home/prot/Documents/books"</span>
-    <span class="org-comment-delimiter">;; </span><span class="org-comment">You don't actually need to include the `</span><span class="org-comment"><span class="org-constant">denote-directory</span></span><span class="org-comment">' here
-</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">if you use the regular commands in their global context.  I am
-</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">including it for completeness.
-</span>    ,denote-directory)
-  <span class="org-doc">"List of file paths pointing to my Denote silos.
-  This is a list of strings."</span>)
+<pre class="src src-emacs-lisp">(defvar my-denote-silo-directories
+  `("/home/prot/Videos/recordings"
+    "/home/prot/Documents/books"
+    ;; You don't actually need to include the `denote-directory' here
+    ;; if you use the regular commands in their global context.  I am
+    ;; including it for completeness.
+    ,denote-directory)
+  "List of file paths pointing to my Denote silos.
+  This is a list of strings.")
 
-(<span class="org-keyword">defvar</span> <span class="org-variable-name">my-denote-commands-for-silos</span>
+(defvar my-denote-commands-for-silos
   '(denote
     denote-date
     denote-subdirectory
     denote-template
     denote-type)
-  <span class="org-doc">"List of Denote commands to call after selecting a silo.
+  "List of Denote commands to call after selecting a silo.
   This is a list of symbols that specify the note-creating
-  interactive functions that Denote provides."</span>)
+  interactive functions that Denote provides.")
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-pick-silo-then-command</span> (silo command)
-  <span class="org-doc">"Select SILO and run Denote COMMAND in it.
-  SILO is a file path from `</span><span class="org-doc"><span class="org-constant">my-denote-silo-directories</span></span><span class="org-doc">', while
-  COMMAND is one among `</span><span class="org-doc"><span class="org-constant">my-denote-commands-for-silos</span></span><span class="org-doc">'."</span>
-  (<span class="org-keyword">interactive</span>
-   (list (completing-read <span class="org-string">"Select a silo: "</span> my-denote-silo-directories nil t)
+(defun my-denote-pick-silo-then-command (silo command)
+  "Select SILO and run Denote COMMAND in it.
+  SILO is a file path from `my-denote-silo-directories', while
+  COMMAND is one among `my-denote-commands-for-silos'."
+  (interactive
+   (list (completing-read "Select a silo: " my-denote-silo-directories nil t)
          (intern (completing-read
-                  <span class="org-string">"Run command in silo: "</span>
+                  "Run command in silo: "
                   my-denote-commands-for-silos nil t))))
-  (<span class="org-keyword">let</span> ((denote-user-enforced-denote-directory silo))
+  (let ((denote-user-enforced-denote-directory silo))
     (call-interactively command)))
 </pre>
 </div>
@@ -1374,7 +1381,7 @@ for confirmation, showing the difference between old and new file names.
 For example:
 </p>
 
-<pre class="example" id="orga1c970a">
+<pre class="example" id="orgfd2622b">
 Rename sample.txt to 20220612T052900--my-sample-title__testing.txt? (y or n)
 </pre>
 
@@ -1494,7 +1501,7 @@ in place.
 Suppose you have an <code>.org</code> file with this front matter (<a href="#h:13218826-56a5-482a-9b91-5b6de4f14261">Front matter</a>):
 </p>
 
-<pre class="example" id="orge6f3afc">
+<pre class="example" id="org62df1ec">
 #+title:      My sample note file
 #+date:       [2022-08-05 Fri 13:10]
 #+filetags:   :testing:
@@ -1514,7 +1521,7 @@ Its file name reflects this information:
 You want to change its title and keywords manually, so you modify it thus:
 </p>
 
-<pre class="example" id="orgb3841ae">
+<pre class="example" id="orgcbb05c7">
 #+title:      My modified sample note file
 #+date:       [2022-08-05 Fri 13:10]
 #+filetags:   :testing:denote:emacs:
@@ -1874,7 +1881,7 @@ This is how it looks for Org mode (when <code>denote-file-type</code> is nil or 
 <code>org</code> symbol):
 </p>
 
-<pre class="example" id="org86e95b0">
+<pre class="example" id="org1ea5f06">
 #+title:      This is a sample note
 #+date:       [2022-06-30 Thu 16:09]
 #+filetags:   :denote:testing:
@@ -1886,7 +1893,7 @@ For Markdown with YAML (<code>denote-file-type</code> has the <code>markdown-yam
 value), the front matter looks like this:
 </p>
 
-<pre class="example" id="orgd26ba15">
+<pre class="example" id="org9dda0d2">
 ---
 title:      "This is a sample note"
 date:       2022-06-30T16:09:58+03:00
@@ -1900,7 +1907,7 @@ For Markdown with TOML (<code>denote-file-type</code> has the <code>markdown-tom
 value), it is:
 </p>
 
-<pre class="example" id="org84c0747">
+<pre class="example" id="orgda35cc5">
 +++
 title      = "This is a sample note"
 date       = 2022-06-30T16:10:13+03:00
@@ -1914,7 +1921,7 @@ And for plain text (<code>denote-file-type</code> has the <code>text</code> valu
 the following:
 </p>
 
-<pre class="example" id="org4bf2d57">
+<pre class="example" id="org0914eea">
 title:      This is a sample note
 date:       2022-06-30
 tags:       denote  testing
@@ -2012,34 +2019,34 @@ for all variables.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">Like the default, but upcase the entries
-</span>(<span class="org-keyword">setq</span> denote-org-front-matter
-  <span class="org-string">"#+TITLE:      %s
+<pre class="src src-emacs-lisp">;; Like the default, but upcase the entries
+(setq denote-org-front-matter
+  "#+TITLE:      %s
 #+DATE:       %s
 #+FILETAGS:   %s
 #+IDENTIFIER: %s
-\n"</span>)
+\n")
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Change the order (notice the %N$s notation)
-</span>(<span class="org-keyword">setq</span> denote-org-front-matter
-  <span class="org-string">"#+title:      %1$s
+;; Change the order (notice the %N$s notation)
+(setq denote-org-front-matter
+  "#+title:      %1$s
 #+filetags:   %3$s
 #+date:       %2$s
 #+identifier: %4$s
-\n"</span>)
+\n")
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Remove the date
-</span>(<span class="org-keyword">setq</span> denote-org-front-matter
-  <span class="org-string">"#+title:      %1$s
+;; Remove the date
+(setq denote-org-front-matter
+  "#+title:      %1$s
 #+filetags:   %3$s
 #+identifier: %4$s
-\n"</span>)
+\n")
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Remove the date and the identifier
-</span>(<span class="org-keyword">setq</span> denote-org-front-matter
-  <span class="org-string">"#+title:      %1$s
+;; Remove the date and the identifier
+(setq denote-org-front-matter
+  "#+title:      %1$s
 #+filetags:   %3$s
-\n"</span>)
+\n")
 </pre>
 </div>
 
@@ -2178,7 +2185,7 @@ regular expression or plain string.  The links are inserted as a
 typographic list, such as:
 </p>
 
-<pre class="example" id="orgbd9288a">
+<pre class="example" id="org1ccfbbf">
 - link1
 - link2
 - link3
@@ -2196,7 +2203,7 @@ When called with a prefix argument (<code>C-u</code>) <code>denote-add-links</co
 format all links as <code>[[denote:IDENTIFIER]]</code>, hence a typographic list:
 </p>
 
-<pre class="example" id="org7f12905">
+<pre class="example" id="org3acb8a6">
 - [[denote:IDENTIFIER-1]]
 - [[denote:IDENTIFIER-2]]
 - [[denote:IDENTIFIER-3]]
@@ -2391,7 +2398,7 @@ of the note linking to the current entry.  Each file name is presented
 on its own line, like this:
 </p>
 
-<pre class="example" id="org65ed59e">
+<pre class="example" id="orgff2af9e">
 Backlinks to "On being honest" (20220614T130812)
 ------------------------------------------------
 
@@ -2406,7 +2413,7 @@ note occurs.  It also shows multiple occurrences, if present.  It looks
 like this (and has the appropriate fontification):
 </p>
 
-<pre class="example" id="org87e859f">
+<pre class="example" id="orgb299de7">
 Backlinks to "On being honest" (20220614T130812)
 ------------------------------------------------
 
@@ -2466,7 +2473,7 @@ Reproducing it here for the sake of convenience:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> denote-link-backlinks-display-buffer-action
+<pre class="src src-emacs-lisp">(setq denote-link-backlinks-display-buffer-action
       '((display-buffer-reuse-window
          display-buffer-in-side-window)
         (side . left)
@@ -2591,11 +2598,11 @@ the function <code>denote-dired-mode-in-directories</code>:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">We use different ways to specify a path for demo purposes.
-</span>(<span class="org-keyword">setq</span> denote-dired-directories
+<pre class="src src-emacs-lisp">;; We use different ways to specify a path for demo purposes.
+(setq denote-dired-directories
       (list denote-directory
-            (<span class="org-keyword">thread-last</span> denote-directory (expand-file-name <span class="org-string">"attachments"</span>))
-            (expand-file-name <span class="org-string">"~/Documents/vlog"</span>)))
+            (thread-last denote-directory (expand-file-name "attachments"))
+            (expand-file-name "~/Documents/vlog")))
 
 (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
 </pre>
@@ -2685,8 +2692,8 @@ facility.  Start by loading the relevant library:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">Register Denote's Org dynamic blocks
-</span>(<span class="org-keyword">require</span> '<span class="org-constant">denote-org-dblock</span>)
+<pre class="src src-emacs-lisp">;; Register Denote's Org dynamic blocks
+(require 'denote-org-dblock)
 </pre>
 </div>
 
@@ -2810,7 +2817,7 @@ Evaluate:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(info <span class="org-string">"(org) Dynamic Blocks"</span>)
+<pre class="src src-emacs-lisp">(info "(org) Dynamic Blocks")
 </pre>
 </div>
 
@@ -2837,11 +2844,11 @@ configuration:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">require</span> '<span class="org-constant">savehist</span>)
-(<span class="org-keyword">setq</span> savehist-file (locate-user-emacs-file <span class="org-string">"savehist"</span>))
-(<span class="org-keyword">setq</span> history-length 500)
-(<span class="org-keyword">setq</span> history-delete-duplicates t)
-(<span class="org-keyword">setq</span> savehist-save-minibuffer-history t)
+<pre class="src src-emacs-lisp">(require 'savehist)
+(setq savehist-file (locate-user-emacs-file "savehist"))
+(setq history-length 500)
+(setq history-delete-duplicates t)
+(setq savehist-save-minibuffer-history t)
 (add-hook 'after-init-hook #'savehist-mode)
 </pre>
 </div>
@@ -2880,12 +2887,12 @@ you need is a simple wrapper function:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-journal</span> ()
-  <span class="org-doc">"Create an entry tagged '</span><span class="org-doc"><span class="org-constant">journal</span></span><span class="org-doc">' with the date as its title."</span>
-  (<span class="org-keyword">interactive</span>)
+<pre class="src src-emacs-lisp">(defun my-denote-journal ()
+  "Create an entry tagged 'journal' with the date as its title."
+  (interactive)
   (denote
-   (format-time-string <span class="org-string">"%A %e %B %Y"</span>) <span class="org-comment-delimiter">; </span><span class="org-comment">format like Tuesday 14 June 2022
-</span>   '(<span class="org-string">"journal"</span>))) <span class="org-comment-delimiter">; </span><span class="org-comment">multiple keywords are a list of strings: '("one" "two")</span>
+   (format-time-string "%A %e %B %Y") ; format like Tuesday 14 June 2022
+   '("journal"))) ; multiple keywords are a list of strings: '("one" "two")
 </pre>
 </div>
 
@@ -2900,12 +2907,12 @@ Of course, you can always set up the function so that it asks for a
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">denote-journal-with-title</span> ()
-  <span class="org-doc">"Create an entry tagged '</span><span class="org-doc"><span class="org-constant">journal</span></span><span class="org-doc">', while prompting for a title."</span>
-  (<span class="org-keyword">interactive</span>)
+<pre class="src src-emacs-lisp">(defun denote-journal-with-title ()
+  "Create an entry tagged 'journal', while prompting for a title."
+  (interactive)
   (denote
-   (denote-title-prompt) <span class="org-comment-delimiter">; </span><span class="org-comment">ask for title, instead of using human-readable date
-</span>   '(<span class="org-string">"journal"</span>)))
+   (denote-title-prompt) ; ask for title, instead of using human-readable date
+   '("journal")))
 </pre>
 </div>
 
@@ -2919,24 +2926,24 @@ above, the title is formatted as <code>Tuesday 14 June 2022</code>.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-journal</span> ()
-  <span class="org-doc">"Create an entry tagged '</span><span class="org-doc"><span class="org-constant">journal</span></span><span class="org-doc">' with the date as its title.
+<pre class="src src-emacs-lisp">(defun my-denote-journal ()
+  "Create an entry tagged 'journal' with the date as its title.
 If a journal for the current day exists, visit it.  If multiple
 entries exist, prompt with completion for a choice between them.
-Else create a new file."</span>
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let*</span> ((today (format-time-string <span class="org-string">"%A %e %B %Y"</span>))
+Else create a new file."
+  (interactive)
+  (let* ((today (format-time-string "%A %e %B %Y"))
          (string (denote-sluggify today))
          (files (denote-directory-files-matching-regexp string)))
-    (<span class="org-keyword">cond</span>
+    (cond
      ((&gt; (length files) 1)
-      (find-file (completing-read <span class="org-string">"Select file: "</span> files nil <span class="org-builtin">:require-match</span>)))
+      (find-file (completing-read "Select file: " files nil :require-match)))
      (files
       (find-file (car files)))
      (t
       (denote
        today
-       '(<span class="org-string">"journal"</span>))))))
+       '("journal"))))))
 </pre>
 </div>
 </div>
@@ -2958,14 +2965,14 @@ your output and its quality.  To use a timer with Emacs, consider the
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-journal-with-tmr</span> ()
-  <span class="org-doc">"Like `</span><span class="org-doc"><span class="org-constant">my-denote-journal</span></span><span class="org-doc">', but also set a 10-minute timer.
-The `</span><span class="org-doc"><span class="org-constant">tmr</span></span><span class="org-doc">' command is part of the `</span><span class="org-doc"><span class="org-constant">tmr</span></span><span class="org-doc">' package."</span>
-  (<span class="org-keyword">interactive</span>)
+<pre class="src src-emacs-lisp">(defun my-denote-journal-with-tmr ()
+  "Like `my-denote-journal', but also set a 10-minute timer.
+The `tmr' command is part of the `tmr' package."
+  (interactive)
   (denote
-   (format-time-string <span class="org-string">"%A %e %B %Y"</span>)
-   '(<span class="org-string">"journal"</span>))
-  (tmr <span class="org-string">"10"</span> <span class="org-string">"Practice writing in my journal"</span>)) <span class="org-comment-delimiter">; </span><span class="org-comment">set 10 minute timer with a description</span>
+   (format-time-string "%A %e %B %Y")
+   '("journal"))
+  (tmr "10" "Practice writing in my journal")) ; set 10 minute timer with a description
 </pre>
 </div>
 
@@ -3014,16 +3021,16 @@ created note.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-create-new-note-from-region</span> (beg end)
-  <span class="org-doc">"Create note whose contents include the text between BEG and END.
-Prompt for title and keywords of the new note."</span>
-  (<span class="org-keyword">interactive</span> <span class="org-string">"r"</span>)
-  (<span class="org-keyword">if-let</span> (((region-active-p))
+<pre class="src src-emacs-lisp">(defun my-denote-create-new-note-from-region (beg end)
+  "Create note whose contents include the text between BEG and END.
+Prompt for title and keywords of the new note."
+  (interactive "r")
+  (if-let (((region-active-p))
            (text (buffer-substring-no-properties beg end)))
-      (<span class="org-keyword">progn</span>
+      (progn
         (denote (denote-title-prompt) (denote-keywords-prompt))
         (insert text))
-    (<span class="org-warning">user-error</span> <span class="org-string">"No region is available"</span>)))
+    (user-error "No region is available")))
 </pre>
 </div>
 
@@ -3048,41 +3055,41 @@ and are removed from the old one.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-org-extract-subtree</span> (<span class="org-type">&amp;optional</span> silo)
-  <span class="org-doc">"Create new Denote note using current Org subtree.
+<pre class="src src-emacs-lisp">(defun my-denote-org-extract-subtree (&amp;optional silo)
+  "Create new Denote note using current Org subtree.
 Make the new note use the Org file type, regardless of the value
-of `</span><span class="org-doc"><span class="org-constant">denote-file-type</span></span><span class="org-doc">'.
+of `denote-file-type'.
 
-With an optional SILO argument as a prefix (\\[</span><span class="org-doc"><span class="org-constant">universal-argument</span></span><span class="org-doc">]),
-ask user to select a SILO from `</span><span class="org-doc"><span class="org-constant">my-denote-silo-directories</span></span><span class="org-doc">'.
+With an optional SILO argument as a prefix (\\[universal-argument]),
+ask user to select a SILO from `my-denote-silo-directories'.
 
 Use the subtree title as the note's title.  If available, use the
 tags of the heading are used as note keywords.
 
-Delete the original subtree."</span>
-  (<span class="org-keyword">interactive</span>
-   (list (<span class="org-keyword">when</span> current-prefix-arg
-           (completing-read <span class="org-string">"Select a silo: "</span> my-denote-silo-directories nil t))))
-  (<span class="org-keyword">if-let</span> ((text (org-get-entry))
-           (heading (org-get-heading <span class="org-builtin">:no-tags</span> <span class="org-builtin">:no-todo</span> <span class="org-builtin">:no-priority</span> <span class="org-builtin">:no-comment</span>)))
-      (<span class="org-keyword">let</span> ((element (org-element-at-point))
+Delete the original subtree."
+  (interactive
+   (list (when current-prefix-arg
+           (completing-read "Select a silo: " my-denote-silo-directories nil t))))
+  (if-let ((text (org-get-entry))
+           (heading (org-get-heading :no-tags :no-todo :no-priority :no-comment)))
+      (let ((element (org-element-at-point))
             (tags (org-get-tags))
             (denote-user-enforced-denote-directory silo))
         (delete-region (org-entry-beginning-position)
-                       (<span class="org-keyword">save-excursion</span> (org-end-of-subtree t) (point)))
+                       (save-excursion (org-end-of-subtree t) (point)))
         (denote heading
                 tags
                 'org
                 nil
-                (<span class="org-keyword">or</span>
-                 <span class="org-comment-delimiter">;; </span><span class="org-comment">Check PROPERTIES drawer for :created: or :date:
-</span>                 (org-element-property <span class="org-builtin">:CREATED</span> element)
-                 (org-element-property <span class="org-builtin">:DATE</span> element)
-                 <span class="org-comment-delimiter">;; </span><span class="org-comment">Check the subtree for CLOSED
-</span>                 (org-element-property <span class="org-builtin">:raw-value</span>
-                                       (org-element-property <span class="org-builtin">:closed</span> element))))
+                (or
+                 ;; Check PROPERTIES drawer for :created: or :date:
+                 (org-element-property :CREATED element)
+                 (org-element-property :DATE element)
+                 ;; Check the subtree for CLOSED
+                 (org-element-property :raw-value
+                                       (org-element-property :closed element))))
         (insert text))
-    (<span class="org-warning">user-error</span> <span class="org-string">"No subtree to extract; aborting"</span>)))
+    (user-error "No subtree to extract; aborting")))
 </pre>
 </div>
 
@@ -3136,28 +3143,28 @@ For a convenient wrapper, consider this example:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defvar</span> <span class="org-variable-name">prot-dired--limit-hist</span> '()
-  <span class="org-doc">"Minibuffer history for `</span><span class="org-doc"><span class="org-constant">prot-dired-limit-regexp</span></span><span class="org-doc">'."</span>)
+<pre class="src src-emacs-lisp">(defvar prot-dired--limit-hist '()
+  "Minibuffer history for `prot-dired-limit-regexp'.")
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">prot-dired-limit-regexp</span> (regexp omit)
-  <span class="org-doc">"Limit Dired to keep files matching REGEXP.
+;;;###autoload
+(defun prot-dired-limit-regexp (regexp omit)
+  "Limit Dired to keep files matching REGEXP.
 
-With optional OMIT argument as a prefix (\\[</span><span class="org-doc"><span class="org-constant">universal-argument</span></span><span class="org-doc">]),
+With optional OMIT argument as a prefix (\\[universal-argument]),
 exclude files matching REGEXP.
 
-Restore the buffer with \\&lt;</span><span class="org-doc"><span class="org-variable-name">dired-mode-map</span></span><span class="org-doc">&gt;`\\[</span><span class="org-doc"><span class="org-constant">revert-buffer</span></span><span class="org-doc">]'."</span>
-  (<span class="org-keyword">interactive</span>
+Restore the buffer with \\&lt;dired-mode-map&gt;`\\[revert-buffer]'."
+  (interactive
    (list
     (read-regexp
-     (concat <span class="org-string">"Files "</span>
-             (<span class="org-keyword">when</span> current-prefix-arg
-               (propertize <span class="org-string">"NOT "</span> 'face 'warning))
-             <span class="org-string">"matching PATTERN: "</span>)
+     (concat "Files "
+             (when current-prefix-arg
+               (propertize "NOT " 'face 'warning))
+             "matching PATTERN: ")
      nil 'prot-dired--limit-hist)
     current-prefix-arg))
   (dired-mark-files-regexp regexp)
-  (<span class="org-keyword">unless</span> omit (dired-toggle-marks))
+  (unless omit (dired-toggle-marks))
   (dired-do-kill-lines))
 </pre>
 </div>
@@ -3202,7 +3209,7 @@ Consider then, how Dired will sort those files by their identifier:
 Whereas on the command line, we can get the following:
 </p>
 
-<pre class="example" id="org7a46baf">
+<pre class="example" id="orgd84c58d">
 $ ls | sort -t _ -k 2
 20220929T200432--testing-file-one__alpha.txt
 20220929T200632--testing-file-three__alpha.txt
@@ -3230,40 +3237,40 @@ capture the last command&rsquo;s output in a dedicated buffer:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defcustom</span> <span class="org-variable-name">prot-eshell-output-buffer</span> <span class="org-string">"*Exported Eshell output*"</span>
-  <span class="org-doc">"Name of buffer with the last output of Eshell command.
-Used by `</span><span class="org-doc"><span class="org-constant">prot-eshell-export</span></span><span class="org-doc">'."</span>
-  <span class="org-builtin">:type</span> 'string
-  <span class="org-builtin">:group</span> 'prot-eshell)
+<pre class="src src-emacs-lisp">(defcustom prot-eshell-output-buffer "*Exported Eshell output*"
+  "Name of buffer with the last output of Eshell command.
+Used by `prot-eshell-export'."
+  :type 'string
+  :group 'prot-eshell)
 
-(<span class="org-keyword">defcustom</span> <span class="org-variable-name">prot-eshell-output-delimiter</span> <span class="org-string">"* * *"</span>
-  <span class="org-doc">"Delimiter for successive `</span><span class="org-doc"><span class="org-constant">prot-eshell-export</span></span><span class="org-doc">' outputs.
+(defcustom prot-eshell-output-delimiter "* * *"
+  "Delimiter for successive `prot-eshell-export' outputs.
 This is formatted internally to have newline characters before
-and after it."</span>
-  <span class="org-builtin">:type</span> 'string
-  <span class="org-builtin">:group</span> 'prot-eshell)
+and after it."
+  :type 'string
+  :group 'prot-eshell)
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">prot-eshell--command-prompt-output</span> ()
-  <span class="org-doc">"Capture last command prompt and its output."</span>
-  (<span class="org-keyword">let</span> ((beg (<span class="org-keyword">save-excursion</span>
+(defun prot-eshell--command-prompt-output ()
+  "Capture last command prompt and its output."
+  (let ((beg (save-excursion
                (goto-char (eshell-beginning-of-input))
                (goto-char (point-at-bol)))))
-    (<span class="org-keyword">when</span> (derived-mode-p 'eshell-mode)
+    (when (derived-mode-p 'eshell-mode)
       (buffer-substring-no-properties beg (eshell-end-of-output)))))
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">prot-eshell-export</span> ()
-  <span class="org-doc">"Produce a buffer with output of the last Eshell command.
-If `</span><span class="org-doc"><span class="org-constant">prot-eshell-output-buffer</span></span><span class="org-doc">' does not exist, create it.  Else
+;;;###autoload
+(defun prot-eshell-export ()
+  "Produce a buffer with output of the last Eshell command.
+If `prot-eshell-output-buffer' does not exist, create it.  Else
 append to it, while separating multiple outputs with
-`</span><span class="org-doc"><span class="org-constant">prot-eshell-output-delimiter</span></span><span class="org-doc">'."</span>
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((eshell-output (prot-eshell--command-prompt-output)))
-    (<span class="org-keyword">with-current-buffer</span> (get-buffer-create prot-eshell-output-buffer)
-      (<span class="org-keyword">let</span> ((inhibit-read-only t))
+`prot-eshell-output-delimiter'."
+  (interactive)
+  (let ((eshell-output (prot-eshell--command-prompt-output)))
+    (with-current-buffer (get-buffer-create prot-eshell-output-buffer)
+      (let ((inhibit-read-only t))
         (goto-char (point-max))
-        (<span class="org-keyword">unless</span> (eq (point-min) (point-max))
-          (insert (format <span class="org-string">"\n%s\n\n"</span> prot-eshell-output-delimiter)))
+        (unless (eq (point-min) (point-max))
+          (insert (format "\n%s\n\n" prot-eshell-output-delimiter)))
         (goto-char (point-at-bol))
         (insert eshell-output)
         (switch-to-buffer-other-window (current-buffer))))))
@@ -3323,29 +3330,29 @@ The author of Denote uses this thin wrapper instead:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defvar</span> <span class="org-variable-name">prot-search--grep-hist</span> '()
-  <span class="org-doc">"Input history of grep searches."</span>)
+<pre class="src src-emacs-lisp">(defvar prot-search--grep-hist '()
+  "Input history of grep searches.")
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">prot-search-grep</span> (regexp <span class="org-type">&amp;optional</span> recursive)
-  <span class="org-doc">"Run grep for REGEXP.
+;;;###autoload
+(defun prot-search-grep (regexp &amp;optional recursive)
+  "Run grep for REGEXP.
 
-Search in the current directory using `</span><span class="org-doc"><span class="org-constant">lgrep</span></span><span class="org-doc">'.  With optional
-prefix argument (\\[</span><span class="org-doc"><span class="org-constant">universal-argument</span></span><span class="org-doc">]) for RECURSIVE, run a
-search starting from the current directory with `</span><span class="org-doc"><span class="org-constant">rgrep</span></span><span class="org-doc">'."</span>
-  (<span class="org-keyword">interactive</span>
+Search in the current directory using `lgrep'.  With optional
+prefix argument (\\[universal-argument]) for RECURSIVE, run a
+search starting from the current directory with `rgrep'."
+  (interactive
    (list
-    (read-from-minibuffer (concat (<span class="org-keyword">if</span> current-prefix-arg
-                                      (propertize <span class="org-string">"Recursive"</span> 'face 'warning)
-                                    <span class="org-string">"Local"</span>)
-                                  <span class="org-string">" grep for PATTERN: "</span>)
+    (read-from-minibuffer (concat (if current-prefix-arg
+                                      (propertize "Recursive" 'face 'warning)
+                                    "Local")
+                                  " grep for PATTERN: ")
                           nil nil nil 'prot-search--grep-hist)
     current-prefix-arg))
-  (<span class="org-keyword">unless</span> grep-command
+  (unless grep-command
     (grep-compute-defaults))
-  (<span class="org-keyword">if</span> recursive
-      (rgrep regexp <span class="org-string">"*"</span> default-directory)
-    (lgrep regexp <span class="org-string">"*"</span> default-directory)))
+  (if recursive
+      (rgrep regexp "*" default-directory)
+    (lgrep regexp "*" default-directory)))
 </pre>
 </div>
 
@@ -3422,9 +3429,9 @@ prefix key.  For example:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> consult-notes-file-dir-sources
-      `((<span class="org-string">"Denote Notes"</span>  ?d ,(denote-directory))
-        (<span class="org-string">"Books"</span>  ?b <span class="org-string">"~/Documents/books/"</span>)))
+<pre class="src src-emacs-lisp">(setq consult-notes-file-dir-sources
+      `(("Denote Notes"  ?d ,(denote-directory))
+        ("Books"  ?b "~/Documents/books/")))
 </pre>
 </div>
 
@@ -3535,52 +3542,52 @@ via <code>M-x</code> after they have been evaluated.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-open-or-create-with-date</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' but also prompt for date.
+<pre class="src src-emacs-lisp">;;;###autoload
+(defun denote-open-or-create-with-date ()
+  "Invoke `denote-open-or-create' but also prompt for date.
 
 The date can be in YEAR-MONTH-DAY notation like 2022-06-30 or
 that plus the time: 2022-06-16 14:30.  When the user option
-`</span><span class="org-doc"><span class="org-constant">denote-date-prompt-use-org-read-date</span></span><span class="org-doc">' is non-nil, the date
+`denote-date-prompt-use-org-read-date' is non-nil, the date
 prompt uses the more powerful Org+calendar system.
 
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(date title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(date title keywords)))
+This is the equivalent to calling `denote-open-or-create' when
+`denote-prompts' is set to \\='(date title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(date title keywords)))
     (call-interactively #'denote-open-or-create)))
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-open-or-create-with-type</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' but also prompt for file type.
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(type title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(type title keywords)))
+;;;###autoload
+(defun denote-open-or-create-with-type ()
+  "Invoke `denote-open-or-create' but also prompt for file type.
+This is the equivalent to calling `denote-open-or-create' when
+`denote-prompts' is set to \\='(type title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(type title keywords)))
     (call-interactively #'denote-open-or-create)))
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-open-or-create-with-subdirectory</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' but also prompt for subdirectory.
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(subdirectory title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(subdirectory title keywords)))
+;;;###autoload
+(defun denote-open-or-create-with-subdirectory ()
+  "Invoke `denote-open-or-create' but also prompt for subdirectory.
+This is the equivalent to calling `denote-open-or-create' when
+`denote-prompts' is set to \\='(subdirectory title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(subdirectory title keywords)))
     (call-interactively #'denote-open-or-create)))
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-open-or-create-with-template</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' but also prompt for template.
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-open-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(template title keywords).
+;;;###autoload
+(defun denote-open-or-create-with-template ()
+  "Invoke `denote-open-or-create' but also prompt for template.
+This is the equivalent to calling `denote-open-or-create' when
+`denote-prompts' is set to \\='(template title keywords).
 
-For templates, refer to `</span><span class="org-doc"><span class="org-constant">denote-templates</span></span><span class="org-doc">'."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(template title keywords)))
+For templates, refer to `denote-templates'."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(template title keywords)))
     (call-interactively #'denote-open-or-create)))
 </pre>
 </div>
@@ -3617,52 +3624,52 @@ via <code>M-x</code> after they have been evaluated.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-link-or-create-with-date</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' but also prompt for date.
+<pre class="src src-emacs-lisp">;;;###autoload
+(defun denote-link-or-create-with-date ()
+  "Invoke `denote-link-or-create' but also prompt for date.
 
 The date can be in YEAR-MONTH-DAY notation like 2022-06-30 or
 that plus the time: 2022-06-16 14:30.  When the user option
-`</span><span class="org-doc"><span class="org-constant">denote-date-prompt-use-org-read-date</span></span><span class="org-doc">' is non-nil, the date
+`denote-date-prompt-use-org-read-date' is non-nil, the date
 prompt uses the more powerful Org+calendar system.
 
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(date title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(date title keywords)))
+This is the equivalent to calling `denote-link-or-create' when
+`denote-prompts' is set to \\='(date title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(date title keywords)))
     (call-interactively #'denote-link-or-create)))
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-link-or-create-with-type</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' but also prompt for file type.
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(type title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(type title keywords)))
+;;;###autoload
+(defun denote-link-or-create-with-type ()
+  "Invoke `denote-link-or-create' but also prompt for file type.
+This is the equivalent to calling `denote-link-or-create' when
+`denote-prompts' is set to \\='(type title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(type title keywords)))
     (call-interactively #'denote-link-or-create)))
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-link-or-create-with-subdirectory</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' but also prompt for subdirectory.
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(subdirectory title keywords)."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(subdirectory title keywords)))
+;;;###autoload
+(defun denote-link-or-create-with-subdirectory ()
+  "Invoke `denote-link-or-create' but also prompt for subdirectory.
+This is the equivalent to calling `denote-link-or-create' when
+`denote-prompts' is set to \\='(subdirectory title keywords)."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(subdirectory title keywords)))
     (call-interactively #'denote-link-or-create)))
 
-<span class="org-comment-delimiter">;;;</span><span class="org-comment">###</span><span class="org-comment"><span class="org-warning">autoload</span></span><span class="org-comment">
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-link-or-create-with-template</span> ()
-  <span class="org-doc">"Invoke `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' but also prompt for template.
-This is the equivalent to calling `</span><span class="org-doc"><span class="org-constant">denote-link-or-create</span></span><span class="org-doc">' when
-`</span><span class="org-doc"><span class="org-constant">denote-prompts</span></span><span class="org-doc">' is set to </span><span class="org-doc"><span class="org-builtin">\\=</span></span><span class="org-doc">'(template title keywords).
+;;;###autoload
+(defun denote-link-or-create-with-template ()
+  "Invoke `denote-link-or-create' but also prompt for template.
+This is the equivalent to calling `denote-link-or-create' when
+`denote-prompts' is set to \\='(template title keywords).
 
-For templates, refer to `</span><span class="org-doc"><span class="org-constant">denote-templates</span></span><span class="org-doc">'."</span>
-  (<span class="org-keyword">declare</span> (interactive-only t))
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let</span> ((denote-prompts '(template title keywords)))
+For templates, refer to `denote-templates'."
+  (declare (interactive-only t))
+  (interactive)
+  (let ((denote-prompts '(template title keywords)))
     (call-interactively #'denote-link-or-create)))
 </pre>
 </div>
@@ -3691,24 +3698,24 @@ their own wrapper functions as shown in the following code block.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">This is the old `</span><span class="org-comment"><span class="org-constant">denote-file-prompt</span></span><span class="org-comment">' that we renamed to
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">`</span><span class="org-comment"><span class="org-constant">denote-file-prompt-original</span></span><span class="org-comment">' for clarity.
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">denote-file-prompt-original</span> (<span class="org-type">&amp;optional</span> initial-text)
-  <span class="org-doc">"Prompt for file with identifier in variable `</span><span class="org-doc"><span class="org-constant">denote-directory</span></span><span class="org-doc">'.
-With optional INITIAL-TEXT, use it to prepopulate the minibuffer."</span>
-  (read-file-name <span class="org-string">"Select note: "</span> (denote-directory) nil nil initial-text
-                  (<span class="org-keyword">lambda</span> (f)
-                    (<span class="org-keyword">or</span> (denote-file-has-identifier-p f)
+<pre class="src src-emacs-lisp">;; This is the old `denote-file-prompt' that we renamed to
+;; `denote-file-prompt-original' for clarity.
+(defun denote-file-prompt-original (&amp;optional initial-text)
+  "Prompt for file with identifier in variable `denote-directory'.
+With optional INITIAL-TEXT, use it to prepopulate the minibuffer."
+  (read-file-name "Select note: " (denote-directory) nil nil initial-text
+                  (lambda (f)
+                    (or (denote-file-has-identifier-p f)
                         (file-directory-p f)))))
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Our wrapper command that changes the current `</span><span class="org-comment"><span class="org-constant">denote-file-prompt</span></span><span class="org-comment">'
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">to the functionality of `</span><span class="org-comment"><span class="org-constant">denote-file-prompt-original</span></span><span class="org-comment">' only when
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">this command is used.
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-link</span> ()
-  <span class="org-doc">"Call `</span><span class="org-doc"><span class="org-constant">denote-link</span></span><span class="org-doc">' but use Denote's original file prompt.
-See `</span><span class="org-doc"><span class="org-constant">denote-file-prompt-original</span></span><span class="org-doc">'."</span>
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">cl-letf</span> (((symbol-function 'denote-file-prompt) #'denote-file-prompt-original))
+;; Our wrapper command that changes the current `denote-file-prompt'
+;; to the functionality of `denote-file-prompt-original' only when
+;; this command is used.
+(defun my-denote-link ()
+  "Call `denote-link' but use Denote's original file prompt.
+See `denote-file-prompt-original'."
+  (interactive)
+  (cl-letf (((symbol-function 'denote-file-prompt) #'denote-file-prompt-original))
     (call-interactively #'denote-link)))
 </pre>
 </div>
@@ -3728,11 +3735,11 @@ the custom code:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(autoload 'image-dired--with-marked <span class="org-string">"image-dired"</span>)
-(autoload 'image-dired-original-file-name <span class="org-string">"image-dired-util"</span>)
+<pre class="src src-emacs-lisp">(autoload 'image-dired--with-marked "image-dired")
+(autoload 'image-dired-original-file-name "image-dired-util")
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-image-dired-rename-marked-files</span> (keywords)
-  <span class="org-doc">"Like `</span><span class="org-doc"><span class="org-constant">denote-dired-rename-marked-files</span></span><span class="org-doc">' but for Image Dired.
+(defun my-denote-image-dired-rename-marked-files (keywords)
+  "Like `denote-dired-rename-marked-files' but for Image Dired.
 Prompt for KEYWORDS and rename all marked files in the Image
 Dired buffer to have a Denote-style file name with the given
 KEYWORDS.
@@ -3742,10 +3749,10 @@ Dired buffers, those will be targeted as well.  This is not the
 fault of Denote: it is how Dired and Image Dired work in tandem.
 To only rename the marked thumbnails, start by unmarking
 everything in Dired.  Then mark the items in Image Dired and
-invoke this command."</span>
-  (<span class="org-keyword">interactive</span> (list (denote-keywords-prompt)) image-dired-thumbnail-mode)
+invoke this command."
+  (interactive (list (denote-keywords-prompt)) image-dired-thumbnail-mode)
   (image-dired--with-marked
-   (<span class="org-keyword">when-let*</span> ((file (image-dired-original-file-name))
+   (when-let* ((file (image-dired-original-file-name))
                (dir (file-name-directory file))
                (id (denote-retrieve-or-create-file-identifier file))
                (file-type (denote-filetype-heuristics file))
@@ -3766,20 +3773,20 @@ can be used instead:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-image-dired-rename-marked-files</span> (keywords)
-  <span class="org-doc">"Like `</span><span class="org-doc"><span class="org-constant">denote-dired-rename-marked-files</span></span><span class="org-doc">' but for Image Dired.
+<pre class="src src-emacs-lisp">(defun my-image-dired-rename-marked-files (keywords)
+  "Like `denote-dired-rename-marked-files' but for Image Dired.
 Prompt for keywords and rename all marked files in the Image
 Dired buffer to have Denote-style keywords, but none of the other
-conventions of Denote's file-naming scheme."</span>
-  (<span class="org-keyword">interactive</span> (list (denote-keywords-prompt)) image-dired-thumbnail-mode)
+conventions of Denote's file-naming scheme."
+  (interactive (list (denote-keywords-prompt)) image-dired-thumbnail-mode)
   (image-dired--with-marked
-   (<span class="org-keyword">when-let*</span> ((file (image-dired-original-file-name))
+   (when-let* ((file (image-dired-original-file-name))
                (dir (file-name-directory file))
                (file-type (denote-filetype-heuristics file))
                (title (denote--retrieve-title-or-filename file file-type))
                (extension (file-name-extension file t))
                (kws (denote--keywords-combine keywords))
-               (new-name (concat dir title <span class="org-string">"__"</span> kws extension))
+               (new-name (concat dir title "__" kws extension))
                (default-directory dir))
      (denote-rename-file-and-buffer file new-name))))
 </pre>
@@ -3824,25 +3831,25 @@ actions.  We thus have:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-dired-rename-marked-files-keywords-only</span> ()
-  <span class="org-doc">"Like `</span><span class="org-doc"><span class="org-constant">denote-dired-rename-marked-files</span></span><span class="org-doc">' but only for keywords in file names.
+<pre class="src src-emacs-lisp">(defun my-denote-dired-rename-marked-files-keywords-only ()
+  "Like `denote-dired-rename-marked-files' but only for keywords in file names.
 
 Prompt for keywords and rename all marked files in the Dired
 buffer to only have Denote-style keywords, but none of the other
-conventions of Denote's file-naming scheme."</span>
-  (<span class="org-keyword">interactive</span> nil dired-mode)
-  (<span class="org-keyword">if-let</span> ((marks (dired-get-marked-files)))
-      (<span class="org-keyword">let</span> ((keywords (denote-keywords-prompt)))
-        (<span class="org-keyword">dolist</span> (file marks)
-          (<span class="org-keyword">let*</span> ((dir (file-name-directory file))
+conventions of Denote's file-naming scheme."
+  (interactive nil dired-mode)
+  (if-let ((marks (dired-get-marked-files)))
+      (let ((keywords (denote-keywords-prompt)))
+        (dolist (file marks)
+          (let* ((dir (file-name-directory file))
                  (file-type (denote-filetype-heuristics file))
                  (title (denote--retrieve-title-or-filename file file-type))
                  (extension (file-name-extension file t))
                  (kws (denote--keywords-combine keywords))
-                 (new-name (concat dir title <span class="org-string">"__"</span> kws extension)))
+                 (new-name (concat dir title "__" kws extension)))
             (denote-rename-file-and-buffer file new-name)))
         (revert-buffer))
-    (<span class="org-warning">user-error</span> <span class="org-string">"No marked files; aborting"</span>)))
+    (user-error "No marked files; aborting")))
 </pre>
 </div>
 </div>
@@ -3911,35 +3918,35 @@ original function in subtle ways.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">defvar</span> <span class="org-variable-name">my-org-export-output-directory-prefix</span> <span class="org-string">"./export_"</span>
-  <span class="org-doc">"Prefix of directory used for org-mode export.
+<pre class="src src-emacs-lisp">(defvar my-org-export-output-directory-prefix "./export_"
+  "Prefix of directory used for org-mode export.
 
 The single dot means that the directory is created on the same
 level as the one where the Org file that performs the exporting
 is.  Use two dots to place the directory on a level above the
 current one.
 
-If this directory is part of `</span><span class="org-doc"><span class="org-constant">denote-directory</span></span><span class="org-doc">', make sure it is
-not read by Denote.  See `</span><span class="org-doc"><span class="org-constant">denote-excluded-directories-regexp</span></span><span class="org-doc">'.
+If this directory is part of `denote-directory', make sure it is
+not read by Denote.  See `denote-excluded-directories-regexp'.
 This way there will be no known duplicate Denote identifiers
-produced by the Org export mechanism."</span>)
+produced by the Org export mechanism.")
 
-(<span class="org-keyword">defun</span> <span class="org-function-name">my-org-export-create-directory</span> (fn extension <span class="org-type">&amp;rest</span> args)
-  <span class="org-doc">"Move Org export file to its appropriate directory.
+(defun my-org-export-create-directory (fn extension &amp;rest args)
+  "Move Org export file to its appropriate directory.
 
 Append the file type EXTENSION of the exported file to
-`</span><span class="org-doc"><span class="org-constant">my-org-export-output-directory-prefix</span></span><span class="org-doc">' and, if absent, create a
+`my-org-export-output-directory-prefix' and, if absent, create a
 directory named accordingly.
 
-Install this as advice around `</span><span class="org-doc"><span class="org-constant">org-export-output-file-name</span></span><span class="org-doc">'.  The
+Install this as advice around `org-export-output-file-name'.  The
 EXTENSION is supplied by that function.  ARGS are its remaining
-arguments."</span>
-  (<span class="org-keyword">let</span> ((export-dir (format <span class="org-string">"%s%s"</span> my-org-export-output-directory-prefix extension)))
-    (<span class="org-keyword">unless</span> (file-directory-p export-dir)
+arguments."
+  (let ((export-dir (format "%s%s" my-org-export-output-directory-prefix extension)))
+    (unless (file-directory-p export-dir)
       (make-directory export-dir)))
   (apply fn extension args))
 
-(advice-add #'org-export-output-file-name <span class="org-builtin">:around</span> #'my-org-export-create-directory)
+(advice-add #'org-export-output-file-name :around #'my-org-export-create-directory)
 </pre>
 </div>
 
@@ -3997,7 +4004,7 @@ variable defines the command line used in export, for example:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> markdown-command <span class="org-string">"multimarkdown"</span>)
+<pre class="src src-emacs-lisp">(setq markdown-command "multimarkdown")
 </pre>
 </div>
 
@@ -4048,16 +4055,16 @@ following commands in a shell prompt:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span class="org-builtin">cd</span> ~/.emacs.d
+<pre class="src src-sh">cd ~/.emacs.d
 
-<span class="org-comment-delimiter"># </span><span class="org-comment">Create a directory for manually-installed packages
-</span>mkdir manual-packages
+# Create a directory for manually-installed packages
+mkdir manual-packages
 
-<span class="org-comment-delimiter"># </span><span class="org-comment">Go to the new directory
-</span><span class="org-builtin">cd</span> manual-packages
+# Go to the new directory
+cd manual-packages
 
-<span class="org-comment-delimiter"># </span><span class="org-comment">Clone this repo, naming it "denote"
-</span>git clone https://git.sr.ht/~protesilaos/denote denote
+# Clone this repo, naming it "denote"
+git clone https://git.sr.ht/~protesilaos/denote denote
 </pre>
 </div>
 
@@ -4066,8 +4073,8 @@ Finally, in your <code>init.el</code> (or equivalent) evaluate this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">Make Elisp files in that directory available to the user.
-</span>(add-to-list 'load-path <span class="org-string">"~/.emacs.d/manual-packages/denote"</span>)
+<pre class="src src-emacs-lisp">;; Make Elisp files in that directory available to the user.
+(add-to-list 'load-path "~/.emacs.d/manual-packages/denote")
 </pre>
 </div>
 
@@ -4081,127 +4088,127 @@ Everything is in place to set up the package.
 <h2 id="h:5d16932d-4f7b-493d-8e6a-e5c396b15fd6"><span class="section-number-2">14.</span> <a href="#h:5d16932d-4f7b-493d-8e6a-e5c396b15fd6">Sample configuration</a></h2>
 <div class="outline-text-2" id="text-h:5d16932d-4f7b-493d-8e6a-e5c396b15fd6">
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">require</span> '<span class="org-constant">denote</span>)
+<pre class="src src-emacs-lisp">(require 'denote)
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Remember to check the doc strings of those variables.
-</span>(<span class="org-keyword">setq</span> denote-directory (expand-file-name <span class="org-string">"~/Documents/notes/"</span>))
-(<span class="org-keyword">setq</span> denote-known-keywords '(<span class="org-string">"emacs"</span> <span class="org-string">"philosophy"</span> <span class="org-string">"politics"</span> <span class="org-string">"economics"</span>))
-(<span class="org-keyword">setq</span> denote-infer-keywords t)
-(<span class="org-keyword">setq</span> denote-sort-keywords t)
-(<span class="org-keyword">setq</span> denote-file-type nil) <span class="org-comment-delimiter">; </span><span class="org-comment">Org is the default, set others here
-</span>(<span class="org-keyword">setq</span> denote-prompts '(title keywords))
-(<span class="org-keyword">setq</span> denote-excluded-directories-regexp nil)
-(<span class="org-keyword">setq</span> denote-excluded-keywords-regexp nil)
+;; Remember to check the doc strings of those variables.
+(setq denote-directory (expand-file-name "~/Documents/notes/"))
+(setq denote-known-keywords '("emacs" "philosophy" "politics" "economics"))
+(setq denote-infer-keywords t)
+(setq denote-sort-keywords t)
+(setq denote-file-type nil) ; Org is the default, set others here
+(setq denote-prompts '(title keywords))
+(setq denote-excluded-directories-regexp nil)
+(setq denote-excluded-keywords-regexp nil)
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Pick dates, where relevant, with Org's advanced interface:
-</span>(<span class="org-keyword">setq</span> denote-date-prompt-use-org-read-date t)
+;; Pick dates, where relevant, with Org's advanced interface:
+(setq denote-date-prompt-use-org-read-date t)
 
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Read this manual for how to specify `</span><span class="org-comment"><span class="org-constant">denote-templates</span></span><span class="org-comment">'.  We do not
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">include an example here to avoid potential confusion.
-</span>
+;; Read this manual for how to specify `denote-templates'.  We do not
+;; include an example here to avoid potential confusion.
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">We do not allow multi-word keywords by default.  The author's
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">personal preference is for single-word keywords for a more rigid
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">workflow.
-</span>(<span class="org-keyword">setq</span> denote-allow-multi-word-keywords t)
 
-(<span class="org-keyword">setq</span> denote-date-format nil) <span class="org-comment-delimiter">; </span><span class="org-comment">read doc string
-</span>
-<span class="org-comment-delimiter">;; </span><span class="org-comment">By default, we do not show the context of links.  We just display
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">file names.  This provides a more informative view.
-</span>(<span class="org-keyword">setq</span> denote-backlinks-show-context t)
+;; We do not allow multi-word keywords by default.  The author's
+;; personal preference is for single-word keywords for a more rigid
+;; workflow.
+(setq denote-allow-multi-word-keywords t)
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Also see `</span><span class="org-comment"><span class="org-constant">denote-link-backlinks-display-buffer-action</span></span><span class="org-comment">' which is a bit
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">advanced.
-</span>
-<span class="org-comment-delimiter">;; </span><span class="org-comment">If you use Markdown or plain text files (Org renders links as buttons
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">right away)
-</span>(add-hook 'find-file-hook #'denote-link-buttonize-buffer)
+(setq denote-date-format nil) ; read doc string
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">We use different ways to specify a path for demo purposes.
-</span>(<span class="org-keyword">setq</span> denote-dired-directories
+;; By default, we do not show the context of links.  We just display
+;; file names.  This provides a more informative view.
+(setq denote-backlinks-show-context t)
+
+;; Also see `denote-link-backlinks-display-buffer-action' which is a bit
+;; advanced.
+
+;; If you use Markdown or plain text files (Org renders links as buttons
+;; right away)
+(add-hook 'find-file-hook #'denote-link-buttonize-buffer)
+
+;; We use different ways to specify a path for demo purposes.
+(setq denote-dired-directories
       (list denote-directory
-            (<span class="org-keyword">thread-last</span> denote-directory (expand-file-name <span class="org-string">"attachments"</span>))
-            (expand-file-name <span class="org-string">"~/Documents/books"</span>)))
+            (thread-last denote-directory (expand-file-name "attachments"))
+            (expand-file-name "~/Documents/books")))
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Generic (great if you rename files Denote-style in lots of places):
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">(add-hook 'dired-mode-hook #'denote-dired-mode)
-</span><span class="org-comment-delimiter">;;</span><span class="org-comment">
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">OR if only want it in `</span><span class="org-comment"><span class="org-constant">denote-dired-directories</span></span><span class="org-comment">':
-</span>(add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
+;; Generic (great if you rename files Denote-style in lots of places):
+;; (add-hook 'dired-mode-hook #'denote-dired-mode)
+;;
+;; OR if only want it in `denote-dired-directories':
+(add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Here is a custom, user-level command from one of the examples we
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">showed in this manual.  We define it here and add it to a key binding
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">below.
-</span>(<span class="org-keyword">defun</span> <span class="org-function-name">my-denote-journal</span> ()
-  <span class="org-doc">"Create an entry tagged '</span><span class="org-doc"><span class="org-constant">journal</span></span><span class="org-doc">' with the date as its title.
+;; Here is a custom, user-level command from one of the examples we
+;; showed in this manual.  We define it here and add it to a key binding
+;; below.
+(defun my-denote-journal ()
+  "Create an entry tagged 'journal' with the date as its title.
 If a journal for the current day exists, visit it.  If multiple
 entries exist, prompt with completion for a choice between them.
-Else create a new file."</span>
-  (<span class="org-keyword">interactive</span>)
-  (<span class="org-keyword">let*</span> ((today (format-time-string <span class="org-string">"%A %e %B %Y"</span>))
+Else create a new file."
+  (interactive)
+  (let* ((today (format-time-string "%A %e %B %Y"))
          (string (denote-sluggify today))
          (files (denote-directory-files-matching-regexp string)))
-    (<span class="org-keyword">cond</span>
+    (cond
      ((&gt; (length files) 1)
-      (find-file (completing-read <span class="org-string">"Select file: "</span> files nil <span class="org-builtin">:require-match</span>)))
+      (find-file (completing-read "Select file: " files nil :require-match)))
      (files
       (find-file (car files)))
      (t
       (denote
        today
-       '(<span class="org-string">"journal"</span>))))))
+       '("journal"))))))
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Denote DOES NOT define any key bindings.  This is for the user to
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">decide.  For example:
-</span>(<span class="org-keyword">let</span> ((map global-map))
-  (define-key map (kbd <span class="org-string">"C-c n j"</span>) #'my-denote-journal) <span class="org-comment-delimiter">; </span><span class="org-comment">our custom command
-</span>  (define-key map (kbd <span class="org-string">"C-c n n"</span>) #'denote)
-  (define-key map (kbd <span class="org-string">"C-c n N"</span>) #'denote-type)
-  (define-key map (kbd <span class="org-string">"C-c n d"</span>) #'denote-date)
-  (define-key map (kbd <span class="org-string">"C-c n z"</span>) #'denote-signature) <span class="org-comment-delimiter">; </span><span class="org-comment">"zettelkasten" mnemonic
-</span>  (define-key map (kbd <span class="org-string">"C-c n s"</span>) #'denote-subdirectory)
-  (define-key map (kbd <span class="org-string">"C-c n t"</span>) #'denote-template)
-  <span class="org-comment-delimiter">;; </span><span class="org-comment">If you intend to use Denote with a variety of file types, it is
-</span>  <span class="org-comment-delimiter">;; </span><span class="org-comment">easier to bind the link-related commands to the `</span><span class="org-comment"><span class="org-constant">global-map</span></span><span class="org-comment">', as
-</span>  <span class="org-comment-delimiter">;; </span><span class="org-comment">shown here.  Otherwise follow the same pattern for `</span><span class="org-comment"><span class="org-constant">org-mode-map</span></span><span class="org-comment">',
-</span>  <span class="org-comment-delimiter">;; </span><span class="org-comment">`</span><span class="org-comment"><span class="org-constant">markdown-mode-map</span></span><span class="org-comment">', and/or `</span><span class="org-comment"><span class="org-constant">text-mode-map</span></span><span class="org-comment">'.
-</span>  (define-key map (kbd <span class="org-string">"C-c n i"</span>) #'denote-link) <span class="org-comment-delimiter">; </span><span class="org-comment">"insert" mnemonic
-</span>  (define-key map (kbd <span class="org-string">"C-c n I"</span>) #'denote-add-links)
-  (define-key map (kbd <span class="org-string">"C-c n b"</span>) #'denote-backlinks)
-  (define-key map (kbd <span class="org-string">"C-c n f f"</span>) #'denote-find-link)
-  (define-key map (kbd <span class="org-string">"C-c n f b"</span>) #'denote-find-backlink)
-  <span class="org-comment-delimiter">;; </span><span class="org-comment">Note that `</span><span class="org-comment"><span class="org-constant">denote-rename-file</span></span><span class="org-comment">' can work from any context, not just
-</span>  <span class="org-comment-delimiter">;; </span><span class="org-comment">Dired bufffers.  That is why we bind it here to the `</span><span class="org-comment"><span class="org-constant">global-map</span></span><span class="org-comment">'.
-</span>  (define-key map (kbd <span class="org-string">"C-c n r"</span>) #'denote-rename-file)
-  (define-key map (kbd <span class="org-string">"C-c n R"</span>) #'denote-rename-file-using-front-matter))
+;; Denote DOES NOT define any key bindings.  This is for the user to
+;; decide.  For example:
+(let ((map global-map))
+  (define-key map (kbd "C-c n j") #'my-denote-journal) ; our custom command
+  (define-key map (kbd "C-c n n") #'denote)
+  (define-key map (kbd "C-c n N") #'denote-type)
+  (define-key map (kbd "C-c n d") #'denote-date)
+  (define-key map (kbd "C-c n z") #'denote-signature) ; "zettelkasten" mnemonic
+  (define-key map (kbd "C-c n s") #'denote-subdirectory)
+  (define-key map (kbd "C-c n t") #'denote-template)
+  ;; If you intend to use Denote with a variety of file types, it is
+  ;; easier to bind the link-related commands to the `global-map', as
+  ;; shown here.  Otherwise follow the same pattern for `org-mode-map',
+  ;; `markdown-mode-map', and/or `text-mode-map'.
+  (define-key map (kbd "C-c n i") #'denote-link) ; "insert" mnemonic
+  (define-key map (kbd "C-c n I") #'denote-add-links)
+  (define-key map (kbd "C-c n b") #'denote-backlinks)
+  (define-key map (kbd "C-c n f f") #'denote-find-link)
+  (define-key map (kbd "C-c n f b") #'denote-find-backlink)
+  ;; Note that `denote-rename-file' can work from any context, not just
+  ;; Dired bufffers.  That is why we bind it here to the `global-map'.
+  (define-key map (kbd "C-c n r") #'denote-rename-file)
+  (define-key map (kbd "C-c n R") #'denote-rename-file-using-front-matter))
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Key bindings specifically for Dired.
-</span>(<span class="org-keyword">let</span> ((map dired-mode-map))
-  (define-key map (kbd <span class="org-string">"C-c C-d C-i"</span>) #'denote-link-dired-marked-notes)
-  (define-key map (kbd <span class="org-string">"C-c C-d C-r"</span>) #'denote-dired-rename-marked-files)
-  (define-key map (kbd <span class="org-string">"C-c C-d C-R"</span>) #'denote-dired-rename-marked-files-using-front-matter))
+;; Key bindings specifically for Dired.
+(let ((map dired-mode-map))
+  (define-key map (kbd "C-c C-d C-i") #'denote-link-dired-marked-notes)
+  (define-key map (kbd "C-c C-d C-r") #'denote-dired-rename-marked-files)
+  (define-key map (kbd "C-c C-d C-R") #'denote-dired-rename-marked-files-using-front-matter))
 
-(<span class="org-keyword">with-eval-after-load</span> 'org-capture
-  (<span class="org-keyword">setq</span> denote-org-capture-specifiers <span class="org-string">"%l\n%i\n%?"</span>)
+(with-eval-after-load 'org-capture
+  (setq denote-org-capture-specifiers "%l\n%i\n%?")
   (add-to-list 'org-capture-templates
-               '(<span class="org-string">"n"</span> <span class="org-string">"New note (with denote.el)"</span> plain
+               '("n" "New note (with denote.el)" plain
                  (file denote-last-path)
                  #'denote-org-capture
-                 <span class="org-builtin">:no-save</span> t
-                 <span class="org-builtin">:immediate-finish</span> nil
-                 <span class="org-builtin">:kill-buffer</span> t
-                 <span class="org-builtin">:jump-to-captured</span> t)))
+                 :no-save t
+                 :immediate-finish nil
+                 :kill-buffer t
+                 :jump-to-captured t)))
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">Also check the commands `</span><span class="org-comment"><span class="org-constant">denote-link-after-creating</span></span><span class="org-comment">',
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">`</span><span class="org-comment"><span class="org-constant">denote-link-or-create</span></span><span class="org-comment">'.  You may want to bind them to keys as well.
-</span>
+;; Also check the commands `denote-link-after-creating',
+;; `denote-link-or-create'.  You may want to bind them to keys as well.
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">If you want to have Denote commands available via a right click
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">context menu, use the following and then enable
-</span><span class="org-comment-delimiter">;; </span><span class="org-comment">`</span><span class="org-comment"><span class="org-constant">context-menu-mode</span></span><span class="org-comment">'.
-</span>(add-hook 'context-menu-functions #'denote-context-menu)
+
+;; If you want to have Denote commands available via a right click
+;; context menu, use the following and then enable
+;; `context-menu-mode'.
+(add-hook 'context-menu-functions #'denote-context-menu)
 </pre>
 </div>
 </div>
@@ -4832,7 +4839,7 @@ take you to the source file.  There do <code>M-x eval-expression</code>, which
 will bring up a minibuffer prompt.  At the prompt evaluate:</li>
 </ol>
 
-<pre class="example" id="org7fe452f">
+<pre class="example" id="org7903d6b">
 (kill-new (expand-file-name (buffer-file-name)))
 </pre>
 
@@ -4842,7 +4849,7 @@ will bring up a minibuffer prompt.  At the prompt evaluate:</li>
 <li>In a terminal emulator or an <code>M-x shell</code> buffer execute:</li>
 </ol>
 
-<pre class="example" id="orgdd17e2a">
+<pre class="example" id="org7a81112">
 emacs -Q
 </pre>
 
@@ -4854,7 +4861,7 @@ Only the default settings are loaded.</li>
 like the following and try to reproduce the issue:</li>
 </ol>
 
-<pre class="example" id="org83663c6">
+<pre class="example" id="orgcf8a535">
 (require 'denote "/full/path/to/what/you/got/denote.el")
 
 ;; Your configurations here
@@ -4919,7 +4926,7 @@ do it once.  It will allow you to make contributions to Emacs in
 general.
 </p>
 
-<pre class="example" id="org1271421">
+<pre class="example" id="orgdb55a33">
 Please email the following information to assign@gnu.org, and we
 will send you the assignment form for your past and future changes.
 
@@ -5483,11 +5490,11 @@ Try either for these for better results:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(<span class="org-keyword">setq</span> xref-search-program 'ripgrep)
+<pre class="src src-emacs-lisp">(setq xref-search-program 'ripgrep)
 
-<span class="org-comment-delimiter">;; </span><span class="org-comment">OR
-</span>
-(<span class="org-keyword">setq</span> xref-search-program 'ugrep)
+;; OR
+
+(setq xref-search-program 'ugrep)
 </pre>
 </div>
 
@@ -5497,13 +5504,13 @@ like this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span class="org-comment-delimiter">;; </span><span class="org-comment">Prefer ripgrep, then ugrep, and fall back to regular grep.
-</span>(<span class="org-keyword">setq</span> xref-search-program
-      (<span class="org-keyword">cond</span>
-       ((<span class="org-keyword">or</span> (executable-find <span class="org-string">"ripgrep"</span>)
-            (executable-find <span class="org-string">"rg"</span>))
+<pre class="src src-emacs-lisp">;; Prefer ripgrep, then ugrep, and fall back to regular grep.
+(setq xref-search-program
+      (cond
+       ((or (executable-find "ripgrep")
+            (executable-find "rg"))
         'ripgrep)
-       ((executable-find <span class="org-string">"ugrep"</span>)
+       ((executable-find "ugrep")
         'ugrep)
        (t
         'grep)))
@@ -5531,7 +5538,7 @@ If you have <code>git</code> on Windows installed, then you may use the followin
 code (adjust the git&rsquo;s installation path if necessary):
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(setenv <span class="org-string">"PATH"</span> (concat (getenv <span class="org-string">"PATH"</span>) <span class="org-string">";"</span> <span class="org-string">"C:\\Program Files\\Git\\usr\\bin"</span>))
+<pre class="src src-emacs-lisp">(setenv "PATH" (concat (getenv "PATH") ";" "C:\\Program Files\\Git\\usr\\bin"))
 </pre>
 </div>
 </div>

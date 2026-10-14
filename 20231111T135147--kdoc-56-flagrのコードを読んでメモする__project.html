@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 56: flagrのコードを読んでメモする</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,25 +22,25 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 56: flagrのコードを読んでメモする</h1>
-<div id="outline-container-orgfabf9d1" class="outline-2">
-<h2 id="orgfabf9d1"><a href="#orgfabf9d1"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-orgfabf9d1">
+<div id="outline-container-org752e881" class="outline-2">
+<h2 id="org752e881"><a href="#org752e881"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-org752e881">
 <p>
 プロジェクトは終了である。
 </p>
 </div>
 </div>
-<div id="outline-container-orgcbd8d77" class="outline-2">
-<h2 id="orgcbd8d77"><a href="#orgcbd8d77">概要</a></h2>
-<div class="outline-text-2" id="text-orgcbd8d77">
+<div id="outline-container-org57f63c3" class="outline-2">
+<h2 id="org57f63c3"><a href="#org57f63c3">概要</a></h2>
+<div class="outline-text-2" id="text-org57f63c3">
 <p>
 <a href="https://github.com/openflagr/flagr">openflagr/flagr</a>を読んだメモ。バックエンドは<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>で書かれている。
 </p>
 </div>
 </div>
-<div id="outline-container-org0683b54" class="outline-2">
-<h2 id="org0683b54"><a href="#org0683b54">DB初期化部分</a></h2>
-<div class="outline-text-2" id="text-org0683b54">
+<div id="outline-container-org23f0667" class="outline-2">
+<h2 id="org23f0667"><a href="#org23f0667">DB初期化部分</a></h2>
+<div class="outline-text-2" id="text-org23f0667">
 <p>
 グローバル変数にdb取得関数がある。
 </p>
@@ -43,7 +50,7 @@
 </pre>
 </div>
 
-<div class="yes" id="org9cf4cdc">
+<div class="yes" id="org2925b79">
 <p>
 var getDB = entity.GetDB
 </p>
@@ -59,7 +66,7 @@ var getDB = entity.GetDB
 </pre>
 </div>
 
-<pre class="example" id="org7220df7">
+<pre class="example" id="orgc2afc69">
 // GetDB gets the db singleton
 func GetDB() *gorm.DB {
 	singletonOnce.Do(func() {
@@ -80,9 +87,9 @@ func GetDB() *gorm.DB {
 </pre>
 </div>
 </div>
-<div id="outline-container-orgbe03ebb" class="outline-2">
-<h2 id="orgbe03ebb"><a href="#orgbe03ebb">データベース分岐部分</a></h2>
-<div class="outline-text-2" id="text-orgbe03ebb">
+<div id="outline-container-org5679cd3" class="outline-2">
+<h2 id="org5679cd3"><a href="#org5679cd3">データベース分岐部分</a></h2>
+<div class="outline-text-2" id="text-org5679cd3">
 <p>
 データベース分岐している箇所。
 </p>
@@ -92,7 +99,7 @@ func GetDB() *gorm.DB {
 </pre>
 </div>
 
-<div class="results" id="org70ff7c2">
+<div class="results" id="orgab3b114">
 <p>
 err = retry.Do(
 	func() error {
@@ -120,9 +127,9 @@ err = retry.Do(
 </div>
 </div>
 </div>
-<div id="outline-container-org8209d9b" class="outline-2">
-<h2 id="org8209d9b"><a href="#org8209d9b">各データベースによる結合テスト</a></h2>
-<div class="outline-text-2" id="text-org8209d9b">
+<div id="outline-container-org830fa68" class="outline-2">
+<h2 id="org830fa68"><a href="#org830fa68">各データベースによる結合テスト</a></h2>
+<div class="outline-text-2" id="text-org830fa68">
 <p>
 sqlite, mysql, postgresによる結合テストをしている。
 </p>
@@ -132,7 +139,7 @@ sqlite, mysql, postgresによる結合テストをしている。
 </pre>
 </div>
 
-<div class="results" id="orgeb17395">
+<div class="results" id="org2d5ed41">
 <p>
 start() {
     start_test flagr_with_sqlite
@@ -150,9 +157,9 @@ start() {
 </div>
 </div>
 </div>
-<div id="outline-container-orgf598ec0" class="outline-2">
-<h2 id="orgf598ec0"><a href="#orgf598ec0">関連</a></h2>
-<div class="outline-text-2" id="text-orgf598ec0">
+<div id="outline-container-org68d8841" class="outline-2">
+<h2 id="org68d8841"><a href="#org68d8841">関連</a></h2>
+<div class="outline-text-2" id="text-org68d8841">
 <ul class="org-ul">
 <li>疑問: 設計の短所を書く</li>
 </ul>

@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</h1>
-<div id="outline-container-org128d416" class="outline-2">
-<h2 id="org128d416"><a href="#org128d416">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org128d416">
+<div id="outline-container-orgd07d125" class="outline-2">
+<h2 id="orgd07d125"><a href="#orgd07d125">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgd07d125">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orga76d0d0" class="outline-2">
-<h2 id="orga76d0d0"><a href="#orga76d0d0">概要</a></h2>
-<div class="outline-text-2" id="text-orga76d0d0">
+<div id="outline-container-org1b9e9b6" class="outline-2">
+<h2 id="org1b9e9b6"><a href="#org1b9e9b6">概要</a></h2>
+<div class="outline-text-2" id="text-org1b9e9b6">
 <p>
 <a href="https://github.com/open-telemetry/opentelemetry-go/issues/8736">trace: unroll TraceIDFromHex/SpanIDFromHex decoders to eliminate bounds checks · Issue #8736 · open-telemetry/opentelemetry-go</a>で、インデックスアクセスのオーバーヘッドの存在と、コンパイラでの確認方法について説明していた。
 </p>
@@ -42,37 +49,37 @@
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh"><span class="org-builtin">set</span> -e
-<span class="org-variable-name">d</span>=$(mktemp -d)
-cat &gt; <span class="org-string">"$d/go.mod"</span> &lt;&lt;<span class="org-string">'EOF'</span><span class="org-sh-heredoc">
+<pre class="src src-sh">set -e
+d=$(mktemp -d)
+cat &gt; "$d/go.mod" &lt;&lt;'EOF'
 module bcedemo
 
 go 1.26.0
 EOF
-</span>cat &gt; <span class="org-string">"$d/bce.go"</span> &lt;&lt;<span class="org-string">'EOF'</span><span class="org-sh-heredoc">
+cat &gt; "$d/bce.go" &lt;&lt;'EOF'
 package bcedemo
 
-// BCE &#21177;&#12363;&#12394;&#12356;: i+1,i+2,i+3 &#12434;&#31684;&#22258;&#20869;&#12392;&#35388;&#26126;&#12391;&#12365;&#12378;&#26908;&#26619;&#12364;&#27531;&#12427;
+// BCE 効かない: i+1,i+2,i+3 を範囲内と証明できず検査が残る
 func sumLoop(a []byte) byte {
-        if len(a) != 8 {
-                return 0
-        }
-        var s byte
-        for i := 0; i &lt; len(a); i += 4 {
-                s += a[i] + a[i+1] + a[i+2] + a[i+3]
-        }
-        return s
+	if len(a) != 8 {
+		return 0
+	}
+	var s byte
+	for i := 0; i &lt; len(a); i += 4 {
+		s += a[i] + a[i+1] + a[i+2] + a[i+3]
+	}
+	return s
 }
 
-// BCE &#21177;&#12367;: len==8 &#12460;&#12540;&#12489;&#24460;&#12289;&#23450;&#25968; index &#12384;&#12392;&#20840;&#26908;&#26619;&#12364;&#28040;&#12360;&#12427;
+// BCE 効く: len==8 ガード後、定数 index だと全検査が消える
 func sumUnrolled(a []byte) byte {
-        if len(a) != 8 {
-                return 0
-        }
-        return a[0] + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]
+	if len(a) != 8 {
+		return 0
+	}
+	return a[0] + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]
 }
 EOF
-</span>cat &gt; <span class="org-string">"$d/bce_test.go"</span> &lt;&lt;<span class="org-string">'EOF'</span><span class="org-sh-heredoc">
+cat &gt; "$d/bce_test.go" &lt;&lt;'EOF'
 package bcedemo
 
 import "testing"
@@ -83,12 +90,12 @@ var sink byte
 func BenchmarkSumLoop(b *testing.B)     { for i := 0; i &lt; b.N; i++ { sink = sumLoop(input) } }
 func BenchmarkSumUnrolled(b *testing.B) { for i := 0; i &lt; b.N; i++ { sink = sumUnrolled(input) } }
 EOF
-</span><span class="org-builtin">cd</span> <span class="org-string">"$d"</span>
-<span class="org-builtin">echo</span> <span class="org-string">"== (1) &#22659;&#30028;&#26908;&#26619; =="</span>
-go build -gcflags=<span class="org-string">'-d=ssa/check_bce/debug=1'</span> . 2&gt;&amp;1 | grep bce.go
-<span class="org-builtin">echo</span> <span class="org-string">"== (2) &#36895;&#24230;&#24046; =="</span>
-go test -run=<span class="org-string">'^$'</span> -bench=<span class="org-string">'^BenchmarkSum'</span> -benchmem -count=4 . 2&gt;&amp;1 | grep -E <span class="org-string">'Benchmark|ok'</span>
-<span class="org-builtin">cd</span> / &amp;&amp; rm -rf <span class="org-string">"$d"</span>
+cd "$d"
+echo "== (1) 境界検査 =="
+go build -gcflags='-d=ssa/check_bce/debug=1' . 2&gt;&amp;1 | grep bce.go
+echo "== (2) 速度差 =="
+go test -run='^$' -bench='^BenchmarkSum' -benchmem -count=4 . 2&gt;&amp;1 | grep -E 'Benchmark|ok'
+cd / &amp;&amp; rm -rf "$d"
 </pre>
 </div>
 
@@ -144,17 +151,17 @@ func f0(a []int) {
 </div>
 </div>
 </div>
-<div id="outline-container-org207a24f" class="outline-2">
-<h2 id="org207a24f"><a href="#org207a24f">関連</a></h2>
-<div class="outline-text-2" id="text-org207a24f">
+<div id="outline-container-org7417eba" class="outline-2">
+<h2 id="org7417eba"><a href="#org7417eba">関連</a></h2>
+<div class="outline-text-2" id="text-org7417eba">
 <ul class="org-ul">
 <li>具体例: <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8740">perf(trace): unroll hex decoders to drop bounds checks by itssaharsh · Pull Request #8740 · open-telemetry/opentelemetry-go</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgac9dbe2" class="outline-2">
-<h2 id="orgac9dbe2"><a href="#orgac9dbe2">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgac9dbe2">
+<div id="outline-container-org5adae48" class="outline-2">
+<h2 id="org5adae48"><a href="#org5adae48">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org5adae48">
 <ul class="org-ul">
 <li><a href="./20260926T231317--kdoc-638-配列の定数インデックスはビルド時に検証される__permanent.html">KDOC 638: 配列の定数インデックスはビルド時に検証される</a></li>
 </ul>

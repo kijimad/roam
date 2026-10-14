@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>通知ビューワを自作する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">通知ビューワを自作する</h1>
-<div id="outline-container-org3689d8b" class="outline-2">
-<h2 id="org3689d8b"><a href="#org3689d8b">概要</a></h2>
-<div class="outline-text-2" id="text-org3689d8b">
+<div id="outline-container-org65d0b72" class="outline-2">
+<h2 id="org65d0b72"><a href="#org65d0b72">概要</a></h2>
+<div class="outline-text-2" id="text-org65d0b72">
 <p>
 通知ビューワを自作するプロジェクト。
 </p>
@@ -27,13 +34,13 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org1494c5e" class="outline-2">
-<h2 id="org1494c5e"><a href="#org1494c5e">Memo</a></h2>
-<div class="outline-text-2" id="text-org1494c5e">
+<div id="outline-container-orgef8bfe3" class="outline-2">
+<h2 id="orgef8bfe3"><a href="#orgef8bfe3">Memo</a></h2>
+<div class="outline-text-2" id="text-orgef8bfe3">
 </div>
-<div id="outline-container-orgadd5b43" class="outline-3">
-<h3 id="orgadd5b43"><a href="#orgadd5b43">制約</a></h3>
-<div class="outline-text-3" id="text-orgadd5b43">
+<div id="outline-container-orgec51130" class="outline-3">
+<h3 id="orgec51130"><a href="#orgec51130">制約</a></h3>
+<div class="outline-text-3" id="text-orgec51130">
 <ul class="org-ul">
 <li>iframe内で他ホストの絶対リンクを開けない
 <ul class="org-ul">
@@ -47,69 +54,69 @@
 </div>
 </div>
 </div>
-<div id="outline-container-org9bcdc14" class="outline-2">
-<h2 id="org9bcdc14"><a href="#org9bcdc14">Tasks</a></h2>
-<div class="outline-text-2" id="text-org9bcdc14">
+<div id="outline-container-org04fee67" class="outline-2">
+<h2 id="org04fee67"><a href="#org04fee67">Tasks</a></h2>
+<div class="outline-text-2" id="text-org04fee67">
 </div>
-<div id="outline-container-org97111aa" class="outline-3">
-<h3 id="org97111aa"><a href="#org97111aa"><span class="todo TODO">TODO</span> 受け取れる環境変数の一覧を表示できるようにする</a></h3>
-<div class="outline-text-3" id="text-org97111aa">
+<div id="outline-container-org1100be5" class="outline-3">
+<h3 id="org1100be5"><a href="#org1100be5"><span class="todo TODO">TODO</span> 受け取れる環境変数の一覧を表示できるようにする</a></h3>
+<div class="outline-text-3" id="text-org1100be5">
 <p>
 READMEに書いておくのだと忘れるし面倒なので、コマンドで一覧表示できるとよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org454bd4d" class="outline-3">
-<h3 id="org454bd4d"><a href="#org454bd4d"><span class="todo TODO">TODO</span> オフラインにすると止まる</a></h3>
-<div class="outline-text-3" id="text-org454bd4d">
+<div id="outline-container-org1dbc832" class="outline-3">
+<h3 id="org1dbc832"><a href="#org1dbc832"><span class="todo TODO">TODO</span> オフラインにすると止まる</a></h3>
+<div class="outline-text-3" id="text-org1dbc832">
 <p>
 サーバごと止まる。取得できないとキャンセルしないといけない。
 </p>
 </div>
 </div>
-<div id="outline-container-org3bc87ff" class="outline-3">
-<h3 id="org3bc87ff"><a href="#org3bc87ff"><span class="todo TODO">TODO</span> 2回既読リストに入る可能性がある</a></h3>
-<div class="outline-text-3" id="text-org3bc87ff">
+<div id="outline-container-org2161117" class="outline-3">
+<h3 id="org2161117"><a href="#org2161117"><span class="todo TODO">TODO</span> 2回既読リストに入る可能性がある</a></h3>
+<div class="outline-text-3" id="text-org2161117">
 <p>
 チェックをするか、重複を許さないようにハッシュに読み込むなどする。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf0dc027" class="outline-3">
-<h3 id="orgf0dc027"><a href="#orgf0dc027"><span class="todo TODO">TODO</span> サイドバーを可変にする</a></h3>
-<div class="outline-text-3" id="text-orgf0dc027">
+<div id="outline-container-org77d81d5" class="outline-3">
+<h3 id="org77d81d5"><a href="#org77d81d5"><span class="todo TODO">TODO</span> サイドバーを可変にする</a></h3>
+<div class="outline-text-3" id="text-org77d81d5">
 <p>
 ページによって横幅でデザイン崩れが発生する。例えばdev community。
 </p>
 </div>
 </div>
-<div id="outline-container-org6369ab8" class="outline-3">
-<h3 id="org6369ab8"><a href="#org6369ab8"><span class="todo TODO">TODO</span> 既読エンドポイントを普通のエンドポイントにする</a></h3>
-<div class="outline-text-3" id="text-org6369ab8">
+<div id="outline-container-orga30f3a4" class="outline-3">
+<h3 id="orga30f3a4"><a href="#orga30f3a4"><span class="todo TODO">TODO</span> 既読エンドポイントを普通のエンドポイントにする</a></h3>
+<div class="outline-text-3" id="text-orga30f3a4">
 <p>
 クライアント→サーバをwebsocketでやってるけど、別にそうでなくていい。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd99e81c" class="outline-3">
-<h3 id="orgd99e81c"><a href="#orgd99e81c"><span class="todo TODO">TODO</span> コピペ用にiframe内のリンクを表示する</a></h3>
-<div class="outline-text-3" id="text-orgd99e81c">
+<div id="outline-container-org73e8ad3" class="outline-3">
+<h3 id="org73e8ad3"><a href="#org73e8ad3"><span class="todo TODO">TODO</span> コピペ用にiframe内のリンクを表示する</a></h3>
+<div class="outline-text-3" id="text-org73e8ad3">
 <p>
 どこにいるかわかりにくいというのもある。カンタンだけど、表示する場所がないな。
 </p>
 </div>
 </div>
-<div id="outline-container-orga976d95" class="outline-3">
-<h3 id="orga976d95"><a href="#orga976d95"><span class="todo TODO">TODO</span> カテゴリの色を設定できるようにする</a></h3>
-<div class="outline-text-3" id="text-orga976d95">
+<div id="outline-container-orgce1676d" class="outline-3">
+<h3 id="orgce1676d"><a href="#orgce1676d"><span class="todo TODO">TODO</span> カテゴリの色を設定できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgce1676d">
 <p>
 よりわかりやすくする。
 </p>
 </div>
 </div>
-<div id="outline-container-org22a1107" class="outline-3">
-<h3 id="org22a1107"><a href="#org22a1107"><span class="todo TODO">TODO</span> デスクトップUIを作成する</a></h3>
-<div class="outline-text-3" id="text-org22a1107">
+<div id="outline-container-org53affc6" class="outline-3">
+<h3 id="org53affc6"><a href="#org53affc6"><span class="todo TODO">TODO</span> デスクトップUIを作成する</a></h3>
+<div class="outline-text-3" id="text-org53affc6">
 <ul class="org-ul">
 <li>iframeだと制約が大きい
 <ul class="org-ul">
@@ -128,9 +135,9 @@ READMEに書いておくのだと忘れるし面倒なので、コマンドで�
 </ul>
 </div>
 </div>
-<div id="outline-container-org6218a40" class="outline-3">
-<h3 id="org6218a40"><a href="#org6218a40"><span class="todo TODO">TODO</span> リポジトリごとに分けて表示できるようにする</a></h3>
-<div class="outline-text-3" id="text-org6218a40">
+<div id="outline-container-org627a89d" class="outline-3">
+<h3 id="org627a89d"><a href="#org627a89d"><span class="todo TODO">TODO</span> リポジトリごとに分けて表示できるようにする</a></h3>
+<div class="outline-text-3" id="text-org627a89d">
 <p>
 一見同じなので混ざって読みにくい。
 </p>
@@ -140,17 +147,17 @@ jQueryだけだと厳しいか。
 </p>
 </div>
 </div>
-<div id="outline-container-org6673a84" class="outline-3">
-<h3 id="org6673a84"><a href="#org6673a84"><span class="todo TODO">TODO</span> キャッシュを更新できるようにする</a></h3>
-<div class="outline-text-3" id="text-org6673a84">
+<div id="outline-container-org78a1e0b" class="outline-3">
+<h3 id="org78a1e0b"><a href="#org78a1e0b"><span class="todo TODO">TODO</span> キャッシュを更新できるようにする</a></h3>
+<div class="outline-text-3" id="text-org78a1e0b">
 <p>
 iframe内の更新ボタンみたいなのを作成する。キャッシュ時刻を保持してもよさそう。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbeba798" class="outline-3">
-<h3 id="orgbeba798"><a href="#orgbeba798"><span class="todo TODO">TODO</span> iframeでGitHub以外も開きたい</a></h3>
-<div class="outline-text-3" id="text-orgbeba798">
+<div id="outline-container-org42cd804" class="outline-3">
+<h3 id="org42cd804"><a href="#org42cd804"><span class="todo TODO">TODO</span> iframeでGitHub以外も開きたい</a></h3>
+<div class="outline-text-3" id="text-org42cd804">
 <p>
 ちょっとしたときに、不便。見てる途中で開きたいことはけっこうある。
 </p>
@@ -160,25 +167,25 @@ iframe内の更新ボタンみたいなのを作成する。キャッシュ時�
 </p>
 </div>
 </div>
-<div id="outline-container-org14d11e5" class="outline-3">
-<h3 id="org14d11e5"><a href="#org14d11e5"><span class="todo TODO">TODO</span> 実行チェックのCIを追加する</a></h3>
-<div class="outline-text-3" id="text-org14d11e5">
+<div id="outline-container-org2f17d83" class="outline-3">
+<h3 id="org2f17d83"><a href="#org2f17d83"><span class="todo TODO">TODO</span> 実行チェックのCIを追加する</a></h3>
+<div class="outline-text-3" id="text-org2f17d83">
 <p>
 5分くらい立ち上げるだけのチェック。ないよりはマシか。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org6619470" class="outline-2">
-<h2 id="org6619470"><a href="#org6619470">Reference</a></h2>
+<div id="outline-container-org4ebf4fd" class="outline-2">
+<h2 id="org4ebf4fd"><a href="#org4ebf4fd">Reference</a></h2>
 </div>
-<div id="outline-container-org8c19e32" class="outline-2">
-<h2 id="org8c19e32"><a href="#org8c19e32">Archives</a></h2>
-<div class="outline-text-2" id="text-org8c19e32">
+<div id="outline-container-org685055d" class="outline-2">
+<h2 id="org685055d"><a href="#org685055d">Archives</a></h2>
+<div class="outline-text-2" id="text-org685055d">
 </div>
-<div id="outline-container-org88c6136" class="outline-3">
-<h3 id="org88c6136"><a href="#org88c6136"><span class="done DONE">DONE</span> オフラインになっても止まらないようにする</a></h3>
-<div class="outline-text-3" id="text-org88c6136">
+<div id="outline-container-org3c55d98" class="outline-3">
+<h3 id="org3c55d98"><a href="#org3c55d98"><span class="done DONE">DONE</span> オフラインになっても止まらないようにする</a></h3>
+<div class="outline-text-3" id="text-org3c55d98">
 <p>
 今はフェッチに失敗すると止まる。別にサーバに影響を与えなくていい。
 </p>
@@ -188,33 +195,33 @@ timeout cancelさせればいいのか。
 </p>
 </div>
 </div>
-<div id="outline-container-org3403a52" class="outline-3">
-<h3 id="org3403a52"><a href="#org3403a52"><span class="done CLOSE">CLOSE</span> 直近にクリックした項目を色をつける</a></h3>
-<div class="outline-text-3" id="text-org3403a52">
+<div id="outline-container-orga96e5ca" class="outline-3">
+<h3 id="orga96e5ca"><a href="#orga96e5ca"><span class="done CLOSE">CLOSE</span> 直近にクリックした項目を色をつける</a></h3>
+<div class="outline-text-3" id="text-orga96e5ca">
 <p>
 どこまでたどったかわからなくなるので。削除したときに最新の画面を開くなったので、別にいらなくなった。
 </p>
 </div>
 </div>
-<div id="outline-container-orgfb0de9e" class="outline-3">
-<h3 id="orgfb0de9e"><a href="#orgfb0de9e"><span class="done DONE">DONE</span> 開いたときのiframe内に表示するページとして、Garbanzoの静的ページを用意する</a></h3>
-<div class="outline-text-3" id="text-orgfb0de9e">
+<div id="outline-container-org32bdbb4" class="outline-3">
+<h3 id="org32bdbb4"><a href="#org32bdbb4"><span class="done DONE">DONE</span> 開いたときのiframe内に表示するページとして、Garbanzoの静的ページを用意する</a></h3>
+<div class="outline-text-3" id="text-org32bdbb4">
 <p>
 ツールのウェルカムページとしていい感じのページにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org3c29816" class="outline-3">
-<h3 id="org3c29816"><a href="#org3c29816"><span class="done DONE">DONE</span> 削除したとき、先頭の項目でiframeを切り替えたい</a></h3>
-<div class="outline-text-3" id="text-org3c29816">
+<div id="outline-container-orged21cfb" class="outline-3">
+<h3 id="orged21cfb"><a href="#orged21cfb"><span class="done DONE">DONE</span> 削除したとき、先頭の項目でiframeを切り替えたい</a></h3>
+<div class="outline-text-3" id="text-orged21cfb">
 <p>
 そのままチェックボタンを押すだけで、次のやつを見たい。
 </p>
 </div>
 </div>
-<div id="outline-container-org702ce11" class="outline-3">
-<h3 id="org702ce11"><a href="#org702ce11"><span class="done DONE">DONE</span> 既読にできるようにする</a></h3>
-<div class="outline-text-3" id="text-org702ce11">
+<div id="outline-container-orgba72e4a" class="outline-3">
+<h3 id="orgba72e4a"><a href="#orgba72e4a"><span class="done DONE">DONE</span> 既読にできるようにする</a></h3>
+<div class="outline-text-3" id="text-orgba72e4a">
 <p>
 表示やデータからの削除と、既読リクエストをやる。
 </p>
@@ -224,34 +231,34 @@ timeout cancelさせればいいのか。
 </p>
 </div>
 </div>
-<div id="outline-container-orga1ac014" class="outline-3">
-<h3 id="orga1ac014"><a href="#orga1ac014"><span class="done DONE">DONE</span> 長い本文は省略する</a></h3>
-<div class="outline-text-3" id="text-orga1ac014">
+<div id="outline-container-org2377108" class="outline-3">
+<h3 id="org2377108"><a href="#org2377108"><span class="done DONE">DONE</span> 長い本文は省略する</a></h3>
+<div class="outline-text-3" id="text-org2377108">
 <p>
 どうせサイドバーだけから見ることはない。でもmarkdownからHTMLに変換をかけてるから切り出すのは難しそうな。
 本文非表示でいいか。
 </p>
 </div>
 </div>
-<div id="outline-container-org914323d" class="outline-3">
-<h3 id="org914323d"><a href="#org914323d"><span class="done DONE">DONE</span> 通知のアイコンや文章を調整する</a></h3>
-<div class="outline-text-3" id="text-org914323d">
+<div id="outline-container-org5a8431d" class="outline-3">
+<h3 id="org5a8431d"><a href="#org5a8431d"><span class="done DONE">DONE</span> 通知のアイコンや文章を調整する</a></h3>
+<div class="outline-text-3" id="text-org5a8431d">
 <p>
 いい感じにする。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc7526d3" class="outline-3">
-<h3 id="orgc7526d3"><a href="#orgc7526d3"><span class="done CLOSE">CLOSE</span> issueイベントにはオープンの場合とクローズの場合がある</a></h3>
-<div class="outline-text-3" id="text-orgc7526d3">
+<div id="outline-container-org21fffc4" class="outline-3">
+<h3 id="org21fffc4"><a href="#org21fffc4"><span class="done CLOSE">CLOSE</span> issueイベントにはオープンの場合とクローズの場合がある</a></h3>
+<div class="outline-text-3" id="text-org21fffc4">
 <p>
 区別はできないようだ。
 </p>
 </div>
 </div>
-<div id="outline-container-org2199e4e" class="outline-3">
-<h3 id="org2199e4e"><a href="#org2199e4e"><span class="done DONE">DONE</span> DiscussionとReleaseイベントに対応する</a></h3>
-<div class="outline-text-3" id="text-org2199e4e">
+<div id="outline-container-org47e0d85" class="outline-3">
+<h3 id="org47e0d85"><a href="#org47e0d85"><span class="done DONE">DONE</span> DiscussionとReleaseイベントに対応する</a></h3>
+<div class="outline-text-3" id="text-org47e0d85">
 <p>
 対応できてない。
 </p>
@@ -261,17 +268,17 @@ discussionは、APIの不具合でURLが取れないので不可能。スルー�
 </p>
 </div>
 </div>
-<div id="outline-container-org38fdf2b" class="outline-3">
-<h3 id="org38fdf2b"><a href="#org38fdf2b"><span class="done DONE">DONE</span> PRオープンの通知が来てない</a></h3>
-<div class="outline-text-3" id="text-org38fdf2b">
+<div id="outline-container-org1f2a05c" class="outline-3">
+<h3 id="org1f2a05c"><a href="#org1f2a05c"><span class="done DONE">DONE</span> PRオープンの通知が来てない</a></h3>
+<div class="outline-text-3" id="text-org1f2a05c">
 <p>
 PRイベントをスルーしてたので直した。
 </p>
 </div>
 </div>
-<div id="outline-container-org9f01957" class="outline-3">
-<h3 id="org9f01957"><a href="#org9f01957"><span class="done DONE">DONE</span> デスクトップ通知</a></h3>
-<div class="outline-text-3" id="text-org9f01957">
+<div id="outline-container-org2612178" class="outline-3">
+<h3 id="org2612178"><a href="#org2612178"><span class="done DONE">DONE</span> デスクトップ通知</a></h3>
+<div class="outline-text-3" id="text-org2612178">
 <p>
 push.jsでやればよいというが。
 </p>
@@ -289,9 +296,9 @@ push.jsでやればよいというが。
 </ul>
 </div>
 </div>
-<div id="outline-container-org6e70f21" class="outline-3">
-<h3 id="org6e70f21"><a href="#org6e70f21"><span class="done DONE">DONE</span> 上から新しい順に並ばせる</a></h3>
-<div class="outline-text-3" id="text-org6e70f21">
+<div id="outline-container-org2665b42" class="outline-3">
+<h3 id="org2665b42"><a href="#org2665b42"><span class="done DONE">DONE</span> 上から新しい順に並ばせる</a></h3>
+<div class="outline-text-3" id="text-org2665b42">
 <p>
 今はmapから取り出してランダムで見にくい。
 </p>
@@ -301,17 +308,17 @@ map型のroom.eventsで一覧を持っている。これはかぶりを防ぐた
 </p>
 </div>
 </div>
-<div id="outline-container-orgdf3d937" class="outline-3">
-<h3 id="orgdf3d937"><a href="#orgdf3d937"><span class="done DONE">DONE</span> commentとissue openの処理を共通化する</a></h3>
-<div class="outline-text-3" id="text-orgdf3d937">
+<div id="outline-container-orge868ee5" class="outline-3">
+<h3 id="orge868ee5"><a href="#orge868ee5"><span class="done DONE">DONE</span> commentとissue openの処理を共通化する</a></h3>
+<div class="outline-text-3" id="text-orge868ee5">
 <p>
 できるところが多くある。
 </p>
 </div>
 </div>
-<div id="outline-container-org9d0965f" class="outline-3">
-<h3 id="org9d0965f"><a href="#org9d0965f"><span class="done DONE">DONE</span> eventにタイプフィールドを追加する</a></h3>
-<div class="outline-text-3" id="text-org9d0965f">
+<div id="outline-container-org62a8bcf" class="outline-3">
+<h3 id="org62a8bcf"><a href="#org62a8bcf"><span class="done DONE">DONE</span> eventにタイプフィールドを追加する</a></h3>
+<div class="outline-text-3" id="text-org62a8bcf">
 <p>
 パッと見でわかりやすい。
 </p>
@@ -320,17 +327,17 @@ map型のroom.eventsで一覧を持っている。これはかぶりを防ぐた
 </p>
 </div>
 </div>
-<div id="outline-container-orgef0b5df" class="outline-3">
-<h3 id="orgef0b5df"><a href="#orgef0b5df"><span class="done DONE">DONE</span> 競合する</a></h3>
-<div class="outline-text-3" id="text-orgef0b5df">
+<div id="outline-container-org1c70b3c" class="outline-3">
+<h3 id="org1c70b3c"><a href="#org1c70b3c"><span class="done DONE">DONE</span> 競合する</a></h3>
+<div class="outline-text-3" id="text-org1c70b3c">
 <p>
 まだpanicすることがある。
 </p>
 </div>
 </div>
-<div id="outline-container-org796ec78" class="outline-3">
-<h3 id="org796ec78"><a href="#org796ec78"><span class="done DONE">DONE</span> クライアントが増えると競合する</a></h3>
-<div class="outline-text-3" id="text-org796ec78">
+<div id="outline-container-org0c2424c" class="outline-3">
+<h3 id="org0c2424c"><a href="#org0c2424c"><span class="done DONE">DONE</span> クライアントが増えると競合する</a></h3>
+<div class="outline-text-3" id="text-org0c2424c">
 <p>
 消えたクライアントは消す。
 </p>
@@ -340,9 +347,9 @@ map型のroom.eventsで一覧を持っている。これはかぶりを防ぐた
 </p>
 </div>
 </div>
-<div id="outline-container-org5c7f2e2" class="outline-3">
-<h3 id="org5c7f2e2"><a href="#org5c7f2e2"><span class="done DONE">DONE</span> 無限ループで通知取得する</a></h3>
-<div class="outline-text-3" id="text-org5c7f2e2">
+<div id="outline-container-org2f9d997" class="outline-3">
+<h3 id="org2f9d997"><a href="#org2f9d997"><span class="done DONE">DONE</span> 無限ループで通知取得する</a></h3>
+<div class="outline-text-3" id="text-org2f9d997">
 <p>
 リアルタイムに通知を取得できるようにする。今は起動時にやってるだけ。
 </p>
@@ -352,17 +359,17 @@ map型のroom.eventsで一覧を持っている。これはかぶりを防ぐた
 </p>
 </div>
 </div>
-<div id="outline-container-orge36031e" class="outline-3">
-<h3 id="orge36031e"><a href="#orge36031e"><span class="done DONE">DONE</span> 無限ループでキャッシュ取得する</a></h3>
-<div class="outline-text-3" id="text-orge36031e">
+<div id="outline-container-orgcb6dbe3" class="outline-3">
+<h3 id="orgcb6dbe3"><a href="#orgcb6dbe3"><span class="done DONE">DONE</span> 無限ループでキャッシュ取得する</a></h3>
+<div class="outline-text-3" id="text-orgcb6dbe3">
 <p>
 通知取得と同様に。
 </p>
 </div>
 </div>
-<div id="outline-container-org63e54d0" class="outline-3">
-<h3 id="org63e54d0"><a href="#org63e54d0"><span class="done DONE">DONE</span> 通知が少ないことがある</a></h3>
-<div class="outline-text-3" id="text-org63e54d0">
+<div id="outline-container-org2e97d7b" class="outline-3">
+<h3 id="org2e97d7b"><a href="#org2e97d7b"><span class="done DONE">DONE</span> 通知が少ないことがある</a></h3>
+<div class="outline-text-3" id="text-org2e97d7b">
 <p>
 競合かと思いきや、dereference失敗だ。タイトルか本文を持たないことがあるのか。
 ループのどこかでreturnしているように見える。
@@ -377,9 +384,9 @@ map型のroom.eventsで一覧を持っている。これはかぶりを防ぐた
 </p>
 </div>
 </div>
-<div id="outline-container-orgd95bd49" class="outline-3">
-<h3 id="orgd95bd49"><a href="#orgd95bd49"><span class="done DONE">DONE</span> 現在のURLを表示する</a></h3>
-<div class="outline-text-3" id="text-orgd95bd49">
+<div id="outline-container-org6bbbe65" class="outline-3">
+<h3 id="org6bbbe65"><a href="#org6bbbe65"><span class="done DONE">DONE</span> 現在のURLを表示する</a></h3>
+<div class="outline-text-3" id="text-org6bbbe65">
 <p>
 遷移する方法もほしい。
 </p>
@@ -393,25 +400,25 @@ iframeの中のURLを別タブで開けるようにする。
 </p>
 </div>
 </div>
-<div id="outline-container-org6a5f5da" class="outline-3">
-<h3 id="org6a5f5da"><a href="#org6a5f5da"><span class="done DONE">DONE</span> favicon追加する</a></h3>
-<div class="outline-text-3" id="text-org6a5f5da">
+<div id="outline-container-org3a1e386" class="outline-3">
+<h3 id="org3a1e386"><a href="#org3a1e386"><span class="done DONE">DONE</span> favicon追加する</a></h3>
+<div class="outline-text-3" id="text-org3a1e386">
 <p>
 blob書き込みとしてできた。ファイルだろうとほかの、HTMLなどと同じように扱えるのに感動。
 </p>
 </div>
 </div>
-<div id="outline-container-orge134ecd" class="outline-3">
-<h3 id="orge134ecd"><a href="#orge134ecd"><span class="done DONE">DONE</span> テキストをマークダウン化する</a></h3>
-<div class="outline-text-3" id="text-orge134ecd">
+<div id="outline-container-org992d18d" class="outline-3">
+<h3 id="org992d18d"><a href="#org992d18d"><span class="done DONE">DONE</span> テキストをマークダウン化する</a></h3>
+<div class="outline-text-3" id="text-org992d18d">
 <p>
 ライブラリで簡単にできた。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf69fffe" class="outline-3">
-<h3 id="orgf69fffe"><a href="#orgf69fffe"><span class="done DONE">DONE</span> 通知が多い場合の対応</a></h3>
-<div class="outline-text-3" id="text-orgf69fffe">
+<div id="outline-container-org5721220" class="outline-3">
+<h3 id="org5721220"><a href="#org5721220"><span class="done DONE">DONE</span> 通知が多い場合の対応</a></h3>
+<div class="outline-text-3" id="text-org5721220">
 <p>
 たくさんリクエストしてしまう。インメモリも無尽蔵に増えてしまう。
 </p>
@@ -432,9 +439,9 @@ blob書き込みとしてできた。ファイルだろうとほかの、HTMLな
 </p>
 </div>
 </div>
-<div id="outline-container-orgddae10a" class="outline-3">
-<h3 id="orgddae10a"><a href="#orgddae10a"><span class="done DONE">DONE</span> 通知にdiscussionがあるときにバグる</a></h3>
-<div class="outline-text-3" id="text-orgddae10a">
+<div id="outline-container-org1f3c2ff" class="outline-3">
+<h3 id="org1f3c2ff"><a href="#org1f3c2ff"><span class="done DONE">DONE</span> 通知にdiscussionがあるときにバグる</a></h3>
+<div class="outline-text-3" id="text-org1f3c2ff">
 <p>
 subjectのURLがないよう。
 </p>
@@ -444,33 +451,33 @@ subjectのURLがないよう。
 </p>
 </div>
 </div>
-<div id="outline-container-orgcd2ece1" class="outline-3">
-<h3 id="orgcd2ece1"><a href="#orgcd2ece1"><span class="done DONE">DONE</span> 時刻表示</a></h3>
-<div class="outline-text-3" id="text-orgcd2ece1">
+<div id="outline-container-orgbde19dd" class="outline-3">
+<h3 id="orgbde19dd"><a href="#orgbde19dd"><span class="done DONE">DONE</span> 時刻表示</a></h3>
+<div class="outline-text-3" id="text-orgbde19dd">
 <p>
 GitHubから取ってきた時刻を入れる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgd4fcaef" class="outline-3">
-<h3 id="orgd4fcaef"><a href="#orgd4fcaef"><span class="done DONE">DONE</span> リポジトリを制限しない</a></h3>
-<div class="outline-text-3" id="text-orgd4fcaef">
+<div id="outline-container-org866c4b7" class="outline-3">
+<h3 id="org866c4b7"><a href="#org866c4b7"><span class="done DONE">DONE</span> リポジトリを制限しない</a></h3>
+<div class="outline-text-3" id="text-org866c4b7">
 <p>
 今はテストのため固定になっている。リポジトリ関わらず取得するようにする。ただ数がとんでもないことになりそうなので、あらかじめ数対応をしておきたい。
 </p>
 </div>
 </div>
-<div id="outline-container-org2a26fd7" class="outline-3">
-<h3 id="org2a26fd7"><a href="#org2a26fd7"><span class="done DONE">DONE</span> イメージを用意する</a></h3>
-<div class="outline-text-3" id="text-org2a26fd7">
+<div id="outline-container-org6309023" class="outline-3">
+<h3 id="org6309023"><a href="#org6309023"><span class="done DONE">DONE</span> イメージを用意する</a></h3>
+<div class="outline-text-3" id="text-org6309023">
 <p>
 軽量イメージを使っていい感じになった。
 </p>
 </div>
 </div>
-<div id="outline-container-org4cef40d" class="outline-3">
-<h3 id="org4cef40d"><a href="#org4cef40d"><span class="done DONE">DONE</span> 初回起動時に配信されない</a></h3>
-<div class="outline-text-3" id="text-org4cef40d">
+<div id="outline-container-orge1895d1" class="outline-3">
+<h3 id="orge1895d1"><a href="#orge1895d1"><span class="done DONE">DONE</span> 初回起動時に配信されない</a></h3>
+<div class="outline-text-3" id="text-orge1895d1">
 <p>
 起動直後に読み込むと、ウェブソケットの内容を受け取れない。clientにjoinはしているのだが、送信されてないようだ。
 </p>
@@ -488,34 +495,34 @@ eventsを用意できてないと、forwardイベントが作成されないた�
 </p>
 </div>
 </div>
-<div id="outline-container-org9cfa846" class="outline-3">
-<h3 id="org9cfa846"><a href="#org9cfa846"><span class="done DONE">DONE</span> CPU使用率が高い</a></h3>
-<div class="outline-text-3" id="text-org9cfa846">
+<div id="outline-container-orgca011b5" class="outline-3">
+<h3 id="orgca011b5"><a href="#orgca011b5"><span class="done DONE">DONE</span> CPU使用率が高い</a></h3>
+<div class="outline-text-3" id="text-orgca011b5">
 <p>
 送信しまくってるからな。
 </p>
 </div>
 </div>
-<div id="outline-container-org622b84b" class="outline-3">
-<h3 id="org622b84b"><a href="#org622b84b"><span class="done DONE">DONE</span> latest comment URL を event から消す</a></h3>
-<div class="outline-text-3" id="text-org622b84b">
+<div id="outline-container-orgd097d88" class="outline-3">
+<h3 id="orgd097d88"><a href="#orgd097d88"><span class="done DONE">DONE</span> latest comment URL を event から消す</a></h3>
+<div class="outline-text-3" id="text-orgd097d88">
 <p>
 使ってないな。
 CLOSED: <span class="timestamp-wrapper"><span class="timestamp">[2023-05-30 火 23:19]</span></span>
 </p>
 </div>
 </div>
-<div id="outline-container-org87b4c34" class="outline-3">
-<h3 id="org87b4c34"><a href="#org87b4c34"><span class="done DONE">DONE</span> サイドバーの固定</a></h3>
-<div class="outline-text-3" id="text-org87b4c34">
+<div id="outline-container-org69a750f" class="outline-3">
+<h3 id="org69a750f"><a href="#org69a750f"><span class="done DONE">DONE</span> サイドバーの固定</a></h3>
+<div class="outline-text-3" id="text-org69a750f">
 <p>
 通知がたくさんあるとページが下に伸びる。
 </p>
 </div>
 </div>
-<div id="outline-container-orge72a29c" class="outline-3">
-<h3 id="orge72a29c"><a href="#orge72a29c"><span class="done DONE">DONE</span> コメント種別によってエラーになる</a></h3>
-<div class="outline-text-3" id="text-orge72a29c">
+<div id="outline-container-orgf271745" class="outline-3">
+<h3 id="orgf271745"><a href="#orgf271745"><span class="done DONE">DONE</span> コメント種別によってエラーになる</a></h3>
+<div class="outline-text-3" id="text-orgf271745">
 <p>
 まだ特定してない。
 </p>
@@ -525,25 +532,25 @@ issueが開かれたときの通知だな。
 </p>
 </div>
 </div>
-<div id="outline-container-orga0a5ba8" class="outline-3">
-<h3 id="orga0a5ba8"><a href="#orga0a5ba8"><span class="done DONE">DONE</span> event内にリポジトリ情報を入れる</a></h3>
-<div class="outline-text-3" id="text-orga0a5ba8">
+<div id="outline-container-org511ee5a" class="outline-3">
+<h3 id="org511ee5a"><a href="#org511ee5a"><span class="done DONE">DONE</span> event内にリポジトリ情報を入れる</a></h3>
+<div class="outline-text-3" id="text-org511ee5a">
 <p>
 リポジトリ名を入れる。
 </p>
 </div>
 </div>
-<div id="outline-container-org4b0976f" class="outline-3">
-<h3 id="org4b0976f"><a href="#org4b0976f"><span class="done DONE">DONE</span> プロキシを図に描く</a></h3>
-<div class="outline-text-3" id="text-org4b0976f">
+<div id="outline-container-orgb23d4d6" class="outline-3">
+<h3 id="orgb23d4d6"><a href="#orgb23d4d6"><span class="done DONE">DONE</span> プロキシを図に描く</a></h3>
+<div class="outline-text-3" id="text-orgb23d4d6">
 <p>
 頭がこんがらがるので整理する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgfec5cb4" class="outline-3">
-<h3 id="orgfec5cb4"><a href="#orgfec5cb4"><span class="done DONE">DONE</span> ステータスを表示するページ</a></h3>
-<div class="outline-text-3" id="text-orgfec5cb4">
+<div id="outline-container-orgb83c1ab" class="outline-3">
+<h3 id="orgb83c1ab"><a href="#orgb83c1ab"><span class="done DONE">DONE</span> ステータスを表示するページ</a></h3>
+<div class="outline-text-3" id="text-orgb83c1ab">
 <p>
 どこまでフェッチが終わったかを示す。
 </p>
@@ -568,17 +575,17 @@ issueが開かれたときの通知だな。
 </ul>
 </div>
 </div>
-<div id="outline-container-org171162e" class="outline-3">
-<h3 id="org171162e"><a href="#org171162e"><span class="done DONE">DONE</span> プロキシをGitHub以外に対応する</a></h3>
-<div class="outline-text-3" id="text-org171162e">
+<div id="outline-container-orge1cda56" class="outline-3">
+<h3 id="orge1cda56"><a href="#orge1cda56"><span class="done DONE">DONE</span> プロキシをGitHub以外に対応する</a></h3>
+<div class="outline-text-3" id="text-orge1cda56">
 <p>
 ホストが何でもできるようにする。できたが、相変わらずその画面から別のリンクを開くことはできない。
 </p>
 </div>
 </div>
-<div id="outline-container-orgdbd2848" class="outline-3">
-<h3 id="orgdbd2848"><a href="#orgdbd2848"><span class="done DONE">DONE</span> たまに何も出なくなる</a></h3>
-<div class="outline-text-3" id="text-orgdbd2848">
+<div id="outline-container-org6e3d930" class="outline-3">
+<h3 id="org6e3d930"><a href="#org6e3d930"><span class="done DONE">DONE</span> たまに何も出なくなる</a></h3>
+<div class="outline-text-3" id="text-org6e3d930">
 <ul class="org-ul">
 <li>統計の数字がすべて0になる</li>
 <li>エラーとかは出てない</li>
@@ -589,9 +596,9 @@ issueが開かれたときの通知だな。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc0eccac" class="outline-3">
-<h3 id="orgc0eccac"><a href="#orgc0eccac"><span class="done DONE">DONE</span> RSSを既読記録できるようにする</a></h3>
-<div class="outline-text-3" id="text-orgc0eccac">
+<div id="outline-container-orgf7545b9" class="outline-3">
+<h3 id="orgf7545b9"><a href="#orgf7545b9"><span class="done DONE">DONE</span> RSSを既読記録できるようにする</a></h3>
+<div class="outline-text-3" id="text-orgf7545b9">
 <p>
 既読の場合は非表示にしたい。
 </p>
@@ -613,33 +620,33 @@ issueが開かれたときの通知だな。
 </ul>
 </div>
 </div>
-<div id="outline-container-org12199d6" class="outline-3">
-<h3 id="org12199d6"><a href="#org12199d6"><span class="done DONE">DONE</span> RSS対応する</a></h3>
-<div class="outline-text-3" id="text-org12199d6">
+<div id="outline-container-org3468c9f" class="outline-3">
+<h3 id="org3468c9f"><a href="#org3468c9f"><span class="done DONE">DONE</span> RSS対応する</a></h3>
+<div class="outline-text-3" id="text-org3468c9f">
 <p>
 いちおう表示はできるようになった。
 </p>
 </div>
 </div>
-<div id="outline-container-orgff734b2" class="outline-3">
-<h3 id="orgff734b2"><a href="#orgff734b2"><span class="done DONE">DONE</span> フィードURLを設定ファイルから取り込むようにする</a></h3>
-<div class="outline-text-3" id="text-orgff734b2">
+<div id="outline-container-org87cf0f6" class="outline-3">
+<h3 id="org87cf0f6"><a href="#org87cf0f6"><span class="done DONE">DONE</span> フィードURLを設定ファイルから取り込むようにする</a></h3>
+<div class="outline-text-3" id="text-org87cf0f6">
 <p>
 先に既読対応しないと、取りまくってしまう。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc0741bb" class="outline-3">
-<h3 id="orgc0741bb"><a href="#orgc0741bb"><span class="done DONE">DONE</span> フィード設定ファイルがない場合の対応</a></h3>
-<div class="outline-text-3" id="text-orgc0741bb">
+<div id="outline-container-orgdaf7946" class="outline-3">
+<h3 id="orgdaf7946"><a href="#orgdaf7946"><span class="done DONE">DONE</span> フィード設定ファイルがない場合の対応</a></h3>
+<div class="outline-text-3" id="text-orgdaf7946">
 <p>
 ファイルがない場合は作成する。起動したときに、いくつかのファイルについて作成を走らせる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgedfd841" class="outline-3">
-<h3 id="orgedfd841"><a href="#orgedfd841"><span class="done DONE">DONE</span> フィード表示を整える</a></h3>
-<div class="outline-text-3" id="text-orgedfd841">
+<div id="outline-container-org77bb1d3" class="outline-3">
+<h3 id="org77bb1d3"><a href="#org77bb1d3"><span class="done DONE">DONE</span> フィード表示を整える</a></h3>
+<div class="outline-text-3" id="text-org77bb1d3">
 <ul class="org-ul">
 <li>アイコン</li>
 <li>リンク</li>
@@ -651,33 +658,33 @@ issueが開かれたときの通知だな。
 </p>
 </div>
 </div>
-<div id="outline-container-org9a1ce1a" class="outline-3">
-<h3 id="org9a1ce1a"><a href="#org9a1ce1a"><span class="done DONE">DONE</span> 統計表示を表にする</a></h3>
-<div class="outline-text-3" id="text-org9a1ce1a">
+<div id="outline-container-orgb458e1d" class="outline-3">
+<h3 id="orgb458e1d"><a href="#orgb458e1d"><span class="done DONE">DONE</span> 統計表示を表にする</a></h3>
+<div class="outline-text-3" id="text-orgb458e1d">
 <p>
 もうちょっときれいに表示する。
 </p>
 </div>
 </div>
-<div id="outline-container-org74e4725" class="outline-3">
-<h3 id="org74e4725"><a href="#org74e4725"><span class="done DONE">DONE</span> RSSのdescriptionにHTMLタグが入っているので消す</a></h3>
-<div class="outline-text-3" id="text-org74e4725">
+<div id="outline-container-org148ce2b" class="outline-3">
+<h3 id="org148ce2b"><a href="#org148ce2b"><span class="done DONE">DONE</span> RSSのdescriptionにHTMLタグが入っているので消す</a></h3>
+<div class="outline-text-3" id="text-org148ce2b">
 <p>
 文字を切り取るので、HTMLタグにしてるとうまくいかない。
 </p>
 </div>
 </div>
-<div id="outline-container-org4995205" class="outline-3">
-<h3 id="org4995205"><a href="#org4995205"><span class="done DONE">DONE</span> 設定ファイルのテンプレートを用意する</a></h3>
-<div class="outline-text-3" id="text-org4995205">
+<div id="outline-container-orgd60e5d1" class="outline-3">
+<h3 id="orgd60e5d1"><a href="#orgd60e5d1"><span class="done DONE">DONE</span> 設定ファイルのテンプレートを用意する</a></h3>
+<div class="outline-text-3" id="text-orgd60e5d1">
 <p>
 空白のファイルができるだけでわかりづらい。
 </p>
 </div>
 </div>
-<div id="outline-container-org43b4636" class="outline-3">
-<h3 id="org43b4636"><a href="#org43b4636"><span class="done DONE">DONE</span> フィードのドキュメントを作成する</a></h3>
-<div class="outline-text-3" id="text-org43b4636">
+<div id="outline-container-org0c7a6b1" class="outline-3">
+<h3 id="org0c7a6b1"><a href="#org0c7a6b1"><span class="done DONE">DONE</span> フィードのドキュメントを作成する</a></h3>
+<div class="outline-text-3" id="text-org0c7a6b1">
 <p>
 書く。
 </p>
@@ -689,9 +696,9 @@ issueが開かれたときの通知だな。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc9dcfe6" class="outline-3">
-<h3 id="orgc9dcfe6"><a href="#orgc9dcfe6"><span class="done DONE">DONE</span> ymlのタイトルを何かに使う</a></h3>
-<div class="outline-text-3" id="text-orgc9dcfe6">
+<div id="outline-container-org9986736" class="outline-3">
+<h3 id="org9986736"><a href="#org9986736"><span class="done DONE">DONE</span> ymlのタイトルを何かに使う</a></h3>
+<div class="outline-text-3" id="text-org9986736">
 <p>
 あるいは設定ファイルからタイトルを消す。今はイベントと分離して使えない。できればカテゴリにしたいが…。
 </p>
@@ -701,9 +708,9 @@ issueが開かれたときの通知だな。
 </p>
 </div>
 </div>
-<div id="outline-container-org028388f" class="outline-3">
-<h3 id="org028388f"><a href="#org028388f"><span class="done DONE">DONE</span> RSSの取得情報をいい感じにする</a></h3>
-<div class="outline-text-3" id="text-org028388f">
+<div id="outline-container-org7c3f1d3" class="outline-3">
+<h3 id="org7c3f1d3"><a href="#org7c3f1d3"><span class="done DONE">DONE</span> RSSの取得情報をいい感じにする</a></h3>
+<div class="outline-text-3" id="text-org7c3f1d3">
 <p>
 アイコンがブランクになることが多い。どうにかできないか。
 </p>
@@ -713,17 +720,17 @@ issueが開かれたときの通知だな。
 </p>
 </div>
 </div>
-<div id="outline-container-org3e80218" class="outline-3">
-<h3 id="org3e80218"><a href="#org3e80218"><span class="done CLOSE">CLOSE</span> 起動直後にリロードするとクライアントの分だけfetchが走るような</a></h3>
-<div class="outline-text-3" id="text-org3e80218">
+<div id="outline-container-org0df53ec" class="outline-3">
+<h3 id="org0df53ec"><a href="#org0df53ec"><span class="done CLOSE">CLOSE</span> 起動直後にリロードするとクライアントの分だけfetchが走るような</a></h3>
+<div class="outline-text-3" id="text-org0df53ec">
 <p>
 ログを仕込んだときに2つ出てくるときがある。
 </p>
 </div>
 </div>
-<div id="outline-container-orgee69d83" class="outline-3">
-<h3 id="orgee69d83"><a href="#orgee69d83"><span class="done CLOSE">CLOSE</span> トークンをトップページから入れられるようにする</a></h3>
-<div class="outline-text-3" id="text-orgee69d83">
+<div id="outline-container-orgc52c6fc" class="outline-3">
+<h3 id="orgc52c6fc"><a href="#orgc52c6fc"><span class="done CLOSE">CLOSE</span> トークンをトップページから入れられるようにする</a></h3>
+<div class="outline-text-3" id="text-orgc52c6fc">
 <p>
 別にファイルを直にいじってできればいいので、スルー。
 </p>
@@ -733,17 +740,17 @@ issueが開かれたときの通知だな。
 </p>
 </div>
 </div>
-<div id="outline-container-org4da2d9f" class="outline-3">
-<h3 id="org4da2d9f"><a href="#org4da2d9f"><span class="done DONE">DONE</span> トークンを設定ファイルから読み込めるようにする</a></h3>
-<div class="outline-text-3" id="text-org4da2d9f">
+<div id="outline-container-org93fd9dd" class="outline-3">
+<h3 id="org93fd9dd"><a href="#org93fd9dd"><span class="done DONE">DONE</span> トークンを設定ファイルから読み込めるようにする</a></h3>
+<div class="outline-text-3" id="text-org93fd9dd">
 <p>
 環境変数では面倒だ。
 </p>
 </div>
 </div>
-<div id="outline-container-org4c533aa" class="outline-3">
-<h3 id="org4c533aa"><a href="#org4c533aa"><span class="done DONE">DONE</span> 構造体まわりのリファクタ</a></h3>
-<div class="outline-text-3" id="text-org4c533aa">
+<div id="outline-container-org335ecbd" class="outline-3">
+<h3 id="org335ecbd"><a href="#org335ecbd"><span class="done DONE">DONE</span> 構造体まわりのリファクタ</a></h3>
+<div class="outline-text-3" id="text-org335ecbd">
 <ul class="org-ul">
 <li>場所がわかりづらい</li>
 <li>関数がでかい</li>
@@ -751,22 +758,22 @@ issueが開かれたときの通知だな。
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfb0d2b0" class="outline-3">
-<h3 id="orgfb0d2b0"><a href="#orgfb0d2b0"><span class="done DONE">DONE</span> テンプレートに構造体を渡す</a></h3>
-<div class="outline-text-3" id="text-orgfb0d2b0">
+<div id="outline-container-orgf55e7dc" class="outline-3">
+<h3 id="orgf55e7dc"><a href="#orgf55e7dc"><span class="done DONE">DONE</span> テンプレートに構造体を渡す</a></h3>
+<div class="outline-text-3" id="text-orgf55e7dc">
 </div>
 </div>
-<div id="outline-container-org52b7811" class="outline-3">
-<h3 id="org52b7811"><a href="#org52b7811"><span class="done DONE">DONE</span> 定数化する</a></h3>
-<div class="outline-text-3" id="text-org52b7811">
+<div id="outline-container-orgec3b876" class="outline-3">
+<h3 id="orgec3b876"><a href="#orgec3b876"><span class="done DONE">DONE</span> 定数化する</a></h3>
+<div class="outline-text-3" id="text-orgec3b876">
 <p>
 リファクタ。
 </p>
 </div>
 </div>
-<div id="outline-container-org0881bfb" class="outline-3">
-<h3 id="org0881bfb"><a href="#org0881bfb"><span class="done DONE">DONE</span> トークンがないとき実行すると止まる</a></h3>
-<div class="outline-text-3" id="text-org0881bfb">
+<div id="outline-container-orgc07a330" class="outline-3">
+<h3 id="orgc07a330"><a href="#orgc07a330"><span class="done DONE">DONE</span> トークンがないとき実行すると止まる</a></h3>
+<div class="outline-text-3" id="text-orgc07a330">
 <p>
 いつのまにか。
 </p>
@@ -776,9 +783,9 @@ issueが開かれたときの通知だな。
 </p>
 </div>
 </div>
-<div id="outline-container-org5650d33" class="outline-3">
-<h3 id="org5650d33"><a href="#org5650d33"><span class="done DONE">DONE</span> brew installに対応する</a></h3>
-<div class="outline-text-3" id="text-org5650d33">
+<div id="outline-container-org1314cfc" class="outline-3">
+<h3 id="org1314cfc"><a href="#org1314cfc"><span class="done DONE">DONE</span> brew installに対応する</a></h3>
+<div class="outline-text-3" id="text-org1314cfc">
 <p>
 気軽にMacでもインストールできるようにする。
 </p>

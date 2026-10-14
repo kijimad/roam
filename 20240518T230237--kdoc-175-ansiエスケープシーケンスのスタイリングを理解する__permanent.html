@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 175: ANSIエスケープシーケンスのスタイリングを理解する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 175: ANSIエスケープシーケンスのスタイリングを理解する</h1>
-<div id="outline-container-org373c81f" class="outline-2">
-<h2 id="org373c81f"><a href="#org373c81f">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org373c81f">
+<div id="outline-container-org4e8b605" class="outline-2">
+<h2 id="org4e8b605"><a href="#org4e8b605">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4e8b605">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,22 +37,22 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org039ab10" class="outline-2">
-<h2 id="org039ab10"><a href="#org039ab10">概要</a></h2>
-<div class="outline-text-2" id="text-org039ab10">
+<div id="outline-container-orgb0102e6" class="outline-2">
+<h2 id="orgb0102e6"><a href="#orgb0102e6">概要</a></h2>
+<div class="outline-text-2" id="text-orgb0102e6">
 <p>
 仮想ターミナル上で制御コードを使うと、インタラクティブにしたり、文字に色をつけたりと多少リッチにできる。記法はあまり直感的でないように見える。意味を理解する。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>仮想ターミナル上では、実行結果は青い文字で表示される</label><pre class="src src-shell">printf <span class="org-string">"\033[36mhello\033[0m"</span>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>仮想ターミナル上では、実行結果は青い文字で表示される</label><pre class="src src-shell">printf "\033[36mhello\033[0m"
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org181fade" class="outline-2">
-<h2 id="org181fade"><a href="#org181fade">意味</a></h2>
-<div class="outline-text-2" id="text-org181fade">
+<div id="outline-container-org64eb187" class="outline-2">
+<h2 id="org64eb187"><a href="#org64eb187">意味</a></h2>
+<div class="outline-text-2" id="text-org64eb187">
 <p>
 <code>\033[36mhello\033[0m</code> を分解していく。
 </p>
@@ -80,9 +87,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org55cc551" class="outline-2">
-<h2 id="org55cc551"><a href="#org55cc551">関連</a></h2>
-<div class="outline-text-2" id="text-org55cc551">
+<div id="outline-container-orgd913821" class="outline-2">
+<h2 id="orgd913821"><a href="#orgd913821">関連</a></h2>
+<div class="outline-text-2" id="text-orgd913821">
 <ul class="org-ul">
 <li><a href="https://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape code - Wikipedia</a></li>
 <li><a href="https://ja.wikipedia.org/wiki/Esc%E3%82%AD%E3%83%BC">Escキー - Wikipedia</a></li>

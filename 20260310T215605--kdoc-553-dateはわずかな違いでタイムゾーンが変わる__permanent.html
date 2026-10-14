@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:41 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 553: Dateはわずかな違いでタイムゾーンが変わる</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 553: Dateはわずかな違いでタイムゾーンが変わる</h1>
-<div id="outline-container-org264934b" class="outline-2">
-<h2 id="org264934b"><a href="#org264934b">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org264934b">
+<div id="outline-container-orgf2f238a" class="outline-2">
+<h2 id="orgf2f238a"><a href="#orgf2f238a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf2f238a">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,17 +37,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd606501" class="outline-2">
-<h2 id="orgd606501"><a href="#orgd606501">概要</a></h2>
-<div class="outline-text-2" id="text-orgd606501">
+<div id="outline-container-org3bdc582" class="outline-2">
+<h2 id="org3bdc582"><a href="#org3bdc582">概要</a></h2>
+<div class="outline-text-2" id="text-org3bdc582">
 <p>
 JavaScriptで、 <code>Date</code> オブジェクトのタイムゾーンがコンストラクタの日時フォーマットによって変わるのにハマった。有名な落とし穴のようである。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>表す時間が変わる。console.logでUTCに変換されている</label><pre class="src src-js"><span class="org-comment-delimiter">// </span><span class="org-comment">&#12393;&#12385;&#12425;&#12418;&#12479;&#12452;&#12512;&#12478;&#12540;&#12531;&#12458;&#12501;&#12475;&#12483;&#12488;&#12364;&#12394;&#12356;&#12290;&#26085;&#26178;&#12398;&#26377;&#28961;&#12398;&#36949;&#12356;
-</span>console.log(<span class="org-keyword">new</span> <span class="org-type">Date</span>(<span class="org-string">'2026-06-01'</span>)) <span class="org-comment-delimiter">// </span><span class="org-comment">UTC -&gt; UTC
-</span>console.log(<span class="org-keyword">new</span> <span class="org-type">Date</span>(<span class="org-string">'2026-06-01T00:00:00'</span>)) <span class="org-comment-delimiter">// </span><span class="org-comment">local timezone(Asia/Tokyo) -&gt; UTC</span>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>表す時間が変わる。console.logでUTCに変換されている</label><pre class="src src-js">// どちらもタイムゾーンオフセットがない。日時の有無の違い
+console.log(new Date('2026-06-01')) // UTC -&gt; UTC
+console.log(new Date('2026-06-01T00:00:00')) // local timezone(Asia/Tokyo) -&gt; UTC
 </pre>
 </div>
 
@@ -63,9 +70,9 @@ undefined
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org022dfec" class="outline-2">
-<h2 id="org022dfec"><a href="#org022dfec">関連</a></h2>
-<div class="outline-text-2" id="text-org022dfec">
+<div id="outline-container-org640520d" class="outline-2">
+<h2 id="org640520d"><a href="#org640520d">関連</a></h2>
+<div class="outline-text-2" id="text-org640520d">
 <ul class="org-ul">
 <li>類推: Dateオブジェクトまわりで、同じようなわかりにくい仕様はあるだろうか</li>
 </ul>

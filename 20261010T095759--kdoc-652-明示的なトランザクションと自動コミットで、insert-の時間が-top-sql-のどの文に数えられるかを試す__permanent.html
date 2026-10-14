@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</h1>
-<div id="outline-container-org895821e" class="outline-2">
-<h2 id="org895821e"><a href="#org895821e">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org895821e">
+<div id="outline-container-orgc83427d" class="outline-2">
+<h2 id="orgc83427d"><a href="#orgc83427d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgc83427d">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org429d32f" class="outline-2">
-<h2 id="org429d32f"><a href="#org429d32f">概要</a></h2>
-<div class="outline-text-2" id="text-org429d32f">
+<div id="outline-container-orgba8355f" class="outline-2">
+<h2 id="orgba8355f"><a href="#orgba8355f">概要</a></h2>
+<div class="outline-text-2" id="text-orgba8355f">
 <p>
 Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
 </p>
@@ -42,16 +49,16 @@ pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label><pre class="src src-shell"><span class="org-comment-delimiter"># </span><span class="org-comment">&#26360;&#12365;&#36796;&#12416;&#20596;&#12392;&#27161;&#26412;&#12434;&#21462;&#12427;&#20596;&#12398;2&#12388;&#12398;&#12475;&#12483;&#12471;&#12519;&#12531;&#12364;&#21516;&#26178;&#12395;&#35201;&#12427;&#12398;&#12391;&#12289;pgpg &#12398;&#12503;&#12525;&#12461;&#12471;&#12434;&#36890;&#12373;&#12378; PostgreSQL &#12395;&#30452;&#25509;(15433)&#12388;&#12394;&#12368;
-</span><span class="org-function-name">sample</span>() {
-  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F <span class="org-string">' | '</span> &lt;&lt;<span class="org-string">'SQL'</span><span class="org-sh-heredoc">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label><pre class="src src-shell"># 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+sample() {
+  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F ' | ' &lt;&lt;'SQL'
 CREATE TABLE samples (query text, wait text);
 DO $$
 BEGIN
   FOR i IN 1..400 LOOP
     PERFORM pg_stat_clear_snapshot();
     INSERT INTO samples
-    -- &#24453;&#27231;&#12452;&#12505;&#12531;&#12488;&#12364;&#12394;&#12369;&#12428;&#12400; CPU &#12391;&#21205;&#12356;&#12390;&#12356;&#12427;
+    -- 待機イベントがなければ CPU で動いている
     SELECT query, coalesce(wait_event_type || ':' || wait_event, 'CPU')
     FROM pg_stat_activity
     WHERE application_name = 'pgbench' AND state = 'active';
@@ -61,33 +68,33 @@ END $$;
 SELECT query, wait, count(*) FROM samples GROUP BY 1, 2 ORDER BY 3 DESC;
 DROP TABLE samples;
 SQL
-</span>}
-
-<span class="org-comment-delimiter"># </span><span class="org-comment">$1: &#35500;&#26126;&#12289;$2: pgbench &#12395;&#27969;&#12377; SQL&#12289;$3: pgbench &#12398;&#12458;&#12503;&#12471;&#12519;&#12531;
-</span><span class="org-function-name">run</span>() {
-  <span class="org-builtin">echo</span> <span class="org-string">"== $1"</span>
-  docker exec pgpg-postgres-1 psql -U postgres -qAt <span class="org-sh-escaped-newline">\</span>
-    -c <span class="org-string">"DROP TABLE IF EXISTS w"</span> -c <span class="org-string">"CREATE TABLE w (id int, pad text)"</span> <span class="org-sh-escaped-newline">\</span>
-    -c <span class="org-string">"CREATE INDEX ON w (id)"</span> -c <span class="org-string">"CREATE INDEX ON w (pad)"</span> 2&gt;/dev/null
-  printf <span class="org-string">"$2"</span> | docker exec -i pgpg-postgres-1 sh -c <span class="org-string">'cat &gt; /tmp/bench.sql'</span>
-  <span class="org-variable-name">out</span>=$(mktemp)
-  <span class="org-comment-delimiter"># </span><span class="org-comment">&#25313;&#24373;&#12503;&#12525;&#12488;&#12467;&#12523;(-M extended)&#12391;&#26360;&#12365;&#36796;&#12416;
-</span>  docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $<span class="org-variable-name">3</span> <span class="org-sh-escaped-newline">\</span>
-    -f /tmp/bench.sql postgres &gt; <span class="org-string">"$out"</span> 2&gt;/dev/null &amp;
-  sleep 0.3
-  sample
-  <span class="org-builtin">wait</span>
-  grep <span class="org-string">'latency average'</span> <span class="org-string">"$out"</span>
-  rm -f <span class="org-string">"$out"</span>
 }
 
-run <span class="org-string">"&#23567;&#12373;&#12356; INSERT &#12434;&#26126;&#31034;&#30340;&#12394;&#12488;&#12521;&#12531;&#12470;&#12463;&#12471;&#12519;&#12531;&#12391;(4&#20006;&#21015;&#12289;5&#31186;)"</span> <span class="org-sh-escaped-newline">\</span>
-    <span class="org-string">'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n'</span> <span class="org-string">"-c 4 -T 5"</span>
-run <span class="org-string">"&#23567;&#12373;&#12356; INSERT &#12434;&#33258;&#21205;&#12467;&#12511;&#12483;&#12488;&#12391;(4&#20006;&#21015;&#12289;5&#31186;)"</span> <span class="org-sh-escaped-newline">\</span>
-    <span class="org-string">'INSERT INTO w VALUES (1, md5(random()::text));\n'</span> <span class="org-string">"-c 4 -T 5"</span>
-run <span class="org-string">"50&#19975;&#34892;&#12398; INSERT &#12434;&#26126;&#31034;&#30340;&#12394;&#12488;&#12521;&#12531;&#12470;&#12463;&#12471;&#12519;&#12531;&#12391;1&#22238;"</span> <span class="org-sh-escaped-newline">\</span>
-    <span class="org-string">'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n'</span> <span class="org-string">"-c 1 -t 1"</span>
-docker exec pgpg-postgres-1 psql -U postgres -qAt -c <span class="org-string">"DROP TABLE w"</span>
+# $1: 説明、$2: pgbench に流す SQL、$3: pgbench のオプション
+run() {
+  echo "== $1"
+  docker exec pgpg-postgres-1 psql -U postgres -qAt \
+    -c "DROP TABLE IF EXISTS w" -c "CREATE TABLE w (id int, pad text)" \
+    -c "CREATE INDEX ON w (id)" -c "CREATE INDEX ON w (pad)" 2&gt;/dev/null
+  printf "$2" | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/bench.sql'
+  out=$(mktemp)
+  # 拡張プロトコル(-M extended)で書き込む
+  docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $3 \
+    -f /tmp/bench.sql postgres &gt; "$out" 2&gt;/dev/null &amp;
+  sleep 0.3
+  sample
+  wait
+  grep 'latency average' "$out"
+  rm -f "$out"
+}
+
+run "小さい INSERT を明示的なトランザクションで(4並列、5秒)" \
+    'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n' "-c 4 -T 5"
+run "小さい INSERT を自動コミットで(4並列、5秒)" \
+    'INSERT INTO w VALUES (1, md5(random()::text));\n' "-c 4 -T 5"
+run "50万行の INSERT を明示的なトランザクションで1回" \
+    'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n' "-c 1 -t 1"
+docker exec pgpg-postgres-1 psql -U postgres -qAt -c "DROP TABLE w"
 </pre>
 </div>
 
@@ -142,9 +149,9 @@ WALWrite: WALバッファがディスクに書き込まれるのを待機して�
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgefc5536" class="outline-2">
-<h2 id="orgefc5536"><a href="#orgefc5536">関連</a></h2>
-<div class="outline-text-2" id="text-orgefc5536">
+<div id="outline-container-orga2a6279" class="outline-2">
+<h2 id="orga2a6279"><a href="#orga2a6279">関連</a></h2>
+<div class="outline-text-2" id="text-orga2a6279">
 <ul class="org-ul">
 <li>前提: <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
 <li>前提: <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>

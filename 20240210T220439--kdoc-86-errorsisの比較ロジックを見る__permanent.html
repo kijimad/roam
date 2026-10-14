@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:08 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 86: errors.Is()の比較ロジックを見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 86: errors.Is()の比較ロジックを見る</h1>
-<div id="outline-container-orgf26cbd4" class="outline-2">
-<h2 id="orgf26cbd4"><a href="#orgf26cbd4">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgf26cbd4">
+<div id="outline-container-org0b07785" class="outline-2">
+<h2 id="org0b07785"><a href="#org0b07785">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org0b07785">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org5a9cab3" class="outline-2">
-<h2 id="org5a9cab3"><a href="#org5a9cab3">概要</a></h2>
-<div class="outline-text-2" id="text-org5a9cab3">
+<div id="outline-container-org02a0417" class="outline-2">
+<h2 id="org02a0417"><a href="#org02a0417">概要</a></h2>
+<div class="outline-text-2" id="text-org02a0417">
 <p>
 <a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>のerror.Is()は、2つのエラーが一致するかを判定する関数である。
 </p>
@@ -51,9 +58,9 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org2082f8c" class="outline-2">
-<h2 id="org2082f8c"><a href="#org2082f8c">ユースケースを見る</a></h2>
-<div class="outline-text-2" id="text-org2082f8c">
+<div id="outline-container-orgb5a8050" class="outline-2">
+<h2 id="orgb5a8050"><a href="#orgb5a8050">ユースケースを見る</a></h2>
+<div class="outline-text-2" id="text-orgb5a8050">
 <p>
 まずIs()の使い方を理解する。<a href="https://pkg.go.dev/errors">errors package</a>のexampleを見る。
 </p>
@@ -143,9 +150,9 @@ errors.New()が返す構造体*errors.errorStringはUnwrap()、Is()を実装し�
 </p>
 </div>
 </div>
-<div id="outline-container-org4cf2c47" class="outline-2">
-<h2 id="org4cf2c47"><a href="#org4cf2c47">比較ロジック</a></h2>
-<div class="outline-text-2" id="text-org4cf2c47">
+<div id="outline-container-orge234353" class="outline-2">
+<h2 id="orge234353"><a href="#orge234353">比較ロジック</a></h2>
+<div class="outline-text-2" id="text-orge234353">
 <p>
 動かして調べる。値や、型名の比較ではないことを確認する。
 </p>
@@ -237,9 +244,9 @@ func main() {
 </p>
 </div>
 </div>
-<div id="outline-container-org5c5ac4e" class="outline-2">
-<h2 id="org5c5ac4e"><a href="#org5c5ac4e">まとめ</a></h2>
-<div class="outline-text-2" id="text-org5c5ac4e">
+<div id="outline-container-orgfe72eb7" class="outline-2">
+<h2 id="orgfe72eb7"><a href="#orgfe72eb7">まとめ</a></h2>
+<div class="outline-text-2" id="text-orgfe72eb7">
 <ul class="org-ul">
 <li>errors.Is()はエラーチェーンをたどったり独自の判定ロジックを適用してくれるが、もっともシンプルな例だと単純に <code>==</code> で比較しているだけにすぎない</li>
 <li><code>error</code> はインターフェースであり、よく見るerrors.New()で作られる変数の型はその実装の1つにすぎない</li>
@@ -247,17 +254,17 @@ func main() {
 </ul>
 </div>
 </div>
-<div id="outline-container-org1e60470" class="outline-2">
-<h2 id="org1e60470"><a href="#org1e60470">関連</a></h2>
-<div class="outline-text-2" id="text-org1e60470">
+<div id="outline-container-org4fed6b0" class="outline-2">
+<h2 id="org4fed6b0"><a href="#org4fed6b0">関連</a></h2>
+<div class="outline-text-2" id="text-org4fed6b0">
 <ul class="org-ul">
 <li>補足: <a href="20231103T214003--kdoc-52-goで構造体がインターフェースを実装しているか確認する__permanent.html#ID-20231103T214003">KDOC 52: Goで構造体がインターフェースを実装しているか確認する</a>。サンプルコードでインターフェースを確認するのに使った</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org1d88f7a" class="outline-2">
-<h2 id="org1d88f7a"><a href="#org1d88f7a">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org1d88f7a">
+<div id="outline-container-org72907c3" class="outline-2">
+<h2 id="org72907c3"><a href="#org72907c3">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org72907c3">
 <ul class="org-ul">
 <li><a href="./20240217T002258--kdoc-96-errorsasの使い方__permanent.html">KDOC 96: errors.As()の使い方</a></li>
 </ul>

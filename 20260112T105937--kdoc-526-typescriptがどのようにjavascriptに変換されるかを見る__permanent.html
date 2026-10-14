@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 526: TypeScriptがどのようにJavaScriptに変換されるかを見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 526: TypeScriptがどのようにJavaScriptに変換されるかを見る</h1>
-<div id="outline-container-org97f0782" class="outline-2">
-<h2 id="org97f0782"><a href="#org97f0782">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org97f0782">
+<div id="outline-container-org7411207" class="outline-2">
+<h2 id="org7411207"><a href="#org7411207">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7411207">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,29 +37,29 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org2b04d16" class="outline-2">
-<h2 id="org2b04d16"><a href="#org2b04d16">概要</a></h2>
-<div class="outline-text-2" id="text-org2b04d16">
+<div id="outline-container-orgac20d69" class="outline-2">
+<h2 id="orgac20d69"><a href="#orgac20d69">概要</a></h2>
+<div class="outline-text-2" id="text-orgac20d69">
 <p>
 TypeScriptがJavaScriptに変換される様子を見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>TypeScriptをJavaScriptに変換してみる。型の記載はなくなっているのを確認できる</label><pre class="src src-shell">cat &lt;&lt; <span class="org-string">'EOF'</span> | npx -y esbuild --loader=ts --format=cjs 2&gt;&amp;1<span class="org-sh-heredoc">
-/* &#22793;&#25968;&#23450;&#32681; */
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>TypeScriptをJavaScriptに変換してみる。型の記載はなくなっているのを確認できる</label><pre class="src src-shell">cat &lt;&lt; 'EOF' | npx -y esbuild --loader=ts --format=cjs 2&gt;&amp;1
+/* 変数定義 */
 let color: string = "red";
 
-/* &#38306;&#25968;&#23450;&#32681;&#12392;&#21628;&#12403;&#20986;&#12375; */
+/* 関数定義と呼び出し */
 function greet1(name: string) {}
 greet1("hello")
 
-/* &#19977;&#38917;&#28436;&#31639;&#23376; */
+/* 三項演算子 */
 1 ? "a" : "b"
 
-/* &#22411;&#23450;&#32681; */
+/* 型定義 */
 type animal = "dog" | "cat"
 
-EOF</span>
+EOF
 </pre>
 </div>
 
@@ -66,9 +73,9 @@ greet1("hello");
 </div>
 </div>
 </div>
-<div id="outline-container-org90f4606" class="outline-2">
-<h2 id="org90f4606"><a href="#org90f4606">関連</a></h2>
-<div class="outline-text-2" id="text-org90f4606">
+<div id="outline-container-org66e8fcc" class="outline-2">
+<h2 id="org66e8fcc"><a href="#org66e8fcc">関連</a></h2>
+<div class="outline-text-2" id="text-org66e8fcc">
 <p>
 なし。
 </p>

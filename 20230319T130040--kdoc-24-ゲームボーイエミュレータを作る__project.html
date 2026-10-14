@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:41 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 24: ゲームボーイエミュレータを作る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -18,9 +25,9 @@
 <p>
 ゲームボーイエミュレータの実装は数多くある。参考にして作る。
 </p>
-<div id="outline-container-orgf6ccacb" class="outline-2">
-<h2 id="orgf6ccacb"><a href="#orgf6ccacb">memo</a></h2>
-<div class="outline-text-2" id="text-orgf6ccacb">
+<div id="outline-container-orgb22a458" class="outline-2">
+<h2 id="orgb22a458"><a href="#orgb22a458">memo</a></h2>
+<div class="outline-text-2" id="text-orgb22a458">
 <ul class="org-ul">
 <li><a href="https://github.com/bokuweb/gopher-boy">bokuweb/gopher-boy</a>は<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>で読める。最初のコミットをたどる。</li>
 <li>pkgconfigの問題で実行できず
@@ -63,42 +70,42 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd76592d" class="outline-2">
-<h2 id="orgd76592d"><a href="#orgd76592d">Tasks</a></h2>
-<div class="outline-text-2" id="text-orgd76592d">
+<div id="outline-container-org8c77781" class="outline-2">
+<h2 id="org8c77781"><a href="#org8c77781">Tasks</a></h2>
+<div class="outline-text-2" id="text-org8c77781">
 </div>
-<div id="outline-container-org8d39dfe" class="outline-3">
-<h3 id="org8d39dfe"><a href="#org8d39dfe"><span class="todo TODO">TODO</span> GPUのヘルパー関数のテストを書く</a></h3>
-<div class="outline-text-3" id="text-org8d39dfe">
+<div id="outline-container-org5aa7cbb" class="outline-3">
+<h3 id="org5aa7cbb"><a href="#org5aa7cbb"><span class="todo TODO">TODO</span> GPUのヘルパー関数のテストを書く</a></h3>
+<div class="outline-text-3" id="text-org5aa7cbb">
 <p>
 まだあまり理解できてないところがある。
 </p>
 </div>
 </div>
-<div id="outline-container-org89c22ec" class="outline-3">
-<h3 id="org89c22ec"><a href="#org89c22ec"><span class="todo TODO">TODO</span> 割込のテストを書く</a></h3>
-<div class="outline-text-3" id="text-org89c22ec">
+<div id="outline-container-org64fab02" class="outline-3">
+<h3 id="org64fab02"><a href="#org64fab02"><span class="todo TODO">TODO</span> 割込のテストを書く</a></h3>
+<div class="outline-text-3" id="text-org64fab02">
 <p>
 難しそうな部分。
 </p>
 </div>
 </div>
-<div id="outline-container-orgefbadba" class="outline-3">
-<h3 id="orgefbadba"><a href="#orgefbadba"><span class="todo TODO">TODO</span> CPUのテストを書く</a></h3>
-<div class="outline-text-3" id="text-orgefbadba">
+<div id="outline-container-org5e07761" class="outline-3">
+<h3 id="org5e07761"><a href="#org5e07761"><span class="todo TODO">TODO</span> CPUのテストを書く</a></h3>
+<div class="outline-text-3" id="text-org5e07761">
 <ul class="org-ul">
 <li>フラグあたりがよくわかってない</li>
 </ul>
 </div>
 </div>
 </div>
-<div id="outline-container-org21304af" class="outline-2">
-<h2 id="org21304af"><a href="#org21304af">Archives</a></h2>
-<div class="outline-text-2" id="text-org21304af">
+<div id="outline-container-orgafb11c2" class="outline-2">
+<h2 id="orgafb11c2"><a href="#orgafb11c2">Archives</a></h2>
+<div class="outline-text-2" id="text-orgafb11c2">
 </div>
-<div id="outline-container-orgd7d9689" class="outline-3">
-<h3 id="orgd7d9689"><a href="#orgd7d9689"><span class="done DONE">DONE</span> バスのテストを書く</a></h3>
-<div class="outline-text-3" id="text-orgd7d9689">
+<div id="outline-container-org0461c2b" class="outline-3">
+<h3 id="org0461c2b"><a href="#org0461c2b"><span class="done DONE">DONE</span> バスのテストを書く</a></h3>
+<div class="outline-text-3" id="text-org0461c2b">
 <p>
 完全に理解するためにテストを書く。
 </p>
@@ -123,9 +130,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org9e722d4" class="outline-3">
-<h3 id="org9e722d4"><a href="#org9e722d4"><span class="done DONE">DONE</span> <a href="https://gihyo.jp/dp/ebook/2019/978-4-297-10822-9">動かしてわかる CPUの作り方10講 | Gihyo Digital Publishing</a></a></h3>
-<div class="outline-text-3" id="text-org9e722d4">
+<div id="outline-container-orgb4d0969" class="outline-3">
+<h3 id="orgb4d0969"><a href="#orgb4d0969"><span class="done DONE">DONE</span> <a href="https://gihyo.jp/dp/ebook/2019/978-4-297-10822-9">動かしてわかる CPUの作り方10講 | Gihyo Digital Publishing</a></a></h3>
+<div class="outline-text-3" id="text-orgb4d0969">
 <p>
 CPUの知識が足りないので読む。
 </p>
@@ -177,17 +184,17 @@ CPUの知識が足りないので読む。
 </ul>
 </div>
 </div>
-<div id="outline-container-org6b38ee1" class="outline-3">
-<h3 id="org6b38ee1"><a href="#org6b38ee1"><span class="done DONE">DONE</span> 命令セットを網羅する</a></h3>
-<div class="outline-text-3" id="text-org6b38ee1">
+<div id="outline-container-orgd2b9ef5" class="outline-3">
+<h3 id="orgd2b9ef5"><a href="#orgd2b9ef5"><span class="done DONE">DONE</span> 命令セットを網羅する</a></h3>
+<div class="outline-text-3" id="text-orgd2b9ef5">
 <p>
 追加していく。
 </p>
 </div>
 </div>
-<div id="outline-container-org93d665b" class="outline-3">
-<h3 id="org93d665b"><a href="#org93d665b"><span class="done CLOSE">CLOSE</span> オペランドを取る関数が何かおかしい</a></h3>
-<div class="outline-text-3" id="text-org93d665b">
+<div id="outline-container-org370d1bd" class="outline-3">
+<h3 id="org370d1bd"><a href="#org370d1bd"><span class="done CLOSE">CLOSE</span> オペランドを取る関数が何かおかしい</a></h3>
+<div class="outline-text-3" id="text-org370d1bd">
 <p>
 第2引数のレジスタとデータが混じっているように見える。
 </p>
@@ -197,9 +204,9 @@ CPUの知識が足りないので読む。
 </p>
 </div>
 </div>
-<div id="outline-container-org42f1b41" class="outline-3">
-<h3 id="org42f1b41"><a href="#org42f1b41"><span class="done DONE">DONE</span> 画像によるテスト方法を確認する</a></h3>
-<div class="outline-text-3" id="text-org42f1b41">
+<div id="outline-container-orgf9002ef" class="outline-3">
+<h3 id="orgf9002ef"><a href="#orgf9002ef"><span class="done DONE">DONE</span> 画像によるテスト方法を確認する</a></h3>
+<div class="outline-text-3" id="text-orgf9002ef">
 <p>
 テストでそれぞれのROM実行結果を画像出力しているので、手動確認しなくていい。これはどうやっているのだろうか。ほかのゲーム開発にも応用できそうだ。
 </p>
@@ -227,9 +234,9 @@ CPUの知識が足りないので読む。
 </ul>
 </div>
 </div>
-<div id="outline-container-org0b010b7" class="outline-3">
-<h3 id="org0b010b7"><a href="#org0b010b7"><span class="done DONE">DONE</span> GPUのテストで画像を出力してみる</a></h3>
-<div class="outline-text-3" id="text-org0b010b7">
+<div id="outline-container-org3178a48" class="outline-3">
+<h3 id="org3178a48"><a href="#org3178a48"><span class="done DONE">DONE</span> GPUのテストで画像を出力してみる</a></h3>
+<div class="outline-text-3" id="text-org3178a48">
 <ul class="org-ul">
 <li>なんだかわからない。進まない
 <ul class="org-ul">
@@ -274,9 +281,9 @@ CPUの知識が足りないので読む。
 </ul>
 </div>
 </div>
-<div id="outline-container-org205a5d3" class="outline-3">
-<h3 id="org205a5d3"><a href="#org205a5d3"><span class="done DONE">DONE</span> テストでスプライトを出力する</a></h3>
-<div class="outline-text-3" id="text-org205a5d3">
+<div id="outline-container-org446b6aa" class="outline-3">
+<h3 id="org446b6aa"><a href="#org446b6aa"><span class="done DONE">DONE</span> テストでスプライトを出力する</a></h3>
+<div class="outline-text-3" id="text-org446b6aa">
 <p>
 スプライトを出してみる。
 </p>
@@ -293,86 +300,86 @@ CPUの知識が足りないので読む。
 </div>
 </div>
 </div>
-<div id="outline-container-orgba3aa1e" class="outline-2">
-<h2 id="orgba3aa1e"><a href="#orgba3aa1e">Reference</a></h2>
-<div class="outline-text-2" id="text-orgba3aa1e">
+<div id="outline-container-org1cf649c" class="outline-2">
+<h2 id="org1cf649c"><a href="#org1cf649c">Reference</a></h2>
+<div class="outline-text-2" id="text-org1cf649c">
 </div>
-<div id="outline-container-orgb61f851" class="outline-3">
-<h3 id="orgb61f851"><a href="#orgb61f851"><a href="http://yuma.ohgami.jp/GB-Programming-with-Shell-Script/02_tile_on_bg.html">背景にタイルを配置 | シェルスクリプトで ゲームボーイプログラミング 入門</a></a></h3>
-<div class="outline-text-3" id="text-orgb61f851">
+<div id="outline-container-orgec91dc4" class="outline-3">
+<h3 id="orgec91dc4"><a href="#orgec91dc4"><a href="http://yuma.ohgami.jp/GB-Programming-with-Shell-Script/02_tile_on_bg.html">背景にタイルを配置 | シェルスクリプトで ゲームボーイプログラミング 入門</a></a></h3>
+<div class="outline-text-3" id="text-orgec91dc4">
 <p>
 LCDについて。
 </p>
 </div>
 </div>
-<div id="outline-container-org9348c6a" class="outline-3">
-<h3 id="org9348c6a"><a href="#org9348c6a"><a href="http://gikofami.fc2web.com/">ｷﾞｺ猫でもわかるファミコンプログラミング</a></a></h3>
-<div class="outline-text-3" id="text-org9348c6a">
+<div id="outline-container-org856e113" class="outline-3">
+<h3 id="org856e113"><a href="#org856e113"><a href="http://gikofami.fc2web.com/">ｷﾞｺ猫でもわかるファミコンプログラミング</a></a></h3>
+<div class="outline-text-3" id="text-org856e113">
 <p>
 定番のエミュレータ解説サイト。一般的な仕組みはこっちで学んでおくのがよさそう。
 </p>
 </div>
 </div>
-<div id="outline-container-org4970999" class="outline-3">
-<h3 id="org4970999"><a href="#org4970999"><a href="https://gbdev.io/pandocs/About.html">Foreword - Pan Docs</a></a></h3>
-<div class="outline-text-3" id="text-org4970999">
+<div id="outline-container-orgd3fd70b" class="outline-3">
+<h3 id="orgd3fd70b"><a href="#orgd3fd70b"><a href="https://gbdev.io/pandocs/About.html">Foreword - Pan Docs</a></a></h3>
+<div class="outline-text-3" id="text-orgd3fd70b">
 <p>
 ゲームボーイの仕様。
 </p>
 </div>
 </div>
-<div id="outline-container-org1024aa3" class="outline-3">
-<h3 id="org1024aa3"><a href="#org1024aa3"><a href="http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf">GameBoy CPU Manual</a></a></h3>
-<div class="outline-text-3" id="text-org1024aa3">
+<div id="outline-container-orge7d2538" class="outline-3">
+<h3 id="orge7d2538"><a href="#orge7d2538"><a href="http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf">GameBoy CPU Manual</a></a></h3>
+<div class="outline-text-3" id="text-orge7d2538">
 <p>
 ゲームボーイのCPUマニュアル。
 </p>
 </div>
 </div>
-<div id="outline-container-orga5b4e07" class="outline-3">
-<h3 id="orga5b4e07"><a href="#orga5b4e07"><a href="https://gbdev.io/">Projects | gbdev.io</a></a></h3>
-<div class="outline-text-3" id="text-orga5b4e07">
+<div id="outline-container-org9489467" class="outline-3">
+<h3 id="org9489467"><a href="#org9489467"><a href="https://gbdev.io/">Projects | gbdev.io</a></a></h3>
+<div class="outline-text-3" id="text-org9489467">
 <p>
 開発コミュニティ。
 </p>
 </div>
 </div>
-<div id="outline-container-org85d89e7" class="outline-3">
-<h3 id="org85d89e7"><a href="#org85d89e7"><a href="https://gbdev.io/resources.html#tools">Resources | gbdev.io</a></a></h3>
-<div class="outline-text-3" id="text-org85d89e7">
+<div id="outline-container-org2b86ab3" class="outline-3">
+<h3 id="org2b86ab3"><a href="#org2b86ab3"><a href="https://gbdev.io/resources.html#tools">Resources | gbdev.io</a></a></h3>
+<div class="outline-text-3" id="text-org2b86ab3">
 <p>
 非常に詳しい解説集。
 </p>
 </div>
 </div>
-<div id="outline-container-orgae4cdaa" class="outline-3">
-<h3 id="orgae4cdaa"><a href="#orgae4cdaa"><a href="https://www.dkrk-blog.net/game/gb_dev_sprite1">GB ゲーム開発覚え書き: スプライトを動かす1 | きるこの日記帳</a></a></h3>
-<div class="outline-text-3" id="text-orgae4cdaa">
+<div id="outline-container-orgfca7188" class="outline-3">
+<h3 id="orgfca7188"><a href="#orgfca7188"><a href="https://www.dkrk-blog.net/game/gb_dev_sprite1">GB ゲーム開発覚え書き: スプライトを動かす1 | きるこの日記帳</a></a></h3>
+<div class="outline-text-3" id="text-orgfca7188">
 <p>
 スプライトのわかりやすい説明。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc0576f4" class="outline-3">
-<h3 id="orgc0576f4"><a href="#orgc0576f4"><a href="https://gekkio.fi/files/gb-docs/gbctr.pdf">Game Boy: Complete Technical Reference</a></a></h3>
-<div class="outline-text-3" id="text-orgc0576f4">
+<div id="outline-container-org93e1fde" class="outline-3">
+<h3 id="org93e1fde"><a href="#org93e1fde"><a href="https://gekkio.fi/files/gb-docs/gbctr.pdf">Game Boy: Complete Technical Reference</a></a></h3>
+<div class="outline-text-3" id="text-org93e1fde">
 <p>
 詳しいリファレンス。
 </p>
 </div>
 </div>
-<div id="outline-container-org7a1fafa" class="outline-3">
-<h3 id="org7a1fafa"><a href="#org7a1fafa"><a href="https://w.atwiki.jp/gbspec/pages/35.html">CPU/命令セット - GB Spec - atwiki（アットウィキ）</a></a></h3>
-<div class="outline-text-3" id="text-org7a1fafa">
+<div id="outline-container-org7699ff8" class="outline-3">
+<h3 id="org7699ff8"><a href="#org7699ff8"><a href="https://w.atwiki.jp/gbspec/pages/35.html">CPU/命令セット - GB Spec - atwiki（アットウィキ）</a></a></h3>
+<div class="outline-text-3" id="text-org7699ff8">
 <p>
 命令セットの一覧。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org58a676a" class="outline-2">
-<h2 id="org58a676a"><a href="#org58a676a">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org58a676a">
+<div id="outline-container-org1d22bc7" class="outline-2">
+<h2 id="org1d22bc7"><a href="#org1d22bc7">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org1d22bc7">
 <ul class="org-ul">
 <li><a href="./20240206T225726--kdoc-73-odでファイルの中身をn進数で見る__permanent.html">KDOC 73: odでファイルの中身をN進数で見る</a></li>
 </ul>

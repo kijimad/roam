@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 496: Index (Only) Scanの様子を見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 496: Index (Only) Scanの様子を見る</h1>
-<div id="outline-container-orgf1b8883" class="outline-2">
-<h2 id="orgf1b8883"><a href="#orgf1b8883">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgf1b8883">
+<div id="outline-container-org53a5a1a" class="outline-2">
+<h2 id="org53a5a1a"><a href="#org53a5a1a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org53a5a1a">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org7e21c99" class="outline-2">
-<h2 id="org7e21c99"><a href="#org7e21c99">概要</a></h2>
-<div class="outline-text-2" id="text-org7e21c99">
+<div id="outline-container-orge7db908" class="outline-2">
+<h2 id="orge7db908"><a href="#orge7db908">概要</a></h2>
+<div class="outline-text-2" id="text-orge7db908">
 <p>
 PostgreSQLで、インデックスが使われる様子を確かめる。
 </p>
@@ -42,15 +49,15 @@ PostgreSQLで、インデックスが使われる様子を確かめる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>indexがないフィールドを条件にするのでindexは使われない</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">NAME</span> <span class="org-type">VARCHAR</span>(255),
-    num <span class="org-type">INTEGER</span>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>indexがないフィールドを条件にするのでindexは使われない</label><pre class="src src-sql">CREATE TABLE users (
+    NAME VARCHAR(255),
+    num INTEGER
 );
-<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">NAME</span>);
+CREATE INDEX idx_users_name ON users(NAME);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">index&#12434;&#20351;&#12431;&#12394;&#12356;
-</span>explain
-<span class="org-keyword">SELECT</span> <span class="org-keyword">NAME</span> <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> num = 1;
+-- indexを使わない
+explain
+SELECT NAME FROM users WHERE num = 1;
 </pre>
 </div>
 
@@ -79,14 +86,14 @@ PostgreSQLで、インデックスが使われる様子を確かめる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>検索にインデックスidx_users_nameを使うが、結果として返すidは含まれていないのでヒープアクセスが発生し、index Only Scanにはならない</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    id serial <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
-    <span class="org-keyword">NAME</span> <span class="org-type">VARCHAR</span>(255)
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>検索にインデックスidx_users_nameを使うが、結果として返すidは含まれていないのでヒープアクセスが発生し、index Only Scanにはならない</label><pre class="src src-sql">CREATE TABLE users (
+    id serial PRIMARY KEY,
+    NAME VARCHAR(255)
 );
-<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">NAME</span>);
+CREATE INDEX idx_users_name ON users(NAME);
 
 explain
-<span class="org-keyword">SELECT</span> id <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">NAME</span> = <span class="org-string">'a'</span>;
+SELECT id FROM users WHERE NAME = 'a';
 </pre>
 </div>
 
@@ -115,15 +122,15 @@ index only scan するパターン。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>Index Only Scanする。検索にインデックスidx_users_nameを使い、結果もnameだけなので、indexだけで完結する。</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    <span class="org-keyword">NAME</span> <span class="org-type">VARCHAR</span>(255),
-    num <span class="org-type">INTEGER</span>
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>Index Only Scanする。検索にインデックスidx_users_nameを使い、結果もnameだけなので、indexだけで完結する。</label><pre class="src src-sql">CREATE TABLE users (
+    NAME VARCHAR(255),
+    num INTEGER
 );
-<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">NAME</span>);
+CREATE INDEX idx_users_name ON users(NAME);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">index&#12434;&#20351;&#12358;
-</span>explain
-<span class="org-keyword">SELECT</span> <span class="org-keyword">NAME</span> <span class="org-keyword">FROM</span> users <span class="org-keyword">WHERE</span> <span class="org-keyword">NAME</span> = <span class="org-string">'a'</span>;
+-- indexを使う
+explain
+SELECT NAME FROM users WHERE NAME = 'a';
 </pre>
 </div>
 
@@ -148,18 +155,18 @@ index only scan するパターン。
 </div>
 </div>
 </div>
-<div id="outline-container-org755ed2b" class="outline-2">
-<h2 id="org755ed2b"><a href="#org755ed2b">関連</a></h2>
-<div class="outline-text-2" id="text-org755ed2b">
+<div id="outline-container-orgcb9ee0b" class="outline-2">
+<h2 id="orgcb9ee0b"><a href="#orgcb9ee0b">関連</a></h2>
+<div class="outline-text-2" id="text-orgcb9ee0b">
 <ul class="org-ul">
 <li>具体例: <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。を使って検証した</li>
 <li>追加調査: QUERY PLANの値の意味をよくわかってないので調べる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org6e6773b" class="outline-2">
-<h2 id="org6e6773b"><a href="#org6e6773b">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org6e6773b">
+<div id="outline-container-orgc78226f" class="outline-2">
+<h2 id="orgc78226f"><a href="#orgc78226f">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgc78226f">
 <ul class="org-ul">
 <li><a href="./20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html">KDOC 497: 複合インデックスの使用条件を試す</a></li>
 <li><a href="./20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html">KDOC 643: WHERE条件の大小によって実行計画が変わる例</a></li>

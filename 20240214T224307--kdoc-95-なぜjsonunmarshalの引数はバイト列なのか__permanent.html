@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:08 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 95: なぜjson.Unmarshalの引数はバイト列なのか</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 95: なぜjson.Unmarshalの引数はバイト列なのか</h1>
-<div id="outline-container-orgeba09cb" class="outline-2">
-<h2 id="orgeba09cb"><a href="#orgeba09cb">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgeba09cb">
+<div id="outline-container-orge29b2be" class="outline-2">
+<h2 id="orge29b2be"><a href="#orge29b2be">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge29b2be">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfb7d8fe" class="outline-2">
-<h2 id="orgfb7d8fe"><a href="#orgfb7d8fe">概要</a></h2>
-<div class="outline-text-2" id="text-orgfb7d8fe">
+<div id="outline-container-org5dae091" class="outline-2">
+<h2 id="org5dae091"><a href="#org5dae091">概要</a></h2>
+<div class="outline-text-2" id="text-org5dae091">
 <p>
 <a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>でJSONをデシリアライズするときに使う関数のシグネチャはこうだ。
 </p>
@@ -47,9 +54,9 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org8f84bd9" class="outline-2">
-<h2 id="org8f84bd9"><a href="#org8f84bd9">違い</a></h2>
-<div class="outline-text-2" id="text-org8f84bd9">
+<div id="outline-container-orge5572b1" class="outline-2">
+<h2 id="orge5572b1"><a href="#orge5572b1">違い</a></h2>
+<div class="outline-text-2" id="text-orge5572b1">
 <p>
 <code>string</code> と <code>[]byte</code> の違いは何か。本質的にはどちらもバイト列だ。文字列はイミュータブルで、バイトスライスはミュータブルという点は違う。したがってデータが変わるときはバイトスライスのほうがコストを低くできる。文字列だとメモリをアローケーションして作り直すしかないから。文字列だと特定のケースで遅くなる可能性があるから、バイトスライスにしている、などどうだろう。
 </p>
@@ -59,9 +66,9 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org1e3be0e" class="outline-2">
-<h2 id="org1e3be0e"><a href="#org1e3be0e">関連</a></h2>
-<div class="outline-text-2" id="text-org1e3be0e">
+<div id="outline-container-org079b745" class="outline-2">
+<h2 id="org079b745"><a href="#org079b745">関連</a></h2>
+<div class="outline-text-2" id="text-org079b745">
 <ul class="org-ul">
 <li>未解決: バイト列を使うのはなぜなのか</li>
 </ul>

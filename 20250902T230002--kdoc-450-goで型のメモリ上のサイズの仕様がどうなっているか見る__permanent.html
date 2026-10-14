@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 450: Goで型のメモリ上のサイズの仕様がどうなっているか見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 450: Goで型のメモリ上のサイズの仕様がどうなっているか見る</h1>
-<div id="outline-container-orge0bd9e1" class="outline-2">
-<h2 id="orge0bd9e1"><a href="#orge0bd9e1">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orge0bd9e1">
+<div id="outline-container-org05b7e8a" class="outline-2">
+<h2 id="org05b7e8a"><a href="#org05b7e8a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org05b7e8a">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd1f4167" class="outline-2">
-<h2 id="orgd1f4167"><a href="#orgd1f4167">概要</a></h2>
-<div class="outline-text-2" id="text-orgd1f4167">
+<div id="outline-container-orgaf52805" class="outline-2">
+<h2 id="orgaf52805"><a href="#orgaf52805">概要</a></h2>
+<div class="outline-text-2" id="text-orgaf52805">
 <p>
 同じ型であっても、ビルド対象となるCPUアーキテクチャによってメモリサイズ変動する型がある。Goではどうなっているだろうか。仕様を見る。
 </p>
@@ -77,18 +84,18 @@ uint64      the set of all unsigned 64-bit integers (0 to 18446744073709551615)
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgd196132" class="outline-2">
-<h2 id="orgd196132"><a href="#orgd196132">関連</a></h2>
-<div class="outline-text-2" id="text-orgd196132">
+<div id="outline-container-orge07c721" class="outline-2">
+<h2 id="orge07c721"><a href="#orge07c721">関連</a></h2>
+<div class="outline-text-2" id="text-orge07c721">
 <ul class="org-ul">
 <li>類推: ほかのプログラミング言語でどうなっているか</li>
 <li>類推: <a href="20250902T225938--kdoc-449-32bitマシンでint64型を使うとどうなるのか__permanent.html#ID-20250902T225938">KDOC 449: 32bitマシンでint64型を使うとどうなるのか?</a>。メモリサイズが違うとどうなるかを見る</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfb83434" class="outline-2">
-<h2 id="orgfb83434"><a href="#orgfb83434">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgfb83434">
+<div id="outline-container-org7768714" class="outline-2">
+<h2 id="org7768714"><a href="#org7768714">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org7768714">
 <ul class="org-ul">
 <li><a href="./20250902T230022--kdoc-451-どういうときint64を使いたいのか__permanent.html">KDOC 451: どういうときint64を使いたいのか?</a></li>
 </ul>

@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:41 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 442: メモリエイリアシング検出と対策の例を見る</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 442: メモリエイリアシング検出と対策の例を見る</h1>
-<div id="outline-container-org7116137" class="outline-2">
-<h2 id="org7116137"><a href="#org7116137">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org7116137">
+<div id="outline-container-orge1a423a" class="outline-2">
+<h2 id="orge1a423a"><a href="#orge1a423a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge1a423a">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org3baadba" class="outline-2">
-<h2 id="org3baadba"><a href="#org3baadba">概要</a></h2>
-<div class="outline-text-2" id="text-org3baadba">
+<div id="outline-container-org3727f14" class="outline-2">
+<h2 id="org3727f14"><a href="#org3727f14">概要</a></h2>
+<div class="outline-text-2" id="text-org3727f14">
 <p>
 メモリエイリアシングとは、異なる変数や参照が同じメモリ領域を指している状態を指す。メモリの効率使用に寄与するが、バグの原因になる可能性もある。
 </p>
@@ -42,19 +49,19 @@
 </p>
 
 <div class="org-src-container">
-<pre class="src src-diff"><span class="org-diff-context"> // SetFrac sets z to a/b and returns z.
+<pre class="src src-diff"> // SetFrac sets z to a/b and returns z.
  func (z *Rat) SetFrac(a, b *Int) *Rat {
-</span><span class="org-diff-indicator-removed">-</span><span class="org-diff-removed">       z.a.Set(a)
-</span><span class="org-diff-context">        z.a.neg = a.neg != b.neg
-</span><span class="org-diff-indicator-removed">-</span><span class="org-diff-removed">       z.b = z.b.set(b.abs)
-</span><span class="org-diff-indicator-added">+</span><span class="org-diff-added">       babs := b.abs
-</span><span class="org-diff-indicator-added">+</span><span class="org-diff-added">       if &amp;z.a == b || alias(z.a.abs, babs) {
-</span><span class="org-diff-indicator-added">+</span><span class="org-diff-added">               babs = nat(nil).set(babs) // make a copy
-</span><span class="org-diff-indicator-added">+</span><span class="org-diff-added">       }
-</span><span class="org-diff-indicator-added">+</span><span class="org-diff-added">       z.a.abs = z.a.abs.set(a.abs)
-</span><span class="org-diff-indicator-added">+</span><span class="org-diff-added">       z.b = z.b.set(babs)
-</span><span class="org-diff-context">        return z.norm()
-</span> }
+-	z.a.Set(a)
+ 	z.a.neg = a.neg != b.neg
+-	z.b = z.b.set(b.abs)
++	babs := b.abs
++	if &amp;z.a == b || alias(z.a.abs, babs) {
++		babs = nat(nil).set(babs) // make a copy
++	}
++	z.a.abs = z.a.abs.set(a.abs)
++	z.b = z.b.set(babs)
+ 	return z.norm()
+ }
 </pre>
 </div>
 
@@ -64,9 +71,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc61cbcd" class="outline-2">
-<h2 id="orgc61cbcd"><a href="#orgc61cbcd">関連</a></h2>
-<div class="outline-text-2" id="text-orgc61cbcd">
+<div id="outline-container-orgaa404dc" class="outline-2">
+<h2 id="orgaa404dc"><a href="#orgaa404dc">関連</a></h2>
+<div class="outline-text-2" id="text-orgaa404dc">
 <ul class="org-ul">
 <li>具体化: メモリエイリアシングが問題になる場合の具体例を出す</li>
 </ul>

@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:10 -->
+<!-- 2026-10-14 水 21:41 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 457: メールから検証用の公開鍵を取得する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 457: メールから検証用の公開鍵を取得する</h1>
-<div id="outline-container-orgb5b6c56" class="outline-2">
-<h2 id="orgb5b6c56"><a href="#orgb5b6c56">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgb5b6c56">
+<div id="outline-container-org6cffffd" class="outline-2">
+<h2 id="org6cffffd"><a href="#org6cffffd">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org6cffffd">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgac0bb8d" class="outline-2">
-<h2 id="orgac0bb8d"><a href="#orgac0bb8d">概要</a></h2>
-<div class="outline-text-2" id="text-orgac0bb8d">
+<div id="outline-container-orgec41bfd" class="outline-2">
+<h2 id="orgec41bfd"><a href="#orgec41bfd">概要</a></h2>
+<div class="outline-text-2" id="text-orgec41bfd">
 <p>
 電子メールでは、署名によって内容が改ざんされていないか確かめるためのDKIMという仕組みがある。Amazonから届いた実際のメールを題材に、手でDKIMの公開鍵取得までをやってみる。
 </p>
@@ -42,7 +49,7 @@ Gmailで、オリジナルメッセージを見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>オリジナルメッセージで見られる実際の値。DKIM-Signatureヘッダだけを抜粋した</label><pre class="src src-shell">DKIM-Signature: <span class="org-variable-name">v</span>=1; <span class="org-variable-name">a</span>=rsa-sha256; <span class="org-variable-name">q</span>=dns/txt; <span class="org-variable-name">c</span>=relaxed/simple; <span class="org-variable-name">s</span>=gdwg2y3kokkkj5a55z2ilkup5wp5hhxx; <span class="org-variable-name">d</span>=amazonses.com; <span class="org-variable-name">t</span>=1756980149; <span class="org-variable-name">h</span>=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type:Feedback-ID; <span class="org-variable-name">bh</span>=JY9SVohDFF5HNK0MR1PTlS9ApqBk/4IeBWUJIeo1jQ8=; <span class="org-variable-name">b</span>=nVfv7S+rA5hxIqK7G8kNasm4mA5z2HBhHWKCNIAvrUX+uyGNTmaPmU+sDPH9grWU 8Oun9qI4DmCPjtGXA8Rzv7Z2OJNm+Ov3I41ULFqyHq3EcIfqD1DASGktAnlmK90I409 Ya8TkXjIeP3twCrN2rkAxoi5Ta3KD96xLn/QpKgE=
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>オリジナルメッセージで見られる実際の値。DKIM-Signatureヘッダだけを抜粋した</label><pre class="src src-shell">DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple; s=gdwg2y3kokkkj5a55z2ilkup5wp5hhxx; d=amazonses.com; t=1756980149; h=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type:Feedback-ID; bh=JY9SVohDFF5HNK0MR1PTlS9ApqBk/4IeBWUJIeo1jQ8=; b=nVfv7S+rA5hxIqK7G8kNasm4mA5z2HBhHWKCNIAvrUX+uyGNTmaPmU+sDPH9grWU 8Oun9qI4DmCPjtGXA8Rzv7Z2OJNm+Ov3I41ULFqyHq3EcIfqD1DASGktAnlmK90I409 Ya8TkXjIeP3twCrN2rkAxoi5Ta3KD96xLn/QpKgE=
 </pre>
 </div>
 
@@ -72,9 +79,9 @@ gdwg2y3kokkkj5a55z2ilkup5wp5hhxx.dkim.amazonses.com descriptive text "p=MIGfMA0G
 </p>
 </div>
 </div>
-<div id="outline-container-orgc2c77a6" class="outline-2">
-<h2 id="orgc2c77a6"><a href="#orgc2c77a6">関連</a></h2>
-<div class="outline-text-2" id="text-orgc2c77a6">
+<div id="outline-container-org88eb590" class="outline-2">
+<h2 id="org88eb590"><a href="#org88eb590">関連</a></h2>
+<div class="outline-text-2" id="text-org88eb590">
 <ul class="org-ul">
 <li>追加調査: 固定フォーマット <code>_domainkey</code> はなぜ必要なのか。なぜこのフォーマットなのか</li>
 <li>追加調査: DKIMでは常にTXTレコードを使うのか</li>

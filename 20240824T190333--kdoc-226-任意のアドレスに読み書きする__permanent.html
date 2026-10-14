@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 226: 任意のアドレスに読み書きする</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 226: 任意のアドレスに読み書きする</h1>
-<div id="outline-container-org1a6b5d4" class="outline-2">
-<h2 id="org1a6b5d4"><a href="#org1a6b5d4">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org1a6b5d4">
+<div id="outline-container-org990d6cc" class="outline-2">
+<h2 id="org990d6cc"><a href="#org990d6cc">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org990d6cc">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgde98825" class="outline-2">
-<h2 id="orgde98825"><a href="#orgde98825">概要</a></h2>
-<div class="outline-text-2" id="text-orgde98825">
+<div id="outline-container-org569ef2b" class="outline-2">
+<h2 id="org569ef2b"><a href="#org569ef2b">概要</a></h2>
+<div class="outline-text-2" id="text-org569ef2b">
 <p>
 メモリアドレスを直接指定して、値を読み書きしてみるコードを見る。
 </p>
@@ -48,18 +55,18 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>無効な範囲を書き換えしてみると、メモリ保護機能によって Segmentation faultになる</label><pre class="src src-C"><span class="org-type">int</span> <span class="org-function-name">main</span>() {
-  *((<span class="org-type">int</span> *) 0x0001) = (<span class="org-type">int</span>) 111;
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>無効な範囲を書き換えしてみると、メモリ保護機能によって Segmentation faultになる</label><pre class="src src-C">int main() {
+  *((int *) 0x0001) = (int) 111;
 }
 </pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>変数のとりうる範囲は毎回変動する。正しい範囲を指定すると上書きできる</label><pre class="src src-C"><span class="org-type">int</span> <span class="org-function-name">main</span>() {
-  <span class="org-type">int</span> <span class="org-variable-name">x</span> = 1;
-  printf(<span class="org-string">"0x%08X: x -&gt; %i\n"</span>, &amp;x, x);
-  *((<span class="org-type">int</span> *) &amp;x) = (<span class="org-type">int</span>) 999999;
-  printf(<span class="org-string">"0x%08X: x -&gt; %i\n"</span>, &amp;x, x);
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>変数のとりうる範囲は毎回変動する。正しい範囲を指定すると上書きできる</label><pre class="src src-C">int main() {
+  int x = 1;
+  printf("0x%08X: x -&gt; %i\n", &amp;x, x);
+  *((int *) &amp;x) = (int) 999999;
+  printf("0x%08X: x -&gt; %i\n", &amp;x, x);
 }
 </pre>
 </div>
@@ -75,15 +82,15 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>セグメント内ならアドレスを指定して任意のメモリにアクセスできる。セグフォにならない範囲でintとして値を取得して調べた。マイナス方向には多く余地があるが、プラス方向には少ない</label><pre class="src src-C"><span class="org-type">int</span> <span class="org-function-name">main</span>() {
-  <span class="org-type">int</span> <span class="org-variable-name">x</span> = 2;
-  printf(<span class="org-string">"0x%08X: x -&gt; %i\n"</span>, &amp;x, x);
-  <span class="org-type">int</span> <span class="org-variable-name">load1</span> = *((<span class="org-type">int</span> *) &amp;x-0x100000);
-  <span class="org-type">int</span> <span class="org-variable-name">load2</span> = *((<span class="org-type">int</span> *) &amp;x+0x100);
-  <span class="org-type">int</span> <span class="org-variable-name">load3</span> = *((<span class="org-type">int</span> *) &amp;x+0x2);
-  printf(<span class="org-string">"load1(-0x100000): 0x%08X\n"</span>, load1);
-  printf(<span class="org-string">"load2(+0x100): 0x%08X\n"</span>, load2);
-  printf(<span class="org-string">"load3(+0x2): 0x%08X\n"</span>, load3);
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>セグメント内ならアドレスを指定して任意のメモリにアクセスできる。セグフォにならない範囲でintとして値を取得して調べた。マイナス方向には多く余地があるが、プラス方向には少ない</label><pre class="src src-C">int main() {
+  int x = 2;
+  printf("0x%08X: x -&gt; %i\n", &amp;x, x);
+  int load1 = *((int *) &amp;x-0x100000);
+  int load2 = *((int *) &amp;x+0x100);
+  int load3 = *((int *) &amp;x+0x2);
+  printf("load1(-0x100000): 0x%08X\n", load1);
+  printf("load2(+0x100): 0x%08X\n", load2);
+  printf("load3(+0x2): 0x%08X\n", load3);
 }
 </pre>
 </div>
@@ -97,20 +104,20 @@ load3(+0x2): 0x00001000
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>直にアドレスを指定して取得する</label><pre class="src src-C"><span class="org-type">int</span> <span class="org-function-name">main</span>() {
-  <span class="org-type">char</span> <span class="org-variable-name">base</span> = 0;
-  <span class="org-type">char</span> <span class="org-variable-name">a</span> = <span class="org-string">'a'</span>;
-  <span class="org-type">char</span> <span class="org-variable-name">b</span> = <span class="org-string">'b'</span>;
-  <span class="org-type">char</span> <span class="org-variable-name">c</span> = <span class="org-string">'c'</span>;
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>直にアドレスを指定して取得する</label><pre class="src src-C">int main() {
+  char base = 0;
+  char a = 'a';
+  char b = 'b';
+  char c = 'c';
 
-  printf(<span class="org-string">"0x%08X: base\n"</span>, &amp;base);
-  printf(<span class="org-string">"0x%08X: a\n"</span>, &amp;a);
-  printf(<span class="org-string">"0x%08X: b\n"</span>, &amp;b);
-  printf(<span class="org-string">"0x%08X: c\n"</span>, &amp;c);
-  printf(<span class="org-string">"\n"</span>);
-  printf(<span class="org-string">"a: 0x%08X\n"</span>, *((<span class="org-type">char</span> *) &amp;base+0x1));
-  printf(<span class="org-string">"b: 0x%08X\n"</span>, *((<span class="org-type">char</span> *) &amp;base+0x2));
-  printf(<span class="org-string">"c: 0x%08X\n"</span>, *((<span class="org-type">char</span> *) &amp;base+0x3));
+  printf("0x%08X: base\n", &amp;base);
+  printf("0x%08X: a\n", &amp;a);
+  printf("0x%08X: b\n", &amp;b);
+  printf("0x%08X: c\n", &amp;c);
+  printf("\n");
+  printf("a: 0x%08X\n", *((char *) &amp;base+0x1));
+  printf("b: 0x%08X\n", *((char *) &amp;base+0x2));
+  printf("c: 0x%08X\n", *((char *) &amp;base+0x3));
 }
 </pre>
 </div>
@@ -128,18 +135,18 @@ c: 0x00000063
 </div>
 </div>
 </div>
-<div id="outline-container-org4eedf37" class="outline-2">
-<h2 id="org4eedf37"><a href="#org4eedf37">関連</a></h2>
-<div class="outline-text-2" id="text-org4eedf37">
+<div id="outline-container-orgda2cd8d" class="outline-2">
+<h2 id="orgda2cd8d"><a href="#orgda2cd8d">関連</a></h2>
+<div class="outline-text-2" id="text-orgda2cd8d">
 <ul class="org-ul">
 <li>参照: <a href="20240717T223527--kdoc-202-『30日でできる-os自作入門』__book.html#ID-20240717T223527">KDOC 202: 『30日でできる! OS自作入門』</a>。出てきたコードを確認した</li>
 <li>疑問: アクセス可能な範囲がどういうことになっているのか調べる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfa19349" class="outline-2">
-<h2 id="orgfa19349"><a href="#orgfa19349">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgfa19349">
+<div id="outline-container-org89c2dca" class="outline-2">
+<h2 id="org89c2dca"><a href="#org89c2dca">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org89c2dca">
 <ul class="org-ul">
 <li><a href="./20240825T193415--kdoc-228-変数を書いた順番とアドレスの関係はコンパイラによって異なる__permanent.html">KDOC 228: 変数を書いた順番とアドレスの関係はコンパイラによって異なる</a></li>
 </ul>

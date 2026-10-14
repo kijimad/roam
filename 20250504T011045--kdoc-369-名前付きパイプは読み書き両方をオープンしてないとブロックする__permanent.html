@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:39 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 369: 名前付きパイプは読み書き両方をオープンしてないとブロックする</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 369: 名前付きパイプは読み書き両方をオープンしてないとブロックする</h1>
-<div id="outline-container-orgf0150c8" class="outline-2">
-<h2 id="orgf0150c8"><a href="#orgf0150c8">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgf0150c8">
+<div id="outline-container-orgf192e6a" class="outline-2">
+<h2 id="orgf192e6a"><a href="#orgf192e6a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf192e6a">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orga05e96a" class="outline-2">
-<h2 id="orga05e96a"><a href="#orga05e96a">概要</a></h2>
-<div class="outline-text-2" id="text-orga05e96a">
+<div id="outline-container-orgfcd354a" class="outline-2">
+<h2 id="orgfcd354a"><a href="#orgfcd354a">概要</a></h2>
+<div class="outline-text-2" id="text-orgfcd354a">
 <p>
 名前付きパイプは読み書き両方をオープンしてないと処理がブロックされる。
 </p>
@@ -50,15 +57,15 @@ The FIFO must be opened on both ends (reading and writing) before data can be pa
 
 <div class="org-src-container">
 <pre class="src src-shell">mkfifo my_pipe
-cat my_pipe &amp; <span class="org-comment-delimiter"># </span><span class="org-comment">&#35501;&#12415;&#36796;&#12415;&#12290;&#12371;&#12428;&#12434;&#23455;&#34892;&#12375;&#12394;&#12356;&#12392;&#26360;&#12365;&#36796;&#12415;&#12391;&#27490;&#12414;&#12427;
-</span><span class="org-builtin">echo</span> <span class="org-string">"aaa"</span> &gt; my_pipe <span class="org-comment-delimiter"># </span><span class="org-comment">&#26360;&#12365;&#36796;&#12415;</span>
+cat my_pipe &amp; # 読み込み。これを実行しないと書き込みで止まる
+echo "aaa" &gt; my_pipe # 書き込み
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org2674172" class="outline-2">
-<h2 id="org2674172"><a href="#org2674172">関連</a></h2>
-<div class="outline-text-2" id="text-org2674172">
+<div id="outline-container-orgb903092" class="outline-2">
+<h2 id="orgb903092"><a href="#orgb903092">関連</a></h2>
+<div class="outline-text-2" id="text-orgb903092">
 <p>
 なし。
 </p>

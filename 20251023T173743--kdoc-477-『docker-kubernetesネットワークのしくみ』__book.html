@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 477: 『Docker-Kubernetesネットワークのしくみ』</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 477: 『Docker-Kubernetesネットワークのしくみ』</h1>
-<div id="outline-container-orge8989e6" class="outline-2">
-<h2 id="orge8989e6"><a href="#orge8989e6">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orge8989e6">
+<div id="outline-container-org57f4dd2" class="outline-2">
+<h2 id="org57f4dd2"><a href="#org57f4dd2">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org57f4dd2">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,17 +37,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org347363d" class="outline-2">
-<h2 id="org347363d"><a href="#org347363d">概要</a></h2>
-<div class="outline-text-2" id="text-org347363d">
+<div id="outline-container-org6974daa" class="outline-2">
+<h2 id="org6974daa"><a href="#org6974daa">概要</a></h2>
+<div class="outline-text-2" id="text-org6974daa">
 <p>
 『Docker-Kubernetesネットワークのしくみ』は、仮想ネットワークについて解説した本である。
 </p>
 </div>
 </div>
-<div id="outline-container-org3c18e24" class="outline-2">
-<h2 id="org3c18e24"><a href="#org3c18e24">メモ</a></h2>
-<div class="outline-text-2" id="text-org3c18e24">
+<div id="outline-container-orge1eb92a" class="outline-2">
+<h2 id="orge1eb92a"><a href="#orge1eb92a">メモ</a></h2>
+<div class="outline-text-2" id="text-orge1eb92a">
 <ul class="org-ul">
 <li>VXLANはVLANの拡張で、大規模なネットワークを仮想的に分割できる。EthernetフレームをUDP/IPパケットでカプセル化する。このカプセル化により、Ethernetフレームは自身のIPアドレスやMACアドレスを変更することなく、異なるネットワークセグメント間を移動できポータビリティが向上する(p15)</li>
 <li>Networ Namespace(netns)を使用することでネットワークスタックを異なるNamespaceに分離し、互いに独立して動作させられる(p15)</li>
@@ -125,9 +132,9 @@ docker0		8000.0242014087d9	no		veth8461c84
 </ul>
 </div>
 </div>
-<div id="outline-container-org242c2c7" class="outline-2">
-<h2 id="org242c2c7"><a href="#org242c2c7">感想</a></h2>
-<div class="outline-text-2" id="text-org242c2c7">
+<div id="outline-container-orgb3a8698" class="outline-2">
+<h2 id="orgb3a8698"><a href="#orgb3a8698">感想</a></h2>
+<div class="outline-text-2" id="text-orgb3a8698">
 <ul class="org-ul">
 <li>ブリッジ・スイッチ・ルーターの違い</li>
 <li>読み進めるためには、ネットワークの基礎部分の理解が必要である</li>
@@ -163,17 +170,17 @@ docker0		8000.0242014087d9	no		veth8461c84
 </ul>
 </div>
 </div>
-<div id="outline-container-org5441fff" class="outline-2">
-<h2 id="org5441fff"><a href="#org5441fff">関連</a></h2>
-<div class="outline-text-2" id="text-org5441fff">
+<div id="outline-container-orgabd0d98" class="outline-2">
+<h2 id="orgabd0d98"><a href="#orgabd0d98">関連</a></h2>
+<div class="outline-text-2" id="text-orgabd0d98">
 <ul class="org-ul">
 <li>類推: <a href="20240605T103458--kdoc-184-『イラストでわかるdockerとkubernetes』__book.html#ID-20240605T103458">KDOC 184: 『イラストでわかるDockerとKubernetes』</a>。同じくDockerとKubernetesの話題</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org50364b3" class="outline-2">
-<h2 id="org50364b3"><a href="#org50364b3">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org50364b3">
+<div id="outline-container-org8b31e3f" class="outline-2">
+<h2 id="org8b31e3f"><a href="#org8b31e3f">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org8b31e3f">
 <ul class="org-ul">
 <li><a href="./20251221T092231--kdoc-514-arpテーブルとmacアドレステーブルの違い__permanent.html">KDOC 514: ARPテーブルとMACアドレステーブルの違い</a></li>
 </ul>

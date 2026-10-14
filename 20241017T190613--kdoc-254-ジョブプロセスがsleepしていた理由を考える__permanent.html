@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 254: ジョブプロセスがSleepしていた理由を考える</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 254: ジョブプロセスがSleepしていた理由を考える</h1>
-<div id="outline-container-orgdbc1628" class="outline-2">
-<h2 id="orgdbc1628"><a href="#orgdbc1628">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgdbc1628">
+<div id="outline-container-orgbea8f29" class="outline-2">
+<h2 id="orgbea8f29"><a href="#orgbea8f29">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgbea8f29">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org12b28e4" class="outline-2">
-<h2 id="org12b28e4"><a href="#org12b28e4">概要</a></h2>
-<div class="outline-text-2" id="text-org12b28e4">
+<div id="outline-container-org5c7527d" class="outline-2">
+<h2 id="org5c7527d"><a href="#org5c7527d">概要</a></h2>
+<div class="outline-text-2" id="text-org5c7527d">
 <p>
 数時間かかる機械学習の推論処理をブラウザからキック + 進捗ログを確認できるようにする、ということをした。ジョブワーカーを起動して非同期処理をできるようにしたのだが、そこで不可解な事象にあたって悩んだので書いていく。ちゃんとわかっている人であれば秒で解決できただろう。
 </p>
@@ -86,17 +93,17 @@ Warningは実行終了時に、まとめてログに書き込まれていた。�
 </p>
 </div>
 </div>
-<div id="outline-container-org14a9858" class="outline-2">
-<h2 id="org14a9858"><a href="#org14a9858">関連</a></h2>
-<div class="outline-text-2" id="text-org14a9858">
+<div id="outline-container-org96be447" class="outline-2">
+<h2 id="org96be447"><a href="#org96be447">関連</a></h2>
+<div class="outline-text-2" id="text-org96be447">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-org1660ef8" class="outline-2">
-<h2 id="org1660ef8"><a href="#org1660ef8">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org1660ef8">
+<div id="outline-container-orgd8e0dd5" class="outline-2">
+<h2 id="orgd8e0dd5"><a href="#orgd8e0dd5">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgd8e0dd5">
 <ul class="org-ul">
 <li><a href="./20241102T103338--kdoc-260-プロセスがsleepになるのを再現する__permanent.html">KDOC 260: プロセスがSleepになるのを再現する</a></li>
 <li><a href="./20241109T134521--kdoc-278-パイプの詰まりを再現する__permanent.html">KDOC 278: パイプの詰まりを再現する</a></li>

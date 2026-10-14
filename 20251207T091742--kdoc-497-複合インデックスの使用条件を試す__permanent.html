@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 497: 複合インデックスの使用条件を試す</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 497: 複合インデックスの使用条件を試す</h1>
-<div id="outline-container-org9b72c05" class="outline-2">
-<h2 id="org9b72c05"><a href="#org9b72c05">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org9b72c05">
+<div id="outline-container-orgb919b08" class="outline-2">
+<h2 id="orgb919b08"><a href="#orgb919b08">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgb919b08">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,52 +37,52 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org05160c6" class="outline-2">
-<h2 id="org05160c6"><a href="#org05160c6">概要</a></h2>
-<div class="outline-text-2" id="text-org05160c6">
+<div id="outline-container-orgb7d8818" class="outline-2">
+<h2 id="orgb7d8818"><a href="#orgb7d8818">概要</a></h2>
+<div class="outline-text-2" id="text-orgb7d8818">
 <p>
 複合インデックスによるスキャン方法の変化を実験した。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>複合インデックスを使う</label><pre class="src src-sql"><span class="org-keyword">CREATE</span> <span class="org-keyword">TABLE</span> <span class="org-function-name">users</span> (
-    id serial <span class="org-keyword">PRIMARY</span> <span class="org-keyword">KEY</span>,
-    <span class="org-keyword">name</span> <span class="org-type">varchar</span>(255),
-    tel <span class="org-type">integer</span>,
-    nonidx <span class="org-type">varchar</span>(255)
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>複合インデックスを使う</label><pre class="src src-sql">CREATE TABLE users (
+    id serial PRIMARY KEY,
+    name varchar(255),
+    tel integer,
+    nonidx varchar(255)
 );
-<span class="org-keyword">CREATE</span> INDEX idx_users_name <span class="org-keyword">ON</span> users(<span class="org-keyword">name</span>, tel);
+CREATE INDEX idx_users_name ON users(name, tel);
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#12524;&#12467;&#12540;&#12489;&#12364;&#31354;&#12384;&#12392;&#12289;&#12377;&#12409;&#12390;Index Only&#12395;&#12394;&#12387;&#12383;&#12383;&#12417;
-</span><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> users (<span class="org-keyword">name</span>, tel)
-<span class="org-keyword">SELECT</span>
-    <span class="org-string">'Name'</span> || (i % 1000),
+-- レコードが空だと、すべてIndex Onlyになったため
+INSERT INTO users (name, tel)
+SELECT
+    'Name' || (i % 1000),
     (i % 10000)
-<span class="org-keyword">FROM</span> generate_series(1, 100000) i;
+FROM generate_series(1, 100000) i;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#20001;&#26041;&#12398;&#35201;&#32032;&#12434;&#20351;&#12358;&#12392;&#12289;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
-</span>explain
-<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span> <span class="org-keyword">and</span> tel = 1;
+-- 複合インデックスの両方の要素を使うと、インデックスが使われる
+explain
+select id from users where name = 'a' and tel = 1;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#20001;&#26041;&#12398;&#35201;&#32032;&#12434;&#20351;&#12387;&#12390;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#35201;&#32032;&#12384;&#12369;&#12384;&#12392;&#12289;Index Only Scan&#12395;&#12394;&#12427;
-</span>explain
-<span class="org-keyword">select</span> <span class="org-keyword">name</span> <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span> <span class="org-keyword">and</span> tel = 1;
+-- 複合インデックスの両方の要素を使ってインデックス要素だけだと、Index Only Scanになる
+explain
+select name from users where name = 'a' and tel = 1;
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#26368;&#21021;&#12398;&#35201;&#32032;&#12434;&#20351;&#12358;&#12392;&#12289;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
-</span>explain
-<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span>;
+-- 複合インデックスの最初の要素を使うと、インデックスが使われる
+explain
+select id from users where name = 'a';
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#38918;&#30058;&#12418;&#20837;&#12428;&#26367;&#12360;&#12390;&#12418;&#12289;&#35201;&#32032;&#12364;&#12354;&#12387;&#12390;&#12356;&#12428;&#12400;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
-</span>explain
-<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> tel = 1 <span class="org-keyword">and</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span>;
+-- 複合インデックスの順番も入れ替えても、要素があっていればインデックスが使われる
+explain
+select id from users where tel = 1 and name = 'a';
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;&#26368;&#21021;&#12398;&#35201;&#32032; + &#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#22806;&#12384;&#12392;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12427;
-</span>explain
-<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> <span class="org-keyword">name</span> = <span class="org-string">'a'</span> <span class="org-keyword">and</span> nonidx = <span class="org-string">'a'</span>;
+-- 複合インデックスの最初の要素 + インデックス外だとインデックスが使われる
+explain
+select id from users where name = 'a' and nonidx = 'a';
 
-<span class="org-comment-delimiter">-- </span><span class="org-comment">&#35079;&#21512;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12398;2&#30058;&#12417;&#12398;&#35201;&#32032;&#12434;&#20351;&#12358;&#12392;&#12289;&#12452;&#12531;&#12487;&#12483;&#12463;&#12473;&#12364;&#20351;&#12431;&#12428;&#12394;&#12356;
-</span>explain
-<span class="org-keyword">select</span> id <span class="org-keyword">from</span> users <span class="org-keyword">where</span> tel = 1;
+-- 複合インデックスの2番めの要素を使うと、インデックスが使われない
+explain
+select id from users where tel = 1;
 </pre>
 </div>
 
@@ -155,9 +162,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org4fc4000" class="outline-2">
-<h2 id="org4fc4000"><a href="#org4fc4000">関連</a></h2>
-<div class="outline-text-2" id="text-org4fc4000">
+<div id="outline-container-org1020dc8" class="outline-2">
+<h2 id="org1020dc8"><a href="#org1020dc8">関連</a></h2>
+<div class="outline-text-2" id="text-org1020dc8">
 <ul class="org-ul">
 <li>動機: <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。インデックスを確かめているときに考えた</li>
 <li>追加調査: 複数のスキャン方法を試す</li>
@@ -167,9 +174,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orga103d55" class="outline-2">
-<h2 id="orga103d55"><a href="#orga103d55">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orga103d55">
+<div id="outline-container-org18c6fe3" class="outline-2">
+<h2 id="org18c6fe3"><a href="#org18c6fe3">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org18c6fe3">
 <ul class="org-ul">
 <li><a href="./20251208T083954--kdoc-500-covering-indexを試す__permanent.html">KDOC 500: Covering Indexを試す</a></li>
 </ul>

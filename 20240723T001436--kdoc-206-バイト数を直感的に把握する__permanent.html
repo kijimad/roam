@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 00:09 -->
+<!-- 2026-10-14 水 21:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 206: バイト数を直感的に把握する</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
-<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
 </head>
 <body>
 <div id="preamble" class="status">
@@ -15,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 206: バイト数を直感的に把握する</h1>
-<div id="outline-container-org88dcd45" class="outline-2">
-<h2 id="org88dcd45"><a href="#org88dcd45">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org88dcd45">
+<div id="outline-container-orga539c7f" class="outline-2">
+<h2 id="orga539c7f"><a href="#orga539c7f">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orga539c7f">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -30,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org7b8d835" class="outline-2">
-<h2 id="org7b8d835"><a href="#org7b8d835">概要</a></h2>
-<div class="outline-text-2" id="text-org7b8d835">
+<div id="outline-container-org168fa82" class="outline-2">
+<h2 id="org168fa82"><a href="#org168fa82">概要</a></h2>
+<div class="outline-text-2" id="text-org168fa82">
 <p>
 <a href="20240723001705-cpu.html#ID-3f07fe5f-95c8-4824-86ae-3cc616f787d3">CPU</a>まわりの本を読んでいると、よく1バイト分確保して〜という文章が出てくる。そのたびにちょっと考えて進数変換しているので、覚えて感覚でやるようにする。
 </p>
@@ -138,15 +145,15 @@
 </table>
 </div>
 </div>
-<div id="outline-container-org9334b11" class="outline-2">
-<h2 id="org9334b11"><a href="#org9334b11">確認方法</a></h2>
-<div class="outline-text-2" id="text-org9334b11">
+<div id="outline-container-orgabde562" class="outline-2">
+<h2 id="orgabde562"><a href="#orgabde562">確認方法</a></h2>
+<div class="outline-text-2" id="text-orgabde562">
 <p>
 確かめてみると手っ取り早い。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>調べる方法1(文字列)。-nは末尾に改行を出さないオプション</label><pre class="src src-shell"><span class="org-builtin">echo</span> -n <span class="org-string">"&#24859;"</span> | hexdump -C
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>調べる方法1(文字列)。-nは末尾に改行を出さないオプション</label><pre class="src src-shell">echo -n "愛" | hexdump -C
 </pre>
 </div>
 
@@ -157,7 +164,7 @@
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>調べる方法2(文字列)</label><pre class="src src-shell"><span class="org-builtin">echo</span> -n <span class="org-string">"ABCD"</span> | xxd
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>調べる方法2(文字列)</label><pre class="src src-shell">echo -n "ABCD" | xxd
 </pre>
 </div>
 
@@ -167,26 +174,26 @@
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>調べる方法3(数値)</label><pre class="src src-ruby"><span class="org-keyword">def</span> <span class="org-function-name">conv</span>(target16)
-  <span class="org-builtin">puts</span>(<span class="org-string">"_____________________"</span>)
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>調べる方法3(数値)</label><pre class="src src-ruby">def conv(target16)
+  puts("_____________________")
   target10 = target16.to_i(16)
-  <span class="org-builtin">printf</span>(<span class="org-string">"16&#36914;&#25968;: </span><span class="org-variable-name">#{target16}</span><span class="org-string">\n"</span>)
-  <span class="org-builtin">printf</span>(<span class="org-string">"10&#36914;&#25968;: %s\n"</span>, target10)
-  <span class="org-builtin">printf</span>(<span class="org-string">" 8&#36914;&#25968;: %s\n"</span>, target10.to_s(8))
-  <span class="org-builtin">printf</span>(<span class="org-string">" 2&#36914;&#25968;: %s\n"</span>, target10.to_s(2))
-  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s bit\n"</span>, target10 * 8)
-  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s byte\n"</span>, target10)
-  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s KB\n"</span>, target10 / 1024.0)
-  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s MB\n"</span>, target10 / 1024.0 / 1024.0)
-  <span class="org-builtin">printf</span>(<span class="org-string">"&#12469;&#12452;&#12474;: %s GB\n"</span>, target10 / 1024.0 / 1024.0 / 1024.0)
-<span class="org-keyword">end</span>
-conv(<span class="org-string">'100'</span>)
-conv(<span class="org-string">'1000'</span>)
-conv(<span class="org-string">'10000'</span>)
-conv(<span class="org-string">'100000'</span>)
-conv(<span class="org-string">'1000000'</span>)
-conv(<span class="org-string">'10000000'</span>)
-conv(<span class="org-string">'FFFFFFFF'</span>)
+  printf("16進数: #{target16}\n")
+  printf("10進数: %s\n", target10)
+  printf(" 8進数: %s\n", target10.to_s(8))
+  printf(" 2進数: %s\n", target10.to_s(2))
+  printf("サイズ: %s bit\n", target10 * 8)
+  printf("サイズ: %s byte\n", target10)
+  printf("サイズ: %s KB\n", target10 / 1024.0)
+  printf("サイズ: %s MB\n", target10 / 1024.0 / 1024.0)
+  printf("サイズ: %s GB\n", target10 / 1024.0 / 1024.0 / 1024.0)
+end
+conv('100')
+conv('1000')
+conv('10000')
+conv('100000')
+conv('1000000')
+conv('10000000')
+conv('FFFFFFFF')
 </pre>
 </div>
 
@@ -265,9 +272,9 @@ _____________________
 </div>
 </div>
 </div>
-<div id="outline-container-org3e53d74" class="outline-2">
-<h2 id="org3e53d74"><a href="#org3e53d74">関連</a></h2>
-<div class="outline-text-2" id="text-org3e53d74">
+<div id="outline-container-orgd49b9a3" class="outline-2">
+<h2 id="orgd49b9a3"><a href="#orgd49b9a3">関連</a></h2>
+<div class="outline-text-2" id="text-orgd49b9a3">
 <ul class="org-ul">
 <li>補足: <a href="20240320T195316--kdoc-126-xxdでファイルをバイナリで見る__permanent.html#ID-20240320T195316">KDOC 126: xxdでファイルをバイナリで見る</a>。バイナリを確認する方法</li>
 </ul>
