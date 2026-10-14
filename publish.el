@@ -167,7 +167,8 @@
 (setq org-html-preamble  #'dw/site-header
       org-html-postamble #'dw/site-footer
       org-html-html5-fancy nil
-      org-html-htmlize-output-type 'css
+      ;; コードの色分けはブラウザの highlight.js に任せる
+      org-html-htmlize-output-type nil
       org-html-self-link-headlines t
       org-html-validation-link nil
       org-html-doctype "html5")
@@ -186,6 +187,24 @@
 
        ;; ルートディレクトリにないorgファイルをエクスポートした場合、相対パスが変わる。絶対パスにするとGH pagesのルートディレクトリがpublicの一つ上の階層になる(/リポジトリ名/public)ため、ローカル環境で使えなくなる。つまりローカルでは`/`でokなのに、本番では`/roam`としないといけない。
        (format "<link rel='preload' href='%s/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin />" kd/site-url)
+       ;; コードの色分け。既定の版にない言語は別に読み込む
+       "<link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' />"
+       "<script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script>"
+       "<script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script>"
+       "<script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script>"
+       "<script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script>"
+       "<script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script>"
+       "<script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script>"
+       ;; defer のスクリプトはすべて DOMContentLoaded の前に実行されるので、1つ読めなくても残りの言語には色が付く
+       ;; 言語は org が pre に付ける src-言語 のクラスから読ませる。org の shell はスクリプトなので bash として扱う
+       "<script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\\bsrc-([\\w-]+)\\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script>"
        (format "<link rel='stylesheet' href='%s/css/site.css' />" kd/site-url)
        (format "<link rel='stylesheet' href='%s/css/code.css' />" kd/site-url)
 
