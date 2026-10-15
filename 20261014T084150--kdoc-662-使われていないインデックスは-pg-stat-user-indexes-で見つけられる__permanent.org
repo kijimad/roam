@@ -1,0 +1,104 @@
+:properties:
+:ID: 20261014T084150
+:end:
+#+title:      KDOC 662: 使われていないインデックスは pg_stat_user_indexes で見つけられる
+#+date:       [2026-10-14 Wed 08:41]
+#+filetags:   :permanent:
+#+identifier: 20261014T084150
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-14 貴島
+- レビュー
+  - [X] 2026-10-14 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+使われていないインデックスを見つけるために ~pg_stat_user_indexes.idx_scan~ が使えるという。
+
+#+begin_quote
+idx_scan bigint
+
+インデックスに対して開始されたインデックススキャンの実行回数です。
+
+[[https://www.postgresql.jp/docs/18/monitoring-stats.html][27.2. 累積統計システム]]
+#+end_quote
+
+2つのインデックスのうち片方 t_a だけを使う問い合わせを100回流して、idx_scan を見る。統計は待機状態へ入る直前に反映されるが、1秒に1回までなので、流した直後に同じ接続で読むと 0 に見える。pg_stat_force_next_flush() で次の反映を早めてから読む。
+
+#+caption: t_a だけを100回使ってから、インデックスが使われた回数を見る
+#+begin_src sql
+  CREATE TABLE t (a int, b int);
+  CREATE INDEX t_a ON t (a);
+  CREATE INDEX t_b ON t (b);
+  INSERT INTO t
+  SELECT i, i FROM generate_series(1, 10000) i;
+  ANALYZE t;
+
+  -- t_a だけを100回使う
+  DO $$
+  BEGIN
+    FOR i IN 1..100 LOOP
+      PERFORM * FROM t WHERE a = i;
+    END LOOP;
+  END $$;
+  SELECT pg_stat_force_next_flush();
+
+  SELECT indexrelname, idx_scan
+  FROM pg_stat_user_indexes
+  ORDER BY idx_scan;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                 |          |
+|-------------------------------------------------+----------|
+| > CREATE TABLE t (a int, b int);                |          |
+| CREATE TABLE                                    |          |
+|                                                 |          |
+| > CREATE INDEX t_a ON t (a);                    |          |
+| CREATE INDEX                                    |          |
+|                                                 |          |
+| > CREATE INDEX t_b ON t (b);                    |          |
+| CREATE INDEX                                    |          |
+|                                                 |          |
+| > INSERT INTO t                                 |          |
+| > SELECT i, i FROM generate_series(1, 10000) i; |          |
+| INSERT 0 10000                                  |          |
+|                                                 |          |
+| > ANALYZE t;                                    |          |
+| ANALYZE                                         |          |
+|                                                 |          |
+| > DO $$                                         |          |
+| > BEGIN                                         |          |
+| >   FOR i IN 1..100 LOOP                        |          |
+| >     PERFORM * FROM t WHERE a = i;             |          |
+| >   END LOOP;                                   |          |
+| > END $$;                                       |          |
+| DO                                              |          |
+|                                                 |          |
+| > SELECT pg_stat_force_next_flush();            |          |
+| pg_stat_force_next_flush                        |          |
+|                                                 |          |
+|                                                 |          |
+| > SELECT indexrelname, idx_scan                 |          |
+| > FROM pg_stat_user_indexes                     |          |
+| > ORDER BY idx_scan;                            |          |
+| indexrelname                                    | idx_scan |
+| t_b                                             |        0 |
+| t_a                                             |      100 |
+#+end_src
+
+100回使った t_a は idx_scan が 100、使っていない t_b は 0 だった。0 のインデックスは消す候補になる。
+
+* 関連
+
+- 前提: [[id:20251210T084437][KDOC 501: インデックスのオーバーヘッドを検証する]]。オーバーヘッドがあるので使ってないのは消さなければならない
