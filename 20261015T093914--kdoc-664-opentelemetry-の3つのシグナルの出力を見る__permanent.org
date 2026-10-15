@@ -1,0 +1,423 @@
+:properties:
+:ID: 20261015T093914
+:end:
+#+title:      KDOC 664: OpenTelemetry の3つのシグナルの出力を見る
+#+date:       [2026-10-15 Thu 09:39]
+#+filetags:   :permanent:
+#+identifier: 20261015T093914
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-15 貴島
+- レビュー
+  - [X] 2026-10-15 貴島
+
+* 概要
+
+OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれいちばん小さい例で出力して見る。どれも標準出力の exporter で JSON を書き出し、整形して出力をそのまま見る。
+
+#+caption: 3つの例で使う共通部分
+#+name: setup
+#+begin_src shell :results silent
+  # 例ごとに一時ディレクトリを作り、終わったら消す
+  dir=$(mktemp -d)
+  trap 'rm -rf "$dir"' EXIT
+  cd "$dir"
+  go mod init example >/dev/null 2>&1
+  go get \
+    go.opentelemetry.io/otel@v1.47.0 \
+    go.opentelemetry.io/otel/sdk@v1.47.0 \
+    go.opentelemetry.io/otel/sdk/metric@v1.47.0 \
+    go.opentelemetry.io/otel/sdk/log@v1.47.0 \
+    go.opentelemetry.io/otel/log@v1.47.0 \
+    go.opentelemetry.io/otel/exporters/stdout/stdouttrace@v1.47.0 \
+    go.opentelemetry.io/otel/exporters/stdout/stdoutmetric@v1.47.0 \
+    go.opentelemetry.io/otel/exporters/stdout/stdoutlog@v0.23.0 2>/dev/null
+#+end_src
+
+** trace
+
+親の span の中で子の span を作る。
+
+#+caption: 親と子の span を1つずつ作る
+#+begin_src shell :results output verbatim :wrap example :noweb no-export
+  <<setup>>
+  mkdir -p trace
+  cat > trace/main.go <<'GO'
+  package main
+
+  import (
+  	"context"
+
+  	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+  	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+  )
+
+  func main() {
+  	ctx := context.Background()
+  	exp, _ := stdouttrace.New(stdouttrace.WithPrettyPrint())
+  	tp := sdktrace.NewTracerProvider(sdktrace.WithSyncer(exp))
+  	defer tp.Shutdown(ctx)
+
+  	tracer := tp.Tracer("example")
+  	ctx, parent := tracer.Start(ctx, "parent")
+  	_, child := tracer.Start(ctx, "child")
+  	child.End()
+  	parent.End()
+  }
+  GO
+  go mod tidy 2>/dev/null
+  go run ./trace
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{
+	"Name": "child",
+	"SpanContext": {
+		"TraceID": "23fc88efba48028dd9d7717ccb8a1b61",
+		"SpanID": "af787e4c4d7bf055",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "23fc88efba48028dd9d7717ccb8a1b61",
+		"SpanID": "d3973a5b2f677925",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "2026-10-15T09:50:57.99213578+09:00",
+	"EndTime": "2026-10-15T09:50:57.99213599+09:00",
+	"Attributes": null,
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "unknown_service:trace"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.47.0"
+			}
+		}
+	],
+	"InstrumentationScope": {
+		"Name": "example",
+		"Version": "",
+		"SchemaURL": "",
+		"Attributes": null
+	},
+	"InstrumentationLibrary": {
+		"Name": "example",
+		"Version": "",
+		"SchemaURL": "",
+		"Attributes": null
+	}
+}
+{
+	"Name": "parent",
+	"SpanContext": {
+		"TraceID": "23fc88efba48028dd9d7717ccb8a1b61",
+		"SpanID": "d3973a5b2f677925",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "2026-10-15T09:50:57.992133605+09:00",
+	"EndTime": "2026-10-15T09:50:57.992240576+09:00",
+	"Attributes": null,
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 1,
+	"Resource": [
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "unknown_service:trace"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.47.0"
+			}
+		}
+	],
+	"InstrumentationScope": {
+		"Name": "example",
+		"Version": "",
+		"SchemaURL": "",
+		"Attributes": null
+	},
+	"InstrumentationLibrary": {
+		"Name": "example",
+		"Version": "",
+		"SchemaURL": "",
+		"Attributes": null
+	}
+}
+#+end_example
+
+- 子の Parent.SpanID が親の SpanID と同じで、TraceID も同じである。これで1つのトレースの中の親子を表現している
+- 親の Parent.SpanID はすべて 0 で、根の span である
+- WithSyncer を使っていて span が終わったときにすぐに書き出すので先に終わった子が先に出力される
+
+** metric
+
+カウンタに 1、2、3 を足す。
+
+#+caption: カウンタに3回足す
+#+begin_src shell :results output verbatim :wrap example :noweb no-export
+  <<setup>>
+  mkdir -p metric
+  cat > metric/main.go <<'GO'
+  package main
+
+  import (
+  	"context"
+
+  	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
+  	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+  )
+
+  func main() {
+  	ctx := context.Background()
+  	exp, _ := stdoutmetric.New(stdoutmetric.WithPrettyPrint())
+  	mp := sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exp)))
+  	defer mp.Shutdown(ctx)
+
+  	counter, _ := mp.Meter("example").Int64Counter("requests")
+  	counter.Add(ctx, 1)
+  	counter.Add(ctx, 2)
+  	counter.Add(ctx, 3)
+  }
+  GO
+  go mod tidy 2>/dev/null
+  go run ./metric
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{
+	"Resource": [
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "unknown_service:metric"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.47.0"
+			}
+		}
+	],
+	"ScopeMetrics": [
+		{
+			"Scope": {
+				"Name": "example",
+				"Version": "",
+				"SchemaURL": "",
+				"Attributes": null
+			},
+			"Metrics": [
+				{
+					"Name": "requests",
+					"Description": "",
+					"Unit": "",
+					"Data": {
+						"DataPoints": [
+							{
+								"Attributes": [],
+								"StartTime": "2026-10-15T09:50:58.694178323+09:00",
+								"Time": "2026-10-15T09:50:58.69420339+09:00",
+								"Value": 6
+							}
+						],
+						"Temporality": "CumulativeTemporality",
+						"IsMonotonic": true
+					}
+				}
+			]
+		}
+	]
+}
+#+end_example
+
+- 3回の Add が、値 6 に集計された
+
+** log
+
+ログを1件書く。
+
+#+caption: ログを1件書く
+#+begin_src shell :results output verbatim :wrap example :noweb no-export
+  <<setup>>
+  mkdir -p log
+  cat > log/main.go <<'GO'
+  package main
+
+  import (
+  	"context"
+
+  	"go.opentelemetry.io/otel/attribute"
+  	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
+  	"go.opentelemetry.io/otel/log"
+  	sdklog "go.opentelemetry.io/otel/sdk/log"
+  )
+
+  func main() {
+  	ctx := context.Background()
+  	exp, _ := stdoutlog.New(stdoutlog.WithPrettyPrint())
+  	lp := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewSimpleProcessor(exp)))
+  	defer lp.Shutdown(ctx)
+
+  	var r log.Record
+  	r.SetSeverity(log.SeverityInfo)
+  	r.SetBody(attribute.StringValue("hello"))
+  	lp.Logger("example").Emit(ctx, r)
+  }
+  GO
+  go mod tidy 2>/dev/null
+  go run ./log
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{
+	"Timestamp": "0001-01-01T00:00:00Z",
+	"ObservedTimestamp": "2026-10-15T09:50:59.139404628+09:00",
+	"Severity": 9,
+	"SeverityText": "",
+	"Body": {
+		"Type": "STRING",
+		"Value": "hello"
+	},
+	"Attributes": [],
+	"TraceID": "00000000000000000000000000000000",
+	"SpanID": "0000000000000000",
+	"TraceFlags": "00",
+	"Resource": [
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "unknown_service:log"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.47.0"
+			}
+		}
+	],
+	"Scope": {
+		"Name": "example",
+		"Version": "",
+		"SchemaURL": "",
+		"Attributes": {}
+	},
+	"DroppedAttributes": 0
+}
+#+end_example
+
+- ~Scope~ にロガーに渡した文字列が入っている
+
+* 関連
+
+- 類似: [[id:20261014T220427][KDOC 663: リングキューの動作を試す]]。ただしこの例の log は SimpleProcessor なのでキューは通らない
