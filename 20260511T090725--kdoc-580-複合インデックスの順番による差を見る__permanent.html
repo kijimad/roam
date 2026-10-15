@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 580: 複合インデックスの順番による差を見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 580: 複合インデックスの順番による差を見る</h1>
-<div id="outline-container-org55437f8" class="outline-2">
-<h2 id="org55437f8"><a href="#org55437f8">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org55437f8">
+<div id="outline-container-org32154a5" class="outline-2">
+<h2 id="org32154a5"><a href="#org32154a5">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org32154a5">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,16 +37,16 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org2bb089c" class="outline-2">
-<h2 id="org2bb089c"><a href="#org2bb089c">概要</a></h2>
-<div class="outline-text-2" id="text-org2bb089c">
+<div id="outline-container-org0818968" class="outline-2">
+<h2 id="org0818968"><a href="#org0818968">概要</a></h2>
+<div class="outline-text-2" id="text-org0818968">
 <ul class="org-ul">
 <li>日付範囲、外部キーの2つのフィールドで検索する</li>
 <li>その場合、複合インデックスにつけた順番がインデックス使用および速度に影響をもたらすか調べる</li>
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>id、日付範囲の順でインデックスをつける</label><pre class="src src-sql">CREATE TABLE customers (
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>id、日付範囲の順でインデックスをつける</label><pre class="src src-sql"><code>CREATE TABLE customers (
   id   INT PRIMARY KEY,
   name TEXT
 );
@@ -77,11 +77,11 @@ EXPLAIN ANALYZE
 SELECT * FROM orders
 WHERE customer_id = 3
 AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                                                                                         |   |   |
+<pre class="src src-nil"><code>|                                                                                                                         |   |   |
 |-------------------------------------------------------------------------------------------------------------------------+---+---|
 | &gt; CREATE TABLE customers (                                                                                              |   |   |
 | &gt;   id   INT PRIMARY KEY,                                                                                               |   |   |
@@ -130,11 +130,11 @@ AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
 | Buffers: shared hit=8                                                                                                   |   |   |
 | Planning Time: 0.055 ms                                                                                                 |   |   |
 | Execution Time: 0.070 ms                                                                                                |   |   |
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>日付範囲、idの順でインデックスをつける</label><pre class="src src-sql">CREATE TABLE customers (
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>日付範囲、idの順でインデックスをつける</label><pre class="src src-sql"><code>CREATE TABLE customers (
   id   INT PRIMARY KEY,
   name TEXT
 );
@@ -165,11 +165,11 @@ EXPLAIN ANALYZE
 SELECT * FROM orders
 WHERE customer_id = 3
 AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                                                                                            |   |   |
+<pre class="src src-nil"><code>|                                                                                                                            |   |   |
 |----------------------------------------------------------------------------------------------------------------------------+---+---|
 | &gt; CREATE TABLE customers (                                                                                                 |   |   |
 | &gt;   id   INT PRIMARY KEY,                                                                                                  |   |   |
@@ -218,7 +218,7 @@ AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
 | Buffers: shared hit=8                                                                                                      |   |   |
 | Planning Time: 0.055 ms                                                                                                    |   |   |
 | Execution Time: 0.281 ms                                                                                                   |   |   |
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -227,9 +227,9 @@ AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
 </ul>
 </div>
 </div>
-<div id="outline-container-orged7ea1a" class="outline-2">
-<h2 id="orged7ea1a"><a href="#orged7ea1a">関連</a></h2>
-<div class="outline-text-2" id="text-orged7ea1a">
+<div id="outline-container-org3641166" class="outline-2">
+<h2 id="org3641166"><a href="#org3641166">関連</a></h2>
+<div class="outline-text-2" id="text-org3641166">
 <p>
 なし。
 </p>

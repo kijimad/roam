@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 438: Goのバケット構造体はフィールドがないが値を保持している</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 438: Goのバケット構造体はフィールドがないが値を保持している</h1>
-<div id="outline-container-orgca86352" class="outline-2">
-<h2 id="orgca86352"><a href="#orgca86352">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgca86352">
+<div id="outline-container-orgf96c685" class="outline-2">
+<h2 id="orgf96c685"><a href="#orgf96c685">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf96c685">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org8642379" class="outline-2">
-<h2 id="org8642379"><a href="#org8642379">概要</a></h2>
-<div class="outline-text-2" id="text-org8642379">
+<div id="outline-container-org8117e46" class="outline-2">
+<h2 id="org8117e46"><a href="#org8117e46">概要</a></h2>
+<div class="outline-text-2" id="text-org8117e46">
 <p>
 ハッシュテーブルは、キー値のハッシュをインデックスとした配列に格納して実装されている。要素を全部見る必要がない分早い。1つ1つの配列をバケットという。
 </p>
@@ -58,12 +58,12 @@ Goのmapのバケット構造体はこのように定義されている。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>バケット構造体</label><pre class="src src-git-permalink">https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/runtime/map_noswiss.go#L149-L160
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>バケット構造体</label><pre class="src src-git-permalink"><code>https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/runtime/map_noswiss.go#L149-L160
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// A bucket for a Go map.
+<pre class="src src-nil"><code>// A bucket for a Go map.
 type bmap struct {
 	// tophash generally contains the top byte of the hash value
 	// for each key in this bucket. If tophash[0] &lt; minTopHash,
@@ -75,19 +75,19 @@ type bmap struct {
 	// us to eliminate padding which would be needed for, e.g., map[int64]int8.
 	// Followed by an overflow pointer.
 }
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
 <li>フィールドはないがデータを保持している</li>
-<li>[key, key, key, &#x2026;, value, value, value] とメモリ配置させるためにGo外で管理している</li>
+<li>[key, key, key, &hellip;, value, value, value] とメモリ配置させるためにGo外で管理している</li>
 <li>paddingと書いてあるとおり、メモリ上で交互に配置されて余分なスペースが生まれるのを防ぐため。キーの型と、値の型が異なると隙間が生まれやすい</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org38a0c34" class="outline-2">
-<h2 id="org38a0c34"><a href="#org38a0c34">関連</a></h2>
-<div class="outline-text-2" id="text-org38a0c34">
+<div id="outline-container-org82907e9" class="outline-2">
+<h2 id="org82907e9"><a href="#org82907e9">関連</a></h2>
+<div class="outline-text-2" id="text-org82907e9">
 <ul class="org-ul">
 <li>類推: <a href="20240612T133312--kdoc-190-『rubyのしくみ-ruby-under-a-microscope』__book.html#ID-20240612T133312">KDOC 190: 『Rubyのしくみ Ruby Under a Microscope』</a>。Rubyでも同様にハッシュ・バケットを使ってハッシュテーブルを実装している</li>
 <li>類推: このように、パフォーマンスを優先するためにハックしている箇所はあるか</li>

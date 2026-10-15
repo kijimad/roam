@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 299: appendはコンパイルするとruntime.growslice()になる</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 299: appendはコンパイルするとruntime.growslice()になる</h1>
-<div id="outline-container-org72e3cb6" class="outline-2">
-<h2 id="org72e3cb6"><a href="#org72e3cb6">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org72e3cb6">
+<div id="outline-container-orgeceee3c" class="outline-2">
+<h2 id="orgeceee3c"><a href="#orgeceee3c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgeceee3c">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org7ee81ef" class="outline-2">
-<h2 id="org7ee81ef"><a href="#org7ee81ef">概要</a></h2>
-<div class="outline-text-2" id="text-org7ee81ef">
+<div id="outline-container-orgd662d03" class="outline-2">
+<h2 id="orgd662d03"><a href="#orgd662d03">概要</a></h2>
+<div class="outline-text-2" id="text-orgd662d03">
 <p>
 Go言語の <code>append</code> が、コンパイルされるとどうなるかを見てみる。
 </p>
@@ -47,7 +47,7 @@ Go言語の <code>append</code> が、コンパイルされるとどうなるか
 <iframe width="800px" height="500px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:18,endLineNumber:7,positionColumn:18,positionLineNumber:7,selectionStartColumn:18,selectionStartLineNumber:7,startColumn:18,startLineNumber:7),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A%09a+:%3D+%5B%5Dint%7B1,+2%7D%0A%09a+%3D+append(a,+3)%0A%7D%0A'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gl1232,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gc+1.23.2+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>a = append(a, 3) に相当するアセンブリ</label><pre class="src src-asm">LEAQ main..autotmp_2+64(SP), AX
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>a = append(a, 3) に相当するアセンブリ</label><pre class="src src-asm"><code>LEAQ main..autotmp_2+64(SP), AX
 MOVL $3, BX
 MOVL $2, CX
 MOVL $1, DI
@@ -56,7 +56,7 @@ PCDATA $1, $0
 NOP
 CALL runtime.growslice(SB)
 MOVQ $3, 16(AX)
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -64,17 +64,17 @@ MOVQ $3, 16(AX)
 </p>
 </div>
 </div>
-<div id="outline-container-orgc05f3c5" class="outline-2">
-<h2 id="orgc05f3c5"><a href="#orgc05f3c5">関連</a></h2>
-<div class="outline-text-2" id="text-orgc05f3c5">
+<div id="outline-container-orga01d4ce" class="outline-2">
+<h2 id="orga01d4ce"><a href="#orga01d4ce">関連</a></h2>
+<div class="outline-text-2" id="text-orga01d4ce">
 <ul class="org-ul">
 <li>動機: <a href="20241119T004907--kdoc-296-appendにステップインできないのはなぜか__permanent.html#ID-20241119T004907">KDOC 296: appendにステップインできないのはなぜか?</a>。調べるきっかけになった疑問</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org680deec" class="outline-2">
-<h2 id="org680deec"><a href="#org680deec">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org680deec">
+<div id="outline-container-org258adbc" class="outline-2">
+<h2 id="org258adbc"><a href="#org258adbc">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org258adbc">
 <ul class="org-ul">
 <li><a href="./20241119T231512--kdoc-300-スライスのcapacityが伸長する様子をデバッガで見る__permanent.html">KDOC 300: スライスのcapacityが伸長する様子をデバッガで見る</a></li>
 </ul>

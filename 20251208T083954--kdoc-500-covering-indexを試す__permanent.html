@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 500: Covering Indexを試す</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 500: Covering Indexを試す</h1>
-<div id="outline-container-org329956b" class="outline-2">
-<h2 id="org329956b"><a href="#org329956b">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org329956b">
+<div id="outline-container-orgf9448eb" class="outline-2">
+<h2 id="orgf9448eb"><a href="#orgf9448eb">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf9448eb">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org47515e4" class="outline-2">
-<h2 id="org47515e4"><a href="#org47515e4">概要</a></h2>
-<div class="outline-text-2" id="text-org47515e4">
+<div id="outline-container-orga4471b4" class="outline-2">
+<h2 id="orga4471b4"><a href="#orga4471b4">概要</a></h2>
+<div class="outline-text-2" id="text-orga4471b4">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？</a>で、Covering Indexという見慣れない単語を見た。調べて、試す。
 </p>
@@ -56,7 +56,7 @@
 </blockquote>
 
 <div class="org-src-container">
-<pre class="src src-sql">CREATE TABLE users (
+<pre class="src src-sql"><code>CREATE TABLE users (
     tel integer,
     name1 varchar(255),
     name2 varchar(255)
@@ -71,11 +71,11 @@ select tel from users where name1 = 'a';
 -- includeなし。Index Scan
 explain
 select tel from users where name2 = 'a';
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                                                  |
+<pre class="src src-nil"><code>|                                                                                  |
 |----------------------------------------------------------------------------------|
 | &gt; CREATE TABLE users (                                                           |
 | &gt;     tel integer,                                                               |
@@ -101,13 +101,13 @@ select tel from users where name2 = 'a';
 | QUERY PLAN                                                                       |
 | Index Scan using idx_users_name2 on users  (cost=0.14..8.16 rows=1 width=4)      |
 | Index Cond: ((name2)::text = 'a'::text)                                          |
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orge199bac" class="outline-2">
-<h2 id="orge199bac"><a href="#orge199bac">関連</a></h2>
-<div class="outline-text-2" id="text-orge199bac">
+<div id="outline-container-orgb4905f5" class="outline-2">
+<h2 id="orgb4905f5"><a href="#orgb4905f5">関連</a></h2>
+<div class="outline-text-2" id="text-orgb4905f5">
 <ul class="org-ul">
 <li>類推: <a href="20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html#ID-20251207T091742">KDOC 497: 複合インデックスの使用条件を試す</a>。同じくインデックスの話題</li>
 <li>具体例: どういったユースケースでCovering Indexを使うべきなのか</li>

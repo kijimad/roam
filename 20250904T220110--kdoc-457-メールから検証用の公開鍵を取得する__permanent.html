@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:41 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 457: メールから検証用の公開鍵を取得する</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 457: メールから検証用の公開鍵を取得する</h1>
-<div id="outline-container-org6cffffd" class="outline-2">
-<h2 id="org6cffffd"><a href="#org6cffffd">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org6cffffd">
+<div id="outline-container-org2425d75" class="outline-2">
+<h2 id="org2425d75"><a href="#org2425d75">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org2425d75">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgec41bfd" class="outline-2">
-<h2 id="orgec41bfd"><a href="#orgec41bfd">概要</a></h2>
-<div class="outline-text-2" id="text-orgec41bfd">
+<div id="outline-container-orgb8b8955" class="outline-2">
+<h2 id="orgb8b8955"><a href="#orgb8b8955">概要</a></h2>
+<div class="outline-text-2" id="text-orgb8b8955">
 <p>
 電子メールでは、署名によって内容が改ざんされていないか確かめるためのDKIMという仕組みがある。Amazonから届いた実際のメールを題材に、手でDKIMの公開鍵取得までをやってみる。
 </p>
@@ -49,8 +49,8 @@ Gmailで、オリジナルメッセージを見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>オリジナルメッセージで見られる実際の値。DKIM-Signatureヘッダだけを抜粋した</label><pre class="src src-shell">DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple; s=gdwg2y3kokkkj5a55z2ilkup5wp5hhxx; d=amazonses.com; t=1756980149; h=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type:Feedback-ID; bh=JY9SVohDFF5HNK0MR1PTlS9ApqBk/4IeBWUJIeo1jQ8=; b=nVfv7S+rA5hxIqK7G8kNasm4mA5z2HBhHWKCNIAvrUX+uyGNTmaPmU+sDPH9grWU 8Oun9qI4DmCPjtGXA8Rzv7Z2OJNm+Ov3I41ULFqyHq3EcIfqD1DASGktAnlmK90I409 Ya8TkXjIeP3twCrN2rkAxoi5Ta3KD96xLn/QpKgE=
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>オリジナルメッセージで見られる実際の値。DKIM-Signatureヘッダだけを抜粋した</label><pre class="src src-shell"><code>DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple; s=gdwg2y3kokkkj5a55z2ilkup5wp5hhxx; d=amazonses.com; t=1756980149; h=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type:Feedback-ID; bh=JY9SVohDFF5HNK0MR1PTlS9ApqBk/4IeBWUJIeo1jQ8=; b=nVfv7S+rA5hxIqK7G8kNasm4mA5z2HBhHWKCNIAvrUX+uyGNTmaPmU+sDPH9grWU 8Oun9qI4DmCPjtGXA8Rzv7Z2OJNm+Ov3I41ULFqyHq3EcIfqD1DASGktAnlmK90I409 Ya8TkXjIeP3twCrN2rkAxoi5Ta3KD96xLn/QpKgE=
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -64,14 +64,14 @@ Gmailで、オリジナルメッセージを見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>TXTレコードを問い合わせる</label><pre class="src src-shell">host -t TXT gdwg2y3kokkkj5a55z2ilkup5wp5hhxx._domainkey.amazonses.com
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>TXTレコードを問い合わせる</label><pre class="src src-shell"><code>host -t TXT gdwg2y3kokkkj5a55z2ilkup5wp5hhxx._domainkey.amazonses.com
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">gdwg2y3kokkkj5a55z2ilkup5wp5hhxx._domainkey.amazonses.com is an alias for gdwg2y3kokkkj5a55z2ilkup5wp5hhxx.dkim.amazonses.com.
+<pre class="src src-nil"><code>gdwg2y3kokkkj5a55z2ilkup5wp5hhxx._domainkey.amazonses.com is an alias for gdwg2y3kokkkj5a55z2ilkup5wp5hhxx.dkim.amazonses.com.
 gdwg2y3kokkkj5a55z2ilkup5wp5hhxx.dkim.amazonses.com descriptive text "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC3RQOLRcTuQR8t2H9bqRtNvhXw+A88R6LfdbKF1Lvs52/Si8S4yvgYRo9q+R/nawJGT0R8rFeOnIe/QXHRTJbwzs2DEeqNwheI7fbfP+Di1wa+ZP1xwwh3wXcvu5DwvVh/9UEZeMjtyM5vJd5TSYdOmwXsXPBRIdV52ol2WmoEmQIDAQAB"
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -79,9 +79,9 @@ gdwg2y3kokkkj5a55z2ilkup5wp5hhxx.dkim.amazonses.com descriptive text "p=MIGfMA0G
 </p>
 </div>
 </div>
-<div id="outline-container-org88eb590" class="outline-2">
-<h2 id="org88eb590"><a href="#org88eb590">関連</a></h2>
-<div class="outline-text-2" id="text-org88eb590">
+<div id="outline-container-org82d97d2" class="outline-2">
+<h2 id="org82d97d2"><a href="#org82d97d2">関連</a></h2>
+<div class="outline-text-2" id="text-org82d97d2">
 <ul class="org-ul">
 <li>追加調査: 固定フォーマット <code>_domainkey</code> はなぜ必要なのか。なぜこのフォーマットなのか</li>
 <li>追加調査: DKIMでは常にTXTレコードを使うのか</li>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 418: 実行時のオーバーヘッドなしで型のサイズを判定する</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 418: 実行時のオーバーヘッドなしで型のサイズを判定する</h1>
-<div id="outline-container-org475b75f" class="outline-2">
-<h2 id="org475b75f"><a href="#org475b75f">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org475b75f">
+<div id="outline-container-org6554729" class="outline-2">
+<h2 id="org6554729"><a href="#org6554729">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org6554729">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org9ae9ec3" class="outline-2">
-<h2 id="org9ae9ec3"><a href="#org9ae9ec3">概要</a></h2>
-<div class="outline-text-2" id="text-org9ae9ec3">
+<div id="outline-container-org81043f7" class="outline-2">
+<h2 id="org81043f7"><a href="#org81043f7">概要</a></h2>
+<div class="outline-text-2" id="text-org81043f7">
 <p>
 CPUアーキテクチャによって、型のサイズは異なることがある。実行時のオーバーヘッドなしで判定しているのをGo言語自体のソースコードで見かけた。
 </p>
@@ -49,13 +49,13 @@ constなのでコンパイル時に、ビルド成果物へ値が埋め込まれ
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>uint型のビットサイズを判定する</label><pre class="src src-git-permalink">https://github.com/golang/go/blob/0f8ab2db177baee7b04182f5641693df3b212aa9/src/math/bits/bits.go#L17
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>uint型のビットサイズを判定する</label><pre class="src src-git-permalink"><code>https://github.com/golang/go/blob/0f8ab2db177baee7b04182f5641693df3b212aa9/src/math/bits/bits.go#L17
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const uintSize = 32 &lt;&lt; (^uint(0) &gt;&gt; 63) // 32 or 64
-</pre>
+<pre class="src src-nil"><code>const uintSize = 32 &lt;&lt; (^uint(0) &gt;&gt; 63) // 32 or 64
+</code></pre>
 </div>
 
 <p>
@@ -73,7 +73,7 @@ constなのでコンパイル時に、ビルド成果物へ値が埋め込まれ
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>それぞれ見る(64bitアーキテクチャで実行した)</label><pre class="src src-go">import "fmt"
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>それぞれ見る(64bitアーキテクチャで実行した)</label><pre class="src src-go"><code>import "fmt"
 func main() {
   fmt.Printf("%b\n", uint(0))
   fmt.Printf("%b\n", ^uint(0))
@@ -82,15 +82,15 @@ func main() {
   fmt.Printf("%d\n", 32 &lt;&lt; 0) // 移動しないので32のまま
   fmt.Printf("%d\n", 32 &lt;&lt; 1) // 1だけ左シフトする。つまり32(2の5乗)から64(2の6乗)になる
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">0
+<pre class="src src-nil"><code>0
 1111111111111111111111111111111111111111111111111111111111111111
 32
 64
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -98,24 +98,24 @@ func main() {
 </p>
 
 <div class="org-src-container">
-<pre class="src src-go">import "fmt"
+<pre class="src src-go"><code>import "fmt"
 func main() {
   fmt.Printf("%b\n", 0b0010 &lt;&lt; 1)
   fmt.Printf("%b\n", 0b0010 &gt;&gt; 1)
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">100
+<pre class="src src-nil"><code>100
 1
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org1f665a8" class="outline-2">
-<h2 id="org1f665a8"><a href="#org1f665a8">関連</a></h2>
-<div class="outline-text-2" id="text-org1f665a8">
+<div id="outline-container-orgf6342f1" class="outline-2">
+<h2 id="orgf6342f1"><a href="#orgf6342f1">関連</a></h2>
+<div class="outline-text-2" id="text-orgf6342f1">
 <ul class="org-ul">
 <li>類推: 同様に実行時のオーバーヘッドがない系Tipsを書く</li>
 <li>類推: ビット演算ハックを書く</li>

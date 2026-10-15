@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</h1>
-<div id="outline-container-org675c201" class="outline-2">
-<h2 id="org675c201"><a href="#org675c201">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org675c201">
+<div id="outline-container-orgf9a454b" class="outline-2">
+<h2 id="orgf9a454b"><a href="#orgf9a454b">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf9a454b">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org6bb7f47" class="outline-2">
-<h2 id="org6bb7f47"><a href="#org6bb7f47">概要</a></h2>
-<div class="outline-text-2" id="text-org6bb7f47">
+<div id="outline-container-orgbc6aef5" class="outline-2">
+<h2 id="orgbc6aef5"><a href="#orgbc6aef5">概要</a></h2>
+<div class="outline-text-2" id="text-orgbc6aef5">
 <p>
 集計や並べ替えの後ろにある LIMIT は、下の処理が全部の行を読み終えるまで効かないので、読む行を減らさないのを確かめる。
 </p>
@@ -49,7 +49,7 @@
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sql">SET max_parallel_workers_per_gather = 0;
+<pre class="src src-sql"><code>SET max_parallel_workers_per_gather = 0;
 CREATE TABLE users (id int PRIMARY KEY, name text);
 CREATE TABLE orders (id int PRIMARY KEY, user_id int);
 CREATE TABLE items (order_id int, price int);
@@ -84,7 +84,7 @@ JOIN orders o ON o.user_id = u.id
 JOIN items i ON i.order_id = o.id
 WHERE u.id &lt; 100
 LIMIT 5;
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -112,9 +112,9 @@ LIMIT 5;
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgd82c083" class="outline-2">
-<h2 id="orgd82c083"><a href="#orgd82c083">関連</a></h2>
-<div class="outline-text-2" id="text-orgd82c083">
+<div id="outline-container-org81db156" class="outline-2">
+<h2 id="org81db156"><a href="#org81db156">関連</a></h2>
+<div class="outline-text-2" id="text-org81db156">
 <ul class="org-ul">
 <li>前提: <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。文芸的に確認する道具</li>
 </ul>

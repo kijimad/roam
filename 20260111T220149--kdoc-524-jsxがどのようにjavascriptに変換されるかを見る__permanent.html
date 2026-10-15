@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 524: JSXがどのようにJavaScriptに変換されるかを見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 524: JSXがどのようにJavaScriptに変換されるかを見る</h1>
-<div id="outline-container-org228e9c6" class="outline-2">
-<h2 id="org228e9c6"><a href="#org228e9c6">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org228e9c6">
+<div id="outline-container-orgb4126c2" class="outline-2">
+<h2 id="orgb4126c2"><a href="#orgb4126c2">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgb4126c2">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org148e78a" class="outline-2">
-<h2 id="org148e78a"><a href="#org148e78a">概要</a></h2>
-<div class="outline-text-2" id="text-org148e78a">
+<div id="outline-container-orge447829" class="outline-2">
+<h2 id="orge447829"><a href="#orge447829">概要</a></h2>
+<div class="outline-text-2" id="text-orge447829">
 <p>
 Reactに対して、いまいち使いこなせていない感覚を感じつづけてきた。その理由の1つは、JSXを理解してないことに見える。明らかにJavaScriptとは違うのだが、混在して存在している。よくわかっていないので、確認することにした。
 </p>
@@ -63,7 +63,7 @@ JSX (JavaScript XML, formally JavaScript Syntax eXtension) は、 JavaScript に
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>JavaScriptに変換してみる</label><pre class="src src-shell">cat &lt;&lt; 'EOF' | npx -y esbuild --loader=jsx --format=cjs 2&gt;&amp;1
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>JavaScriptに変換してみる</label><pre class="src src-shell"><code>cat &lt;&lt; 'EOF' | npx -y esbuild --loader=jsx --format=cjs 2&gt;&amp;1
 /* HTMLタグ */
 &lt;div&gt;
   &lt;h1&gt;hello&lt;/h1&gt;
@@ -84,28 +84,28 @@ const jsx1 = &lt;Component /&gt;;
 1&lt;0&gt;2;
 
 EOF
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">/* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "hello"));
+<pre class="src src-nil"><code>/* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "hello"));
 /* @__PURE__ */ React.createElement(Provider, { store }, /* @__PURE__ */ React.createElement(App, null));
 const jsx1 = /* @__PURE__ */ React.createElement(Component, null);
 1 ? /* @__PURE__ */ React.createElement("p", null, "a") : /* @__PURE__ */ React.createElement("p", null, "b");
 1 &lt; 0 &gt; 2;
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>loaderにjsxがない場合はJSXシンタックスのパースに失敗する</label><pre class="src src-shell">cat &lt;&lt; 'EOF' | npx -y esbuild --format=cjs 2&gt;&amp;1
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>loaderにjsxがない場合はJSXシンタックスのパースに失敗する</label><pre class="src src-shell"><code>cat &lt;&lt; 'EOF' | npx -y esbuild --format=cjs 2&gt;&amp;1
 &lt;h1&gt;hello&lt;/h1&gt;
 
 EOF
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">✘ [ERROR] The JSX syntax extension is not currently enabled
+<pre class="src src-nil"><code>✘ [ERROR] The JSX syntax extension is not currently enabled
 
     &lt;stdin&gt;:1:0:
       1 │ &lt;h1&gt;hello&lt;/h1&gt;
@@ -114,21 +114,21 @@ EOF
   The esbuild loader for this file is currently set to "js" but it must be set to "jsx" to be able to parse JSX syntax. You can use "--loader:.js=jsx" to do that.
 
 1 error
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgb872cf2" class="outline-2">
-<h2 id="orgb872cf2"><a href="#orgb872cf2">関連</a></h2>
-<div class="outline-text-2" id="text-orgb872cf2">
+<div id="outline-container-org474490d" class="outline-2">
+<h2 id="org474490d"><a href="#org474490d">関連</a></h2>
+<div class="outline-text-2" id="text-org474490d">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-org5b5bb45" class="outline-2">
-<h2 id="org5b5bb45"><a href="#org5b5bb45">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org5b5bb45">
+<div id="outline-container-org6e0380e" class="outline-2">
+<h2 id="org6e0380e"><a href="#org6e0380e">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org6e0380e">
 <ul class="org-ul">
 <li><a href="./20260122T084216--kdoc-535-commonjsとesmはモジュールシステムである__permanent.html">KDOC 535: CommonJSとESMはモジュールシステムである</a></li>
 </ul>

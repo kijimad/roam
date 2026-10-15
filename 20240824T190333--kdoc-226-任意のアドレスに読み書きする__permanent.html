@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 226: 任意のアドレスに読み書きする</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 226: 任意のアドレスに読み書きする</h1>
-<div id="outline-container-org990d6cc" class="outline-2">
-<h2 id="org990d6cc"><a href="#org990d6cc">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org990d6cc">
+<div id="outline-container-orge859e4e" class="outline-2">
+<h2 id="orge859e4e"><a href="#orge859e4e">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge859e4e">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org569ef2b" class="outline-2">
-<h2 id="org569ef2b"><a href="#org569ef2b">概要</a></h2>
-<div class="outline-text-2" id="text-org569ef2b">
+<div id="outline-container-org089afc8" class="outline-2">
+<h2 id="org089afc8"><a href="#org089afc8">概要</a></h2>
+<div class="outline-text-2" id="text-org089afc8">
 <p>
 メモリアドレスを直接指定して、値を読み書きしてみるコードを見る。
 </p>
@@ -55,26 +55,26 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>無効な範囲を書き換えしてみると、メモリ保護機能によって Segmentation faultになる</label><pre class="src src-C">int main() {
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>無効な範囲を書き換えしてみると、メモリ保護機能によって Segmentation faultになる</label><pre class="src src-C"><code>int main() {
   *((int *) 0x0001) = (int) 111;
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>変数のとりうる範囲は毎回変動する。正しい範囲を指定すると上書きできる</label><pre class="src src-C">int main() {
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>変数のとりうる範囲は毎回変動する。正しい範囲を指定すると上書きできる</label><pre class="src src-C"><code>int main() {
   int x = 1;
   printf("0x%08X: x -&gt; %i\n", &amp;x, x);
   *((int *) &amp;x) = (int) 999999;
   printf("0x%08X: x -&gt; %i\n", &amp;x, x);
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">0x4423DD04: x -&gt; 1
+<pre class="src src-nil"><code>0x4423DD04: x -&gt; 1
 0x4423DD04: x -&gt; 999999
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -82,7 +82,7 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>セグメント内ならアドレスを指定して任意のメモリにアクセスできる。セグフォにならない範囲でintとして値を取得して調べた。マイナス方向には多く余地があるが、プラス方向には少ない</label><pre class="src src-C">int main() {
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>セグメント内ならアドレスを指定して任意のメモリにアクセスできる。セグフォにならない範囲でintとして値を取得して調べた。マイナス方向には多く余地があるが、プラス方向には少ない</label><pre class="src src-C"><code>int main() {
   int x = 2;
   printf("0x%08X: x -&gt; %i\n", &amp;x, x);
   int load1 = *((int *) &amp;x-0x100000);
@@ -92,19 +92,19 @@
   printf("load2(+0x100): 0x%08X\n", load2);
   printf("load3(+0x2): 0x%08X\n", load3);
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">0x9EBD7178: x -&gt; 2
+<pre class="src src-nil"><code>0x9EBD7178: x -&gt; 2
 load1(-0x100000): 0x00000000
 load2(+0x100): 0x00001000
 load3(+0x2): 0x00001000
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>直にアドレスを指定して取得する</label><pre class="src src-C">int main() {
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>直にアドレスを指定して取得する</label><pre class="src src-C"><code>int main() {
   char base = 0;
   char a = 'a';
   char b = 'b';
@@ -119,11 +119,11 @@ load3(+0x2): 0x00001000
   printf("b: 0x%08X\n", *((char *) &amp;base+0x2));
   printf("c: 0x%08X\n", *((char *) &amp;base+0x3));
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">0x5FD01F44: base
+<pre class="src src-nil"><code>0x5FD01F44: base
 0x5FD01F45: a
 0x5FD01F46: b
 0x5FD01F47: c
@@ -131,22 +131,22 @@ load3(+0x2): 0x00001000
 a: 0x00000061
 b: 0x00000062
 c: 0x00000063
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgda2cd8d" class="outline-2">
-<h2 id="orgda2cd8d"><a href="#orgda2cd8d">関連</a></h2>
-<div class="outline-text-2" id="text-orgda2cd8d">
+<div id="outline-container-orgd1dae82" class="outline-2">
+<h2 id="orgd1dae82"><a href="#orgd1dae82">関連</a></h2>
+<div class="outline-text-2" id="text-orgd1dae82">
 <ul class="org-ul">
 <li>参照: <a href="20240717T223527--kdoc-202-『30日でできる-os自作入門』__book.html#ID-20240717T223527">KDOC 202: 『30日でできる! OS自作入門』</a>。出てきたコードを確認した</li>
 <li>疑問: アクセス可能な範囲がどういうことになっているのか調べる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org89c2dca" class="outline-2">
-<h2 id="org89c2dca"><a href="#org89c2dca">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org89c2dca">
+<div id="outline-container-org4f162a1" class="outline-2">
+<h2 id="org4f162a1"><a href="#org4f162a1">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org4f162a1">
 <ul class="org-ul">
 <li><a href="./20240825T193415--kdoc-228-変数を書いた順番とアドレスの関係はコンパイラによって異なる__permanent.html">KDOC 228: 変数を書いた順番とアドレスの関係はコンパイラによって異なる</a></li>
 </ul>

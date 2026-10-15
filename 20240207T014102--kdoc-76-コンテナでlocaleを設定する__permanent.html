@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 76: コンテナでLocaleを設定する</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 76: コンテナでLocaleを設定する</h1>
-<div id="outline-container-org1c8593e" class="outline-2">
-<h2 id="org1c8593e"><a href="#org1c8593e">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org1c8593e">
+<div id="outline-container-org455a906" class="outline-2">
+<h2 id="org455a906"><a href="#org455a906">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org455a906">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,28 +37,28 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org3396c59" class="outline-2">
-<h2 id="org3396c59"><a href="#org3396c59">概要</a></h2>
-<div class="outline-text-2" id="text-org3396c59">
+<div id="outline-container-org931d8fb" class="outline-2">
+<h2 id="org931d8fb"><a href="#org931d8fb">概要</a></h2>
+<div class="outline-text-2" id="text-org931d8fb">
 <p>
 コンテナでLocaleを設定する方法をまとめる。普段ホストマシンとして動かしていると問題になることはないが、<a href="20210805005543-docker.html#ID-1658782a-d331-464b-9fd7-1f8233b8b7f8">Docker</a>コンテナでは設定されていないので問題になることがある。たとえばファイル名に日本語が含まれるときに英語のままだと検索にかからなかったりする。
 </p>
 </div>
 </div>
-<div id="outline-container-org6c47b92" class="outline-2">
-<h2 id="org6c47b92"><a href="#org6c47b92">イントロ</a></h2>
-<div class="outline-text-2" id="text-org6c47b92">
+<div id="outline-container-orgb111c6a" class="outline-2">
+<h2 id="orgb111c6a"><a href="#orgb111c6a">イントロ</a></h2>
+<div class="outline-text-2" id="text-orgb111c6a">
 <p>
 Localeとは「その地域で使われる言語や通貨の単位などのまとまり」<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>のことである。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>現在値を確認する</label><pre class="src src-shell">localectl
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>現在値を確認する</label><pre class="src src-shell"><code>localectl
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">| System                        | Locale: | LANG=en_US.UTF-8 |
+<pre class="src src-nil"><code>| System                        | Locale: | LANG=en_US.UTF-8 |
 | LC_NUMERIC=ja_JP.UTF-8        |         |                  |
 | LC_MONETARY=ja_JP.UTF-8       |         |                  |
 | LC_PAPER=ja_JP.UTF-8          |         |                  |
@@ -70,13 +70,13 @@ Localeとは「その地域で使われる言語や通貨の単位などのま�
 | VC                            | Keymap: | n/a              |
 | X11                           | Layout: | jp               |
 | X11                           | Model:  | pc105            |
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgeb0f9f3" class="outline-2">
-<h2 id="orgeb0f9f3"><a href="#orgeb0f9f3">手順</a></h2>
-<div class="outline-text-2" id="text-orgeb0f9f3">
+<div id="outline-container-org491ca53" class="outline-2">
+<h2 id="org491ca53"><a href="#org491ca53">手順</a></h2>
+<div class="outline-text-2" id="text-org491ca53">
 <p>
 手順は2段階である。Docker環境は公式のubuntuイメージで確認した。
 </p>
@@ -91,15 +91,15 @@ Localeとは「その地域で使われる言語や通貨の単位などのま�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>日本語が含まれていない</label><pre class="src src-shell">locale -a
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>日本語が含まれていない</label><pre class="src src-shell"><code>locale -a
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">C
+<pre class="src src-nil"><code>C
 C.utf8
 POSIX
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -107,22 +107,22 @@ POSIX
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>インストールする</label><pre class="src src-shell">apt update
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>インストールする</label><pre class="src src-shell"><code>apt update
 apt install language-pack-ja
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>ロケール一覧にja_JP.utf8があるのを確認する</label><pre class="src src-shell">locale -a
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>ロケール一覧にja_JP.utf8があるのを確認する</label><pre class="src src-shell"><code>locale -a
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">C
+<pre class="src src-nil"><code>C
 C.utf8
 POSIX
 ja_JP.utf8
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -130,8 +130,8 @@ Localeは環境変数で設定できるので、コマンド実行時にexport�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>Localeを日本に設定する</label><pre class="src src-shell">export LC_ALL=ja_JP.UTF-8
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>Localeを日本に設定する</label><pre class="src src-shell"><code>export LC_ALL=ja_JP.UTF-8
+</code></pre>
 </div>
 
 <p>
@@ -139,7 +139,7 @@ Locale前後でファイル名の日本語が正しく表示できるのを確�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>ファイル名を正しく表示できる</label><pre class="src src-shell"># 設定前
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>ファイル名を正しく表示できる</label><pre class="src src-shell"><code># 設定前
 touch あ
 ls
 # =&gt; ''$'\343\201\202'
@@ -151,21 +151,21 @@ ls
 # 設定後
 ls
 # =&gt; あ
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgc66eb42" class="outline-2">
-<h2 id="orgc66eb42"><a href="#orgc66eb42">関連</a></h2>
-<div class="outline-text-2" id="text-orgc66eb42">
+<div id="outline-container-org006ccc2" class="outline-2">
+<h2 id="org006ccc2"><a href="#org006ccc2">関連</a></h2>
+<div class="outline-text-2" id="text-org006ccc2">
 <ul class="org-ul">
 <li>未解決: このケースでなぜ文字化けするのか。デフォルトでASCIIで処理しているということか</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgbaa4c93" class="outline-2">
-<h2 id="orgbaa4c93"><a href="#orgbaa4c93">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgbaa4c93">
+<div id="outline-container-org3d6436c" class="outline-2">
+<h2 id="org3d6436c"><a href="#org3d6436c">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org3d6436c">
 <ul class="org-ul">
 <li><a href="./20240207T201038--kdoc-79-localeの標準的な紙のサイズとは__permanent.html">KDOC 79: Localeの標準的な紙のサイズとは</a></li>
 <li><a href="./20240207T203227--kdoc-80-「あ」がどうして343-201-202になるのか__permanent.html">KDOC 80: 「あ」がどうして343 201 202になるのか</a></li>

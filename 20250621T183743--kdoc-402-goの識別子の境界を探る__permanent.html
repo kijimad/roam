@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 402: Goの識別子の境界を探る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 402: Goの識別子の境界を探る</h1>
-<div id="outline-container-org42327ba" class="outline-2">
-<h2 id="org42327ba"><a href="#org42327ba">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org42327ba">
+<div id="outline-container-org1c9ea09" class="outline-2">
+<h2 id="org1c9ea09"><a href="#org1c9ea09">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1c9ea09">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org93fa014" class="outline-2">
-<h2 id="org93fa014"><a href="#org93fa014">概要</a></h2>
-<div class="outline-text-2" id="text-org93fa014">
+<div id="outline-container-org5bd695b" class="outline-2">
+<h2 id="org5bd695b"><a href="#org5bd695b">概要</a></h2>
+<div class="outline-text-2" id="text-org5bd695b">
 <p>
 多くの現代的なプログラミング言語では識別子にUnicodeの文字(コードポイント)を使えるということを知っていたが、ちゃんとGoの仕様を調べたことはなかった。確認する。
 </p>
@@ -49,7 +49,7 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>すべて正しいシンタックス。ビルド、実行できる</label><pre class="src src-go">import "fmt"
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>すべて正しいシンタックス。ビルド、実行できる</label><pre class="src src-go"><code>import "fmt"
 func main() {
         // 変数名に日本語が使える
         あ := "a"
@@ -65,13 +65,13 @@ func main() {
 }
 
 func 漢字() {}
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">a
+<pre class="src src-nil"><code>a
 {}
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -83,10 +83,10 @@ func 漢字() {}
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>identifierの定義</label><pre class="src src-code">identifier = letter { letter | unicode_digit } .
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>identifierの定義</label><pre class="src src-code"><code>identifier = letter { letter | unicode_digit } .
 letter     = unicode_letter | "_" .
 unicode_letter = /* a Unicode code point categorized as "Letter" */ .
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -94,12 +94,12 @@ unicode_letter = /* a Unicode code point categorized as "Letter" */ .
 </p>
 
 <ul class="org-ul">
-<li>Unicodeにはカテゴリという概念がある。letter(文字), mark(結合記号), number(数字), punctuation(句読点), &#x2026;
+<li>Unicodeにはカテゴリという概念がある。letter(文字), mark(結合記号), number(数字), punctuation(句読点), &hellip;
 <ul class="org-ul">
 <li>結合記号はアクセント記号のように、ほかの文字と組み合わせて使う記号のことである</li>
 <li>たとえば漢字はletterのサブカテゴリotherに属する</li>
 </ul></li>
-<li>識別子の先頭にletterカテゴリの文字があれば、あとはなんでもいい。逆にいえば、結合記号、数字、句読点、&#x2026;から開始できない</li>
+<li>識別子の先頭にletterカテゴリの文字があれば、あとはなんでもいい。逆にいえば、結合記号、数字、句読点、&hellip;から開始できない</li>
 <li>アンダースコア <code>_</code> は句読点カテゴリの文字である。例外的にletterとして許容されている
 <ul class="org-ul">
 <li>自然に使っていて、全く意識してなかった</li>
@@ -111,7 +111,7 @@ unicode_letter = /* a Unicode code point categorized as "Letter" */ .
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>結合記号、数字、句読点、&#x2026;から開始できない</label><pre class="src src-shell">tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>結合記号、数字、句読点、&hellip;から開始できない</label><pre class="src src-shell"><code>tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
 
 cat &gt; $tmpfile &lt;&lt;EOF
 package main
@@ -141,11 +141,11 @@ EOF
 
 go run $tmpfile 2&gt;&amp;1
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">/tmp/tmpgo.FO1KQz.go:5:3: invalid character U+25CC '◌' in identifier
+<pre class="src src-nil"><code>/tmp/tmpgo.FO1KQz.go:5:3: invalid character U+25CC '◌' in identifier
 /tmp/tmpgo.FO1KQz.go:5:6: invalid character U+0300 '̀' in identifier
 /tmp/tmpgo.FO1KQz.go:6:9: invalid character U+25CC '◌' in identifier
 /tmp/tmpgo.FO1KQz.go:6:12: invalid character U+0300 '̀' in identifier
@@ -156,7 +156,7 @@ rm $tmpfile
 /tmp/tmpgo.FO1KQz.go:21:3: invalid character U+1F44D '👍' in identifier
 /tmp/tmpgo.FO1KQz.go:22:9: invalid character U+1F44D '👍' in identifier
 /tmp/tmpgo.FO1KQz.go:22:9: too many errors
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -164,9 +164,9 @@ rm $tmpfile
 </p>
 </div>
 </div>
-<div id="outline-container-org50100a9" class="outline-2">
-<h2 id="org50100a9"><a href="#org50100a9">関連</a></h2>
-<div class="outline-text-2" id="text-org50100a9">
+<div id="outline-container-org234664a" class="outline-2">
+<h2 id="org234664a"><a href="#org234664a">関連</a></h2>
+<div class="outline-text-2" id="text-org234664a">
 <ul class="org-ul">
 <li>類推: <a href="20250603T215002--kdoc-381-識別子の先頭に数値が使えないのは区別がつかなくなるから__permanent.html#ID-20250603T215002">KDOC 381: 識別子の先頭に数値が使えないのは区別がつかなくなるから</a>。識別子制限の理由の1つ</li>
 <li>参照: <a href="https://en.wikipedia.org/wiki/Unicode_character_property">Unicode character property - Wikipedia</a>。カテゴリ表を参考にした</li>

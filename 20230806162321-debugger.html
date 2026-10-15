@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Debugger</title>
@@ -22,30 +22,30 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">Debugger</h1>
-<div id="outline-container-orgc67c894" class="outline-2">
-<h2 id="orgc67c894"><a href="#orgc67c894">概要</a></h2>
-<div class="outline-text-2" id="text-orgc67c894">
+<div id="outline-container-org5a59c70" class="outline-2">
+<h2 id="org5a59c70"><a href="#org5a59c70">概要</a></h2>
+<div class="outline-text-2" id="text-org5a59c70">
 <p>
 デバッガは、デバッグ作業を支援するコンピュータプログラムのこと。
 </p>
 </div>
 </div>
-<div id="outline-container-orgab7da9b" class="outline-2">
-<h2 id="orgab7da9b"><a href="#orgab7da9b">gdb</a></h2>
-<div class="outline-text-2" id="text-orgab7da9b">
+<div id="outline-container-orgd8980c9" class="outline-2">
+<h2 id="orgd8980c9"><a href="#orgd8980c9">gdb</a></h2>
+<div class="outline-text-2" id="text-orgd8980c9">
 <p>
 add.cファイルの、main関数のデバッグをするときを考える。
 </p>
 </div>
-<div id="outline-container-org94ea386" class="outline-3">
-<h3 id="org94ea386"><a href="#org94ea386">.gdbinitファイル</a></h3>
-<div class="outline-text-3" id="text-org94ea386">
+<div id="outline-container-orgcf077b6" class="outline-3">
+<h3 id="orgcf077b6"><a href="#orgcf077b6">.gdbinitファイル</a></h3>
+<div class="outline-text-3" id="text-orgcf077b6">
 <p>
 カレントディレクトリに <code>.gdbinit</code> ファイルを作成しておくと、定点観測しやすくなる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>.gdbinit</label><pre class="src src-shell">break *main
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>.gdbinit</label><pre class="src src-shell"><code>break *main
 
 # /xは16進数表示する
 display /x $eax
@@ -54,24 +54,24 @@ display /x $esi
 
 # /4iは次の4命令を表示する
 display /4i $pc
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>-qオプションは起動時のメッセージ抑制する</label><pre class="src src-shell">gdb -q add
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>-qオプションは起動時のメッセージ抑制する</label><pre class="src src-shell"><code>gdb -q add
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org4222c85" class="outline-3">
-<h3 id="org4222c85"><a href="#org4222c85">実行する</a></h3>
-<div class="outline-text-3" id="text-org4222c85">
+<div id="outline-container-org9b4c291" class="outline-3">
+<h3 id="org9b4c291"><a href="#org9b4c291">実行する</a></h3>
+<div class="outline-text-3" id="text-org9b4c291">
 <p>
 gdbコンソールでrunを実行する。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>gdbコマンド実行後の対話環境内</label><pre class="src src-shell">Reading symbols from add...
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>gdbコマンド実行後の対話環境内</label><pre class="src src-shell"><code>Reading symbols from add...
 (No debugging symbols found in add)
 Breakpoint 1 at 0x1129
 
@@ -89,24 +89,24 @@ Breakpoint 1, 0x0000555555555129 in main ()
    0x55555555512d &lt;main+4&gt;:     push   %rbp
    0x55555555512e &lt;main+5&gt;:     push   %rbx
    0x55555555512f &lt;main+6&gt;:     mov    $0x7b,%ebp
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>スタックの上位32バイトを16進数でダンプする</label><pre class="src src-shell">(gdb) x/ 32b $esp
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>スタックの上位32バイトを16進数でダンプする</label><pre class="src src-shell"><code>(gdb) x/ 32b $esp
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orga5df80a" class="outline-3">
-<h3 id="orga5df80a"><a href="#orga5df80a">ステップイン</a></h3>
-<div class="outline-text-3" id="text-orga5df80a">
+<div id="outline-container-org578d7c6" class="outline-3">
+<h3 id="org578d7c6"><a href="#org578d7c6">ステップイン</a></h3>
+<div class="outline-text-3" id="text-org578d7c6">
 <p>
 <code>si</code> で進める。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-nil">(gdb) si
+<pre class="src src-nil"><code>(gdb) si
 0x000055555555512f in main ()
 1: /x $eax = 0x55555129
 2: /x $ebx = 0x0
@@ -116,60 +116,60 @@ Breakpoint 1, 0x0000555555555129 in main ()
    0x555555555134 &lt;main+11&gt;:    add    $0x1,%ebp
    0x555555555137 &lt;main+14&gt;:    mov    $0x1c8,%ebx
    0x55555555513c &lt;main+19&gt;:    add    %ebp,%ebx
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org9bf84a7" class="outline-3">
-<h3 id="org9bf84a7"><a href="#org9bf84a7">TUIモード</a></h3>
-<div class="outline-text-3" id="text-org9bf84a7">
+<div id="outline-container-org474169c" class="outline-3">
+<h3 id="org474169c"><a href="#org474169c">TUIモード</a></h3>
+<div class="outline-text-3" id="text-org474169c">
 <p>
 TextUserInterfaceの略。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">gdb -tui add
-</pre>
+<pre class="src src-shell"><code>gdb -tui add
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>逆アセンブル結果を表示する</label><pre class="src src-shell">layout asm
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>逆アセンブル結果を表示する</label><pre class="src src-shell"><code>layout asm
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>レジスタを表示する</label><pre class="src src-shell">layout regs
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>レジスタを表示する</label><pre class="src src-shell"><code>layout regs
+</code></pre>
 </div>
 </div>
 </div>
 </div>
-<div id="outline-container-orgd8b4848" class="outline-2">
-<h2 id="orgd8b4848"><a href="#orgd8b4848">Memo</a></h2>
-<div class="outline-text-2" id="text-orgd8b4848">
+<div id="outline-container-org1df6534" class="outline-2">
+<h2 id="org1df6534"><a href="#org1df6534">Memo</a></h2>
+<div class="outline-text-2" id="text-org1df6534">
 </div>
-<div id="outline-container-orgbacd235" class="outline-3">
-<h3 id="orgbacd235"><a href="#orgbacd235"><a href="https://speakerdeck.com/aarzilli/internal-architecture-of-delve">Internal Architecture of Delve - Speaker Deck</a></a></h3>
-<div class="outline-text-3" id="text-orgbacd235">
+<div id="outline-container-orgde40ab8" class="outline-3">
+<h3 id="orgde40ab8"><a href="#orgde40ab8"><a href="https://speakerdeck.com/aarzilli/internal-architecture-of-delve">Internal Architecture of Delve - Speaker Deck</a></a></h3>
+<div class="outline-text-3" id="text-orgde40ab8">
 <p>
 GoのデバッガDelveの解説。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-orga2c897f" class="outline-2">
-<h2 id="orga2c897f"><a href="#orga2c897f">Tasks</a></h2>
+<div id="outline-container-org915ae3d" class="outline-2">
+<h2 id="org915ae3d"><a href="#org915ae3d">Tasks</a></h2>
 </div>
-<div id="outline-container-orgd51e0da" class="outline-2">
-<h2 id="orgd51e0da"><a href="#orgd51e0da">Reference</a></h2>
-<div class="outline-text-2" id="text-orgd51e0da">
+<div id="outline-container-orgbf4ef3f" class="outline-2">
+<h2 id="orgbf4ef3f"><a href="#orgbf4ef3f">Reference</a></h2>
+<div class="outline-text-2" id="text-orgbf4ef3f">
 <ul class="org-ul">
 <li><a href="https://ja.wikipedia.org/wiki/%E3%83%87%E3%83%90%E3%83%83%E3%82%AC">デバッガ - Wikipedia</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orge6f2477" class="outline-2">
-<h2 id="orge6f2477"><a href="#orge6f2477">Archives</a></h2>
+<div id="outline-container-orgb876a92" class="outline-2">
+<h2 id="orgb876a92"><a href="#orgb876a92">Archives</a></h2>
 </div>
 </div>
 <div id="postamble" class="status">

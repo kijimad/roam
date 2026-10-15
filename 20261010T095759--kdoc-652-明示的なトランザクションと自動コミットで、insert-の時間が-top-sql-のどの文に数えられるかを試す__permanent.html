@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</h1>
-<div id="outline-container-orgc83427d" class="outline-2">
-<h2 id="orgc83427d"><a href="#orgc83427d">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgc83427d">
+<div id="outline-container-org5b4685f" class="outline-2">
+<h2 id="org5b4685f"><a href="#org5b4685f">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org5b4685f">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgba8355f" class="outline-2">
-<h2 id="orgba8355f"><a href="#orgba8355f">概要</a></h2>
-<div class="outline-text-2" id="text-orgba8355f">
+<div id="outline-container-orgad38d92" class="outline-2">
+<h2 id="orgad38d92"><a href="#orgad38d92">概要</a></h2>
+<div class="outline-text-2" id="text-orgad38d92">
 <p>
 Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
 </p>
@@ -49,7 +49,7 @@ pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label><pre class="src src-shell"># 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label><pre class="src src-shell"><code># 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
 sample() {
   psql -h localhost -p 15433 -U postgres -d postgres -qAt -F ' | ' &lt;&lt;'SQL'
 CREATE TABLE samples (query text, wait text);
@@ -95,11 +95,11 @@ run "小さい INSERT を自動コミットで(4並列、5秒)" \
 run "50万行の INSERT を明示的なトランザクションで1回" \
     'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n' "-c 1 -t 1"
 docker exec pgpg-postgres-1 psql -U postgres -qAt -c "DROP TABLE w"
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
+<pre class="src src-nil"><code>== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
 COMMIT; | LWLock:WALWrite | 1128
 COMMIT; | IO:WalSync | 395
 INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 21
@@ -125,7 +125,7 @@ INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:Wal
 INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | LWLock:WALWrite | 3
 COMMIT; | IO:WalSync | 1
 latency average = 1934.744 ms
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -149,9 +149,9 @@ WALWrite: WALバッファがディスクに書き込まれるのを待機して�
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orga2a6279" class="outline-2">
-<h2 id="orga2a6279"><a href="#orga2a6279">関連</a></h2>
-<div class="outline-text-2" id="text-orga2a6279">
+<div id="outline-container-org9104f45" class="outline-2">
+<h2 id="org9104f45"><a href="#org9104f45">関連</a></h2>
+<div class="outline-text-2" id="text-org9104f45">
 <ul class="org-ul">
 <li>前提: <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
 <li>前提: <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>

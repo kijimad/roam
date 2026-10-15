@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 365: toolchainを実際に試す</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 365: toolchainを実際に試す</h1>
-<div id="outline-container-org4505089" class="outline-2">
-<h2 id="org4505089"><a href="#org4505089">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org4505089">
+<div id="outline-container-orge4e0e80" class="outline-2">
+<h2 id="orge4e0e80"><a href="#orge4e0e80">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge4e0e80">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,42 +37,42 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf1cbe48" class="outline-2">
-<h2 id="orgf1cbe48"><a href="#orgf1cbe48">概要</a></h2>
-<div class="outline-text-2" id="text-orgf1cbe48">
+<div id="outline-container-org1f15015" class="outline-2">
+<h2 id="org1f15015"><a href="#org1f15015">概要</a></h2>
+<div class="outline-text-2" id="text-org1f15015">
 <p>
 Go言語のtoolchainで指定バージョンがダウンロードされるのを試す。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>go.mod</label><pre class="src src-code">module playground/at-2025-05-03-083600
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>go.mod</label><pre class="src src-code"><code>module playground/at-2025-05-03-083600
 
 go 1.21.1
 
 toolchain go1.23.1
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>実行に使うGoのバージョンが古くないと試せないので、少し古めのGoバージョンの環境を用意する(現時点の最新はgo1.24.2)。</label><pre class="src src-shell">docker run --rm -it -v $PWD:/work -w /work golang:1.21 /bin/sh
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>実行に使うGoのバージョンが古くないと試せないので、少し古めのGoバージョンの環境を用意する(現時点の最新はgo1.24.2)。</label><pre class="src src-shell"><code>docker run --rm -it -v $PWD:/work -w /work golang:1.21 /bin/sh
 # このイメージでは、デフォルトでGOTOOLCHAINがlocalになっている
 $ go env GOTOOLCHAIN
 local
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>GOTOOLCHAINがlocalだと、go.modに書いてあるバージョンは無視され、ローカルのGoのバージョンが使われる</label><pre class="src src-shell">$ go version
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>GOTOOLCHAINがlocalだと、go.modに書いてあるバージョンは無視され、ローカルのGoのバージョンが使われる</label><pre class="src src-shell"><code>$ go version
 go version go1.21.13 linux/amd64
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>GOTOOLCHAINをautoにすると、toolchainで指定したバージョンがインストールされた</label><pre class="src src-shell">$ GOTOOLCHAIN=auto
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>GOTOOLCHAINをautoにすると、toolchainで指定したバージョンがインストールされた</label><pre class="src src-shell"><code>$ GOTOOLCHAIN=auto
 $ go version
 go: downloading go1.23.1 (linux/amd64)
 go version go1.23.1 linux/amd64
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -80,18 +80,18 @@ go version go1.23.1 linux/amd64
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>go.modでgoディレクティブのバージョンを新しくすると、1.24.1がインストールされた</label><pre class="src src-shell">module playground/at-2025-05-03-083600
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>go.modでgoディレクティブのバージョンを新しくすると、1.24.1がインストールされた</label><pre class="src src-shell"><code>module playground/at-2025-05-03-083600
 
 go 1.24.1
 
 toolchain go1.22.1
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org2f62d28" class="outline-2">
-<h2 id="org2f62d28"><a href="#org2f62d28">関連</a></h2>
-<div class="outline-text-2" id="text-org2f62d28">
+<div id="outline-container-org1224f77" class="outline-2">
+<h2 id="org1224f77"><a href="#org1224f77">関連</a></h2>
+<div class="outline-text-2" id="text-org1224f77">
 <ul class="org-ul">
 <li>動機(検証): <a href="20250502T001229--kdoc-360-goとtoolchainの違いは何か__permanent.html#ID-20250502T001229">KDOC 360: goとtoolchainの違いは何か?</a>。toolchainを実際に動かしてみて試す</li>
 </ul>

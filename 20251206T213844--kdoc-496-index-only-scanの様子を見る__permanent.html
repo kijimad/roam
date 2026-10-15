@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 496: Index (Only) Scanの様子を見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 496: Index (Only) Scanの様子を見る</h1>
-<div id="outline-container-org53a5a1a" class="outline-2">
-<h2 id="org53a5a1a"><a href="#org53a5a1a">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org53a5a1a">
+<div id="outline-container-orgf7f5bd7" class="outline-2">
+<h2 id="orgf7f5bd7"><a href="#orgf7f5bd7">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf7f5bd7">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orge7db908" class="outline-2">
-<h2 id="orge7db908"><a href="#orge7db908">概要</a></h2>
-<div class="outline-text-2" id="text-orge7db908">
+<div id="outline-container-orgcdfbdf3" class="outline-2">
+<h2 id="orgcdfbdf3"><a href="#orgcdfbdf3">概要</a></h2>
+<div class="outline-text-2" id="text-orgcdfbdf3">
 <p>
 PostgreSQLで、インデックスが使われる様子を確かめる。
 </p>
@@ -49,7 +49,7 @@ PostgreSQLで、インデックスが使われる様子を確かめる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>indexがないフィールドを条件にするのでindexは使われない</label><pre class="src src-sql">CREATE TABLE users (
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>indexがないフィールドを条件にするのでindexは使われない</label><pre class="src src-sql"><code>CREATE TABLE users (
     NAME VARCHAR(255),
     num INTEGER
 );
@@ -58,11 +58,11 @@ CREATE INDEX idx_users_name ON users(NAME);
 -- indexを使わない
 explain
 SELECT NAME FROM users WHERE num = 1;
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                        |
+<pre class="src src-nil"><code>|                                                        |
 |--------------------------------------------------------|
 | &gt; CREATE TABLE users (                                 |
 | &gt;     NAME VARCHAR(255),                               |
@@ -78,7 +78,7 @@ SELECT NAME FROM users WHERE num = 1;
 | QUERY PLAN                                             |
 | Seq Scan on users  (cost=0.00..11.75 rows=1 width=516) |
 | Filter: (num = 1)                                      |
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -86,7 +86,7 @@ SELECT NAME FROM users WHERE num = 1;
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>検索にインデックスidx_users_nameを使うが、結果として返すidは含まれていないのでヒープアクセスが発生し、index Only Scanにはならない</label><pre class="src src-sql">CREATE TABLE users (
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>検索にインデックスidx_users_nameを使うが、結果として返すidは含まれていないのでヒープアクセスが発生し、index Only Scanにはならない</label><pre class="src src-sql"><code>CREATE TABLE users (
     id serial PRIMARY KEY,
     NAME VARCHAR(255)
 );
@@ -94,11 +94,11 @@ CREATE INDEX idx_users_name ON users(NAME);
 
 explain
 SELECT id FROM users WHERE NAME = 'a';
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                                            |
+<pre class="src src-nil"><code>|                                                                            |
 |----------------------------------------------------------------------------|
 | &gt; CREATE TABLE users (                                                     |
 | &gt;     id serial PRIMARY KEY,                                               |
@@ -114,7 +114,7 @@ SELECT id FROM users WHERE NAME = 'a';
 | QUERY PLAN                                                                 |
 | Index Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=4) |
 | Index Cond: ((name)::text = 'a'::text)                                     |
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -122,7 +122,7 @@ index only scan するパターン。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>Index Only Scanする。検索にインデックスidx_users_nameを使い、結果もnameだけなので、indexだけで完結する。</label><pre class="src src-sql">CREATE TABLE users (
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>Index Only Scanする。検索にインデックスidx_users_nameを使い、結果もnameだけなので、indexだけで完結する。</label><pre class="src src-sql"><code>CREATE TABLE users (
     NAME VARCHAR(255),
     num INTEGER
 );
@@ -131,11 +131,11 @@ CREATE INDEX idx_users_name ON users(NAME);
 -- indexを使う
 explain
 SELECT NAME FROM users WHERE NAME = 'a';
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                                                   |
+<pre class="src src-nil"><code>|                                                                                   |
 |-----------------------------------------------------------------------------------|
 | &gt; CREATE TABLE users (                                                            |
 | &gt;     NAME VARCHAR(255),                                                          |
@@ -151,22 +151,22 @@ SELECT NAME FROM users WHERE NAME = 'a';
 | QUERY PLAN                                                                        |
 | Index Only Scan using idx_users_name on users  (cost=0.14..8.16 rows=1 width=516) |
 | Index Cond: (name = 'a'::text)                                                    |
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgcb9ee0b" class="outline-2">
-<h2 id="orgcb9ee0b"><a href="#orgcb9ee0b">関連</a></h2>
-<div class="outline-text-2" id="text-orgcb9ee0b">
+<div id="outline-container-orgf6d479b" class="outline-2">
+<h2 id="orgf6d479b"><a href="#orgf6d479b">関連</a></h2>
+<div class="outline-text-2" id="text-orgf6d479b">
 <ul class="org-ul">
 <li>具体例: <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。を使って検証した</li>
 <li>追加調査: QUERY PLANの値の意味をよくわかってないので調べる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc78226f" class="outline-2">
-<h2 id="orgc78226f"><a href="#orgc78226f">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgc78226f">
+<div id="outline-container-orgd47d3e9" class="outline-2">
+<h2 id="orgd47d3e9"><a href="#orgd47d3e9">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgd47d3e9">
 <ul class="org-ul">
 <li><a href="./20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html">KDOC 497: 複合インデックスの使用条件を試す</a></li>
 <li><a href="./20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html">KDOC 643: WHERE条件の大小によって実行計画が変わる例</a></li>

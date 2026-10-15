@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 657: PostgreSQL 18のスキップスキャンを試す</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 657: PostgreSQL 18のスキップスキャンを試す</h1>
-<div id="outline-container-orge7a81f9" class="outline-2">
-<h2 id="orge7a81f9"><a href="#orge7a81f9">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orge7a81f9">
+<div id="outline-container-orgca01b90" class="outline-2">
+<h2 id="orgca01b90"><a href="#orgca01b90">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgca01b90">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfce9931" class="outline-2">
-<h2 id="orgfce9931"><a href="#orgfce9931">概要</a></h2>
-<div class="outline-text-2" id="text-orgfce9931">
+<div id="outline-container-org5b4df97" class="outline-2">
+<h2 id="org5b4df97"><a href="#org5b4df97">概要</a></h2>
+<div class="outline-text-2" id="text-org5b4df97">
 <p>
 PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列に条件がないとき、先頭の列の値ごとにインデックスを探し直して、関係のない部分を読み飛ばせるようになった(スキップスキャン)。
 </p>
@@ -59,7 +59,7 @@ PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>先頭の列の種類の数を変えて、WHERE y = 7700 の実行計画を比べる</label><pre class="src src-sql">-- 出力を短くするため、並列実行を切る
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>先頭の列の種類の数を変えて、WHERE y = 7700 の実行計画を比べる</label><pre class="src src-sql"><code>-- 出力を短くするため、並列実行を切る
 SET max_parallel_workers_per_gather = 0;
 
 CREATE TABLE few (x int, y int);
@@ -82,7 +82,7 @@ SELECT * FROM few WHERE y = 7700;
 EXPLAIN (ANALYZE, FORMAT JSON, COSTS OFF, TIMING OFF,
          SUMMARY OFF, BUFFERS OFF)
 SELECT * FROM many WHERE y = 7700;
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -106,9 +106,9 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgf964f85" class="outline-2">
-<h2 id="orgf964f85"><a href="#orgf964f85">関連</a></h2>
-<div class="outline-text-2" id="text-orgf964f85">
+<div id="outline-container-orge7d27f3" class="outline-2">
+<h2 id="orge7d27f3"><a href="#orge7d27f3">関連</a></h2>
+<div class="outline-text-2" id="text-orge7d27f3">
 <p>
 なし。
 </p>

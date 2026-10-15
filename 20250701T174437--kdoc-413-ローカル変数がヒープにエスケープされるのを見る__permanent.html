@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 413: ローカル変数がヒープにエスケープされるのを見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 413: ローカル変数がヒープにエスケープされるのを見る</h1>
-<div id="outline-container-org7f5edc2" class="outline-2">
-<h2 id="org7f5edc2"><a href="#org7f5edc2">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org7f5edc2">
+<div id="outline-container-org7ef8453" class="outline-2">
+<h2 id="org7ef8453"><a href="#org7ef8453">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7ef8453">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org634060e" class="outline-2">
-<h2 id="org634060e"><a href="#org634060e">概要</a></h2>
-<div class="outline-text-2" id="text-org634060e">
+<div id="outline-container-orgfa02459" class="outline-2">
+<h2 id="orgfa02459"><a href="#orgfa02459">概要</a></h2>
+<div class="outline-text-2" id="text-orgfa02459">
 <p>
 関数を抜けた後も使うようなケースでは、関数呼び出し後に消されないようにスタックからヒープに移す必要がある。後も使うケースとしては、ポインタを返すなどがある。ローカル変数として宣言されていても、ヒープに移動させられる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>ローカル変数がヒープにエスケープされる様子を見る</label><pre class="src src-shell">tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>ローカル変数がヒープにエスケープされる様子を見る</label><pre class="src src-shell"><code>tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
 
 cat &gt; $tmpfile &lt;&lt;EOF
 package main
@@ -62,28 +62,28 @@ EOF
 go build -gcflags="-m" -o bin $tmpfile 2&gt;&amp;1
 rm bin
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">/tmp/tmpgo.G6OymE.go:3:6: can inline main
+<pre class="src src-nil"><code>/tmp/tmpgo.G6OymE.go:3:6: can inline main
 /tmp/tmpgo.G6OymE.go:5:6: can inline f
 /tmp/tmpgo.G6OymE.go:6:9: moved to heap: x
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org64949eb" class="outline-2">
-<h2 id="org64949eb"><a href="#org64949eb">関連</a></h2>
-<div class="outline-text-2" id="text-org64949eb">
+<div id="outline-container-org8474809" class="outline-2">
+<h2 id="org8474809"><a href="#org8474809">関連</a></h2>
+<div class="outline-text-2" id="text-org8474809">
 <ul class="org-ul">
 <li>動機: <a href="20250630T185540--kdoc-411-スタックは積み重ねて取り出して解放する。ではヒープは__permanent.html#ID-20250630T185540">KDOC 411: スタックは積み重ねて取り出して解放する。ではヒープは?</a>。ヒープを調べるきっかけになった</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org97bae9f" class="outline-2">
-<h2 id="org97bae9f"><a href="#org97bae9f">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org97bae9f">
+<div id="outline-container-orgd2232c3" class="outline-2">
+<h2 id="orgd2232c3"><a href="#orgd2232c3">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgd2232c3">
 <ul class="org-ul">
 <li><a href="./20250702T194815--kdoc-416-goのエスケープ解析における2つの不変条件を見る__permanent.html">KDOC 416: Goのエスケープ解析における2つの不変条件を見る</a></li>
 </ul>

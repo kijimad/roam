@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -21,9 +21,9 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<div id="outline-container-orgfac3347" class="outline-2">
-<h2 id="orgfac3347"><a href="#orgfac3347">Prisma</a></h2>
-<div class="outline-text-2" id="text-orgfac3347">
+<div id="outline-container-orgd21c49f" class="outline-2">
+<h2 id="orgd21c49f"><a href="#orgd21c49f">Prisma</a></h2>
+<div class="outline-text-2" id="text-orgd21c49f">
 <p>
 タイトル: Prisma の upsert でユニーク制約が出た日
 </p>
@@ -46,7 +46,7 @@ await prisma.user.upsert({
 </p>
 
 <ul class="org-ul">
-<li>たまにupsert部分でユニーク制約エラーが出る &#x2026;</li>
+<li>たまにupsert部分でユニーク制約エラーが出る &hellip;</li>
 <li>すでにレコードがあるのに insert しようとしている。??</li>
 <li>発行されるSQLを眺めると、SELECT + (INSERT or UPDATE) の2クエリになっていた</li>
 <li>同時に2つSELECTを通過すると、両方INSERTする(図)</li>
@@ -54,11 +54,11 @@ await prisma.user.upsert({
 
 <p>
 2クエリ
-&#x2013; 1. SELECT で存在確認
+&ndash; 1. SELECT で存在確認
 SELECT * FROM users WHERE email = &rsquo;user@example.com&rsquo;;
-&#x2013; 2a. 見つかった → UPDATE
+&ndash; 2a. 見つかった → UPDATE
 UPDATE users SET name = &rsquo;admin&rsquo; WHERE email = &rsquo;user@example.com&rsquo;;
-&#x2013; 2b. 見つからなかった → INSERT
+&ndash; 2b. 見つからなかった → INSERT
 INSERT INTO users (email, name) VALUES (&rsquo;user@example.com&rsquo;, &rsquo;admin&rsquo;);
 </p>
 
@@ -70,7 +70,7 @@ ON CONFLICT (email) DO UPDATE SET name = &rsquo;admin&rsquo;;
 </p>
 
 <p>
-なぜこうなる? &#x2013; Prisma の仕様
+なぜこうなる? &ndash; Prisma の仕様
 </p>
 
 <ul class="org-ul">
@@ -92,7 +92,7 @@ The unique field in the where option and the unique field in the create option h
 </blockquote>
 
 <p>
-なぜこの仕様? &#x2013; SQLの制限
+なぜこの仕様? &ndash; SQLの制限
 </p>
 
 <ul class="org-ul">
@@ -101,7 +101,7 @@ The unique field in the where option and the unique field in the create option h
 
 <blockquote>
 <p>
-The name of a column in the table named by table_name. The column name can be qualified with a subfield name or array subscript, if needed. (Inserting into only some fields of a composite column leaves the other fields null.) When referencing a column with ON CONFLICT DO UPDATE, do not include the table&rsquo;s name in the specification of a target column. For example, INSERT INTO table_name &#x2026; ON CONFLICT DO UPDATE SET table_name.col = 1 is invalid (this follows the general behavior for UPDATE).
+The name of a column in the table named by table_name. The column name can be qualified with a subfield name or array subscript, if needed. (Inserting into only some fields of a composite column leaves the other fields null.) When referencing a column with ON CONFLICT DO UPDATE, do not include the table&rsquo;s name in the specification of a target column. For example, INSERT INTO table_name &hellip; ON CONFLICT DO UPDATE SET table_name.col = 1 is invalid (this follows the general behavior for UPDATE).
 </p>
 </blockquote>
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 497: 複合インデックスの使用条件を試す</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 497: 複合インデックスの使用条件を試す</h1>
-<div id="outline-container-orgb919b08" class="outline-2">
-<h2 id="orgb919b08"><a href="#orgb919b08">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgb919b08">
+<div id="outline-container-org80b09cc" class="outline-2">
+<h2 id="org80b09cc"><a href="#org80b09cc">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org80b09cc">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgb7d8818" class="outline-2">
-<h2 id="orgb7d8818"><a href="#orgb7d8818">概要</a></h2>
-<div class="outline-text-2" id="text-orgb7d8818">
+<div id="outline-container-org91e41d9" class="outline-2">
+<h2 id="org91e41d9"><a href="#org91e41d9">概要</a></h2>
+<div class="outline-text-2" id="text-org91e41d9">
 <p>
 複合インデックスによるスキャン方法の変化を実験した。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>複合インデックスを使う</label><pre class="src src-sql">CREATE TABLE users (
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>複合インデックスを使う</label><pre class="src src-sql"><code>CREATE TABLE users (
     id serial PRIMARY KEY,
     name varchar(255),
     tel integer,
@@ -83,11 +83,11 @@ select id from users where name = 'a' and nonidx = 'a';
 -- 複合インデックスの2番めの要素を使うと、インデックスが使われない
 explain
 select id from users where tel = 1;
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                                                   |   |             |
+<pre class="src src-nil"><code>|                                                                                   |   |             |
 |-----------------------------------------------------------------------------------+---+-------------|
 | &gt; CREATE TABLE users (                                                            |   |             |
 | &gt;     id serial PRIMARY KEY,                                                      |   |             |
@@ -147,7 +147,7 @@ select id from users where tel = 1;
 | QUERY PLAN                                                                        |   |             |
 | Seq Scan on users  (cost=0.00..588.34 rows=19 width=4)                            |   |             |
 | Filter: (tel = 1)                                                                 |   |             |
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -162,9 +162,9 @@ select id from users where tel = 1;
 </ul>
 </div>
 </div>
-<div id="outline-container-org1020dc8" class="outline-2">
-<h2 id="org1020dc8"><a href="#org1020dc8">関連</a></h2>
-<div class="outline-text-2" id="text-org1020dc8">
+<div id="outline-container-orgae8f5af" class="outline-2">
+<h2 id="orgae8f5af"><a href="#orgae8f5af">関連</a></h2>
+<div class="outline-text-2" id="text-orgae8f5af">
 <ul class="org-ul">
 <li>動機: <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。インデックスを確かめているときに考えた</li>
 <li>追加調査: 複数のスキャン方法を試す</li>
@@ -174,9 +174,9 @@ select id from users where tel = 1;
 </ul>
 </div>
 </div>
-<div id="outline-container-org18c6fe3" class="outline-2">
-<h2 id="org18c6fe3"><a href="#org18c6fe3">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org18c6fe3">
+<div id="outline-container-org4a2bf8c" class="outline-2">
+<h2 id="org4a2bf8c"><a href="#org4a2bf8c">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org4a2bf8c">
 <ul class="org-ul">
 <li><a href="./20251208T083954--kdoc-500-covering-indexを試す__permanent.html">KDOC 500: Covering Indexを試す</a></li>
 </ul>

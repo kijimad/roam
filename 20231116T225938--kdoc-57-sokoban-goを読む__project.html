@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:41 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 57: sokoban-goを読む</title>
@@ -22,17 +22,17 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 57: sokoban-goを読む</h1>
-<div id="outline-container-org936eb67" class="outline-2">
-<h2 id="org936eb67"><a href="#org936eb67"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-org936eb67">
+<div id="outline-container-orgeb27640" class="outline-2">
+<h2 id="orgeb27640"><a href="#orgeb27640"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-orgeb27640">
 <p>
 プロジェクトは終了である。
 </p>
 </div>
 </div>
-<div id="outline-container-org0111e12" class="outline-2">
-<h2 id="org0111e12"><a href="#org0111e12">概要</a></h2>
-<div class="outline-text-2" id="text-org0111e12">
+<div id="outline-container-org6df4d2b" class="outline-2">
+<h2 id="org6df4d2b"><a href="#org6df4d2b">概要</a></h2>
+<div class="outline-text-2" id="text-org6df4d2b">
 <p>
 <a href="20210926145504-game.html#ID-8b79aef9-1073-4788-9e81-68cc63e4f997">game</a>を作るけど最後までうまくいった試しがない。人のコードを見る。
 </p>
@@ -46,20 +46,20 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf214fe7" class="outline-2">
-<h2 id="orgf214fe7"><a href="#orgf214fe7">タイル - スプライト</a></h2>
-<div class="outline-text-2" id="text-orgf214fe7">
+<div id="outline-container-org0a08ef6" class="outline-2">
+<h2 id="org0a08ef6"><a href="#org0a08ef6">タイル - スプライト</a></h2>
+<div class="outline-text-2" id="text-org0a08ef6">
 <p>
 タイルの上にあるものはスプライトとしているよう。<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L23-L30
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L23-L30
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const (
+<pre class="src src-nil"><code>const (
 	exteriorSpriteNumber = 0
 	wallSpriteNumber     = 1
 	floorSpriteNumber    = 2
@@ -67,24 +67,24 @@
 	boxSpriteNumber      = 4
 	playerSpriteNumber   = 5
 )
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgf44fd46" class="outline-2">
-<h2 id="orgf44fd46"><a href="#orgf44fd46">タイルに対する操作</a></h2>
-<div class="outline-text-2" id="text-orgf44fd46">
+<div id="outline-container-org7077c24" class="outline-2">
+<h2 id="org7077c24"><a href="#org7077c24">タイルに対する操作</a></h2>
+<div class="outline-text-2" id="text-org7077c24">
 <p>
 タイルに対する操作一覧。論理演算で判断しているな。Set関数では自身を書き換える。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L54-L84
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L54-L84
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Tile is a game tile
+<pre class="src src-nil"><code>// Tile is a game tile
 type Tile uint8
 
 // List of game tiles
@@ -115,25 +115,25 @@ func (t *Tile) Set(other Tile) {
 func (t *Tile) Remove(other Tile) {
 	*t &amp;= 0xFF ^ other
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org1478dd5" class="outline-2">
-<h2 id="org1478dd5"><a href="#org1478dd5">読み込み</a></h2>
-<div class="outline-text-2" id="text-org1478dd5">
+<div id="outline-container-org9fac170" class="outline-2">
+<h2 id="org9fac170"><a href="#org9fac170">読み込み</a></h2>
+<div class="outline-text-2" id="text-org9fac170">
 <p>
 タイルはファイルから読み込んでいるようだ。よくわからない。タイルの縦×横の集合体がグリッドだ。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>func normalizeLevel(lines []string) ([][]byte, error)</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L165
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>func normalizeLevel(lines []string) ([][]byte, error)</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L165
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">grid := make([][]byte, len(lines))
-</pre>
+<pre class="src src-nil"><code>grid := make([][]byte, len(lines))
+</code></pre>
 </div>
 
 <p>
@@ -141,12 +141,12 @@ func (t *Tile) Remove(other Tile) {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet)</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L319-L327
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet)</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L319-L327
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet *ec.SpriteSheet, line, col int) {
+<pre class="src src-nil"><code>func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet *ec.SpriteSheet, line, col int) {
 	componentList.Engine = append(componentList.Engine, loader.EngineComponentList{
 		SpriteRender: &amp;ec.SpriteRender{SpriteSheet: gameSpriteSheet, SpriteNumber: floorSpriteNumber},
 		Transform:    &amp;ec.Transform{},
@@ -155,31 +155,31 @@ func (t *Tile) Remove(other Tile) {
 		GridElement: &amp;gc.GridElement{Line: line, Col: col},
 	})
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org03e0a0f" class="outline-2">
-<h2 id="org03e0a0f"><a href="#org03e0a0f">コンポーネントの定義</a></h2>
-<div class="outline-text-2" id="text-org03e0a0f">
+<div id="outline-container-orgd991cff" class="outline-2">
+<h2 id="orgd991cff"><a href="#orgd991cff">コンポーネントの定義</a></h2>
+<div class="outline-text-2" id="text-orgd991cff">
 <p>
 コンポーネントの種類の定義↓。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/lib.go#L13-L19
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/lib.go#L13-L19
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">type gameComponentList struct {
+<pre class="src src-nil"><code>type gameComponentList struct {
 	GridElement *gc.GridElement
 	Player      *gc.Player
 	Box         *gc.Box
 	Goal        *gc.Goal
 	Wall        *gc.Wall
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -187,12 +187,12 @@ func (t *Tile) Remove(other Tile) {
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/components/lib.go#L5-L12
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/components/lib.go#L5-L12
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Components contains references to all game components
+<pre class="src src-nil"><code>// Components contains references to all game components
 type Components struct {
 	GridElement *ecs.SliceComponent
 	Player      *ecs.NullComponent
@@ -200,29 +200,29 @@ type Components struct {
 	Goal        *ecs.NullComponent
 	Wall        *ecs.NullComponent
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org6878684" class="outline-2">
-<h2 id="org6878684"><a href="#org6878684">resources</a></h2>
-<div class="outline-text-2" id="text-org6878684">
+<div id="outline-container-org2765098" class="outline-2">
+<h2 id="org2765098"><a href="#org2765098">resources</a></h2>
+<div class="outline-text-2" id="text-org2765098">
 <p>
 アクションが定数として表現されている。アクションmapのキーとして利用する。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>定数</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/controls.go#L3-L7
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>定数</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/controls.go#L3-L7
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const (
+<pre class="src src-nil"><code>const (
 	// MoveUpAction is the action for moving up
 	MoveUpAction = "MoveUp"
 	// MoveUpFastAction is the action for moving up fast
 	MoveUpFastAction = "MoveUpFast"
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -230,8 +230,8 @@ type Components struct {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>func LoadControls(controlsConfigPath string, axes []string, actions []string) (resources.Controls, resources.InputHandler)</label><pre class="src src-git-permalink">inputHandler.Actions = make(map[string]bool)
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>func LoadControls(controlsConfigPath string, axes []string, actions []string) (resources.Controls, resources.InputHandler)</label><pre class="src src-git-permalink"><code>inputHandler.Actions = make(map[string]bool)
+</code></pre>
 </div>
 
 <p>
@@ -239,45 +239,45 @@ TOMLファイル。対応関係がわかりやすい。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/config/controls.toml#L1-L6
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/config/controls.toml#L1-L6
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">[controls.actions.MoveUp]
+<pre class="src src-nil"><code>[controls.actions.MoveUp]
 combinations = [[{ key = "Up" }]]
 once = true
 
 [controls.actions.MoveUpFast]
 combinations = [[{ key = "ShiftLeft" }, { key = "Up" }], [{ key = "ShiftRight" }, { key = "Up" }]]
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-toml">[controls.actions.MoveUp]
+<pre class="src src-toml"><code>[controls.actions.MoveUp]
 combinations = [[{ key = "Up" }]]
 once = true
 
 [controls.actions.MoveUpFast]
 combinations = [[{ key = "ShiftLeft" }, { key = "Up" }], [{ key = "ShiftRight" }, { key = "Up" }]]
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org5a577b8" class="outline-2">
-<h2 id="org5a577b8"><a href="#org5a577b8">prefab</a></h2>
-<div class="outline-text-2" id="text-org5a577b8">
+<div id="outline-container-org6f89cac" class="outline-2">
+<h2 id="org6f89cac"><a href="#org6f89cac">prefab</a></h2>
+<div class="outline-text-2" id="text-org6f89cac">
 <p>
 prefabが具体的にどういうことをするのかわからない。メニュー画面それぞれを保持しているぽい。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/prefab.go#L5-L13
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/prefab.go#L5-L13
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// MenuPrefabs contains menu prefabs
+<pre class="src src-nil"><code>// MenuPrefabs contains menu prefabs
 type MenuPrefabs struct {
 	MainMenu          loader.EntityComponentList
 	ChoosePackageMenu loader.EntityComponentList
@@ -286,24 +286,24 @@ type MenuPrefabs struct {
 	HighscoresMenu    loader.EntityComponentList
 	SolutionsMenu     loader.EntityComponentList
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org0fb2fb4" class="outline-2">
-<h2 id="org0fb2fb4"><a href="#org0fb2fb4">UI更新</a></h2>
-<div class="outline-text-2" id="text-org0fb2fb4">
+<div id="outline-container-orge7c50c8" class="outline-2">
+<h2 id="orge7c50c8"><a href="#orge7c50c8">UI更新</a></h2>
+<div class="outline-text-2" id="text-orge7c50c8">
 <p>
 UIもコンポーネントである。↓UIコンポーネントを書き換えて表示する。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>UIコンポーネント更新</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/pause_menu.go#L123-L137
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>UIコンポーネント更新</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/pause_menu.go#L123-L137
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Update text components
+<pre class="src src-nil"><code>// Update text components
 world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 	text := world.Components.Engine.Text.Get(entity).(*ec.Text)
 
@@ -318,7 +318,7 @@ world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITrans
 		}
 	}
 }))
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -326,12 +326,12 @@ world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITrans
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/assets/metadata/entities/ui/main_menu.toml#L27-L34
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/assets/metadata/entities/ui/main_menu.toml#L27-L34
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">[entity.components.Text]
+<pre class="src src-nil"><code>[entity.components.Text]
 id = "cursor_view_highscores"
 text = "\u25ba"
 font_face = { font = "hack", options.size = 60.0 }
@@ -339,7 +339,7 @@ color = [255, 255, 255, 255]
 
 [entity.components.UITransform]
 translation = { x = 40, y = 400 }
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -351,26 +351,26 @@ translation = { x = 40, y = 400 }
 </p>
 </div>
 </div>
-<div id="outline-container-org1c2d4ad" class="outline-2">
-<h2 id="org1c2d4ad"><a href="#org1c2d4ad">メニューコンポーネントのマウスオーバーイベント</a></h2>
-<div class="outline-text-2" id="text-org1c2d4ad">
+<div id="outline-container-orgee1712b" class="outline-2">
+<h2 id="orgee1712b"><a href="#orgee1712b">メニューコンポーネントのマウスオーバーイベント</a></h2>
+<div class="outline-text-2" id="text-orgee1712b">
 <p>
 ↓メニューコンポーネントそれぞれで、マウスが上にあるかを判定する。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>func updateMenu(menu menu, world w.World) states.Transition {</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L41-L46
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>func updateMenu(menu menu, world w.World) states.Transition {</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L41-L46
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Handle mouse events only if mouse is moved or clicked
+<pre class="src src-nil"><code>// Handle mouse events only if mouse is moved or clicked
 x, y := ebiten.CursorPosition()
 if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 	menuLastCursorPosition = m.VectorInt2{X: x, Y: y}
 
 	for iElem, id := range menu.getMenuIDs() {
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -378,13 +378,13 @@ if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.I
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 7: </span>func updateMenu(menu menu, world w.World) states.Transition {</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L47
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 7: </span>func updateMenu(menu menu, world w.World) states.Transition {</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L47
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">if world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform, world.Components.Engine.MouseReactive).Visit(
-</pre>
+<pre class="src src-nil"><code>if world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform, world.Components.Engine.MouseReactive).Visit(
+</code></pre>
 </div>
 
 <p>
@@ -392,12 +392,12 @@ if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.I
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 8: </span>func updateMenu(menu menu, world w.World) states.Transition {</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L48-L59
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>func updateMenu(menu menu, world w.World) states.Transition {</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L48-L59
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">func(index int) (skip bool) {
+<pre class="src src-nil"><code>func(index int) (skip bool) {
 	mouseReactive := world.Components.Engine.MouseReactive.Get(ecs.Entity(index)).(*ec.MouseReactive)
 	if mouseReactive.ID == id &amp;&amp; mouseReactive.Hovered {
 		menu.setSelection(iElem)
@@ -409,42 +409,42 @@ if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.I
 	return false
 }) {
 return transition
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org260dc5b" class="outline-2">
-<h2 id="org260dc5b"><a href="#org260dc5b">GridElementとは何か</a></h2>
-<div class="outline-text-2" id="text-org260dc5b">
+<div id="outline-container-orge8e56a0" class="outline-2">
+<h2 id="orge8e56a0"><a href="#orge8e56a0">GridElementとは何か</a></h2>
+<div class="outline-text-2" id="text-orge8e56a0">
 <p>
 ↓グリッドを置き換えるシステムがある。グリッドは座標を持つことを示す。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_transform.go#L16-L17
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_transform.go#L16-L17
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// GridTransformSystem sets transform for grid elements
+<pre class="src src-nil"><code>// GridTransformSystem sets transform for grid elements
 func GridTransformSystem(world w.World) {
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_transform.go#L20
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_transform.go#L20
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">world.Manager.Join(gameComponents.GridElement, world.Components.Engine.SpriteRender, world.Components.Engine.Transform).Visit(ecs.Visit(func(entity ecs.Entity) {
-</pre>
+<pre class="src src-nil"><code>world.Manager.Join(gameComponents.GridElement, world.Components.Engine.SpriteRender, world.Components.Engine.Transform).Visit(ecs.Visit(func(entity ecs.Entity) {
+</code></pre>
 </div>
 
 <ul class="org-ul">
-<li>GridElement &#x2013; 座標を持つことを示す</li>
-<li>SpriteRender &#x2013; 描画可能なことを示す</li>
-<li>Transform &#x2013; 何かわからない
+<li>GridElement &ndash; 座標を持つことを示す</li>
+<li>SpriteRender &ndash; 描画可能なことを示す</li>
+<li>Transform &ndash; 何かわからない
 <ul class="org-ul">
 <li>壁、箱、プレイヤー、UI…など描画されるものについている</li>
 <li>画像変換か</li>
@@ -460,12 +460,12 @@ func GridTransformSystem(world w.World) {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 9: </span>プレイヤー、箱を探す</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_update.go#L18-L25
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 9: </span>プレイヤー、箱を探す</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_update.go#L18-L25
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">for iTile, tile := range gameResources.Level.Grid.Data {
+<pre class="src src-nil"><code>for iTile, tile := range gameResources.Level.Grid.Data {
 	switch {
 	case tile.Contains(resources.TilePlayer):
 		playerIndex = iTile
@@ -473,7 +473,7 @@ func GridTransformSystem(world w.World) {
 		boxIndices = append(boxIndices, iTile)
 	}
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -481,12 +481,12 @@ func GridTransformSystem(world w.World) {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 10: </span>コンポーネントによって分岐</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_update.go#L33-L47
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 10: </span>コンポーネントによって分岐</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_update.go#L33-L47
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">world.Manager.Join(gameComponents.GridElement).Visit(ecs.Visit(func(entity ecs.Entity) {
+<pre class="src src-nil"><code>world.Manager.Join(gameComponents.GridElement).Visit(ecs.Visit(func(entity ecs.Entity) {
 	switch {
 	case entity.HasComponent(gameComponents.Player):
 		gridElement := gameComponents.GridElement.Get(entity).(*gc.GridElement)
@@ -501,13 +501,13 @@ func GridTransformSystem(world w.World) {
 		gridElement.Col = paddingCol + boxIndex%levelWidth
 	}
 }))
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgd3454ac" class="outline-2">
-<h2 id="orgd3454ac"><a href="#orgd3454ac">InfoSystemとは何か</a></h2>
-<div class="outline-text-2" id="text-orgd3454ac">
+<div id="outline-container-org4226c3d" class="outline-2">
+<h2 id="org4226c3d"><a href="#org4226c3d">InfoSystemとは何か</a></h2>
+<div class="outline-text-2" id="text-org4226c3d">
 <p>
 GridElementと同様に、タイルの状態をエンティティに反映する。今回はUIエンティティ。
 </p>
@@ -517,12 +517,12 @@ GridElementと同様に、タイルの状態をエンティティに反映する
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 11: </span>func InfoSystem(world w.World, solutionMode bool) {}</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/info.go#L21-L29
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 11: </span>func InfoSystem(world w.World, solutionMode bool) {}</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/info.go#L21-L29
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">for _, tile := range gameResources.Level.Grid.Data {
+<pre class="src src-nil"><code>for _, tile := range gameResources.Level.Grid.Data {
 	if tile.Contains(resources.TileBox) {
 		boxCount += 1
 
@@ -531,7 +531,7 @@ GridElementと同様に、タイルの状態をエンティティに反映する
 		}
 	}
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -539,12 +539,12 @@ GridElementと同様に、タイルの状態をエンティティに反映する
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/info.go#L31-L51
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/info.go#L31-L51
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Set text info
+<pre class="src src-nil"><code>// Set text info
 world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 	text := world.Components.Engine.Text.Get(entity).(*ec.Text)
 
@@ -565,21 +565,21 @@ world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITrans
 		}
 	}
 }))
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org817eb12" class="outline-2">
-<h2 id="org817eb12"><a href="#org817eb12">Resourceとは何か</a></h2>
-<div class="outline-text-2" id="text-org817eb12">
+<div id="outline-container-org08ff97c" class="outline-2">
+<h2 id="org08ff97c"><a href="#org08ff97c">Resourceとは何か</a></h2>
+<div class="outline-text-2" id="text-org08ff97c">
 <p>
 ECS用語におけるリソースとは何か。エンティティに関係ないデータのこと。マップデータとかかな。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-go">// Resources contains references to data not related to any entity
+<pre class="src src-go"><code>// Resources contains references to data not related to any entity
 type Resources struct {
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -587,12 +587,12 @@ type Resources struct {
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/game.go#L128-L135
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/game.go#L128-L135
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Game contains game resources
+<pre class="src src-nil"><code>// Game contains game resources
 type Game struct {
 	StateEvent StateEvent
 	Package    PackageData
@@ -600,7 +600,7 @@ type Game struct {
 	GridLayout GridLayout
 	SaveConfig SaveConfig
 }
-</pre>
+</code></pre>
 </div>
 
 <dl class="org-dl">
@@ -610,20 +610,20 @@ type Game struct {
 </dl>
 </div>
 </div>
-<div id="outline-container-orgf06a961" class="outline-2">
-<h2 id="orgf06a961"><a href="#orgf06a961">タイル</a></h2>
-<div class="outline-text-2" id="text-orgf06a961">
+<div id="outline-container-org82e63d8" class="outline-2">
+<h2 id="org82e63d8"><a href="#org82e63d8">タイル</a></h2>
+<div class="outline-text-2" id="text-org82e63d8">
 <p>
 ↓タイルの状態一覧。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/game.go#L105-L112
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/game.go#L105-L112
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// List of game tiles
+<pre class="src src-nil"><code>// List of game tiles
 const (
 	TilePlayer = gloader.TilePlayer
 	TileBox    = gloader.TileBox
@@ -631,24 +631,24 @@ const (
 	TileWall   = gloader.TileWall
 	TileEmpty  = gloader.TileEmpty
 )
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgf47034a" class="outline-2">
-<h2 id="orgf47034a"><a href="#orgf47034a">stateとsystemの関係</a></h2>
-<div class="outline-text-2" id="text-orgf47034a">
+<div id="outline-container-orgda749c8" class="outline-2">
+<h2 id="orgda749c8"><a href="#orgda749c8">stateとsystemの関係</a></h2>
+<div class="outline-text-2" id="text-orgda749c8">
 <p>
 stateによって適用systemが異なる。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/gameplay.go#L65-L72
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/gameplay.go#L65-L72
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">func (st *GameplayState) Update(world w.World) states.Transition {
+<pre class="src src-nil"><code>func (st *GameplayState) Update(world w.World) states.Transition {
 	g.SwitchLevelSystem(world)
 	g.UndoSystem(world)
 	g.MoveSystem(world)
@@ -656,39 +656,39 @@ stateによって適用systemが異なる。
 	g.InfoSystem(world, false)
 	g.GridUpdateSystem(world)
 	g.GridTransformSystem(world)
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgd59ada5" class="outline-2">
-<h2 id="orgd59ada5"><a href="#orgd59ada5">移動はどうやっているか</a></h2>
-<div class="outline-text-2" id="text-orgd59ada5">
+<div id="outline-container-org0542e65" class="outline-2">
+<h2 id="org0542e65"><a href="#org0542e65">移動はどうやっているか</a></h2>
+<div class="outline-text-2" id="text-org0542e65">
 <p>
 ↓systemではこうしている。シンプルにリソースの値に応じてMove()を呼んでいる。ボタン押下に応じて、Actionsがセットされてるはず。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/move.go#L9-L11
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/move.go#L9-L11
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// MoveSystem moves player
+<pre class="src src-nil"><code>// MoveSystem moves player
 func MoveSystem(world w.World) {
 	moveUpAction := world.Resources.InputHandler.Actions[resources.MoveUpAction]
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/move.go#L21-L23
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/move.go#L21-L23
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">switch {
+<pre class="src src-nil"><code>switch {
 case moveUpAction || moveUpFastAction:
 	resources.Move(world, resources.MovementUp)
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -696,14 +696,14 @@ case moveUpAction || moveUpFastAction:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-go">// InputHandler contains input axis values and actions corresponding to specified controls
+<pre class="src src-go"><code>// InputHandler contains input axis values and actions corresponding to specified controls
 type InputHandler struct {
 	// Axes contains input axis values
 	Axes map[string]float64
 	// Actions contains input actions
 	Actions map[string]bool
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -711,15 +711,15 @@ type InputHandler struct {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 12: </span>func (st *LevelCompleteState) Update(world w.World) states.Transition {}</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/level_complete_menu.go#L121-L123
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 12: </span>func (st *LevelCompleteState) Update(world w.World) states.Transition {}</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/level_complete_menu.go#L121-L123
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+<pre class="src src-nil"><code>if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	world.Resources.InputHandler.Actions[resources.RestartAction] = true
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -727,32 +727,32 @@ type InputHandler struct {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 13: </span>func SwitchLevelSystem(world w.World) bool {}</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/switch_level.go#L17
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 13: </span>func SwitchLevelSystem(world w.World) bool {}</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/switch_level.go#L17
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">restartAction := world.Resources.InputHandler.Actions[resources.RestartAction]
-</pre>
+<pre class="src src-nil"><code>restartAction := world.Resources.InputHandler.Actions[resources.RestartAction]
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 14: </span>func SwitchLevelSystem(world w.World) bool {}</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/switch_level.go#L25-L28
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 14: </span>func SwitchLevelSystem(world w.World) bool {}</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/switch_level.go#L25-L28
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">case restartAction:
+<pre class="src src-nil"><code>case restartAction:
 	gameResources.Level.Movements = []resources.MovementType{}
 	gameResources.Level.Modified = true
 	newLevel = gameResources.Level.CurrentNum
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgfbbf467" class="outline-2">
-<h2 id="orgfbbf467"><a href="#orgfbbf467">InputHandlerのリセットはどこでやっているか</a></h2>
-<div class="outline-text-2" id="text-orgfbbf467">
+<div id="outline-container-orgb876057" class="outline-2">
+<h2 id="orgb876057"><a href="#orgb876057">InputHandlerのリセットはどこでやっているか</a></h2>
+<div class="outline-text-2" id="text-orgb876057">
 <p>
 world.Resources.InputHandlerはさまざまなところで使われている。これはボタンの押下状態に応じて値が変わるように見える。リセットが必要だが、どこでやっているか。
 </p>
@@ -762,10 +762,10 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 15: </span>func InputSystem(world w.World) {}</label><pre class="src src-go">for k, v := range world.Resources.Controls.Actions {
+<label class="org-src-name"><span class="listing-number">Listing 15: </span>func InputSystem(world w.World) {}</label><pre class="src src-go"><code>for k, v := range world.Resources.Controls.Actions {
 	world.Resources.InputHandler.Actions[k] = isActionDone(v)
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -777,33 +777,33 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 </p>
 </div>
 </div>
-<div id="outline-container-org68015a9" class="outline-2">
-<h2 id="org68015a9"><a href="#org68015a9">メニューの抽象化</a></h2>
-<div class="outline-text-2" id="text-org68015a9">
+<div id="outline-container-orgafd9fa0" class="outline-2">
+<h2 id="orgafd9fa0"><a href="#orgafd9fa0">メニューの抽象化</a></h2>
+<div class="outline-text-2" id="text-orgafd9fa0">
 <p>
 ↓複数あるメニューは、このように抽象化されている。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L16-L22
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L16-L22
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">type menu interface {
+<pre class="src src-nil"><code>type menu interface {
 	getSelection() int
 	setSelection(selection int)
 	confirmSelection(world w.World) states.Transition
 	getMenuIDs() []string
 	getCursorMenuIDs() []string
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org498b442" class="outline-2">
-<h2 id="org498b442"><a href="#org498b442">どうやって描画しているか</a></h2>
-<div class="outline-text-2" id="text-org498b442">
+<div id="outline-container-orgbf9b79d" class="outline-2">
+<h2 id="orgbf9b79d"><a href="#orgbf9b79d">どうやって描画しているか</a></h2>
+<div class="outline-text-2" id="text-orgbf9b79d">
 <ul class="org-ul">
 <li>読み込み時にコンポーネントを初期化する
 <ul class="org-ul">
@@ -817,18 +817,18 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 16: </span>stateが描画している部分</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf188429ea/states/lib.go#L98-L103
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 16: </span>stateが描画している部分</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf188429ea/states/lib.go#L98-L103
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Draw draws the screen after a state update
+<pre class="src src-nil"><code>// Draw draws the screen after a state update
 func (sm *StateMachine) Draw(world w.World, screen *ebiten.Image) {
 	// Run drawing systems
 	s.RenderSpriteSystem(world, screen)
 	u.RenderUISystem(world, screen)
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -836,23 +836,23 @@ func (sm *StateMachine) Draw(world w.World, screen *ebiten.Image) {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 17: </span>コンポーネントを描画する</label><pre class="src src-git-permalink">https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf188429ea/systems/sprite/render.go#L21-L25
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 17: </span>コンポーネントを描画する</label><pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf188429ea/systems/sprite/render.go#L21-L25
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// RenderSpriteSystem draws images.
+<pre class="src src-nil"><code>// RenderSpriteSystem draws images.
 // Images are drawn in ascending order of depth.
 // Images with higher depth are thus drawn above images with lower depth.
 func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
 	sprites := world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform)
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org4b28e88" class="outline-2">
-<h2 id="org4b28e88"><a href="#org4b28e88">StateMachineがどういう感じになっているか</a></h2>
-<div class="outline-text-2" id="text-org4b28e88">
+<div id="outline-container-org51b5f01" class="outline-2">
+<h2 id="org51b5f01"><a href="#org51b5f01">StateMachineがどういう感じになっているか</a></h2>
+<div class="outline-text-2" id="text-org51b5f01">
 <p>
 ステートのスタック構造を持っているが、これはどういう感じで推移するか。
 </p>
@@ -863,66 +863,66 @@ func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
 </ul>
 </div>
 </div>
-<div id="outline-container-orgaa6b19c" class="outline-2">
-<h2 id="orgaa6b19c"><a href="#orgaa6b19c">スプライトを動的に追加する</a></h2>
-<div class="outline-text-2" id="text-orgaa6b19c">
+<div id="outline-container-orgb2e5772" class="outline-2">
+<h2 id="orgb2e5772"><a href="#orgb2e5772">スプライトを動的に追加する</a></h2>
+<div class="outline-text-2" id="text-orgb2e5772">
 <p>
 真っ黒な画像をスプライト画像として登録して、フェードアウトとしている。スプライトをファイルで読み込むほかに、こういったこともできる。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/main.go#L73-L75
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/main.go#L73-L75
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">textureImage := ebiten.NewImage(minGameWidth, minGameHeight)
+<pre class="src src-nil"><code>textureImage := ebiten.NewImage(minGameWidth, minGameHeight)
 textureImage.Fill(color.RGBA{A: 120})
 spriteSheets["fadeOut"] = ec.SpriteSheet{Texture: ec.Texture{Image: textureImage}, Sprites: []ec.Sprite{{Width: minGameWidth, Height: minGameHeight}}}
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgc0d3509" class="outline-2">
-<h2 id="orgc0d3509"><a href="#orgc0d3509">stateとentity</a></h2>
-<div class="outline-text-2" id="text-orgc0d3509">
+<div id="outline-container-orgb4a8331" class="outline-2">
+<h2 id="orgb4a8331"><a href="#orgb4a8331">stateとentity</a></h2>
+<div class="outline-text-2" id="text-orgb4a8331">
 <p>
 stateごとでファイルからentityを生成し直している。そこから、systemでいろいろentityを操作している。
 </p>
 </div>
 </div>
-<div id="outline-container-org10d2303" class="outline-2">
-<h2 id="org10d2303"><a href="#org10d2303">Tasks</a></h2>
-<div class="outline-text-2" id="text-org10d2303">
+<div id="outline-container-org379b40f" class="outline-2">
+<h2 id="org379b40f"><a href="#org379b40f">Tasks</a></h2>
+<div class="outline-text-2" id="text-org379b40f">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-orgff8c47d" class="outline-2">
-<h2 id="orgff8c47d"><a href="#orgff8c47d">Archives</a></h2>
-<div class="outline-text-2" id="text-orgff8c47d">
+<div id="outline-container-org88dea28" class="outline-2">
+<h2 id="org88dea28"><a href="#org88dea28">Archives</a></h2>
+<div class="outline-text-2" id="text-org88dea28">
 </div>
-<div id="outline-container-org6e19693" class="outline-3">
-<h3 id="org6e19693"><a href="#org6e19693"><span class="done DONE">DONE</span> 読む</a></h3>
-<div class="outline-text-3" id="text-org6e19693">
+<div id="outline-container-orge93d359" class="outline-3">
+<h3 id="orge93d359"><a href="#orge93d359"><span class="done DONE">DONE</span> 読む</a></h3>
+<div class="outline-text-3" id="text-orge93d359">
 <p>
 コードを読む。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-orgfff6e93" class="outline-2">
-<h2 id="orgfff6e93"><a href="#orgfff6e93">関連</a></h2>
-<div class="outline-text-2" id="text-orgfff6e93">
+<div id="outline-container-org2233262" class="outline-2">
+<h2 id="org2233262"><a href="#org2233262">関連</a></h2>
+<div class="outline-text-2" id="text-org2233262">
 <ul class="org-ul">
 <li>動機: <a href="20230909T204817--kdoc-28-交通シミュレーションゲームを作る__project.html#ID-20230909T204817">KDOC 28: 交通シミュレーションゲームを作る</a>。で挫折したので先人のコードを読んでみることにした</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orga4861af" class="outline-2">
-<h2 id="orga4861af"><a href="#orga4861af">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orga4861af">
+<div id="outline-container-org9897e2a" class="outline-2">
+<h2 id="org9897e2a"><a href="#org9897e2a">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org9897e2a">
 <ul class="org-ul">
 <li><a href="./20231128T074518--kdoc-59-ecsを使ってrpgを作る__project.html">KDOC 59: ECSを使ってRPGを作る</a></li>
 </ul>

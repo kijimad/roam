@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 636: LimitReaderで境界値付きで読み込む</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 636: LimitReaderで境界値付きで読み込む</h1>
-<div id="outline-container-org2e2a089" class="outline-2">
-<h2 id="org2e2a089"><a href="#org2e2a089">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org2e2a089">
+<div id="outline-container-org22b7afb" class="outline-2">
+<h2 id="org22b7afb"><a href="#org22b7afb">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org22b7afb">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org625729b" class="outline-2">
-<h2 id="org625729b"><a href="#org625729b">概要</a></h2>
-<div class="outline-text-2" id="text-org625729b">
+<div id="outline-container-org50c1275" class="outline-2">
+<h2 id="org50c1275"><a href="#org50c1275">概要</a></h2>
+<div class="outline-text-2" id="text-org50c1275">
 <p>
 ある大きさ以下のデータをネットワークから受け取るプログラムがあるとする。DOS 攻撃対策に、サイズを制限して読み込む必要がある。
 </p>
@@ -62,12 +62,12 @@ io.Copy に生データを渡すと全部コピーするため目的を達成で
 </ol>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/io/io.go#L463-L470
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/io/io.go#L463-L470
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// A LimitedReader reads from R but limits the amount of
+<pre class="src src-nil"><code>// A LimitedReader reads from R but limits the amount of
 // data returned to just N bytes. Each call to Read
 // updates N to reflect the new amount remaining.
 // Read returns EOF when N &lt;= 0 or when the underlying R returns EOF.
@@ -75,7 +75,7 @@ type LimitedReader struct {
 	R Reader // underlying reader
 	N int64  // max bytes remaining
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -83,12 +83,12 @@ type LimitedReader struct {
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/kd-collective/opentelemetry-go/blob/40679e672e46abde92cea3f59ec6f66b38e4abc2/internal/shared/otlp/response.go.tmpl#L17-L31
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/kd-collective/opentelemetry-go/blob/40679e672e46abde92cea3f59ec6f66b38e4abc2/internal/shared/otlp/response.go.tmpl#L17-L31
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">func CopyResponseBody(dst io.Writer, src io.Reader, maxSize int64) error {
+<pre class="src src-nil"><code>func CopyResponseBody(dst io.Writer, src io.Reader, maxSize int64) error {
 	if _, err := io.Copy(dst, io.LimitReader(src, maxSize)); err != nil {
 		return err
 	}
@@ -103,13 +103,13 @@ type LimitedReader struct {
 	}
 	return err
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgf97093c" class="outline-2">
-<h2 id="orgf97093c"><a href="#orgf97093c">関連</a></h2>
-<div class="outline-text-2" id="text-orgf97093c">
+<div id="outline-container-org66392e5" class="outline-2">
+<h2 id="org66392e5"><a href="#org66392e5">関連</a></h2>
+<div class="outline-text-2" id="text-org66392e5">
 <ul class="org-ul">
 <li>具体例: <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8941">feat(otlphttp): configure maximum response size by pellared · Pull Request #8941 · open-telemetry/opentelemetry-go</a></li>
 </ul>

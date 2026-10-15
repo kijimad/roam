@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 300: スライスのcapacityが伸長する様子をデバッガで見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 300: スライスのcapacityが伸長する様子をデバッガで見る</h1>
-<div id="outline-container-org7a8de26" class="outline-2">
-<h2 id="org7a8de26"><a href="#org7a8de26">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org7a8de26">
+<div id="outline-container-org9db658c" class="outline-2">
+<h2 id="org9db658c"><a href="#org9db658c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org9db658c">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org5ad9e39" class="outline-2">
-<h2 id="org5ad9e39"><a href="#org5ad9e39">概要</a></h2>
-<div class="outline-text-2" id="text-org5ad9e39">
+<div id="outline-container-orgcc94470" class="outline-2">
+<h2 id="orgcc94470"><a href="#orgcc94470">概要</a></h2>
+<div class="outline-text-2" id="text-orgcc94470">
 <p>
 Go言語でスライスが伸長する様子をデバッガで確認する。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>main.go</label><pre class="src src-go">func main() {
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>main.go</label><pre class="src src-go"><code>func main() {
         // 要素数0, 容量1
         s := make([]string, 0, 1)
         for i := 0; i &lt; 100; i++ {
@@ -53,12 +53,12 @@ Go言語でスライスが伸長する様子をデバッガで確認する。
                 s = append(s, "a")
         }
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">
-</pre>
+<pre class="src src-nil"><code>
+</code></pre>
 </div>
 
 <p>
@@ -70,7 +70,7 @@ Goのデバッガdlvを使って、見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>dlvでの操作。途中の出力は省略している</label><pre class="src src-shell">$ dlv debug main.go
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>dlvでの操作。途中の出力は省略している</label><pre class="src src-shell"><code>$ dlv debug main.go
 # 初期化処理でのgrowsliceにブレークするので、printまで飛ばす
 
 # 組み込み関数printはコンパイル後はprintstringになっている
@@ -84,7 +84,7 @@ Goのデバッガdlvを使って、見る。
 
 # cap1のスライスなので、ループの最初の1回は引っかからない
 # ループの2回目ではgrowsliceで止まる
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -92,9 +92,9 @@ Goのデバッガdlvを使って、見る。
 </p>
 </div>
 </div>
-<div id="outline-container-orgbc6cc84" class="outline-2">
-<h2 id="orgbc6cc84"><a href="#orgbc6cc84">関連</a></h2>
-<div class="outline-text-2" id="text-orgbc6cc84">
+<div id="outline-container-orge84e765" class="outline-2">
+<h2 id="orge84e765"><a href="#orge84e765">関連</a></h2>
+<div class="outline-text-2" id="text-orge84e765">
 <ul class="org-ul">
 <li>動機: <a href="20241119T084548--kdoc-299-appendはコンパイルするとruntimegrowsliceになる__permanent.html#ID-20241119T084548">KDOC 299: appendはコンパイルすると消える</a>。growsliceが確かに呼ばれているのを確認した</li>
 </ul>

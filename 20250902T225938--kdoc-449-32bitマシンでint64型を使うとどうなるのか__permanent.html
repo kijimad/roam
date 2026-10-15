@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 449: 32bitマシンでint64型を使うとどうなるのか?</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 449: 32bitマシンでint64型を使うとどうなるのか?</h1>
-<div id="outline-container-org032bcfc" class="outline-2">
-<h2 id="org032bcfc"><a href="#org032bcfc">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org032bcfc">
+<div id="outline-container-orgd0217f4" class="outline-2">
+<h2 id="orgd0217f4"><a href="#orgd0217f4">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgd0217f4">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgedf5e66" class="outline-2">
-<h2 id="orgedf5e66"><a href="#orgedf5e66">概要</a></h2>
-<div class="outline-text-2" id="text-orgedf5e66">
+<div id="outline-container-orgdcf3ed9" class="outline-2">
+<h2 id="orgdcf3ed9"><a href="#orgdcf3ed9">概要</a></h2>
+<div class="outline-text-2" id="text-orgdcf3ed9">
 <p>
 32bitマシンだとレジスタに入り切らないため1度で処理できず、スタックを使う想定だが、正しいだろうか。レジスタよりサイズが大きい場合にどう扱うか、ともいえる。
 </p>
@@ -49,7 +49,7 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>32bit</label><pre class="src src-shell">tmpfile=$(mktemp /tmp/tmp.XXXXXX.c)
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>32bit</label><pre class="src src-shell"><code>tmpfile=$(mktemp /tmp/tmp.XXXXXX.c)
 
 cat &gt; $tmpfile &lt;&lt;EOF
   #include &lt;stdio.h&gt;
@@ -65,11 +65,11 @@ EOF
 docker run --rm -v /tmp:/tmp -w /tmp i386/ubuntu bash -c "apt update -y &amp;&amp; apt install -y build-essential &amp;&amp; gcc -m32 -S $tmpfile -o 32.s &amp;&amp; cat 32.s"
 
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>64bit</label><pre class="src src-shell">tmpfile=$(mktemp /tmp/tmp.XXXXXX.c)
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>64bit</label><pre class="src src-shell"><code>tmpfile=$(mktemp /tmp/tmp.XXXXXX.c)
 
 cat &gt; $tmpfile &lt;&lt;EOF
   #include &lt;stdio.h&gt;
@@ -84,28 +84,28 @@ EOF
 gcc -S $tmpfile -o /tmp/64.s
 
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-shell">cat /tmp/32.s
+<pre class="src src-shell"><code>cat /tmp/32.s
 cat /tmp/64.s
 diff /tmp/32.s /tmp/64.s
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org12af1e6" class="outline-2">
-<h2 id="org12af1e6"><a href="#org12af1e6">関連</a></h2>
-<div class="outline-text-2" id="text-org12af1e6">
+<div id="outline-container-orgd0d623a" class="outline-2">
+<h2 id="orgd0d623a"><a href="#orgd0d623a">関連</a></h2>
+<div class="outline-text-2" id="text-orgd0d623a">
 <ul class="org-ul">
 <li>類推: ビット幅が違う場合にどういった違いが出るか調べる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd471e7b" class="outline-2">
-<h2 id="orgd471e7b"><a href="#orgd471e7b">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgd471e7b">
+<div id="outline-container-org7ee739f" class="outline-2">
+<h2 id="org7ee739f"><a href="#org7ee739f">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org7ee739f">
 <ul class="org-ul">
 <li><a href="./20250902T230002--kdoc-450-goで型のメモリ上のサイズの仕様がどうなっているか見る__permanent.html">KDOC 450: Goで型のメモリ上のサイズの仕様がどうなっているか見る</a></li>
 </ul>

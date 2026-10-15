@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 56: flagrのコードを読んでメモする</title>
@@ -22,35 +22,35 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 56: flagrのコードを読んでメモする</h1>
-<div id="outline-container-org752e881" class="outline-2">
-<h2 id="org752e881"><a href="#org752e881"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-org752e881">
+<div id="outline-container-org073def2" class="outline-2">
+<h2 id="org073def2"><a href="#org073def2"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-org073def2">
 <p>
 プロジェクトは終了である。
 </p>
 </div>
 </div>
-<div id="outline-container-org57f63c3" class="outline-2">
-<h2 id="org57f63c3"><a href="#org57f63c3">概要</a></h2>
-<div class="outline-text-2" id="text-org57f63c3">
+<div id="outline-container-orgfe7dafa" class="outline-2">
+<h2 id="orgfe7dafa"><a href="#orgfe7dafa">概要</a></h2>
+<div class="outline-text-2" id="text-orgfe7dafa">
 <p>
 <a href="https://github.com/openflagr/flagr">openflagr/flagr</a>を読んだメモ。バックエンドは<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>で書かれている。
 </p>
 </div>
 </div>
-<div id="outline-container-org23f0667" class="outline-2">
-<h2 id="org23f0667"><a href="#org23f0667">DB初期化部分</a></h2>
-<div class="outline-text-2" id="text-org23f0667">
+<div id="outline-container-org0106440" class="outline-2">
+<h2 id="org0106440"><a href="#org0106440">DB初期化部分</a></h2>
+<div class="outline-text-2" id="text-org0106440">
 <p>
 グローバル変数にdb取得関数がある。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/handler/handler.go#L20
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/handler/handler.go#L20
+</code></pre>
 </div>
 
-<div class="yes" id="org2925b79">
+<div class="yes" id="orgd21ed2d">
 <p>
 var getDB = entity.GetDB
 </p>
@@ -62,11 +62,11 @@ var getDB = entity.GetDB
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>GetDB() *gorm.DB</label><pre class="src src-git-permalink">https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/entity/db.go#L68-L84
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>GetDB() *gorm.DB</label><pre class="src src-git-permalink"><code>https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/entity/db.go#L68-L84
+</code></pre>
 </div>
 
-<pre class="example" id="orgc2afc69">
+<pre class="example" id="org63c7954">
 // GetDB gets the db singleton
 func GetDB() *gorm.DB {
 	singletonOnce.Do(func() {
@@ -87,19 +87,19 @@ func GetDB() *gorm.DB {
 </pre>
 </div>
 </div>
-<div id="outline-container-org5679cd3" class="outline-2">
-<h2 id="org5679cd3"><a href="#org5679cd3">データベース分岐部分</a></h2>
-<div class="outline-text-2" id="text-org5679cd3">
+<div id="outline-container-org442eefa" class="outline-2">
+<h2 id="org442eefa"><a href="#org442eefa">データベース分岐部分</a></h2>
+<div class="outline-text-2" id="text-org442eefa">
 <p>
 データベース分岐している箇所。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>connectDB() (db *gorm.DB, err error)</label><pre class="src src-git-permalink">https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/entity/db.go#L44-L64
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>connectDB() (db *gorm.DB, err error)</label><pre class="src src-git-permalink"><code>https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/entity/db.go#L44-L64
+</code></pre>
 </div>
 
-<div class="results" id="orgab3b114">
+<div class="results" id="org8c32d18">
 <p>
 err = retry.Do(
 	func() error {
@@ -127,19 +127,19 @@ err = retry.Do(
 </div>
 </div>
 </div>
-<div id="outline-container-org830fa68" class="outline-2">
-<h2 id="org830fa68"><a href="#org830fa68">各データベースによる結合テスト</a></h2>
-<div class="outline-text-2" id="text-org830fa68">
+<div id="outline-container-org0d04543" class="outline-2">
+<h2 id="org0d04543"><a href="#org0d04543">各データベースによる結合テスト</a></h2>
+<div class="outline-text-2" id="text-org0d04543">
 <p>
 sqlite, mysql, postgresによる結合テストをしている。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/integration_tests/test.sh#L396-L405
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/integration_tests/test.sh#L396-L405
+</code></pre>
 </div>
 
-<div class="results" id="org2d5ed41">
+<div class="results" id="org0eb6ec5">
 <p>
 start() {
     start_test flagr_with_sqlite
@@ -157,9 +157,9 @@ start() {
 </div>
 </div>
 </div>
-<div id="outline-container-org68d8841" class="outline-2">
-<h2 id="org68d8841"><a href="#org68d8841">関連</a></h2>
-<div class="outline-text-2" id="text-org68d8841">
+<div id="outline-container-org1caba6a" class="outline-2">
+<h2 id="org1caba6a"><a href="#org1caba6a">関連</a></h2>
+<div class="outline-text-2" id="text-org1caba6a">
 <ul class="org-ul">
 <li>疑問: 設計の短所を書く</li>
 </ul>

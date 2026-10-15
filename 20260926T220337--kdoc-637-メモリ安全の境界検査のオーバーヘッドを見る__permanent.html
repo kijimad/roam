@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 637: メモリ安全の境界検査のオーバーヘッドを見る</h1>
-<div id="outline-container-orgd07d125" class="outline-2">
-<h2 id="orgd07d125"><a href="#orgd07d125">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgd07d125">
+<div id="outline-container-org64ce08d" class="outline-2">
+<h2 id="org64ce08d"><a href="#org64ce08d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org64ce08d">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org1b9e9b6" class="outline-2">
-<h2 id="org1b9e9b6"><a href="#org1b9e9b6">概要</a></h2>
-<div class="outline-text-2" id="text-org1b9e9b6">
+<div id="outline-container-org5309a41" class="outline-2">
+<h2 id="org5309a41"><a href="#org5309a41">概要</a></h2>
+<div class="outline-text-2" id="text-org5309a41">
 <p>
 <a href="https://github.com/open-telemetry/opentelemetry-go/issues/8736">trace: unroll TraceIDFromHex/SpanIDFromHex decoders to eliminate bounds checks · Issue #8736 · open-telemetry/opentelemetry-go</a>で、インデックスアクセスのオーバーヘッドの存在と、コンパイラでの確認方法について説明していた。
 </p>
@@ -49,7 +49,7 @@
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh">set -e
+<pre class="src src-sh"><code>set -e
 d=$(mktemp -d)
 cat &gt; "$d/go.mod" &lt;&lt;'EOF'
 module bcedemo
@@ -96,11 +96,11 @@ go build -gcflags='-d=ssa/check_bce/debug=1' . 2&gt;&amp;1 | grep bce.go
 echo "== (2) 速度差 =="
 go test -run='^$' -bench='^BenchmarkSum' -benchmem -count=4 . 2&gt;&amp;1 | grep -E 'Benchmark|ok'
 cd / &amp;&amp; rm -rf "$d"
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">== (1) 境界検査 ==
+<pre class="src src-nil"><code>== (1) 境界検査 ==
 ./bce.go:10:9: Found IsInBounds
 ./bce.go:10:16: Found IsInBounds
 ./bce.go:10:25: Found IsInBounds
@@ -115,7 +115,7 @@ BenchmarkSumUnrolled-32    	1000000000	         0.8967 ns/op	       0 B/op	     
 BenchmarkSumUnrolled-32    	1000000000	         0.8790 ns/op	       0 B/op	       0 allocs/op
 BenchmarkSumUnrolled-32    	1000000000	         0.8782 ns/op	       0 B/op	       0 allocs/op
 ok  	bcedemo	9.372s
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -127,12 +127,12 @@ Go本体に、挿入されないケースの確認テストがある。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/test/checkbce.go#L9-L23
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/test/checkbce.go#L9-L23
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// Test that the compiler does bounds check elimination as expected.
+<pre class="src src-nil"><code>// Test that the compiler does bounds check elimination as expected.
 // This avoids accidental regressions.
 
 package main
@@ -147,21 +147,21 @@ func f0(a []int) {
 	a[5] = 1
 	a[5] = 1
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org7417eba" class="outline-2">
-<h2 id="org7417eba"><a href="#org7417eba">関連</a></h2>
-<div class="outline-text-2" id="text-org7417eba">
+<div id="outline-container-org4d4c2d8" class="outline-2">
+<h2 id="org4d4c2d8"><a href="#org4d4c2d8">関連</a></h2>
+<div class="outline-text-2" id="text-org4d4c2d8">
 <ul class="org-ul">
 <li>具体例: <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8740">perf(trace): unroll hex decoders to drop bounds checks by itssaharsh · Pull Request #8740 · open-telemetry/opentelemetry-go</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org5adae48" class="outline-2">
-<h2 id="org5adae48"><a href="#org5adae48">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org5adae48">
+<div id="outline-container-org2ebb3ba" class="outline-2">
+<h2 id="org2ebb3ba"><a href="#org2ebb3ba">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org2ebb3ba">
 <ul class="org-ul">
 <li><a href="./20260926T231317--kdoc-638-配列の定数インデックスはビルド時に検証される__permanent.html">KDOC 638: 配列の定数インデックスはビルド時に検証される</a></li>
 </ul>

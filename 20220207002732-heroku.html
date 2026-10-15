@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:41 -->
+<!-- 2026-10-15 木 09:38 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Heroku</title>
@@ -22,32 +22,32 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">Heroku</h1>
-<div id="outline-container-orga91fe1e" class="outline-2">
-<h2 id="orga91fe1e"><a href="#orga91fe1e">概要</a></h2>
-<div class="outline-text-2" id="text-orga91fe1e">
+<div id="outline-container-org8b6187f" class="outline-2">
+<h2 id="org8b6187f"><a href="#org8b6187f">概要</a></h2>
+<div class="outline-text-2" id="text-org8b6187f">
 <p>
 HerokuはアメリカのPaaS企業。
 <a href="20220212141124-ci.html#ID-eaf6ed04-7927-4a16-ba94-fbb9f6e76166">CI</a>,<a href="20220212141243-cd.html#ID-2c4cb3a7-7a8a-4a3b-88c2-2c5e69515764">CD</a>サービスを提供する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgceb9f54" class="outline-2">
-<h2 id="orgceb9f54"><a href="#orgceb9f54">Memo</a></h2>
-<div class="outline-text-2" id="text-orgceb9f54">
+<div id="outline-container-org7d04415" class="outline-2">
+<h2 id="org7d04415"><a href="#org7d04415">Memo</a></h2>
+<div class="outline-text-2" id="text-org7d04415">
 </div>
-<div id="outline-container-org510e870" class="outline-3">
-<h3 id="org510e870"><a href="#org510e870">紐付ける</a></h3>
-<div class="outline-text-3" id="text-org510e870">
+<div id="outline-container-org53ad8d8" class="outline-3">
+<h3 id="org53ad8d8"><a href="#org53ad8d8">紐付ける</a></h3>
+<div class="outline-text-3" id="text-org53ad8d8">
 <p>
 ↓のようなエラーが出たとき。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>どのアプリと紐付けるか明示されてない</label><pre class="src src-nil">$ heroku push
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>どのアプリと紐付けるか明示されてない</label><pre class="src src-nil"><code>$ heroku push
  ›   Error: Missing required flag:
  ›     -a, --app APP  app to run command against
  ›   See more help with --help
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -55,36 +55,36 @@ HerokuはアメリカのPaaS企業。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">heroku git:remote -a アプリ名
-</pre>
+<pre class="src src-shell"><code>heroku git:remote -a アプリ名
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org66e8ea6" class="outline-3">
-<h3 id="org66e8ea6"><a href="#org66e8ea6">review app</a></h3>
-<div class="outline-text-3" id="text-org66e8ea6">
+<div id="outline-container-orga2b7d74" class="outline-3">
+<h3 id="orga2b7d74"><a href="#orga2b7d74">review app</a></h3>
+<div class="outline-text-3" id="text-orga2b7d74">
 <p>
 PRごとにデプロイ環境を作ってくれる、便利な機能。
 設定も意外と簡単。
 </p>
 </div>
 </div>
-<div id="outline-container-org7aa175d" class="outline-3">
-<h3 id="org7aa175d"><a href="#org7aa175d">イメージ作成の流れ</a></h3>
-<div class="outline-text-3" id="text-org7aa175d">
+<div id="outline-container-orgbbe6d73" class="outline-3">
+<h3 id="orgbbe6d73"><a href="#orgbbe6d73">イメージ作成の流れ</a></h3>
+<div class="outline-text-3" id="text-orgbbe6d73">
 <p>
 heroku.ymlを作成。
 build, release, runとそれぞれのステージごとのイメージ、タスクを定義する。
 </p>
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>heroku.yml</label><pre class="src src-yaml">build:
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>heroku.yml</label><pre class="src src-yaml"><code>build:
   docker:
     web:
        dockerfile: Dockerfile
        target: release
 run:
   web: cd ./public &amp;&amp; python -m SimpleHTTPServer $PORT
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -92,33 +92,33 @@ run:
 プッシュしないと、毎回ビルドするので非常に時間がかかる。
 </p>
 <div class="org-src-container">
-<pre class="src src-shell">heroku container:login
+<pre class="src src-shell"><code>heroku container:login
 heroku container:push release
 heroku container:release release
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
 </div>
-<div id="outline-container-org50689d7" class="outline-2">
-<h2 id="org50689d7"><a href="#org50689d7">Tasks</a></h2>
+<div id="outline-container-org1af442d" class="outline-2">
+<h2 id="org1af442d"><a href="#org1af442d">Tasks</a></h2>
 </div>
-<div id="outline-container-orgfb5bdf5" class="outline-2">
-<h2 id="orgfb5bdf5"><a href="#orgfb5bdf5">Reference</a></h2>
-<div class="outline-text-2" id="text-orgfb5bdf5">
+<div id="outline-container-org8094693" class="outline-2">
+<h2 id="org8094693"><a href="#org8094693">Reference</a></h2>
+<div class="outline-text-2" id="text-org8094693">
 </div>
-<div id="outline-container-orgbc5bd7e" class="outline-3">
-<h3 id="orgbc5bd7e"><a href="#orgbc5bd7e"><a href="https://ja.wikipedia.org/wiki/Heroku">Heroku - Wikipedia</a></a></h3>
+<div id="outline-container-orgc990707" class="outline-3">
+<h3 id="orgc990707"><a href="#orgc990707"><a href="https://ja.wikipedia.org/wiki/Heroku">Heroku - Wikipedia</a></a></h3>
 </div>
 </div>
-<div id="outline-container-org6749bcb" class="outline-2">
-<h2 id="org6749bcb"><a href="#org6749bcb">Archives</a></h2>
+<div id="outline-container-org0a05494" class="outline-2">
+<h2 id="org0a05494"><a href="#org0a05494">Archives</a></h2>
 </div>
 
 
-<div id="outline-container-orga948bb5" class="outline-2">
-<h2 id="orga948bb5"><a href="#orga948bb5">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orga948bb5">
+<div id="outline-container-org41702ba" class="outline-2">
+<h2 id="org41702ba"><a href="#org41702ba">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org41702ba">
 <ul class="org-ul">
 <li><a href="./20210817003906-history.html">History</a></li>
 </ul>

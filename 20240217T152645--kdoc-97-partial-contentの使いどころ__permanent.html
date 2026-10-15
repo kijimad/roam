@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 97: Partial Contentの使いどころ</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 97: Partial Contentの使いどころ</h1>
-<div id="outline-container-org38471b5" class="outline-2">
-<h2 id="org38471b5"><a href="#org38471b5">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org38471b5">
+<div id="outline-container-orgbbd937c" class="outline-2">
+<h2 id="orgbbd937c"><a href="#orgbbd937c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgbbd937c">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,17 +37,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org4e106b5" class="outline-2">
-<h2 id="org4e106b5"><a href="#org4e106b5">概要</a></h2>
-<div class="outline-text-2" id="text-org4e106b5">
+<div id="outline-container-org2966b48" class="outline-2">
+<h2 id="org2966b48"><a href="#org2966b48">概要</a></h2>
+<div class="outline-text-2" id="text-org2966b48">
 <p>
 CDNのリクエストログを見ていて、HTTPステータスが <code>200</code> に混じって <code>206</code> があった。これが何かを説明する。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf6163ee" class="outline-2">
-<h2 id="orgf6163ee"><a href="#orgf6163ee">イントロ</a></h2>
-<div class="outline-text-2" id="text-orgf6163ee">
+<div id="outline-container-org5c83209" class="outline-2">
+<h2 id="org5c83209"><a href="#org5c83209">イントロ</a></h2>
+<div class="outline-text-2" id="text-org5c83209">
 <p>
 ドキュメントを見る。
 </p>
@@ -85,9 +85,9 @@ Slackなんかにある機能。先にそのURLへアクセスして、一部だ
 </ul>
 </div>
 </div>
-<div id="outline-container-org95e16c2" class="outline-2">
-<h2 id="org95e16c2"><a href="#org95e16c2">検証</a></h2>
-<div class="outline-text-2" id="text-org95e16c2">
+<div id="outline-container-org412a499" class="outline-2">
+<h2 id="org412a499"><a href="#org412a499">検証</a></h2>
+<div class="outline-text-2" id="text-org412a499">
 <p>
 実際の動きを<a href="20240210130812-curl.html#ID-b11fb9a4-0a26-4354-bc60-6c755c256b21">curl</a>で確かめる。リンク先のバイナリのファイルヘッダを確認するシチュエーション。対応してないサーバでやってもRange指定は無視されるだけなので、<a href="20210926100207-wikipedia.html#ID-39f0af27-f685-4ce5-beac-a3398f648ba4">Wikipedia</a>のメディアサーバで確かめる。
 </p>
@@ -97,16 +97,16 @@ Slackなんかにある機能。先にそのURLへアクセスして、一部だ
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>画像バイナリを取得してチェックする</label><pre class="src src-shell">tmpfile=$(mktemp)
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>画像バイナリを取得してチェックする</label><pre class="src src-shell"><code>tmpfile=$(mktemp)
 result=`curl -v --output $tmpfile https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png`
 file -b --mime-type $tmpfile
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">image/png
-</pre>
+<pre class="src src-nil"><code>image/png
+</code></pre>
 </div>
 
 <p>
@@ -114,7 +114,7 @@ rm $tmpfile
 </p>
 
 <div class="org-src-container">
-<pre class="src src-nil">&gt; GET /wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png HTTP/2
+<pre class="src src-nil"><code>&gt; GET /wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png HTTP/2
 &gt; Host: upload.wikimedia.org
 &gt; User-Agent: curl/8.4.0
 &gt; Accept: */*
@@ -142,7 +142,7 @@ rm $tmpfile
 &lt; timing-allow-origin: *
 &lt; accept-ranges: bytes
 &lt;
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -155,16 +155,16 @@ rm $tmpfile
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>範囲を指定する</label><pre class="src src-shell">tmpfile=$(mktemp)
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>範囲を指定する</label><pre class="src src-shell"><code>tmpfile=$(mktemp)
 result=`curl -v --output $tmpfile -r 0-100 https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png`
 file -b --mime-type $tmpfile
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">image/png
-</pre>
+<pre class="src src-nil"><code>image/png
+</code></pre>
 </div>
 
 <p>
@@ -176,7 +176,7 @@ rm $tmpfile
 </p>
 
 <div class="org-src-container">
-<pre class="src src-nil">&gt; GET /wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png HTTP/2
+<pre class="src src-nil"><code>&gt; GET /wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/100px-Wikipedia-logo-v2.svg.png HTTP/2
 &gt; Host: upload.wikimedia.org
 &gt; Range: bytes=0-100 👈
 &gt; User-Agent: curl/8.4.0
@@ -205,7 +205,7 @@ rm $tmpfile
 &lt; content-range: bytes 0-100/14729
 &lt; content-length: 101 👈
 &lt;
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -219,9 +219,9 @@ rm $tmpfile
 </p>
 </div>
 </div>
-<div id="outline-container-orga81ea53" class="outline-2">
-<h2 id="orga81ea53"><a href="#orga81ea53">関連</a></h2>
-<div class="outline-text-2" id="text-orga81ea53">
+<div id="outline-container-orgb59756d" class="outline-2">
+<h2 id="orgb59756d"><a href="#orgb59756d">関連</a></h2>
+<div class="outline-text-2" id="text-orgb59756d">
 <ul class="org-ul">
 <li>類推: <a href="20240209T111023--kdoc-83-corsを確認する__permanent.html#ID-20240209T111023">KDOC 83: CORSを確認する</a>。同様にcurlでHTTPを検証する</li>
 </ul>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>GitHub Actions</title>
@@ -22,36 +22,36 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">GitHub Actions</h1>
-<div id="outline-container-orgb0a297d" class="outline-2">
-<h2 id="orgb0a297d"><a href="#orgb0a297d">概要</a></h2>
-<div class="outline-text-2" id="text-orgb0a297d">
+<div id="outline-container-org2e1a6f2" class="outline-2">
+<h2 id="org2e1a6f2"><a href="#org2e1a6f2">概要</a></h2>
+<div class="outline-text-2" id="text-org2e1a6f2">
 <p>
 GitHub Actionsは<a href="20210926103926-github.html#ID-6b889822-21f1-4a3e-9755-e3ca52fa0bc4">GitHub</a>が提供する<a href="20220212141124-ci.html#ID-eaf6ed04-7927-4a16-ba94-fbb9f6e76166">CI</a>/<a href="20220212141243-cd.html#ID-2c4cb3a7-7a8a-4a3b-88c2-2c5e69515764">CD</a>環境。
 コードやプロジェクトに対するタスクを実行できる。
 </p>
 </div>
 </div>
-<div id="outline-container-orgf01be00" class="outline-2">
-<h2 id="orgf01be00"><a href="#orgf01be00">Memo</a></h2>
-<div class="outline-text-2" id="text-orgf01be00">
+<div id="outline-container-org526f6a6" class="outline-2">
+<h2 id="org526f6a6"><a href="#org526f6a6">Memo</a></h2>
+<div class="outline-text-2" id="text-org526f6a6">
 </div>
-<div id="outline-container-org15ef5ec" class="outline-3">
-<h3 id="org15ef5ec"><a href="#org15ef5ec">自動生成系はpull requestを作らせる</a></h3>
-<div class="outline-text-3" id="text-org15ef5ec">
+<div id="outline-container-org15fe4aa" class="outline-3">
+<h3 id="org15fe4aa"><a href="#org15fe4aa">自動生成系はpull requestを作らせる</a></h3>
+<div class="outline-text-3" id="text-org15fe4aa">
 <p>
 OpenAPIで何か生成しているときなどを想定する。生成を忘れないように、GitHub Actionsで実行するとよい。そのときPRを作らせると、チェックもできてよい。
 </p>
 </div>
 </div>
-<div id="outline-container-org5d98b40" class="outline-3">
-<h3 id="org5d98b40"><a href="#org5d98b40">デフォルト値をセットする</a></h3>
-<div class="outline-text-3" id="text-org5d98b40">
+<div id="outline-container-orgf469273" class="outline-3">
+<h3 id="orgf469273"><a href="#orgf469273">デフォルト値をセットする</a></h3>
+<div class="outline-text-3" id="text-orgf469273">
 <p>
 defaultsを使うと、共通のデフォルト値をセットできる。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-yaml">defaults:
+<pre class="src src-yaml"><code>defaults:
   run:
     working-directory: work
 
@@ -62,18 +62,18 @@ jobs:
   steps:
     - uses: actions/checkout@v3
 (略)
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orge8477ec" class="outline-3">
-<h3 id="orge8477ec"><a href="#orge8477ec">差分をチェックする</a></h3>
-<div class="outline-text-3" id="text-orge8477ec">
+<div id="outline-container-org4015c31" class="outline-3">
+<h3 id="org4015c31"><a href="#org4015c31">差分をチェックする</a></h3>
+<div class="outline-text-3" id="text-org4015c31">
 </div>
 </div>
-<div id="outline-container-org4f1151a" class="outline-3">
-<h3 id="org4f1151a"><a href="#org4f1151a">jobを共通化する</a></h3>
-<div class="outline-text-3" id="text-org4f1151a">
+<div id="outline-container-org0e2904d" class="outline-3">
+<h3 id="org0e2904d"><a href="#org0e2904d">jobを共通化する</a></h3>
+<div class="outline-text-3" id="text-org0e2904d">
 <p>
 job間での共通部分はまとめて書くことですっきり書け、ジョブの高速化もできる。
 </p>
@@ -88,7 +88,7 @@ job間での共通部分はまとめて書くことですっきり書け、ジ�
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>例。setup-&gt;(build, test)とジョブが実行される</label><pre class="src src-yaml">name: Check
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>例。setup-&gt;(build, test)とジョブが実行される</label><pre class="src src-yaml"><code>name: Check
 
 on:
   push:
@@ -125,13 +125,13 @@ jobs:
       - uses: actions/checkout@v3
       - name: test
         run: go test . -v
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org40ee1e3" class="outline-3">
-<h3 id="org40ee1e3"><a href="#org40ee1e3">キャッシュ破棄ポリシーの落とし穴</a></h3>
-<div class="outline-text-3" id="text-org40ee1e3">
+<div id="outline-container-org691c7bb" class="outline-3">
+<h3 id="org691c7bb"><a href="#org691c7bb">キャッシュ破棄ポリシーの落とし穴</a></h3>
+<div class="outline-text-3" id="text-org691c7bb">
 <p>
 毎回ビルドキャッシュ保存をしてるのに、あまりキャッシュヒットせず、毎回最初からになる現象に悩まされていた。デフォルトブランチでもマージするたびに行っていたので、キャッシュのブランチスコープの問題ではないように見えた。
 </p>
@@ -157,9 +157,9 @@ GitHubは、7日間以上アクセスされていないキャッシュエント�
 </ul>
 </div>
 </div>
-<div id="outline-container-org68aaee2" class="outline-3">
-<h3 id="org68aaee2"><a href="#org68aaee2">cacheスコープ</a></h3>
-<div class="outline-text-3" id="text-org68aaee2">
+<div id="outline-container-org5b9b9b8" class="outline-3">
+<h3 id="org5b9b9b8"><a href="#org5b9b9b8">cacheスコープ</a></h3>
+<div class="outline-text-3" id="text-org5b9b9b8">
 <ul class="org-ul">
 <li><a href="https://zenn.dev/mallowlabs/articles/github-actions-cache-scope#actions%2Fcache-%E3%81%AE%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%97">GitHub Actions の cache アクションでキャッシュヒットしない時はスコープを確認してみる</a></li>
 <li><a href="https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache">Caching dependencies to speed up workflows - GitHub Docs</a></li>
@@ -169,14 +169,14 @@ GitHubは、7日間以上アクセスされていないキャッシュエント�
 pushトリガーのジョブで、こんな感じにキャッシュを使っているとする。
 </p>
 <div class="org-src-container">
-<pre class="src src-yaml">- name: Cache Docker layers
+<pre class="src src-yaml"><code>- name: Cache Docker layers
   uses: actions/cache@v3
   with:
     path: /tmp/.buildx-cache
     key: ${{ runner.os }}-buildx-${{ github.sha }}
     restore-keys: |
       ${{ runner.os }}-buildx-
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -196,22 +196,22 @@ restore-keys allows you to specify a list of alternate restore keys to use when 
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org34e2b90" class="outline-3">
-<h3 id="org34e2b90"><a href="#org34e2b90">reuseable actionにおけるsecretsの扱い方</a></h3>
-<div class="outline-text-3" id="text-org34e2b90">
+<div id="outline-container-orgc02dab1" class="outline-3">
+<h3 id="orgc02dab1"><a href="#orgc02dab1">reuseable actionにおけるsecretsの扱い方</a></h3>
+<div class="outline-text-3" id="text-orgc02dab1">
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>caller</label><pre class="src src-yaml">jobs:
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>caller</label><pre class="src src-yaml"><code>jobs:
   called:
     uses: user/repo/.github/workflows/called.yml@main
     with:
       text: ${{ github.event.inputs.text }}
       secrets: # ←←←
       DUMMY: ${{ secrets.DUMMY }} # ←←← caller側ではとくになにもせずともsecretsが使える
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>called</label><pre class="src src-yaml">on:
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>called</label><pre class="src src-yaml"><code>on:
   workflow_call:
     inputs:
       text:
@@ -228,13 +228,13 @@ jobs:
       - name: output secret
         run: |
           echo ${{ secrets.DUMMY }}
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org3c16a55" class="outline-3">
-<h3 id="org3c16a55"><a href="#org3c16a55">Stale Bot</a></h3>
-<div class="outline-text-3" id="text-org3c16a55">
+<div id="outline-container-orga5f3b23" class="outline-3">
+<h3 id="orga5f3b23"><a href="#orga5f3b23">Stale Bot</a></h3>
+<div class="outline-text-3" id="text-orga5f3b23">
 <p>
 動きがないIssueやPRを自動的にマークしたりcloseするGitHub bot。
 <a href="https://github.com/probot/stale">probot/stale: A GitHub App built with Probot that closes abandoned Issues and Pull Requests after a period of inactivity.</a>
@@ -246,15 +246,15 @@ jobs:
 </p>
 </div>
 </div>
-<div id="outline-container-org1881f07" class="outline-3">
-<h3 id="org1881f07"><a href="#org1881f07">PRの編集ファイルによって自動でラベルをつける</a></h3>
-<div class="outline-text-3" id="text-org1881f07">
+<div id="outline-container-org4ce5012" class="outline-3">
+<h3 id="org4ce5012"><a href="#org4ce5012">PRの編集ファイルによって自動でラベルをつける</a></h3>
+<div class="outline-text-3" id="text-org4ce5012">
 <p>
 面倒なラベル付けを自動化する。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>actions <a href="https://github.com/upptime/uptime-monitor/blob/master/.github/workflows/labeler.yml">https://github.com/upptime/uptime-monitor/blob/master/.github/workflows/labeler.yml</a></label><pre class="src src-yaml">name: Pull Request Labeler
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>actions <a href="https://github.com/upptime/uptime-monitor/blob/master/.github/workflows/labeler.yml">https://github.com/upptime/uptime-monitor/blob/master/.github/workflows/labeler.yml</a></label><pre class="src src-yaml"><code>name: Pull Request Labeler
 on:
   - pull_request
   - pull_request_review
@@ -272,11 +272,11 @@ jobs:
           labels: "merge"
         env:
           GITHUB_TOKEN: "${{ secrets.GH_PAT }}"
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>labels.yml <a href="https://github.com/upptime/uptime-monitor/blob/master/.github/labeler.yml">https://github.com/upptime/uptime-monitor/blob/master/.github/labeler.yml</a></label><pre class="src src-yaml">config:
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>labels.yml <a href="https://github.com/upptime/uptime-monitor/blob/master/.github/labeler.yml">https://github.com/upptime/uptime-monitor/blob/master/.github/labeler.yml</a></label><pre class="src src-yaml"><code>config:
   - ./*
 tooling:
   - tooling/**/*.*
@@ -288,32 +288,32 @@ package:
   - any: ["package.json", "package-lock.json"]
 source:
   - src/**/*
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org6333f8a" class="outline-3">
-<h3 id="org6333f8a"><a href="#org6333f8a">GitHub Actionsのトリガー</a></h3>
-<div class="outline-text-3" id="text-org6333f8a">
+<div id="outline-container-orge350336" class="outline-3">
+<h3 id="orge350336"><a href="#orge350336">GitHub Actionsのトリガー</a></h3>
+<div class="outline-text-3" id="text-orge350336">
 <p>
 pathsで特定ファイルが変更されたときのみ実行するときの注意点。
 pushは使わずに、pull_requestトリガーを使うべき。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>良い。Dockerfileが含まれるPRではすべて実行される</label><pre class="src src-yaml">on:
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>良い。Dockerfileが含まれるPRではすべて実行される</label><pre class="src src-yaml"><code>on:
   pull_request:
     paths:
       - 'Dockerfile'
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 7: </span>悪い。Dockerfileが含まれないコミットでは実行されない。漏れやすい</label><pre class="src src-yaml">on:
+<label class="org-src-name"><span class="listing-number">Listing 7: </span>悪い。Dockerfileが含まれないコミットでは実行されない。漏れやすい</label><pre class="src src-yaml"><code>on:
   push:
     paths:
       - 'Dockerfile'
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -322,61 +322,61 @@ pushではpull_request全体の変更を追うことができないので、コ�
 </div>
 </div>
 </div>
-<div id="outline-container-orgbae771c" class="outline-2">
-<h2 id="orgbae771c"><a href="#orgbae771c">Tasks</a></h2>
-<div class="outline-text-2" id="text-orgbae771c">
+<div id="outline-container-org4f1ab61" class="outline-2">
+<h2 id="org4f1ab61"><a href="#org4f1ab61">Tasks</a></h2>
+<div class="outline-text-2" id="text-org4f1ab61">
 </div>
-<div id="outline-container-org9ef0b5a" class="outline-3">
-<h3 id="org9ef0b5a"><a href="#org9ef0b5a">実行時間の統計を取りたい</a></h3>
-<div class="outline-text-3" id="text-org9ef0b5a">
+<div id="outline-container-org276dc86" class="outline-3">
+<h3 id="org276dc86"><a href="#org276dc86">実行時間の統計を取りたい</a></h3>
+<div class="outline-text-3" id="text-org276dc86">
 <p>
 何で遅くなった、早くなったか把握したい。
 </p>
 </div>
 </div>
-<div id="outline-container-org4842bd3" class="outline-3">
-<h3 id="org4842bd3"><a href="#org4842bd3"><span class="done DONE">DONE</span> <a href="https://note.com/tably/n/n46041458d6b3">GitHub Actions向け自作アクションの作り方｜Tably｜note</a></a></h3>
-<div class="outline-text-3" id="text-org4842bd3">
+<div id="outline-container-orgbc7fd36" class="outline-3">
+<h3 id="orgbc7fd36"><a href="#orgbc7fd36"><span class="done DONE">DONE</span> <a href="https://note.com/tably/n/n46041458d6b3">GitHub Actions向け自作アクションの作り方｜Tably｜note</a></a></h3>
+<div class="outline-text-3" id="text-orgbc7fd36">
 <p>
 作り方。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org2b87da7" class="outline-2">
-<h2 id="org2b87da7"><a href="#org2b87da7">Reference</a></h2>
-<div class="outline-text-2" id="text-org2b87da7">
+<div id="outline-container-orgfcb632f" class="outline-2">
+<h2 id="orgfcb632f"><a href="#orgfcb632f">Reference</a></h2>
+<div class="outline-text-2" id="text-orgfcb632f">
 </div>
-<div id="outline-container-org7058b26" class="outline-3">
-<h3 id="org7058b26"><a href="#org7058b26"><a href="https://github.com/release-drafter/release-drafter">release-drafter/release-drafter: Drafts your next release notes as pull requests are merged into master.</a></a></h3>
-<div class="outline-text-3" id="text-org7058b26">
+<div id="outline-container-org09fa8d2" class="outline-3">
+<h3 id="org09fa8d2"><a href="#org09fa8d2"><a href="https://github.com/release-drafter/release-drafter">release-drafter/release-drafter: Drafts your next release notes as pull requests are merged into master.</a></a></h3>
+<div class="outline-text-3" id="text-org09fa8d2">
 <p>
 タグを自動で打ち、リリースを作成する便利なアクション。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb9aeef3" class="outline-3">
-<h3 id="orgb9aeef3"><a href="#orgb9aeef3"><a href="https://developer.mamezou-tech.com/blogs/2022/03/08/github-actions-reuse-workflows/">GitHub Actions - 再利用可能ワークフローを使う | 豆蔵デベロッパーサイト</a></a></h3>
-<div class="outline-text-3" id="text-orgb9aeef3">
+<div id="outline-container-org6678509" class="outline-3">
+<h3 id="org6678509"><a href="#org6678509"><a href="https://developer.mamezou-tech.com/blogs/2022/03/08/github-actions-reuse-workflows/">GitHub Actions - 再利用可能ワークフローを使う | 豆蔵デベロッパーサイト</a></a></h3>
+<div class="outline-text-3" id="text-org6678509">
 <p>
 reuseable workflowの説明。
 </p>
 </div>
 </div>
-<div id="outline-container-org6dbb8d5" class="outline-3">
-<h3 id="org6dbb8d5"><a href="#org6dbb8d5"><a href="https://stackoverflow.com/questions/69521380/secret-interpolation-is-giving-syntax-error-in-caller-workflow-when-calling-a-re">continuous integration - Secret interpolation is giving syntax error in caller workflow when calling a resusable workflow in GitHub Action - Stack Overflow</a></a></h3>
-<div class="outline-text-3" id="text-org6dbb8d5">
+<div id="outline-container-org71d0538" class="outline-3">
+<h3 id="org71d0538"><a href="#org71d0538"><a href="https://stackoverflow.com/questions/69521380/secret-interpolation-is-giving-syntax-error-in-caller-workflow-when-calling-a-re">continuous integration - Secret interpolation is giving syntax error in caller workflow when calling a resusable workflow in GitHub Action - Stack Overflow</a></a></h3>
+<div class="outline-text-3" id="text-org71d0538">
 <p>
 reuseable workflowでは secrets専用で渡す。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc77ab50" class="outline-3">
-<h3 id="orgc77ab50"><a href="#orgc77ab50"><a href="https://zenn.dev/hsaki/articles/github-actions-component">GitHub ActionsにおけるStep/Job/Workflow設計論</a></a></h3>
+<div id="outline-container-orgd2ec3c9" class="outline-3">
+<h3 id="orgd2ec3c9"><a href="#orgd2ec3c9"><a href="https://zenn.dev/hsaki/articles/github-actions-component">GitHub ActionsにおけるStep/Job/Workflow設計論</a></a></h3>
 </div>
-<div id="outline-container-orgdb7396f" class="outline-3">
-<h3 id="orgdb7396f"><a href="#orgdb7396f"><a href="https://zenn.dev/snowcait/articles/787e83640746e1">Composite Action Template を作りました GitHub Actions</a></a></h3>
-<div class="outline-text-3" id="text-orgdb7396f">
+<div id="outline-container-orgeb3feaf" class="outline-3">
+<h3 id="orgeb3feaf"><a href="#orgeb3feaf"><a href="https://zenn.dev/snowcait/articles/787e83640746e1">Composite Action Template を作りました GitHub Actions</a></a></h3>
+<div class="outline-text-3" id="text-orgeb3feaf">
 <p>
 自作アクションの作り方。ミニマルでわかりやすい。
 <a href="https://github.com/snow-actions/git-config-user">snow-actions/git-config-user: Set git user name and email address</a>
@@ -384,14 +384,14 @@ reuseable workflowでは secrets専用で渡す。
 </div>
 </div>
 </div>
-<div id="outline-container-org0f1e27f" class="outline-2">
-<h2 id="org0f1e27f"><a href="#org0f1e27f">Archives</a></h2>
+<div id="outline-container-org35fda39" class="outline-2">
+<h2 id="org35fda39"><a href="#org35fda39">Archives</a></h2>
 </div>
 
 
-<div id="outline-container-org11d30b6" class="outline-2">
-<h2 id="org11d30b6"><a href="#org11d30b6">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org11d30b6">
+<div id="outline-container-org535f9b7" class="outline-2">
+<h2 id="org535f9b7"><a href="#org535f9b7">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org535f9b7">
 <ul class="org-ul">
 <li><a href="./20210508233810-org_roam.html">Org-roam</a></li>
 <li><a href="./20210615222732-project.html">project</a></li>

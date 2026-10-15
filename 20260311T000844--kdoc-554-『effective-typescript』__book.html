@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:41 -->
+<!-- 2026-10-15 木 09:38 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 554: 『Effective TypeScript』</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 554: 『Effective TypeScript』</h1>
-<div id="outline-container-org273303d" class="outline-2">
-<h2 id="org273303d"><a href="#org273303d"><span class="done CLOSE">CLOSE</span> この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org273303d">
+<div id="outline-container-orgaa50a12" class="outline-2">
+<h2 id="orgaa50a12"><a href="#orgaa50a12"><span class="done CLOSE">CLOSE</span> この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgaa50a12">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -41,17 +41,17 @@
 </p>
 </div>
 </div>
-<div id="outline-container-orgd539a3e" class="outline-2">
-<h2 id="orgd539a3e"><a href="#orgd539a3e">概要</a></h2>
-<div class="outline-text-2" id="text-orgd539a3e">
+<div id="outline-container-orge992fb1" class="outline-2">
+<h2 id="orge992fb1"><a href="#orge992fb1">概要</a></h2>
+<div class="outline-text-2" id="text-orge992fb1">
 <p>
 『Effective TypeScript』は、TypeScriptを解説する本である。
 </p>
 </div>
 </div>
-<div id="outline-container-org2e8a065" class="outline-2">
-<h2 id="org2e8a065"><a href="#org2e8a065">メモ</a></h2>
-<div class="outline-text-2" id="text-org2e8a065">
+<div id="outline-container-orgd3ea7b8" class="outline-2">
+<h2 id="orgd3ea7b8"><a href="#orgd3ea7b8">メモ</a></h2>
+<div class="outline-text-2" id="text-orgd3ea7b8">
 <ul class="org-ul">
 <li>すでに複数の異なるプログラミング言語を書き慣れている人にとっては新しい言語に取り組むさい、その言語特有の注意事項から学び始めるのは効果的である。それによって言語に対するメンタルモデルを鍛え上げるとともに言語の特徴を把握できる(まえがき)</li>
 <li>TwoslashはTypeScriptのマークアップフォーマット</li>
@@ -80,14 +80,14 @@
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-js">console.log(typeof null)
-</pre>
+<pre class="src src-js"><code>console.log(typeof null)
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">object
+<pre class="src src-nil"><code>object
 undefined
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -101,10 +101,10 @@ undefined
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-typescript">interface Identified {
+<pre class="src src-typescript"><code>interface Identified {
   id: string;
 }
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -135,16 +135,16 @@ undefined
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>ラッパーオブジェクトへの暗黙的変換があるから、プリミティブにプロパティをセットしても消える</label><pre class="src src-js">x = "hello"
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>ラッパーオブジェクトへの暗黙的変換があるから、プリミティブにプロパティをセットしても消える</label><pre class="src src-js"><code>x = "hello"
 x.language = 'English'
 console.log(x.language)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">undefined
+<pre class="src src-nil"><code>undefined
 undefined
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -152,7 +152,7 @@ undefined
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>代入可能性と余剰プロパティチェックは別々に考えるべきである(p57)</label><pre class="src src-typescript">interface A {
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>代入可能性と余剰プロパティチェックは別々に考えるべきである(p57)</label><pre class="src src-typescript"><code>interface A {
   name: string;
   count: number;
 }
@@ -168,48 +168,48 @@ const obj = {
   elephant: 1,
 } // 推論される型の elephant は string
 const r: A = obj; // OK. Aの elephant は any, obj の型のelephantは string. obj の型に含まれる値の集合はA型の値の部分集合である
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-twoslash">const a: string | null = "a"
+<pre class="src src-twoslash"><code>const a: string | null = "a"
 //    ^?
 if (a !== null) {
    a
 // ^?
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const a: string | null (line 1)
+<pre class="src src-nil"><code>const a: string | null (line 1)
 const a: string (line 3)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>ミュータブルな配列(a)はreadonlyな配列(b)に代入できる</label><pre class="src src-twoslash">const a: number[] = [1, 2, 3]
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>ミュータブルな配列(a)はreadonlyな配列(b)に代入できる</label><pre class="src src-twoslash"><code>const a: number[] = [1, 2, 3]
 //    ^?
 const b: readonly number[] = a;
 //    ^?
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const a: number[] (line 1)
+<pre class="src src-nil"><code>const a: number[] (line 1)
 const b: readonly number[] (line 2)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>逆はそうではない</label><pre class="src src-twoslash">const b: readonly number[] = [1, 2, 3];
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>逆はそうではない</label><pre class="src src-twoslash"><code>const b: readonly number[] = [1, 2, 3];
 //    ^?
 const c: number[] = b;
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">
+<pre class="src src-nil"><code>
 ## Errors were thrown in the sample, but not included in an error tag
 
 These errors were not marked as being expected: 4104.
@@ -219,7 +219,7 @@ Compiler Errors:
 
 index.ts
   [4104] 55 - The type 'readonly number[]' is 'readonly' and cannot be assigned to the mutable type 'number[]'.
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -229,7 +229,7 @@ index.ts
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>型宣言の再利用</label><pre class="src src-typescript">// 重複
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>型宣言の再利用</label><pre class="src src-typescript"><code>// 重複
 function add1(a: number, b: number) { return a + b; }
 function sub1(a: number, b: number) { return a - b; }
 function mul1(a: number, b: number) { return a * b; }
@@ -241,11 +241,11 @@ const add2: BinaryFn = (a, b) =&gt; a + b;
 const sub2: BinaryFn = (a, b) =&gt; a - b;
 const mul2: BinaryFn = (a, b) =&gt; a * b;
 const div2: BinaryFn = (a, b) =&gt; a / b;
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// 重複
+<pre class="src src-nil"><code>// 重複
 function add1(a, b) { return a + b; }
 function sub1(a, b) { return a - b; }
 function mul1(a, b) { return a * b; }
@@ -254,7 +254,7 @@ var add2 = function (a, b) { return a + b; };
 var sub2 = function (a, b) { return a - b; };
 var mul2 = function (a, b) { return a * b; };
 var div2 = function (a, b) { return a / b; };
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -265,17 +265,17 @@ var div2 = function (a, b) { return a / b; };
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>Recordを使う</label><pre class="src src-twoslash">type Vec3D = Record&lt;'X' | 'Y' | 'Z', number&gt;;
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>Recordを使う</label><pre class="src src-twoslash"><code>type Vec3D = Record&lt;'X' | 'Y' | 'Z', number&gt;;
 //   ^?
 
 type StringNumber = Record&lt;string, number&gt;;
 //   ^?
 const value: StringNumber = { a: 1, b: 2, c: 3 };
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">type Vec3D = {
+<pre class="src src-nil"><code>type Vec3D = {
     X: number;
     Y: number;
     Z: number;
@@ -284,70 +284,70 @@ type StringNumber = {
     [x: string]: number;
 } (line 3)
 const value: StringNumber (line 4)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 7: </span>const と let の型推論の違い。letで宣言された変数にプリミティブ値を代入するとその「基本型」に拡大される(p109)</label><pre class="src src-twoslash">const x = 'x';
+<label class="org-src-name"><span class="listing-number">Listing 7: </span>const と let の型推論の違い。letで宣言された変数にプリミティブ値を代入するとその「基本型」に拡大される(p109)</label><pre class="src src-twoslash"><code>const x = 'x';
 //    ^?
 let y = 'y';
 //  ^?
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const x: "x" (line 1)
+<pre class="src src-nil"><code>const x: "x" (line 1)
 let y: string (line 2)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 8: </span>配列の型推論(p109)</label><pre class="src src-twoslash">const mixed = ['x', 1];
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>配列の型推論(p109)</label><pre class="src src-twoslash"><code>const mixed = ['x', 1];
 //    ^?
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const mixed: (string | number)[] (line 1)
-</pre>
+<pre class="src src-nil"><code>const mixed: (string | number)[] (line 1)
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 9: </span>as constと書くと、その値について可能なかぎり狭い型を推論する。型の拡大は起こらない(p111)</label><pre class="src src-twoslash">const arr1 = [1, 2, 3]
+<label class="org-src-name"><span class="listing-number">Listing 9: </span>as constと書くと、その値について可能なかぎり狭い型を推論する。型の拡大は起こらない(p111)</label><pre class="src src-twoslash"><code>const arr1 = [1, 2, 3]
 //    ^?
 const arr2 = [1, 2, 3] as const
 //    ^?
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const arr1: number[] (line 1)
+<pre class="src src-nil"><code>const arr1: number[] (line 1)
 const arr2: readonly [1, 2, 3] (line 2)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 10: </span>これはOK。例は下に続く(p125)</label><pre class="src src-twoslash">type Language = 'JavaScript' | 'TypeScript' | 'Python';
+<label class="org-src-name"><span class="listing-number">Listing 10: </span>これはOK。例は下に続く(p125)</label><pre class="src src-twoslash"><code>type Language = 'JavaScript' | 'TypeScript' | 'Python';
 function setLanguage(language: Language) {}
 setLanguage('JavaScript')
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">
-</pre>
+<pre class="src src-nil"><code>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 11: </span>初期化のタイミングで型を推論しなければならないのでstringが推論されるが、これはLanguageに代入できない(p126)</label><pre class="src src-twoslash">type Language = 'JavaScript' | 'TypeScript' | 'Python';
+<label class="org-src-name"><span class="listing-number">Listing 11: </span>初期化のタイミングで型を推論しなければならないのでstringが推論されるが、これはLanguageに代入できない(p126)</label><pre class="src src-twoslash"><code>type Language = 'JavaScript' | 'TypeScript' | 'Python';
 function setLanguage(language: Language) {}
 let language = 'JavaScript'
 setLanguage(language)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">
+<pre class="src src-nil"><code>
 ## Errors were thrown in the sample, but not included in an error tag
 
 These errors were not marked as being expected: 2345.
@@ -357,25 +357,25 @@ Compiler Errors:
 
 index.ts
   [2345] 140 - Argument of type 'string' is not assignable to parameter of type 'Language'.
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 12: </span>constにすると変数は変更できないことが型チェッカーに伝わり、より正確な型を推論できる(p126)</label><pre class="src src-twoslash">type Language = 'JavaScript' | 'TypeScript' | 'Python';
+<label class="org-src-name"><span class="listing-number">Listing 12: </span>constにすると変数は変更できないことが型チェッカーに伝わり、より正確な型を推論できる(p126)</label><pre class="src src-twoslash"><code>type Language = 'JavaScript' | 'TypeScript' | 'Python';
 function setLanguage(language: Language) {}
 const language = 'JavaScript'
 //    ^?
 setLanguage(language)
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const language: "JavaScript" (line 3)
-</pre>
+<pre class="src src-nil"><code>const language: "JavaScript" (line 3)
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 13: </span>空の配列の型は、異なる要素を追加することで大きくできる(p131)</label><pre class="src src-twoslash">const result = [];
+<label class="org-src-name"><span class="listing-number">Listing 13: </span>空の配列の型は、異なる要素を追加することで大きくできる(p131)</label><pre class="src src-twoslash"><code>const result = [];
 //    ^?
 result.push('a');
 result
@@ -383,14 +383,14 @@ result
 result.push(1);
 result
 // ^?
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const result: any[] (line 1)
+<pre class="src src-nil"><code>const result: any[] (line 1)
 const result: string[] (line 3)
 const result: (string | number)[] (line 5)
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -398,20 +398,20 @@ const result: (string | number)[] (line 5)
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 14: </span>async関数は常にPromiseを返す</label><pre class="src src-twoslash">async function getNumber1() { return 42 }
+<label class="org-src-name"><span class="listing-number">Listing 14: </span>async関数は常にPromiseを返す</label><pre class="src src-twoslash"><code>async function getNumber1() { return 42 }
 //             ^?
 const getNumber2 = async () =&gt; 42
 //    ^?
 const getNumber3 = () =&gt; Promise.resolve(42)
 //    ^?
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">function getNumber1(): Promise&lt;number&gt; (line 1)
+<pre class="src src-nil"><code>function getNumber1(): Promise&lt;number&gt; (line 1)
 const getNumber2: () =&gt; Promise&lt;number&gt; (line 2)
 const getNumber3: () =&gt; Promise&lt;number&gt; (line 3)
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -419,7 +419,7 @@ const getNumber3: () =&gt; Promise&lt;number&gt; (line 3)
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 15: </span>async関数からPromiseを返してもラップされない(p143)</label><pre class="src src-twoslash">async function getJSON(url: string) {
+<label class="org-src-name"><span class="listing-number">Listing 15: </span>async関数からPromiseを返してもラップされない(p143)</label><pre class="src src-twoslash"><code>async function getJSON(url: string) {
   const response = await fetch(url);
   const jsonPromise = response.json();
   return jsonPromise;
@@ -427,13 +427,13 @@ const getNumber3: () =&gt; Promise&lt;number&gt; (line 3)
 }
 getJSON
 // ^?
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">const jsonPromise: Promise&lt;any&gt; (line 4)
+<pre class="src src-nil"><code>const jsonPromise: Promise&lt;any&gt; (line 4)
 function getJSON(url: string): Promise&lt;any&gt; (line 6)
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -454,17 +454,17 @@ function getJSON(url: string): Promise&lt;any&gt; (line 6)
 </ul>
 </div>
 </div>
-<div id="outline-container-org17f67a6" class="outline-2">
-<h2 id="org17f67a6"><a href="#org17f67a6">関連</a></h2>
-<div class="outline-text-2" id="text-org17f67a6">
+<div id="outline-container-orgc0620d2" class="outline-2">
+<h2 id="orgc0620d2"><a href="#orgc0620d2">関連</a></h2>
+<div class="outline-text-2" id="text-orgc0620d2">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-orgb9852d7" class="outline-2">
-<h2 id="orgb9852d7"><a href="#orgb9852d7">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgb9852d7">
+<div id="outline-container-orgc0f81d2" class="outline-2">
+<h2 id="orgc0f81d2"><a href="#orgc0f81d2">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgc0f81d2">
 <ul class="org-ul">
 <li><a href="./20260623T083610--kdoc-599-関数の最後の操作が再帰呼び出しの結果をそのまま返すだけならスタックフレームを破棄できる__permanent.html">KDOC 599: 関数の最後の操作が再帰呼び出しの結果をそのまま返すだけならスタックフレームを破棄できる</a></li>
 </ul>

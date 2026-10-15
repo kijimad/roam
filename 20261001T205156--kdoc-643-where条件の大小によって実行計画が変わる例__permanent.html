@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 643: WHERE条件の大小によって実行計画が変わる例</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 643: WHERE条件の大小によって実行計画が変わる例</h1>
-<div id="outline-container-org24f9779" class="outline-2">
-<h2 id="org24f9779"><a href="#org24f9779">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org24f9779">
+<div id="outline-container-org1b407ff" class="outline-2">
+<h2 id="org1b407ff"><a href="#org1b407ff">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1b407ff">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org2f23803" class="outline-2">
-<h2 id="org2f23803"><a href="#org2f23803">概要</a></h2>
-<div class="outline-text-2" id="text-org2f23803">
+<div id="outline-container-org75a6e78" class="outline-2">
+<h2 id="org75a6e78"><a href="#org75a6e78">概要</a></h2>
+<div class="outline-text-2" id="text-org75a6e78">
 <p>
 推定した取得行数によって、全部読むか一部だけ読むかの判断が変わって実行計画が変わるのを見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>同じ条件式で値だけを変えると、Index Scan、Bitmap Heap Scan、Seq Scan と計画が変わる</label><pre class="src src-sql">CREATE TABLE users (
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>同じ条件式で値だけを変えると、Index Scan、Bitmap Heap Scan、Seq Scan と計画が変わる</label><pre class="src src-sql"><code>CREATE TABLE users (
     id   integer PRIMARY KEY,
     name varchar(255)
 );
@@ -70,11 +70,11 @@ EXPLAIN SELECT * FROM users WHERE id &lt; 1000;
 
 -- 約70000件
 EXPLAIN SELECT * FROM users WHERE id &lt; 70000;
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">|                                                                          |
+<pre class="src src-nil"><code>|                                                                          |
 |--------------------------------------------------------------------------|
 | &gt; CREATE TABLE users (                                                   |
 | &gt;     id   integer PRIMARY KEY,                                          |
@@ -110,13 +110,13 @@ EXPLAIN SELECT * FROM users WHERE id &lt; 70000;
 | QUERY PLAN                                                               |
 | Seq Scan on users  (cost=0.00..2485.00 rows=69782 width=69)              |
 | Filter: (id &lt; 70000)                                                     |
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org6422381" class="outline-2">
-<h2 id="org6422381"><a href="#org6422381">関連</a></h2>
-<div class="outline-text-2" id="text-org6422381">
+<div id="outline-container-org4b3d9ab" class="outline-2">
+<h2 id="org4b3d9ab"><a href="#org4b3d9ab">関連</a></h2>
+<div class="outline-text-2" id="text-org4b3d9ab">
 <ul class="org-ul">
 <li>参照: <a href="https://www.postgresql.jp/docs/18/using-explain.html">14.1. EXPLAINの利用</a></li>
 <li>類似: <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。実行計画に関する話題</li>

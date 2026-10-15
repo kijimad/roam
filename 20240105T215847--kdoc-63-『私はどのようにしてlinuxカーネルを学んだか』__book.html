@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』</title>
@@ -22,26 +22,26 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 63: 『私はどのようにしてLinuxカーネルを学んだか』</h1>
-<div id="outline-container-orgaa8edce" class="outline-2">
-<h2 id="orgaa8edce"><a href="#orgaa8edce">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgaa8edce">
+<div id="outline-container-orga6f52b8" class="outline-2">
+<h2 id="orga6f52b8"><a href="#orga6f52b8">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orga6f52b8">
 <ul class="org-ul">
 <li class="on"><input type='checkbox' checked='checked' /> 作成</li>
 <li class="on"><input type='checkbox' checked='checked' /> レビュー</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgfddec24" class="outline-2">
-<h2 id="orgfddec24"><a href="#orgfddec24">概要</a></h2>
-<div class="outline-text-2" id="text-orgfddec24">
+<div id="outline-container-org88b77b1" class="outline-2">
+<h2 id="org88b77b1"><a href="#org88b77b1">概要</a></h2>
+<div class="outline-text-2" id="text-org88b77b1">
 <p>
 <a href="https://amzn.to/3wvb94Q">私はどのようにしてLinuxカーネルを学んだか</a>は、<a href="20220108110637-linux.html#ID-7a81eb7c-8e2b-400a-b01a-8fa597ea527a">Linux</a>カーネルについて全体像の解説と、ゼロから学ぶ道筋を示す本。
 </p>
 </div>
 </div>
-<div id="outline-container-org8b71aec" class="outline-2">
-<h2 id="org8b71aec"><a href="#org8b71aec">メモ</a></h2>
-<div class="outline-text-2" id="text-org8b71aec">
+<div id="outline-container-org5b9262b" class="outline-2">
+<h2 id="org5b9262b"><a href="#org5b9262b">メモ</a></h2>
+<div class="outline-text-2" id="text-org5b9262b">
 <ul class="org-ul">
 <li><a href="20210911104632-c_language.html#ID-656a0aa4-e5d3-416f-82d5-f909558d0639">C言語</a>はわかるのに、デバイスドライバのソースコードが理解できない。プログラムを理解するための前提知識がないから</li>
 <li>Linuxカーネルに関する情報は十分にあった。しかし当時理解できていなかった。文章を読んでなんとなく言いたいことは理解できるが、腹落ちしない</li>
@@ -87,12 +87,12 @@
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">cat /proc/interrupts | head -n 10
-</pre>
+<pre class="src src-shell"><code>cat /proc/interrupts | head -n 10
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       CPU8       CPU9       CPU10      CPU11      CPU12      CPU13      CPU14      CPU15
+<pre class="src src-nil"><code>           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       CPU8       CPU9       CPU10      CPU11      CPU12      CPU13      CPU14      CPU15
   1:          0          0          0          0          0    1599978          0          0          0          0          0          0          0          0          0          0   IO-APIC    1-edge      i8042
   8:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC    8-edge      rtc0
   9:    3406692          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC    9-fasteoi   acpi
@@ -102,7 +102,7 @@
  27:          0          0     392073          0    1739738          0   78235528          0   10926714          0          0          0          0          0        544          0   IO-APIC   27-fasteoi   idma64.0, i2c_designware.0
  56:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   11701805   IO-APIC   56-fasteoi   ELAN067B:00
 120:          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI 98304-edge      PCIe PME
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -110,12 +110,12 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>VSZ(Virtual Memory Size)とRSS(Resident Set Size)の列が0となっているのがカーネルスレッド</label><pre class="src src-shell">ps auxw | head -n 10
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>VSZ(Virtual Memory Size)とRSS(Resident Set Size)の列が0となっているのがカーネルスレッド</label><pre class="src src-shell"><code>ps auxw | head -n 10
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+<pre class="src src-nil"><code>USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root           1  0.0  0.0 170996 16260 ?        Ss   Feb11   3:07 /sbin/init splash
 root           2  0.0  0.0      0     0 ?        S    Feb11   0:02 [kthreadd]
 root           3  0.0  0.0      0     0 ?        I&lt;   Feb11   0:00 [rcu_gp]
@@ -125,7 +125,7 @@ root          10  0.0  0.0      0     0 ?        I&lt;   Feb11   0:00 [mm_percpu
 root          11  0.0  0.0      0     0 ?        S    Feb11   0:00 [rcu_tasks_rude_]
 root          12  0.0  0.0      0     0 ?        S    Feb11   0:00 [rcu_tasks_trace]
 root          13  0.0  0.0      0     0 ?        S    Feb11   0:27 [ksoftirqd/0]
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -155,17 +155,17 @@ root          13  0.0  0.0      0     0 ?        S    Feb11   0:27 [ksoftirqd/0]
 </ul>
 </div>
 </div>
-<div id="outline-container-org85e5199" class="outline-2">
-<h2 id="org85e5199"><a href="#org85e5199">関連</a></h2>
-<div class="outline-text-2" id="text-org85e5199">
+<div id="outline-container-org4428039" class="outline-2">
+<h2 id="org4428039"><a href="#org4428039">関連</a></h2>
+<div class="outline-text-2" id="text-org4428039">
 <ul class="org-ul">
 <li>類推: 同じような巨大プログラムの学び方の本はあるか</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgcd783c8" class="outline-2">
-<h2 id="orgcd783c8"><a href="#orgcd783c8">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orgcd783c8">
+<div id="outline-container-org25e1b3b" class="outline-2">
+<h2 id="org25e1b3b"><a href="#org25e1b3b">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org25e1b3b">
 <ul class="org-ul">
 <li><a href="./20240225T172419--kdoc-106-linuxでアーキテクチャ名を調べる__permanent.html">KDOC 106: Linuxでアーキテクチャ名を調べる</a></li>
 <li><a href="./20240225T172456--kdoc-107-システムコールをmanで調べる__permanent.html">KDOC 107: システムコールをmanで調べる</a></li>

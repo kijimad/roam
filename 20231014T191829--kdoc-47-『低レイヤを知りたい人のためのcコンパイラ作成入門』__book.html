@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 47: 『低レイヤを知りたい人のためのCコンパイラ作成入門』</title>
@@ -25,9 +25,9 @@
 <p>
 <a href="https://www.sigbus.info/compilerbook">低レイヤを知りたい人のためのCコンパイラ作成入門</a>は、<a href="20230816114747-compiler.html#ID-6cbcac25-a12b-47c0-8183-62d18799835d">compiler</a>の作り方の本。
 </p>
-<div id="outline-container-org9843692" class="outline-2">
-<h2 id="org9843692"><a href="#org9843692">メモ</a></h2>
-<div class="outline-text-2" id="text-org9843692">
+<div id="outline-container-orgf938cc7" class="outline-2">
+<h2 id="orgf938cc7"><a href="#orgf938cc7">メモ</a></h2>
+<div class="outline-text-2" id="text-orgf938cc7">
 <ul class="org-ul">
 <li>最低限の実装からインクリメンタルに開発していく流れがよい</li>
 <li>コンパイラが動作するマシンのことを「ホスト」、コンパイラが出力したコードが動作するマシンのことを「ターゲット」という</li>
@@ -40,7 +40,7 @@
 </p>
 
 
-<div id="org4f89913" class="figure">
+<div id="org8c1cf4b" class="figure">
 <p><img src="./images/20230816-tree.drawio.svg" alt="20230816-tree.drawio.svg" class="org-svg">
 </p>
 </div>
@@ -59,12 +59,12 @@
 結果として、以下のようなアセンブリが出力される。
 </p>
 <div class="org-src-container">
-<pre class="src src-asm">PUSH 2
+<pre class="src src-asm"><code>PUSH 2
 PUSH 3
 PUSH 4
 MUL
 ADD
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -73,7 +73,7 @@ ADD
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-asm">push 1
+<pre class="src src-asm"><code>push 1
 push 2
 
 pop rdi
@@ -81,7 +81,7 @@ pop rax
 add rax, rdi
 
 push rax
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -93,7 +93,7 @@ push rax
 </p>
 
 <div class="org-src-container">
-<pre class="src src-asm">// 2*3を計算して結果をスタックにプッシュ
+<pre class="src src-asm"><code>// 2*3を計算して結果をスタックにプッシュ
 push 2
 push 3
 
@@ -116,7 +116,7 @@ pop rdi
 pop rax
 add rax, rdi
 push rax
-</pre>
+</code></pre>
 </div>
 
 <blockquote>
@@ -134,12 +134,12 @@ cmp命令。
 </p>
 
 <div class="org-src-container">
-<pre class="src src-asm">pop rdi
+<pre class="src src-asm"><code>pop rdi
 pop rax
 cmp rax, rdi
 sete al
 movzb rax, al
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -203,17 +203,17 @@ movzb rax, al
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>グローバル変数を定義する</label><pre class="src src-C">int x;
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>グローバル変数を定義する</label><pre class="src src-C"><code>int x;
 int y[20];
 
 int main() {
     return x + y[5];
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>ラベル(メモリ番地に名前をつける)に定義されている</label><pre class="src src-asm">x:
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>ラベル(メモリ番地に名前をつける)に定義されている</label><pre class="src src-asm"><code>x:
   .zero 4
 y:
   .zero 80
@@ -222,7 +222,7 @@ main:
   movl x(%rip), %eax
   addl %edx, %eax
   ret
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -230,22 +230,22 @@ main:
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-C">int main() {
+<pre class="src src-C"><code>int main() {
     int a = 1;
     return a;
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-asm">main:
+<pre class="src src-asm"><code>main:
   pushq %rbp
   movq %rsp, %rbp
   movl $1, -4(%rbp)
   movl -4(%rbp), %eax
   popq %rbp
   ret
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -256,7 +256,7 @@ main:
 </ul>
 
 
-<div id="org98a9fc1" class="figure">
+<div id="orga9d8869" class="figure">
 <p><img src="./images/20231014-exec.drawio.svg" alt="20231014-exec.drawio.svg" class="org-svg">
 </p>
 </div>
@@ -288,8 +288,8 @@ main:
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>signal関数は一見なにかまったくわからない型</label><pre class="src src-C">void (*signal(int, void (*)(int)))(int);
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>signal関数は一見なにかまったくわからない型</label><pre class="src src-C"><code>void (*signal(int, void (*)(int)))(int);
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -316,18 +316,18 @@ main:
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd66f93c" class="outline-2">
-<h2 id="orgd66f93c"><a href="#orgd66f93c">関連</a></h2>
-<div class="outline-text-2" id="text-orgd66f93c">
+<div id="outline-container-org6ce1b0b" class="outline-2">
+<h2 id="org6ce1b0b"><a href="#org6ce1b0b">関連</a></h2>
+<div class="outline-text-2" id="text-org6ce1b0b">
 <ul class="org-ul">
 <li>追加調査: RSPレジスタはスタックポインタとして使うことを念頭に置いて設計されている、とあるが、具体的にどのような設計があるか。ほかのレジスタと何が違うのか</li>
 <li>補足: <a href="20231014T171444--kdoc-46-goの宣言構文がcと異なる理由を見る__permanent.html#ID-20231014T171444">KDOC 46: Goの宣言構文がCと異なる理由を見る</a>。Cの宣言構文を詳しく見る</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orged34bd6" class="outline-2">
-<h2 id="orged34bd6"><a href="#orged34bd6">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orged34bd6">
+<div id="outline-container-org7796cf2" class="outline-2">
+<h2 id="org7796cf2"><a href="#org7796cf2">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org7796cf2">
 <ul class="org-ul">
 <li><a href="./20231014T125935--kdoc-45-プログラミング言語の内部的な違いをアセンブリから調べる__permanent.html">KDOC 45: プログラミング言語の内部的な違いをアセンブリから調べる</a></li>
 <li><a href="./20231014T171444--kdoc-46-goの宣言構文がcと異なる理由を見る__permanent.html">KDOC 46: Goの宣言構文がCと異なる理由を見る</a></li>

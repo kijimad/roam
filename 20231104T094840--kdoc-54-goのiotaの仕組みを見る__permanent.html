@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 54: Goのiotaの仕組みを見る</title>
@@ -31,13 +31,13 @@
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>enumを実現する</label><pre class="src src-go">type Language int
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>enumを実現する</label><pre class="src src-go"><code>type Language int
 const (
         Japanese Language = iota
         English
         Chinese
 )
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -45,17 +45,17 @@ const (
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>iotaを使うコード</label><pre class="src src-go-asm">package main
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>iotaを使うコード</label><pre class="src src-go-asm"><code>package main
 import "fmt"
 func main() {
         const a = iota + 999
         fmt.Print(a)
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"># command-line-arguments
+<pre class="src src-nil"><code># command-line-arguments
 main.main STEXT size=105 args=0x0 locals=0x50 funcid=0x0 align=0x0
 	0x0000 00000 (/tmp/babel-u4OtHM/1acYKX.go:3)	TEXT	main.main(SB), ABIInternal, $80-0
 	0x0000 00000 (/tmp/babel-u4OtHM/1acYKX.go:3)	CMPQ	SP, 16(R14)
@@ -155,20 +155,20 @@ main.main.stkobj SRODATA static size=24
 	0x0000 01 00 00 00 00 00 00 00 f0 ff ff ff 10 00 00 00  ................
 	0x0010 10 00 00 00 00 00 00 00                          ........
 	rel 20+4 t=R_ADDROFF runtime.gcbits.0200000000000000+0
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>iotaを使わずに同じ意味になるコード</label><pre class="src src-go-asm">package main
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>iotaを使わずに同じ意味になるコード</label><pre class="src src-go-asm"><code>package main
 import "fmt"
 func main() {
         fmt.Print(999)
 }
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"># command-line-arguments
+<pre class="src src-nil"><code># command-line-arguments
 main.main STEXT size=105 args=0x0 locals=0x50 funcid=0x0 align=0x0
 	0x0000 00000 (/tmp/babel-u4OtHM/rJMaJY.go:3)	TEXT	main.main(SB), ABIInternal, $80-0
 	0x0000 00000 (/tmp/babel-u4OtHM/rJMaJY.go:3)	CMPQ	SP, 16(R14)
@@ -268,7 +268,7 @@ main.main.stkobj SRODATA static size=24
 	0x0000 01 00 00 00 00 00 00 00 f0 ff ff ff 10 00 00 00  ................
 	0x0010 10 00 00 00 00 00 00 00                          ........
 	rel 20+4 t=R_ADDROFF runtime.gcbits.0200000000000000+0
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -280,12 +280,12 @@ main.main.stkobj SRODATA static size=24
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>func (check *Checker) declStmt(list []syntax.Decl) から</label><pre class="src src-git-permalink">https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L757-L765
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>func (check *Checker) declStmt(list []syntax.Decl) から</label><pre class="src src-git-permalink"><code>https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L757-L765
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">case *syntax.ConstDecl:
+<pre class="src src-nil"><code>case *syntax.ConstDecl:
 	top := len(check.delayed)
 
 	// iota is the index of the current constDecl within the group
@@ -294,7 +294,7 @@ main.main.stkobj SRODATA static size=24
 		last = nil
 	}
 	iota := constant.MakeInt64(int64(index - first))
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -302,12 +302,12 @@ main.main.stkobj SRODATA static size=24
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 5: </span>func (check *Checker) declStmt(list []syntax.Decl) から</label><pre class="src src-git-permalink">https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L781-L791
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 5: </span>func (check *Checker) declStmt(list []syntax.Decl) から</label><pre class="src src-git-permalink"><code>https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L781-L791
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">for i, name := range s.NameList {
+<pre class="src src-nil"><code>for i, name := range s.NameList {
 	obj := NewConst(name.Pos(), pkg, name.Value, nil, iota)
 	lhs[i] = obj
 
@@ -318,7 +318,7 @@ main.main.stkobj SRODATA static size=24
 
 	check.constDecl(obj, last.Type, init, inherited)
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -326,12 +326,12 @@ main.main.stkobj SRODATA static size=24
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 6: </span>func (check *Checker) constDecl(obj *Const, typ, init syntax.Expr, inherited bool) から</label><pre class="src src-git-permalink">https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L400-L413
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 6: </span>func (check *Checker) constDecl(obj *Const, typ, init syntax.Expr, inherited bool) から</label><pre class="src src-git-permalink"><code>https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L400-L413
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">var x operand
+<pre class="src src-nil"><code>var x operand
 if init != nil {
 	if inherited {
 		// The initialization expression is inherited from a previous
@@ -345,7 +345,7 @@ if init != nil {
 	check.expr(nil, &amp;x, init)
 }
 check.initConst(obj, &amp;x)
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -353,13 +353,13 @@ check.initConst(obj, &amp;x)
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 7: </span>func (check *Checker) initConst(lhs *Const, x *operand) から</label><pre class="src src-git-permalink">https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/assignments.go#L132
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 7: </span>func (check *Checker) initConst(lhs *Const, x *operand) から</label><pre class="src src-git-permalink"><code>https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/assignments.go#L132
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">lhs.val = x.val
-</pre>
+<pre class="src src-nil"><code>lhs.val = x.val
+</code></pre>
 </div>
 
 <p>
@@ -367,23 +367,23 @@ check.initConst(obj, &amp;x)
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 8: </span>Checkerは型チェッカーである</label><pre class="src src-git-permalink">https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/check.go#L91-L93
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 8: </span>Checkerは型チェッカーである</label><pre class="src src-git-permalink"><code>https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/check.go#L91-L93
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">// A Checker maintains the state of the type checker.
+<pre class="src src-nil"><code>// A Checker maintains the state of the type checker.
 // It must be created with NewChecker.
 type Checker struct {
-</pre>
+</code></pre>
 </div>
 
 <p>
 つまり、constにiotaキーワードを使った場合、型チェックの過程で実際の値が決まる、という感じになっている。
 </p>
-<div id="outline-container-org9a22826" class="outline-2">
-<h2 id="org9a22826"><a href="#org9a22826">関連</a></h2>
-<div class="outline-text-2" id="text-org9a22826">
+<div id="outline-container-org1eed2a7" class="outline-2">
+<h2 id="org1eed2a7"><a href="#org1eed2a7">関連</a></h2>
+<div class="outline-text-2" id="text-org1eed2a7">
 <ul class="org-ul">
 <li>追加調査: 理解を試すため、境界的事例を試してみる。文法上有効だが直感に反する部分を探す</li>
 </ul>

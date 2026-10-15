@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</h1>
-<div id="outline-container-org39c0962" class="outline-2">
-<h2 id="org39c0962"><a href="#org39c0962">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org39c0962">
+<div id="outline-container-org1fba8a9" class="outline-2">
+<h2 id="org1fba8a9"><a href="#org1fba8a9">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1fba8a9">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org7009594" class="outline-2">
-<h2 id="org7009594"><a href="#org7009594">概要</a></h2>
-<div class="outline-text-2" id="text-org7009594">
+<div id="outline-container-orge635538" class="outline-2">
+<h2 id="orge635538"><a href="#orge635538">概要</a></h2>
+<div class="outline-text-2" id="text-orge635538">
 <p>
 Go の <code>select</code> では、複数の case が同時に進行できるときランダムに選ばれる。なので例えばシャットダウン用とキュー追加用の両方のチャネルに値が届いていると、どちらを処理するかはランダムになる。キュー追加をせずシャットダウンの後処理だけをやるなど、一貫させたほうがよいこともある。その場合、優先したい <code>case</code> だけを <code>default</code> 付きの <code>select</code> で先に確かめ、なければ全部の <code>case</code> を並べた <code>select</code> で待つ。
 </p>
@@ -49,12 +49,12 @@ Go の <code>select</code> では、複数の case が同時に進行できる�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-git-permalink">https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/batch.go#L139-L186
-</pre>
+<pre class="src src-git-permalink"><code>https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/batch.go#L139-L186
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">for {
+<pre class="src src-nil"><code>for {
 	// Probe shutdown by itself first. This makes an already queued terminal
 	// request win over every other ready case. Closing done before replying
 	// also means a successful Shutdown response observes a stopped worker.
@@ -102,13 +102,13 @@ Go の <code>select</code> では、複数の case が同時に進行できる�
 		b.exportBatch(buf)
 	}
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org77df211" class="outline-2">
-<h2 id="org77df211"><a href="#org77df211">関連</a></h2>
-<div class="outline-text-2" id="text-org77df211">
+<div id="outline-container-org4ef2b4e" class="outline-2">
+<h2 id="org4ef2b4e"><a href="#org4ef2b4e">関連</a></h2>
+<div class="outline-text-2" id="text-org4ef2b4e">
 <ul class="org-ul">
 <li>前提: <a href="20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html#ID-20261005T223831">KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</a></li>
 </ul>

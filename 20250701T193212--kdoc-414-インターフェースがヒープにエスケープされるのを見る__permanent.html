@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:41 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 414: インターフェースがヒープにエスケープされるのを見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 414: インターフェースがヒープにエスケープされるのを見る</h1>
-<div id="outline-container-org5c2d1c3" class="outline-2">
-<h2 id="org5c2d1c3"><a href="#org5c2d1c3">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org5c2d1c3">
+<div id="outline-container-org54f98e8" class="outline-2">
+<h2 id="org54f98e8"><a href="#org54f98e8">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org54f98e8">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org0afb898" class="outline-2">
-<h2 id="org0afb898"><a href="#org0afb898">概要</a></h2>
-<div class="outline-text-2" id="text-org0afb898">
+<div id="outline-container-org2563866" class="outline-2">
+<h2 id="org2563866"><a href="#org2563866">概要</a></h2>
+<div class="outline-text-2" id="text-org2563866">
 <p>
 関数を抜けた後も使うようなケースでは、消されないようにスタックからヒープに移す必要がある。インターフェースを返すと、実体を関数から抜けた後も保持しておく必要があるため、ヒープにエスケープされる。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>最初スタックにあったローカル変数がヒープにエスケープされる様子を見る</label><pre class="src src-shell">tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>最初スタックにあったローカル変数がヒープにエスケープされる様子を見る</label><pre class="src src-shell"><code>tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
 
 cat &gt; $tmpfile &lt;&lt;EOF
 package main
@@ -62,28 +62,28 @@ EOF
 go build -gcflags="-m" -o bin $tmpfile 2&gt;&amp;1
 rm bin
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">/tmp/tmpgo.wTCwGe.go:3:6: can inline main
+<pre class="src src-nil"><code>/tmp/tmpgo.wTCwGe.go:3:6: can inline main
 /tmp/tmpgo.wTCwGe.go:5:6: can inline f
 /tmp/tmpgo.wTCwGe.go:7:10: x escapes to heap
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org46c3c54" class="outline-2">
-<h2 id="org46c3c54"><a href="#org46c3c54">関連</a></h2>
-<div class="outline-text-2" id="text-org46c3c54">
+<div id="outline-container-org45d19e0" class="outline-2">
+<h2 id="org45d19e0"><a href="#org45d19e0">関連</a></h2>
+<div class="outline-text-2" id="text-org45d19e0">
 <ul class="org-ul">
 <li>動機: <a href="20250630T185540--kdoc-411-スタックは積み重ねて取り出して解放する。ではヒープは__permanent.html#ID-20250630T185540">KDOC 411: スタックは積み重ねて取り出して解放する。ではヒープは?</a>。ヒープを調べるきっかけになった</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org06291bc" class="outline-2">
-<h2 id="org06291bc"><a href="#org06291bc">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org06291bc">
+<div id="outline-container-orgbe9c1e9" class="outline-2">
+<h2 id="orgbe9c1e9"><a href="#orgbe9c1e9">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgbe9c1e9">
 <ul class="org-ul">
 <li><a href="./20250701T213624--kdoc-415-ioreaderのシグネチャはヒープエスケープを避けられる設計になっている__permanent.html">KDOC 415: io.Readerのシグネチャはヒープエスケープを避けられる設計になっている</a></li>
 </ul>

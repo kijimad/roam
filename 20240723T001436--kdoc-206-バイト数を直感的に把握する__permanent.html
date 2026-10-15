@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 206: バイト数を直感的に把握する</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 206: バイト数を直感的に把握する</h1>
-<div id="outline-container-orga539c7f" class="outline-2">
-<h2 id="orga539c7f"><a href="#orga539c7f">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orga539c7f">
+<div id="outline-container-orgd83f2b1" class="outline-2">
+<h2 id="orgd83f2b1"><a href="#orgd83f2b1">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgd83f2b1">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org168fa82" class="outline-2">
-<h2 id="org168fa82"><a href="#org168fa82">概要</a></h2>
-<div class="outline-text-2" id="text-org168fa82">
+<div id="outline-container-orgcade4ea" class="outline-2">
+<h2 id="orgcade4ea"><a href="#orgcade4ea">概要</a></h2>
+<div class="outline-text-2" id="text-orgcade4ea">
 <p>
 <a href="20240723001705-cpu.html#ID-3f07fe5f-95c8-4824-86ae-3cc616f787d3">CPU</a>まわりの本を読んでいると、よく1バイト分確保して〜という文章が出てくる。そのたびにちょっと考えて進数変換しているので、覚えて感覚でやるようにする。
 </p>
@@ -145,36 +145,36 @@
 </table>
 </div>
 </div>
-<div id="outline-container-orgabde562" class="outline-2">
-<h2 id="orgabde562"><a href="#orgabde562">確認方法</a></h2>
-<div class="outline-text-2" id="text-orgabde562">
+<div id="outline-container-org3034e96" class="outline-2">
+<h2 id="org3034e96"><a href="#org3034e96">確認方法</a></h2>
+<div class="outline-text-2" id="text-org3034e96">
 <p>
 確かめてみると手っ取り早い。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>調べる方法1(文字列)。-nは末尾に改行を出さないオプション</label><pre class="src src-shell">echo -n "愛" | hexdump -C
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>調べる方法1(文字列)。-nは末尾に改行を出さないオプション</label><pre class="src src-shell"><code>echo -n "愛" | hexdump -C
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">00000000  e6 84 9b                                          |...|
+<pre class="src src-nil"><code>00000000  e6 84 9b                                          |...|
 00000003
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>調べる方法2(文字列)</label><pre class="src src-shell">echo -n "ABCD" | xxd
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>調べる方法2(文字列)</label><pre class="src src-shell"><code>echo -n "ABCD" | xxd
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">00000000: 4142 4344                                ABCD
-</pre>
+<pre class="src src-nil"><code>00000000: 4142 4344                                ABCD
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>調べる方法3(数値)</label><pre class="src src-ruby">def conv(target16)
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>調べる方法3(数値)</label><pre class="src src-ruby"><code>def conv(target16)
   puts("_____________________")
   target10 = target16.to_i(16)
   printf("16進数: #{target16}\n")
@@ -194,11 +194,11 @@ conv('100000')
 conv('1000000')
 conv('10000000')
 conv('FFFFFFFF')
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">_____________________
+<pre class="src src-nil"><code>_____________________
 16進数: 100
 10進数: 256
  8進数: 400
@@ -268,13 +268,13 @@ _____________________
 サイズ: 4194303.9990234375 KB
 サイズ: 4095.9999990463257 MB
 サイズ: 3.9999999990686774 GB
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgd49b9a3" class="outline-2">
-<h2 id="orgd49b9a3"><a href="#orgd49b9a3">関連</a></h2>
-<div class="outline-text-2" id="text-orgd49b9a3">
+<div id="outline-container-org00c9bb0" class="outline-2">
+<h2 id="org00c9bb0"><a href="#org00c9bb0">関連</a></h2>
+<div class="outline-text-2" id="text-org00c9bb0">
 <ul class="org-ul">
 <li>補足: <a href="20240320T195316--kdoc-126-xxdでファイルをバイナリで見る__permanent.html#ID-20240320T195316">KDOC 126: xxdでファイルをバイナリで見る</a>。バイナリを確認する方法</li>
 </ul>

@@ -5,285 +5,15 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-10-14T21:41:15+09:00</updated>
-<entry>
-  <title>KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org7d1b41b" class="outline-2">
- <h2 id="org7d1b41b"> <a href="#org7d1b41b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org7d1b41b">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgb4e8c79" class="outline-2">
- <h2 id="orgb4e8c79"> <a href="#orgb4e8c79">概要</a></h2>
- <div class="outline-text-2" id="text-orgb4e8c79">
- <p>
-Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
-</p>
-
- <p>
-COMMIT に時間がかかったとき、pg_stat_statements はその時間を記録するのかを確認する。
-</p>
-
- <p>
-COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT のときに走るので、その中で1秒待つ。COMMIT をはさんだ時間と、pg_stat_statements が COMMIT に記録した時間を比べる。準備と計測は、あとの対照実験と共通にする。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label> <pre class="src src-sql" id="org59600bd">CREATE EXTENSION pg_stat_statements;
-CREATE TABLE t (id int);
-
--- COMMIT のときに1秒かかる処理を作る
-CREATE FUNCTION slow_at_commit() RETURNS trigger
-LANGUAGE plpgsql AS $$
-BEGIN
-  PERFORM pg_sleep(1);
-  RETURN NULL;
-END $$;
-</pre>
-</div>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label> <pre class="src src-sql" id="org6ef74e7">SELECT pg_stat_statements_reset() IS NOT NULL AS reset;
-
-BEGIN;
-INSERT INTO t VALUES (1);
--- COMMIT の直前の時刻を覚える
-SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;
-COMMIT;
-
--- COMMIT をはさんだ時間(サーバーの時計で測る)
-SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;
-
--- pg_stat_statements が記録した時間
-SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded
-FROM pg_stat_statements
-WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-sql"><<setup>>
-CREATE CONSTRAINT TRIGGER t_slow
-AFTER INSERT ON t
-DEFERRABLE INITIALLY DEFERRED
-FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
-
-<<measure>>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                                                      |
-|--------------------------------------------------------------------------------------|
-| > CREATE EXTENSION pg_stat_statements;                                               |
-| CREATE EXTENSION                                                                     |
-|                                                                                      |
-| > CREATE TABLE t (id int);                                                           |
-| CREATE TABLE                                                                         |
-|                                                                                      |
-| > CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
-| > LANGUAGE plpgsql AS $$                                                             |
-| > BEGIN                                                                              |
-| >   PERFORM pg_sleep(1);                                                             |
-| >   RETURN NULL;                                                                     |
-| > END $$;                                                                            |
-| CREATE FUNCTION                                                                      |
-|                                                                                      |
-| > CREATE CONSTRAINT TRIGGER t_slow                                                   |
-| > AFTER INSERT ON t                                                                  |
-| > DEFERRABLE INITIALLY DEFERRED                                                      |
-| > FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
-| CREATE TRIGGER                                                                       |
-|                                                                                      |
-| > SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
-| reset                                                                                |
-| t                                                                                    |
-|                                                                                      |
-| > BEGIN;                                                                             |
-| BEGIN                                                                                |
-|                                                                                      |
-| > INSERT INTO t VALUES (1);                                                          |
-| INSERT 0 1                                                                           |
-|                                                                                      |
-| > SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
-| saved                                                                                |
-| t                                                                                    |
-|                                                                                      |
-| > COMMIT;                                                                            |
-| COMMIT                                                                               |
-|                                                                                      |
-| > SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
-| commit_time                                                                          |
-| 00:00:01.005218                                                                      |
-|                                                                                      |
-| > SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
-| > FROM pg_stat_statements                                                            |
-| > WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
-| recorded                                                                             |
-| INSERT INTO t VALUES ($1) : 0.033 ms                                                 |
-| COMMIT : 0.000 ms                                                                    |
-</pre>
-</div>
-
- <p>
-COMMIT をはさんだ時間は約1秒なのに、pg_stat_statements が COMMIT に記録した時間は 0.000 ms である。
-</p>
-
- <p>
-これだけでは、pg_stat_statements がトリガーの時間を記録しないだけ、という可能性が残る。そこで対照実験として、トリガーを遅延させず、INSERT の文の終わりで走らせる。それ以外は同じ条件にする。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-sql"><<setup>>
--- 対照: DEFERRABLE INITIALLY DEFERRED を外す。INSERT の文の終わりで走る
-CREATE CONSTRAINT TRIGGER t_slow
-AFTER INSERT ON t
-FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
-
-<<measure>>
-</pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil">|                                                                                      |
-|--------------------------------------------------------------------------------------|
-| > CREATE EXTENSION pg_stat_statements;                                               |
-| CREATE EXTENSION                                                                     |
-|                                                                                      |
-| > CREATE TABLE t (id int);                                                           |
-| CREATE TABLE                                                                         |
-|                                                                                      |
-| > CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
-| > LANGUAGE plpgsql AS $$                                                             |
-| > BEGIN                                                                              |
-| >   PERFORM pg_sleep(1);                                                             |
-| >   RETURN NULL;                                                                     |
-| > END $$;                                                                            |
-| CREATE FUNCTION                                                                      |
-|                                                                                      |
-| > CREATE CONSTRAINT TRIGGER t_slow                                                   |
-| > AFTER INSERT ON t                                                                  |
-| > FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
-| CREATE TRIGGER                                                                       |
-|                                                                                      |
-| > SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
-| reset                                                                                |
-| t                                                                                    |
-|                                                                                      |
-| > BEGIN;                                                                             |
-| BEGIN                                                                                |
-|                                                                                      |
-| > INSERT INTO t VALUES (1);                                                          |
-| INSERT 0 1                                                                           |
-|                                                                                      |
-| > SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
-| saved                                                                                |
-| t                                                                                    |
-|                                                                                      |
-| > COMMIT;                                                                            |
-| COMMIT                                                                               |
-|                                                                                      |
-| > SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
-| commit_time                                                                          |
-| 00:00:00.003946                                                                      |
-|                                                                                      |
-| > SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
-| > FROM pg_stat_statements                                                            |
-| > WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
-| recorded                                                                             |
-| COMMIT : 0.001 ms                                                                    |
-| INSERT INTO t VALUES ($1) : 1000.617 ms                                              |
-</pre>
-</div>
-
- <p>
-今度は COMMIT をはさんだ時間はほぼ 0 で、pg_stat_statements は INSERT に約1秒を記録した。同じトリガーでも、INSERT の中で走れば記録され、コミット処理の中で走れば記録されなかった。記録されないのはトリガーだからではなく、コミット処理だからに見える。
-</p>
-</div>
-</div>
- <div id="outline-container-org2502529" class="outline-2">
- <h2 id="org2502529"> <a href="#org2502529">関連</a></h2>
- <div class="outline-text-2" id="text-org2502529">
- <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ</a>。コミット処理の中で何を待っているか</li>
- <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
-</ul></div>
-</div>
- <div id="outline-container-org63fc7cd" class="outline-2">
- <h2 id="org63fc7cd"> <a href="#org63fc7cd">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org63fc7cd">
- <ul class="org-ul"> <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html</id>
-  <updated>2026-10-14T21:41:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgced1be2" class="outline-2">
- <h2 id="orgced1be2"> <a href="#orgced1be2">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgced1be2">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgd545f8c" class="outline-2">
- <h2 id="orgd545f8c"> <a href="#orgd545f8c">概要</a></h2>
- <div class="outline-text-2" id="text-orgd545f8c">
- <p>
-PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL)を作成する。COMMIT は書き込みがある場合は主にその記録の永続化を待ち、ページは書かない。Aurora だと待機イベント  <code>IO:XactSync</code> として現れる。
-</p>
-
- <p>
-ページはあとからチェックポイント等で書かれる。
-</p>
-</div>
-</div>
- <div id="outline-container-org691738d" class="outline-2">
- <h2 id="org691738d"> <a href="#org691738d">関連</a></h2>
- <div class="outline-text-2" id="text-org691738d">
- <ul class="org-ul"> <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-intro.html">28.3. 先行書き込みログ(WAL)</a></li>
- <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-configuration.html">28.5. WALの設定</a></li>
- <li>正典:  <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/AuroraUserGuide/apg-waits.xactsync.html">IO:XactSync - Amazon Aurora</a></li>
-</ul></div>
-</div>
- <div id="outline-container-orga4357dc" class="outline-2">
- <h2 id="orga4357dc"> <a href="#orga4357dc">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orga4357dc">
- <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
- <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html</id>
-  <updated>2026-10-14T21:41:00+09:00</updated>
-</entry>
+<updated>2026-10-15T09:38:08+09:00</updated>
 <entry>
   <title>KDOC 644: Recordを外部値がくるところで使うとプロトタイプを書き換えられる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgeda1ee1" class="outline-2">
- <h2 id="orgeda1ee1"> <a href="#orgeda1ee1">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgeda1ee1">
+ <div id="outline-container-org97cd65d" class="outline-2">
+ <h2 id="org97cd65d"> <a href="#org97cd65d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org97cd65d">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-03 貴島</li>
 </ul></li>
@@ -292,20 +22,20 @@ PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org2fe8d4f" class="outline-2">
- <h2 id="org2fe8d4f"> <a href="#org2fe8d4f">概要</a></h2>
- <div class="outline-text-2" id="text-org2fe8d4f">
+ <div id="outline-container-org33753dc" class="outline-2">
+ <h2 id="org33753dc"> <a href="#org33753dc">概要</a></h2>
+ <div class="outline-text-2" id="text-org33753dc">
  <p>
 TypeScriptのRecord型は型だけの存在で、実行時の値はプロトタイプを持つ普通のオブジェクトである。
 </p>
 
  <blockquote>
  <p>
-Record<Keys, Type>はプロパティのキーがKeysであり、プロパティの値がTypeであるオブジェクトの型を作るユーティリティ型です。
+Record&lt;Keys, Type&gt;はプロパティのキーがKeysであり、プロパティの値がTypeであるオブジェクトの型を作るユーティリティ型です。
 </p>
 
  <p>
- <a href="https://typescriptbook.jp/reference/type-reuse/utility-types/record">Record<Keys, Type> | TypeScript入門『サバイバルTypeScript』</a>
+ <a href="https://typescriptbook.jp/reference/type-reuse/utility-types/record">Record&lt;Keys, Type&gt; | TypeScript入門『サバイバルTypeScript』</a>
 </p>
 </blockquote>
 
@@ -328,25 +58,25 @@ Setting user-provided key-value pairs on an Object may allow an attacker to over
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org0416de1" class="outline-2">
- <h2 id="org0416de1"> <a href="#org0416de1">関連</a></h2>
- <div class="outline-text-2" id="text-org0416de1">
+ <div id="outline-container-org206d386" class="outline-2">
+ <h2 id="org206d386"> <a href="#org206d386">関連</a></h2>
+ <div class="outline-text-2" id="text-org206d386">
  <ul class="org-ul"> <li>追加調査: プロトタイプ汚染を試す</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261003T011810--kdoc-644-recordを外部値がくるところで使うとプロトタイプを書き換えられる__permanent.html</id>
-  <updated>2026-10-14T21:41:00+09:00</updated>
+  <updated>2026-10-15T09:38:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org675c201" class="outline-2">
- <h2 id="org675c201"> <a href="#org675c201">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org675c201">
+ <div id="outline-container-orgf9a454b" class="outline-2">
+ <h2 id="orgf9a454b"> <a href="#orgf9a454b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgf9a454b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
@@ -355,9 +85,9 @@ Setting user-provided key-value pairs on an Object may allow an attacker to over
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org6bb7f47" class="outline-2">
- <h2 id="org6bb7f47"> <a href="#org6bb7f47">概要</a></h2>
- <div class="outline-text-2" id="text-org6bb7f47">
+ <div id="outline-container-orgbc6aef5" class="outline-2">
+ <h2 id="orgbc6aef5"> <a href="#orgbc6aef5">概要</a></h2>
+ <div class="outline-text-2" id="text-orgbc6aef5">
  <p>
 集計や並べ替えの後ろにある LIMIT は、下の処理が全部の行を読み終えるまで効かないので、読む行を減らさないのを確かめる。
 </p>
@@ -367,7 +97,7 @@ Setting user-provided key-value pairs on an Object may allow an attacker to over
 </p>
 
  <div class="org-src-container">
- <pre class="src src-sql">SET max_parallel_workers_per_gather = 0;
+ <pre class="src src-sql"> <code>SET max_parallel_workers_per_gather = 0;
 CREATE TABLE users (id int PRIMARY KEY, name text);
 CREATE TABLE orders (id int PRIMARY KEY, user_id int);
 CREATE TABLE items (order_id int, price int);
@@ -388,7 +118,7 @@ SELECT u.name, sum(i.price) AS total
 FROM users u
 JOIN orders o ON o.user_id = u.id
 JOIN items i ON i.order_id = o.id
-WHERE u.id < 100
+WHERE u.id &lt; 100
 GROUP BY u.name
 ORDER BY total DESC
 LIMIT 5;
@@ -400,9 +130,9 @@ SELECT u.name, i.price
 FROM users u
 JOIN orders o ON o.user_id = u.id
 JOIN items i ON i.order_id = o.id
-WHERE u.id < 100
+WHERE u.id &lt; 100
 LIMIT 5;
-</pre>
+</code></pre>
 </div>
 
  <p>
@@ -425,25 +155,25 @@ LIMIT 5;
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgd82c083" class="outline-2">
- <h2 id="orgd82c083"> <a href="#orgd82c083">関連</a></h2>
- <div class="outline-text-2" id="text-orgd82c083">
+ <div id="outline-container-org81db156" class="outline-2">
+ <h2 id="org81db156"> <a href="#org81db156">関連</a></h2>
+ <div class="outline-text-2" id="text-org81db156">
  <ul class="org-ul"> <li>前提:  <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。文芸的に確認する道具</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 656: データベースで列の並び順によってサイズが変わる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgd055226" class="outline-2">
- <h2 id="orgd055226"> <a href="#orgd055226">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd055226">
+ <div id="outline-container-orgc97387f" class="outline-2">
+ <h2 id="orgc97387f"> <a href="#orgc97387f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgc97387f">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -452,9 +182,9 @@ LIMIT 5;
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc293504" class="outline-2">
- <h2 id="orgc293504"> <a href="#orgc293504">概要</a></h2>
- <div class="outline-text-2" id="text-orgc293504">
+ <div id="outline-container-orgfe2d3e5" class="outline-2">
+ <h2 id="orgfe2d3e5"> <a href="#orgfe2d3e5">概要</a></h2>
+ <div class="outline-text-2" id="text-orgfe2d3e5">
  <p>
 データベースでも、プログラミング言語と同様に、フィールドのデータ型を定義する順序によって使うデータサイズが変わりうる。
 </p>
@@ -478,7 +208,7 @@ LIMIT 5;
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ列を並び順だけ変えて、1行の大きさを比べる</label> <pre class="src src-sql">-- boolean と bigint を交互に並べる
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ列を並び順だけ変えて、1行の大きさを比べる</label> <pre class="src src-sql"> <code>-- boolean と bigint を交互に並べる
 CREATE TABLE padded
   (a boolean, b bigint, c boolean, d bigint);
 -- bigint を先に、boolean をあとにまとめる
@@ -495,61 +225,61 @@ SELECT format('%s : %s : 長さ %s : 整列 %s',
 FROM pg_attribute a
 JOIN pg_type t ON t.oid = a.atttypid
 WHERE attrelid = 'padded'::regclass
-  AND attnum > 0
+  AND attnum &gt; 0
 ORDER BY attnum;
 
 -- 1行の大きさ(行ヘッダを含む)
 SELECT pg_column_size(p.*) AS padded FROM padded p;
 SELECT pg_column_size(p.*) AS packed FROM packed p;
-</pre>
+</code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil">|                                                       |
+ <pre class="src src-nil"> <code>|                                                       |
 |-------------------------------------------------------|
-| > CREATE TABLE padded                                 |
-| >   (a boolean, b bigint, c boolean, d bigint);       |
+| &gt; CREATE TABLE padded                                 |
+| &gt;   (a boolean, b bigint, c boolean, d bigint);       |
 | CREATE TABLE                                          |
 |                                                       |
-| > CREATE TABLE packed                                 |
-| >   (b bigint, d bigint, a boolean, c boolean);       |
+| &gt; CREATE TABLE packed                                 |
+| &gt;   (b bigint, d bigint, a boolean, c boolean);       |
 | CREATE TABLE                                          |
 |                                                       |
-| > INSERT INTO padded VALUES (true, 1, false, 2);      |
+| &gt; INSERT INTO padded VALUES (true, 1, false, 2);      |
 | INSERT 0 1                                            |
 |                                                       |
-| > INSERT INTO packed VALUES (1, 2, true, false);      |
+| &gt; INSERT INTO packed VALUES (1, 2, true, false);      |
 | INSERT 0 1                                            |
 |                                                       |
-| > SELECT format('%s : %s : 長さ %s : 整列 %s',        |
-| >               attname, typname, typlen, typalign)   |
-| >        AS cols                                      |
-| > FROM pg_attribute a                                 |
-| > JOIN pg_type t ON t.oid = a.atttypid                |
-| > WHERE attrelid = 'padded'::regclass                 |
-| >   AND attnum > 0                                    |
-| > ORDER BY attnum;                                    |
+| &gt; SELECT format('%s : %s : 長さ %s : 整列 %s',        |
+| &gt;               attname, typname, typlen, typalign)   |
+| &gt;        AS cols                                      |
+| &gt; FROM pg_attribute a                                 |
+| &gt; JOIN pg_type t ON t.oid = a.atttypid                |
+| &gt; WHERE attrelid = 'padded'::regclass                 |
+| &gt;   AND attnum &gt; 0                                    |
+| &gt; ORDER BY attnum;                                    |
 | cols                                                  |
 | a : bool : 長さ 1 : 整列 c                            |
 | b : int8 : 長さ 8 : 整列 d                            |
 | c : bool : 長さ 1 : 整列 c                            |
 | d : int8 : 長さ 8 : 整列 d                            |
 |                                                       |
-| > SELECT pg_column_size(p.*) AS padded FROM padded p; |
+| &gt; SELECT pg_column_size(p.*) AS padded FROM padded p; |
 | padded                                                |
 | 56                                                    |
 |                                                       |
-| > SELECT pg_column_size(p.*) AS packed FROM packed p; |
+| &gt; SELECT pg_column_size(p.*) AS packed FROM packed p; |
 | packed                                                |
 | 42                                                    |
-</pre>
+</code></pre>
 </div>
 
  <p>
 padded は1行 56 バイト、packed は 42 バイトで、14 バイト違う。padded では、boolean(1バイト)のあとの bigint を8バイト境界へ置くため、7バイトのパディングが2回入る。その 7 × 2 = 14 バイトが差になる。
 </p>
 
- <pre class="example" id="orgd0c2e95">
+ <pre class="example" id="orgd327d4e">
 ※行ヘッダを除く
 
 padded (boolean, bigint, boolean, bigint) : 32 バイト
@@ -566,25 +296,25 @@ a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = �
 </pre>
 </div>
 </div>
- <div id="outline-container-org925043c" class="outline-2">
- <h2 id="org925043c"> <a href="#org925043c">関連</a></h2>
- <div class="outline-text-2" id="text-org925043c">
+ <div id="outline-container-orgd5748b7" class="outline-2">
+ <h2 id="orgd5748b7"> <a href="#orgd5748b7">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd5748b7">
  <ul class="org-ul"> <li>類似:  <a href="20240825T101916--kdoc-227-フィールド定義の順番によってメモリサイズが変わることがある__permanent.html#ID-20240825T101916">KDOC 227: フィールド定義の順番によってメモリサイズが変わることがある</a>。C言語での同様の例</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 655: 式の照合順序を変えて並び替えの結果を変える</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orge56cfa3" class="outline-2">
- <h2 id="orge56cfa3"> <a href="#orge56cfa3">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge56cfa3">
+ <div id="outline-container-orgff83b3d" class="outline-2">
+ <h2 id="orgff83b3d"> <a href="#orgff83b3d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgff83b3d">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -593,9 +323,9 @@ a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = �
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgd4d1c14" class="outline-2">
- <h2 id="orgd4d1c14"> <a href="#orgd4d1c14">概要</a></h2>
- <div class="outline-text-2" id="text-orgd4d1c14">
+ <div id="outline-container-org2a8878c" class="outline-2">
+ <h2 id="org2a8878c"> <a href="#org2a8878c">概要</a></h2>
+ <div class="outline-text-2" id="text-org2a8878c">
  <p>
 データベースシステムが並び替えや文字区別をする場合、データベースは入力の照合順序(collation)を使用する。
 </p>
@@ -605,35 +335,35 @@ a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = �
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ UTF8 の文字列を、照合順序だけ変えて並び替える</label> <pre class="src src-sql">SHOW server_encoding;
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ UTF8 の文字列を、照合順序だけ変えて並び替える</label> <pre class="src src-sql"> <code>SHOW server_encoding;
 
 -- コードポイントの値の順
-SELECT string_agg(x, ' ' ORDER BY x COLLATE "C") AS c
+SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;C&quot;) AS c
 FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
 
 -- 言語の規則の順(ICU)
-SELECT string_agg(x, ' ' ORDER BY x COLLATE "und-x-icu") AS und_x_icu
+SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;und-x-icu&quot;) AS und_x_icu
 FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
-</pre>
+</code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil">|                                                                         |
+ <pre class="src src-nil"> <code>|                                                                         |
 |-------------------------------------------------------------------------|
-| > SHOW server_encoding;                                                 |
+| &gt; SHOW server_encoding;                                                 |
 | server_encoding                                                         |
 | UTF8                                                                    |
 |                                                                         |
-| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "C") AS c                 |
-| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| &gt; SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;C&quot;) AS c                 |
+| &gt; FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
 | c                                                                       |
 | A B a b                                                                 |
 |                                                                         |
-| > SELECT string_agg(x, ' ' ORDER BY x COLLATE "und-x-icu") AS und_x_icu |
-| > FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| &gt; SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;und-x-icu&quot;) AS und_x_icu |
+| &gt; FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
 | und_x_icu                                                               |
 | a A b B                                                                 |
-</pre>
+</code></pre>
 </div>
 
  <blockquote>
@@ -646,7 +376,7 @@ FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
 </p>
 
  <p>
-データベースシステムが並べ替えや文字区別を行う場合、データベースは入力の照合順序を使用します。 これは、たとえばORDER BY句や < 演算子や関数を使用する際に発生します。 ORDER BY句に適用する照合順序は、単純にソートキーの照合順序です。 関数や演算子の呼び出しに対して適用される照合順序は、以下に述べるように引数により決まります。 比較演算子に加えて、照合順序はlower、upper、initcapといった小文字と大文字を変換する関数やパターンマッチングの演算子、to_char関連の関数で考慮されています。
+データベースシステムが並べ替えや文字区別を行う場合、データベースは入力の照合順序を使用します。 これは、たとえばORDER BY句や &lt; 演算子や関数を使用する際に発生します。 ORDER BY句に適用する照合順序は、単純にソートキーの照合順序です。 関数や演算子の呼び出しに対して適用される照合順序は、以下に述べるように引数により決まります。 比較演算子に加えて、照合順序はlower、upper、initcapといった小文字と大文字を変換する関数やパターンマッチングの演算子、to_char関連の関数で考慮されています。
 </p>
 
  <p>
@@ -655,9 +385,9 @@ FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgaaa4e50" class="outline-2">
- <h2 id="orgaaa4e50"> <a href="#orgaaa4e50">関連</a></h2>
- <div class="outline-text-2" id="text-orgaaa4e50">
+ <div id="outline-container-org691a531" class="outline-2">
+ <h2 id="org691a531"> <a href="#org691a531">関連</a></h2>
+ <div class="outline-text-2" id="text-org691a531">
  <p>
 なし。
 </p>
@@ -666,16 +396,16 @@ FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 653: var と := の違い</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgd8bc176" class="outline-2">
- <h2 id="orgd8bc176"> <a href="#orgd8bc176">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd8bc176">
+ <div id="outline-container-org267d21b" class="outline-2">
+ <h2 id="org267d21b"> <a href="#org267d21b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org267d21b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -684,9 +414,9 @@ FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc284c3d" class="outline-2">
- <h2 id="orgc284c3d"> <a href="#orgc284c3d">概要</a></h2>
- <div class="outline-text-2" id="text-orgc284c3d">
+ <div id="outline-container-org0865ce7" class="outline-2">
+ <h2 id="org0865ce7"> <a href="#org0865ce7">概要</a></h2>
+ <div class="outline-text-2" id="text-org0865ce7">
  <p>
 Go で当たり前に使っている  <code>var x = 1</code> と  <code>x := 1</code> の違いが気になった。微妙な違いがある。
 </p>
@@ -734,9 +464,9 @@ Short variable declarations may appear only inside functions. In some contexts s
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org876da6a" class="outline-2">
- <h2 id="org876da6a"> <a href="#org876da6a">関連</a></h2>
- <div class="outline-text-2" id="text-org876da6a">
+ <div id="outline-container-org2a006ed" class="outline-2">
+ <h2 id="org2a006ed"> <a href="#org2a006ed">関連</a></h2>
+ <div class="outline-text-2" id="text-org2a006ed">
  <p>
 なし。
 </p>
@@ -745,16 +475,16 @@ Short variable declarations may appear only inside functions. In some contexts s
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgc83427d" class="outline-2">
- <h2 id="orgc83427d"> <a href="#orgc83427d">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc83427d">
+ <div id="outline-container-org5b4685f" class="outline-2">
+ <h2 id="org5b4685f"> <a href="#org5b4685f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org5b4685f">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -763,9 +493,9 @@ Short variable declarations may appear only inside functions. In some contexts s
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgba8355f" class="outline-2">
- <h2 id="orgba8355f"> <a href="#orgba8355f">概要</a></h2>
- <div class="outline-text-2" id="text-orgba8355f">
+ <div id="outline-container-orgad38d92" class="outline-2">
+ <h2 id="orgad38d92"> <a href="#orgad38d92">概要</a></h2>
+ <div class="outline-text-2" id="text-orgad38d92">
  <p>
 Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
 </p>
@@ -775,9 +505,9 @@ pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label> <pre class="src src-shell"># 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label> <pre class="src src-shell"> <code># 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
 sample() {
-  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F ' | ' <<'SQL'
+  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F ' | ' &lt;&lt;'SQL'
 CREATE TABLE samples (query text, wait text);
 DO $$
 BEGIN
@@ -798,34 +528,34 @@ SQL
 
 # $1: 説明、$2: pgbench に流す SQL、$3: pgbench のオプション
 run() {
-  echo "== $1"
+  echo &quot;== $1&quot;
   docker exec pgpg-postgres-1 psql -U postgres -qAt \
-    -c "DROP TABLE IF EXISTS w" -c "CREATE TABLE w (id int, pad text)" \
-    -c "CREATE INDEX ON w (id)" -c "CREATE INDEX ON w (pad)" 2>/dev/null
-  printf "$2" | docker exec -i pgpg-postgres-1 sh -c 'cat > /tmp/bench.sql'
+    -c &quot;DROP TABLE IF EXISTS w&quot; -c &quot;CREATE TABLE w (id int, pad text)&quot; \
+    -c &quot;CREATE INDEX ON w (id)&quot; -c &quot;CREATE INDEX ON w (pad)&quot; 2&gt;/dev/null
+  printf &quot;$2&quot; | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/bench.sql'
   out=$(mktemp)
   # 拡張プロトコル(-M extended)で書き込む
   docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $3 \
-    -f /tmp/bench.sql postgres > "$out" 2>/dev/null &
+    -f /tmp/bench.sql postgres &gt; &quot;$out&quot; 2&gt;/dev/null &amp;
   sleep 0.3
   sample
   wait
-  grep 'latency average' "$out"
-  rm -f "$out"
+  grep 'latency average' &quot;$out&quot;
+  rm -f &quot;$out&quot;
 }
 
-run "小さい INSERT を明示的なトランザクションで(4並列、5秒)" \
-    'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n' "-c 4 -T 5"
-run "小さい INSERT を自動コミットで(4並列、5秒)" \
-    'INSERT INTO w VALUES (1, md5(random()::text));\n' "-c 4 -T 5"
-run "50万行の INSERT を明示的なトランザクションで1回" \
-    'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n' "-c 1 -t 1"
-docker exec pgpg-postgres-1 psql -U postgres -qAt -c "DROP TABLE w"
-</pre>
+run &quot;小さい INSERT を明示的なトランザクションで(4並列、5秒)&quot; \
+    'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n' &quot;-c 4 -T 5&quot;
+run &quot;小さい INSERT を自動コミットで(4並列、5秒)&quot; \
+    'INSERT INTO w VALUES (1, md5(random()::text));\n' &quot;-c 4 -T 5&quot;
+run &quot;50万行の INSERT を明示的なトランザクションで1回&quot; \
+    'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n' &quot;-c 1 -t 1&quot;
+docker exec pgpg-postgres-1 psql -U postgres -qAt -c &quot;DROP TABLE w&quot;
+</code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil">== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
+ <pre class="src src-nil"> <code>== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
 COMMIT; | LWLock:WALWrite | 1128
 COMMIT; | IO:WalSync | 395
 INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 21
@@ -851,7 +581,7 @@ INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:Wal
 INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | LWLock:WALWrite | 3
 COMMIT; | IO:WalSync | 1
 latency average = 1934.744 ms
-</pre>
+</code></pre>
 </div>
 
  <ul class="org-ul"> <li>小さい INSERT を明示的なトランザクションで繰り返すと、標本の約98%が COMMIT だった。COMMIT の標本のほとんどは、WAL の確定を待つ IO:WalSync と LWLock:WALWrite だった</li>
@@ -872,9 +602,9 @@ WALWrite: WALバッファがディスクに書き込まれるのを待機して�
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orga2a6279" class="outline-2">
- <h2 id="orga2a6279"> <a href="#orga2a6279">関連</a></h2>
- <div class="outline-text-2" id="text-orga2a6279">
+ <div id="outline-container-org9104f45" class="outline-2">
+ <h2 id="org9104f45"> <a href="#org9104f45">関連</a></h2>
+ <div class="outline-text-2" id="text-org9104f45">
  <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
  <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
  <li>前提:  <a href="20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html#ID-20261010T095355">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
@@ -883,16 +613,286 @@ WALWrite: WALバッファがディスクに書き込まれるのを待機して�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgc4e5998" class="outline-2">
+ <h2 id="orgc4e5998"> <a href="#orgc4e5998">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgc4e5998">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgc1daed2" class="outline-2">
+ <h2 id="orgc1daed2"> <a href="#orgc1daed2">概要</a></h2>
+ <div class="outline-text-2" id="text-orgc1daed2">
+ <p>
+Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
+</p>
+
+ <p>
+COMMIT に時間がかかったとき、pg_stat_statements はその時間を記録するのかを確認する。
+</p>
+
+ <p>
+COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT のときに走るので、その中で1秒待つ。COMMIT をはさんだ時間と、pg_stat_statements が COMMIT に記録した時間を比べる。準備と計測は、あとの対照実験と共通にする。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label> <pre class="src src-sql" id="orga3bd687"> <code>CREATE EXTENSION pg_stat_statements;
+CREATE TABLE t (id int);
+
+-- COMMIT のときに1秒かかる処理を作る
+CREATE FUNCTION slow_at_commit() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM pg_sleep(1);
+  RETURN NULL;
+END $$;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label> <pre class="src src-sql" id="orgb8f109b"> <code>SELECT pg_stat_statements_reset() IS NOT NULL AS reset;
+
+BEGIN;
+INSERT INTO t VALUES (1);
+-- COMMIT の直前の時刻を覚える
+SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;
+COMMIT;
+
+-- COMMIT をはさんだ時間(サーバーの時計で測る)
+SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;
+
+-- pg_stat_statements が記録した時間
+SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded
+FROM pg_stat_statements
+WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-sql"> <code>&lt;&lt;setup&gt;&gt;
+CREATE CONSTRAINT TRIGGER t_slow
+AFTER INSERT ON t
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
+
+&lt;&lt;measure&gt;&gt;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>|                                                                                      |
+|--------------------------------------------------------------------------------------|
+| &gt; CREATE EXTENSION pg_stat_statements;                                               |
+| CREATE EXTENSION                                                                     |
+|                                                                                      |
+| &gt; CREATE TABLE t (id int);                                                           |
+| CREATE TABLE                                                                         |
+|                                                                                      |
+| &gt; CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
+| &gt; LANGUAGE plpgsql AS $$                                                             |
+| &gt; BEGIN                                                                              |
+| &gt;   PERFORM pg_sleep(1);                                                             |
+| &gt;   RETURN NULL;                                                                     |
+| &gt; END $$;                                                                            |
+| CREATE FUNCTION                                                                      |
+|                                                                                      |
+| &gt; CREATE CONSTRAINT TRIGGER t_slow                                                   |
+| &gt; AFTER INSERT ON t                                                                  |
+| &gt; DEFERRABLE INITIALLY DEFERRED                                                      |
+| &gt; FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
+| CREATE TRIGGER                                                                       |
+|                                                                                      |
+| &gt; SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
+| reset                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; BEGIN;                                                                             |
+| BEGIN                                                                                |
+|                                                                                      |
+| &gt; INSERT INTO t VALUES (1);                                                          |
+| INSERT 0 1                                                                           |
+|                                                                                      |
+| &gt; SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
+| saved                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; COMMIT;                                                                            |
+| COMMIT                                                                               |
+|                                                                                      |
+| &gt; SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
+| commit_time                                                                          |
+| 00:00:01.005218                                                                      |
+|                                                                                      |
+| &gt; SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
+| &gt; FROM pg_stat_statements                                                            |
+| &gt; WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
+| recorded                                                                             |
+| INSERT INTO t VALUES ($1) : 0.033 ms                                                 |
+| COMMIT : 0.000 ms                                                                    |
+</code></pre>
+</div>
+
+ <p>
+COMMIT をはさんだ時間は約1秒なのに、pg_stat_statements が COMMIT に記録した時間は 0.000 ms である。
+</p>
+
+ <p>
+これだけでは、pg_stat_statements がトリガーの時間を記録しないだけ、という可能性が残る。そこで対照実験として、トリガーを遅延させず、INSERT の文の終わりで走らせる。それ以外は同じ条件にする。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-sql"> <code>&lt;&lt;setup&gt;&gt;
+-- 対照: DEFERRABLE INITIALLY DEFERRED を外す。INSERT の文の終わりで走る
+CREATE CONSTRAINT TRIGGER t_slow
+AFTER INSERT ON t
+FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
+
+&lt;&lt;measure&gt;&gt;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>|                                                                                      |
+|--------------------------------------------------------------------------------------|
+| &gt; CREATE EXTENSION pg_stat_statements;                                               |
+| CREATE EXTENSION                                                                     |
+|                                                                                      |
+| &gt; CREATE TABLE t (id int);                                                           |
+| CREATE TABLE                                                                         |
+|                                                                                      |
+| &gt; CREATE FUNCTION slow_at_commit() RETURNS trigger                                   |
+| &gt; LANGUAGE plpgsql AS $$                                                             |
+| &gt; BEGIN                                                                              |
+| &gt;   PERFORM pg_sleep(1);                                                             |
+| &gt;   RETURN NULL;                                                                     |
+| &gt; END $$;                                                                            |
+| CREATE FUNCTION                                                                      |
+|                                                                                      |
+| &gt; CREATE CONSTRAINT TRIGGER t_slow                                                   |
+| &gt; AFTER INSERT ON t                                                                  |
+| &gt; FOR EACH ROW EXECUTE FUNCTION slow_at_commit();                                    |
+| CREATE TRIGGER                                                                       |
+|                                                                                      |
+| &gt; SELECT pg_stat_statements_reset() IS NOT NULL AS reset;                            |
+| reset                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; BEGIN;                                                                             |
+| BEGIN                                                                                |
+|                                                                                      |
+| &gt; INSERT INTO t VALUES (1);                                                          |
+| INSERT 0 1                                                                           |
+|                                                                                      |
+| &gt; SELECT set_config('my.t0', clock_timestamp()::text, false) IS NOT NULL AS saved;   |
+| saved                                                                                |
+| t                                                                                    |
+|                                                                                      |
+| &gt; COMMIT;                                                                            |
+| COMMIT                                                                               |
+|                                                                                      |
+| &gt; SELECT clock_timestamp() - current_setting('my.t0')::timestamptz AS commit_time;   |
+| commit_time                                                                          |
+| 00:00:00.003946                                                                      |
+|                                                                                      |
+| &gt; SELECT format('%s : %s ms', query, round(total_exec_time::numeric, 3)) AS recorded |
+| &gt; FROM pg_stat_statements                                                            |
+| &gt; WHERE query IN ('COMMIT', 'INSERT INTO t VALUES ($1)');                            |
+| recorded                                                                             |
+| COMMIT : 0.001 ms                                                                    |
+| INSERT INTO t VALUES ($1) : 1000.617 ms                                              |
+</code></pre>
+</div>
+
+ <p>
+今度は COMMIT をはさんだ時間はほぼ 0 で、pg_stat_statements は INSERT に約1秒を記録した。同じトリガーでも、INSERT の中で走れば記録され、コミット処理の中で走れば記録されなかった。記録されないのはトリガーだからではなく、コミット処理だからに見える。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgb4aa7f1" class="outline-2">
+ <h2 id="orgb4aa7f1"> <a href="#orgb4aa7f1">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb4aa7f1">
+ <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ</a>。コミット処理の中で何を待っているか</li>
+ <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
+</ul></div>
+</div>
+ <div id="outline-container-orga9e0e84" class="outline-2">
+ <h2 id="orga9e0e84"> <a href="#orga9e0e84">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orga9e0e84">
+ <ul class="org-ul"> <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html</id>
+  <updated>2026-10-15T09:37:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org8f75dc4" class="outline-2">
+ <h2 id="org8f75dc4"> <a href="#org8f75dc4">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8f75dc4">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org5a2131e" class="outline-2">
+ <h2 id="org5a2131e"> <a href="#org5a2131e">概要</a></h2>
+ <div class="outline-text-2" id="text-org5a2131e">
+ <p>
+PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL)を作成する。COMMIT は書き込みがある場合は主にその記録の永続化を待ち、ページは書かない。Aurora だと待機イベント  <code>IO:XactSync</code> として現れる。
+</p>
+
+ <p>
+ページはあとからチェックポイント等で書かれる。
+</p>
+</div>
+</div>
+ <div id="outline-container-org6b827d8" class="outline-2">
+ <h2 id="org6b827d8"> <a href="#org6b827d8">関連</a></h2>
+ <div class="outline-text-2" id="text-org6b827d8">
+ <ul class="org-ul"> <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-intro.html">28.3. 先行書き込みログ(WAL)</a></li>
+ <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-configuration.html">28.5. WALの設定</a></li>
+ <li>正典:  <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/AuroraUserGuide/apg-waits.xactsync.html">IO:XactSync - Amazon Aurora</a></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgb032f4f" class="outline-2">
+ <h2 id="orgb032f4f"> <a href="#orgb032f4f">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgb032f4f">
+ <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
+ <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html</id>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org39c0962" class="outline-2">
- <h2 id="org39c0962"> <a href="#org39c0962">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org39c0962">
+ <div id="outline-container-org1fba8a9" class="outline-2">
+ <h2 id="org1fba8a9"> <a href="#org1fba8a9">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1fba8a9">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-07 貴島</li>
 </ul></li>
@@ -901,9 +901,9 @@ WALWrite: WALバッファがディスクに書き込まれるのを待機して�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org7009594" class="outline-2">
- <h2 id="org7009594"> <a href="#org7009594">概要</a></h2>
- <div class="outline-text-2" id="text-org7009594">
+ <div id="outline-container-orge635538" class="outline-2">
+ <h2 id="orge635538"> <a href="#orge635538">概要</a></h2>
+ <div class="outline-text-2" id="text-orge635538">
  <p>
 Go の  <code>select</code> では、複数の case が同時に進行できるときランダムに選ばれる。なので例えばシャットダウン用とキュー追加用の両方のチャネルに値が届いていると、どちらを処理するかはランダムになる。キュー追加をせずシャットダウンの後処理だけをやるなど、一貫させたほうがよいこともある。その場合、優先したい  <code>case</code> だけを  <code>default</code> 付きの  <code>select</code> で先に確かめ、なければ全部の  <code>case</code> を並べた  <code>select</code> で待つ。
 </p>
@@ -913,17 +913,17 @@ Go の  <code>select</code> では、複数の case が同時に進行できる�
 </p>
 
  <div class="org-src-container">
- <pre class="src src-git-permalink">https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/batch.go#L139-L186
-</pre>
+ <pre class="src src-git-permalink"> <code>https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/batch.go#L139-L186
+</code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil">for {
+ <pre class="src src-nil"> <code>for {
 	// Probe shutdown by itself first. This makes an already queued terminal
 	// request win over every other ready case. Closing done before replying
 	// also means a successful Shutdown response observes a stopped worker.
 	select {
-	case req := <-b.shutdown:
+	case req := &lt;-b.shutdown:
 		err := b.shutdownExporter(req.ctx)
 		close(b.done)
 		req.respond(err)
@@ -935,12 +935,12 @@ Go の  <code>select</code> では、複数の case が同時に進行できる�
 	// export wakes. The default keeps this priority check non-blocking.
 	// Shutdown remains selectable in case it arrived after the first probe.
 	select {
-	case req := <-b.shutdown:
+	case req := &lt;-b.shutdown:
 		err := b.shutdownExporter(req.ctx)
 		close(b.done)
 		req.respond(err)
 		return
-	case req := <-b.flush:
+	case req := &lt;-b.flush:
 		err := b.flushExporter(req.ctx)
 		req.respond(err)
 		continue
@@ -950,45 +950,45 @@ Go の  <code>select</code> では、複数の case が同時に進行できる�
 	// No lifecycle request was waiting, so block on the complete event set.
 	// Both timer and size-triggered exports start a new interval window.
 	select {
-	case req := <-b.shutdown:
+	case req := &lt;-b.shutdown:
 		err := b.shutdownExporter(req.ctx)
 		close(b.done)
 		req.respond(err)
 		return
-	case req := <-b.flush:
+	case req := &lt;-b.flush:
 		err := b.flushExporter(req.ctx)
 		req.respond(err)
-	case <-timer.C:
+	case &lt;-timer.C:
 		resetTimer(timer, interval)
 		b.exportBatch(buf)
-	case <-b.exportTrigger:
+	case &lt;-b.exportTrigger:
 		resetTimer(timer, interval)
 		b.exportBatch(buf)
 	}
 }
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
- <div id="outline-container-org77df211" class="outline-2">
- <h2 id="org77df211"> <a href="#org77df211">関連</a></h2>
- <div class="outline-text-2" id="text-org77df211">
+ <div id="outline-container-org4ef2b4e" class="outline-2">
+ <h2 id="org4ef2b4e"> <a href="#org4ef2b4e">関連</a></h2>
+ <div class="outline-text-2" id="text-org4ef2b4e">
  <ul class="org-ul"> <li>前提:  <a href="20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html#ID-20261005T223831">KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6aaae45" class="outline-2">
- <h2 id="org6aaae45"> <a href="#org6aaae45">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6aaae45">
+ <div id="outline-container-orgd6d44a4" class="outline-2">
+ <h2 id="orgd6d44a4"> <a href="#orgd6d44a4">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd6d44a4">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -997,9 +997,9 @@ Go の  <code>select</code> では、複数の case が同時に進行できる�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org73dde18" class="outline-2">
- <h2 id="org73dde18"> <a href="#org73dde18">概要</a></h2>
- <div class="outline-text-2" id="text-org73dde18">
+ <div id="outline-container-org6bebe26" class="outline-2">
+ <h2 id="org6bebe26"> <a href="#org6bebe26">概要</a></h2>
+ <div class="outline-text-2" id="text-org6bebe26">
  <p>
 select は複数の case が同時に実行できる状態だとランダムに選ぶ。
 </p>
@@ -1012,33 +1012,33 @@ If one or more of the communications can proceed, a single one that can proceed 
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgb205a91" class="outline-2">
- <h2 id="orgb205a91"> <a href="#orgb205a91">関連</a></h2>
- <div class="outline-text-2" id="text-orgb205a91">
+ <div id="outline-container-org40c50d6" class="outline-2">
+ <h2 id="org40c50d6"> <a href="#org40c50d6">関連</a></h2>
+ <div class="outline-text-2" id="text-org40c50d6">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org1271a95" class="outline-2">
- <h2 id="org1271a95"> <a href="#org1271a95">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org1271a95">
+ <div id="outline-container-org64784c1" class="outline-2">
+ <h2 id="org64784c1"> <a href="#org64784c1">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org64784c1">
  <ul class="org-ul"> <li> <a href="./20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html">KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 642: 実行計画は3つの結合を選ぶ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org21ebde4" class="outline-2">
- <h2 id="org21ebde4"> <a href="#org21ebde4">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org21ebde4">
+ <div id="outline-container-orgfdfce78" class="outline-2">
+ <h2 id="orgfdfce78"> <a href="#orgfdfce78">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgfdfce78">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -1047,9 +1047,9 @@ If one or more of the communications can proceed, a single one that can proceed 
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0970a46" class="outline-2">
- <h2 id="org0970a46"> <a href="#org0970a46">概要</a></h2>
- <div class="outline-text-2" id="text-org0970a46">
+ <div id="outline-container-org77e890b" class="outline-2">
+ <h2 id="org77e890b"> <a href="#org77e890b">概要</a></h2>
+ <div class="outline-text-2" id="text-org77e890b">
  <p>
 Postgres の実行計画では、リレーションを結合する方法には3つある。
 </p>
@@ -1059,9 +1059,9 @@ Postgres の実行計画では、リレーションを結合する方法には3�
  <li>ハッシュ結合</li>
 </ul></div>
 </div>
- <div id="outline-container-orgf9f340d" class="outline-2">
- <h2 id="orgf9f340d"> <a href="#orgf9f340d">関連</a></h2>
- <div class="outline-text-2" id="text-orgf9f340d">
+ <div id="outline-container-orgb901899" class="outline-2">
+ <h2 id="orgb901899"> <a href="#orgb901899">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb901899">
  <ul class="org-ul"> <li>参照:  <a href="https://www.postgresql.jp/document/18/html/planner-optimizer.html">51.5. プランナ/オプティマイザ</a></li>
  <li>関連:  <a href="https://www.postgresql.jp/document/18/html/query-path.html">51.1. 問い合わせの経路</a></li>
  <li>関連:  <a href="https://www.postgresql.jp/document/18/html/using-explain.html">14.1. EXPLAINの利用</a></li>
@@ -1071,16 +1071,16 @@ Postgres の実行計画では、リレーションを結合する方法には3�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261001T090705--kdoc-642-実行計画は3つの結合を選ぶ__permanent.html</id>
-  <updated>2026-10-14T21:40:00+09:00</updated>
+  <updated>2026-10-15T09:37:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 661: AAS は標本の平均、AAE は実行時間の平均で、標本が多いとほぼ一致する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org9563709" class="outline-2">
- <h2 id="org9563709"> <a href="#org9563709">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org9563709">
+ <div id="outline-container-org06436f9" class="outline-2">
+ <h2 id="org06436f9"> <a href="#org06436f9">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org06436f9">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-14 貴島</li>
 </ul></li>
@@ -1089,9 +1089,9 @@ Postgres の実行計画では、リレーションを結合する方法には3�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgd731f65" class="outline-2">
- <h2 id="orgd731f65"> <a href="#orgd731f65">概要</a></h2>
- <div class="outline-text-2" id="text-orgd731f65">
+ <div id="outline-container-org2f1696c" class="outline-2">
+ <h2 id="org2f1696c"> <a href="#org2f1696c">概要</a></h2>
+ <div class="outline-text-2" id="text-org2f1696c">
  <p>
 AAS(平均アクティブセッション)と AAE(平均アクティブ実行)は、どちらも平均して、同時にいくつのクエリが動いていたかを表す。AAS は1秒ごとにアクティブなセッションを数えた標本から求め、AAE は実行時間の合計から求める。
 </p>
@@ -1118,7 +1118,7 @@ AAE を計算するために、Database Insights では、クエリの合計実�
 4秒の間に、3秒かかるクエリ X が1回、0.2秒かかるクエリ Y が別のセッションで2回動き、1秒ごとに4回標本を取る例で、両方を手で計算する。
 </p>
 
- <pre class="example" id="org9c7c480">
+ <pre class="example" id="orgcbe7819">
 時刻(秒)    0         1         2         3         4
             +---------+---------+---------+---------+
 X (3秒)       [=============================]
@@ -1208,31 +1208,31 @@ AAE は、クエリが動いていた時間の合計を、経過時間で割る�
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org8fc1040" class="outline-2">
- <h2 id="org8fc1040"> <a href="#org8fc1040">関連</a></h2>
- <div class="outline-text-2" id="text-org8fc1040">
+ <div id="outline-container-orgb569476" class="outline-2">
+ <h2 id="orgb569476"> <a href="#orgb569476">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb569476">
  <ul class="org-ul"> <li>正典:  <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷 - Amazon Relational Database Service</a></li>
 </ul></div>
 </div>
- <div id="outline-container-orgf4fa051" class="outline-2">
- <h2 id="orgf4fa051"> <a href="#orgf4fa051">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgf4fa051">
+ <div id="outline-container-orga2888e2" class="outline-2">
+ <h2 id="orga2888e2"> <a href="#orga2888e2">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orga2888e2">
  <ul class="org-ul"> <li> <a href="./20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html">KDOC 660: Performance Insights で vCPU が重要な理由</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261013T211643--kdoc-661-aas-は標本の平均、aae-は実行時間の平均で、標本が多いとほぼ一致する__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261013T211643--kdoc-661-aas-は標本の平均、aae-は実行時間の平均で、標本が多いとほぼ一致する__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 660: Performance Insights で vCPU が重要な理由</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6b25e96" class="outline-2">
- <h2 id="org6b25e96"> <a href="#org6b25e96">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6b25e96">
+ <div id="outline-container-orga5c82c7" class="outline-2">
+ <h2 id="orga5c82c7"> <a href="#orga5c82c7">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orga5c82c7">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
@@ -1241,9 +1241,9 @@ AAE は、クエリが動いていた時間の合計を、経過時間で割る�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org97d4e6f" class="outline-2">
- <h2 id="org97d4e6f"> <a href="#org97d4e6f">概要</a></h2>
- <div class="outline-text-2" id="text-org97d4e6f">
+ <div id="outline-container-orgebfbf2b" class="outline-2">
+ <h2 id="orgebfbf2b"> <a href="#orgebfbf2b">概要</a></h2>
+ <div class="outline-text-2" id="text-orgebfbf2b">
  <p>
 RDS Performance Insights ではvCPUが重要な指標というが、なぜ重要なのかを理解していなかった。
 </p>
@@ -1253,7 +1253,7 @@ RDS Performance Insights ではvCPUが重要な指標というが、なぜ重要
 </p>
 
 
- <div id="org1f632a4" class="figure">
+ <div id="orgc4f56c4" class="figure">
  <p> <img src="images/20261013-pi-wait-breakdown.svg" alt="20261013-pi-wait-breakdown.svg" class="org-svg"></img></p>
  <p> <span class="figure-number">Figure 1: </span>セッションの状態を毎秒標本に取り、待機イベントごとに積み上げる。 <a href="https://pages.awscloud.com/rs/112-TZM-766/images/B3-04.pdf">Amazon RDSにおけるパフォーマンス最適化とパフォーマンス管理</a>の19ページの図を描き直し、vCPU が 2 のときの最大 vCPU の線を足した</p>
 </div>
@@ -1277,25 +1277,25 @@ vCPU では一度に 1 つのプロセスを実行できます。プロセスの
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgbef9653" class="outline-2">
- <h2 id="orgbef9653"> <a href="#orgbef9653">関連</a></h2>
- <div class="outline-text-2" id="text-orgbef9653">
+ <div id="outline-container-org180bd18" class="outline-2">
+ <h2 id="org180bd18"> <a href="#org180bd18">関連</a></h2>
+ <div class="outline-text-2" id="text-org180bd18">
  <ul class="org-ul"> <li>前提:  <a href="20261013T211643--kdoc-661-aas-は標本の平均、aae-は実行時間の平均で、標本が多いとほぼ一致する__permanent.html#ID-20261013T211643">KDOC 661: AASとAAEを理解する</a>。DB 負荷の単位 AAS は同時に動いているセッション数の平均なので、vCPU の数と同じ単位で比べられる</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 659: 1秒より短いクエリも Performance Insights の負荷には実行時間どおりに出る</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org4daa4bb" class="outline-2">
- <h2 id="org4daa4bb"> <a href="#org4daa4bb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4daa4bb">
+ <div id="outline-container-orgd334cd9" class="outline-2">
+ <h2 id="orgd334cd9"> <a href="#orgd334cd9">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd334cd9">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
@@ -1304,9 +1304,9 @@ vCPU では一度に 1 つのプロセスを実行できます。プロセスの
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org611b6fe" class="outline-2">
- <h2 id="org611b6fe"> <a href="#org611b6fe">概要</a></h2>
- <div class="outline-text-2" id="text-org611b6fe">
+ <div id="outline-container-orgd9525db" class="outline-2">
+ <h2 id="orgd9525db"> <a href="#orgd9525db">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd9525db">
  <p>
 RDS Performance Insights は1秒間隔でサンプリングするが、1秒かからないクエリはどうなるのかと考えた。たしかに1回ずつは確率的にしか標本に出ないが、標本が多ければ負荷の大きさは実行時間どおりに出て問題ない。
 </p>
@@ -1338,9 +1338,9 @@ AAE を計算するために、Database Insights では、クエリの合計実�
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>1秒ごとの標本から求めた負荷(AAS)と、実行時間から求めた負荷(AAE)を比べる</label> <pre class="src src-shell"># 負荷を流す側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>1秒ごとの標本から求めた負荷(AAS)と、実行時間から求めた負荷(AAE)を比べる</label> <pre class="src src-shell"> <code># 負荷を流す側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
 sample() {
-  psql -h localhost -p 15433 -U postgres -d postgres -qAt <<'SQL'
+  psql -h localhost -p 15433 -U postgres -d postgres -qAt &lt;&lt;'SQL'
 CREATE TEMP TABLE samples (query_id bigint);
 -- Performance Insights と同じく、1秒ごとにアクティブなセッションを300回数える
 DO $$
@@ -1364,21 +1364,21 @@ ORDER BY s.mean_exec_time DESC;
 SQL
 }
 
-docker exec pgpg-postgres-1 psql -U postgres -qAt -c "SELECT pg_stat_statements_reset()" > /dev/null
+docker exec pgpg-postgres-1 psql -U postgres -qAt -c &quot;SELECT pg_stat_statements_reset()&quot; &gt; /dev/null
 # pg_stat_statements は定数をまとめるので、文の形を変えて別の文として数えさせる
-printf 'SELECT pg_sleep(1);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat > /tmp/s1000.sql'
-printf 'SELECT 1 FROM pg_sleep(0.1);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat > /tmp/s100.sql'
-printf 'SELECT 1, 2 FROM pg_sleep(0.01);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat > /tmp/s10.sql'
+printf 'SELECT pg_sleep(1);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/s1000.sql'
+printf 'SELECT 1 FROM pg_sleep(0.1);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/s100.sql'
+printf 'SELECT 1, 2 FROM pg_sleep(0.01);\n' | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/s10.sql'
 # どれも実行時間の合計が経過時間の1割(AAE 0.1)になるように、1回の時間に反比例した頻度で流す
-docker exec pgpg-postgres-1 pgbench -U postgres -n -R 0.1 -T 301 -f /tmp/s1000.sql postgres > /dev/null 2>&1 &
-docker exec pgpg-postgres-1 pgbench -U postgres -n -R 1 -T 301 -f /tmp/s100.sql postgres > /dev/null 2>&1 &
-docker exec pgpg-postgres-1 pgbench -U postgres -n -R 10 -T 301 -f /tmp/s10.sql postgres > /dev/null 2>&1 &
+docker exec pgpg-postgres-1 pgbench -U postgres -n -R 0.1 -T 301 -f /tmp/s1000.sql postgres &gt; /dev/null 2&gt;&amp;1 &amp;
+docker exec pgpg-postgres-1 pgbench -U postgres -n -R 1 -T 301 -f /tmp/s100.sql postgres &gt; /dev/null 2&gt;&amp;1 &amp;
+docker exec pgpg-postgres-1 pgbench -U postgres -n -R 10 -T 301 -f /tmp/s10.sql postgres &gt; /dev/null 2&gt;&amp;1 &amp;
 sleep 0.5
 echo '| 文の時間 | 呼び出し | AAE | 標本(300回中) | AAS |'
 echo '|-'
 sample
 wait
-</pre>
+</code></pre>
 </div>
 
  <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col> <col class="org-left"></col> <col class="org-right"></col> <col class="org-left"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">文の時間</th>
@@ -1405,31 +1405,31 @@ wait
  <li>1000 ms の文は、26回の呼び出しが26回の標本に出た。1回の呼び出しが、ほぼ1回の標本に出ている</li>
  <li>100 ms の文は305回呼ばれて標本に出たのは31回、10 ms の文は3000回呼ばれて29回だった。1秒より短い文は、呼び出しのうち「文の時間 / 1秒」くらいの割合しか標本に出ない</li>
  <li>1秒より短い文は、1回ずつは確率的にしか標本に出ないが、数が集まれば負荷の大きさは実行時間どおりに出る</li>
-</ul> <div id="org2778a67" class="figure">
+</ul> <div id="org8444640" class="figure">
  <p> <img src="images/20261013-pi-sampling.svg" alt="20261013-pi-sampling.svg" class="org-svg"></img></p>
  <p> <span class="figure-number">Figure 1: </span>1秒ごとの標本に捕まる実行の模式図。短い文ほど1回ずつは捕まりにくいが、回数が多いので、捕まる数は同じくらいになる</p>
 </div>
 </div>
 </div>
- <div id="outline-container-org2dcfc45" class="outline-2">
- <h2 id="org2dcfc45"> <a href="#org2dcfc45">関連</a></h2>
- <div class="outline-text-2" id="text-org2dcfc45">
+ <div id="outline-container-org3c1c135" class="outline-2">
+ <h2 id="org3c1c135"> <a href="#org3c1c135">関連</a></h2>
+ <div class="outline-text-2" id="text-org3c1c135">
  <ul class="org-ul"> <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261013T200358--kdoc-659-1秒より短いクエリも-performance-insights-の負荷には実行時間どおりに出る__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261013T200358--kdoc-659-1秒より短いクエリも-performance-insights-の負荷には実行時間どおりに出る__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 657: PostgreSQL 18のスキップスキャンを試す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orge7a81f9" class="outline-2">
- <h2 id="orge7a81f9"> <a href="#orge7a81f9">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge7a81f9">
+ <div id="outline-container-orgca01b90" class="outline-2">
+ <h2 id="orgca01b90"> <a href="#orgca01b90">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgca01b90">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
@@ -1438,9 +1438,9 @@ wait
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgfce9931" class="outline-2">
- <h2 id="orgfce9931"> <a href="#orgfce9931">概要</a></h2>
- <div class="outline-text-2" id="text-orgfce9931">
+ <div id="outline-container-org5b4df97" class="outline-2">
+ <h2 id="org5b4df97"> <a href="#org5b4df97">概要</a></h2>
+ <div class="outline-text-2" id="text-org5b4df97">
  <p>
 PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列に条件がないとき、先頭の列の値ごとにインデックスを探し直して、関係のない部分を読み飛ばせるようになった(スキップスキャン)。
 </p>
@@ -1460,7 +1460,7 @@ PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列�
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>先頭の列の種類の数を変えて、WHERE y = 7700 の実行計画を比べる</label> <pre class="src src-sql">-- 出力を短くするため、並列実行を切る
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>先頭の列の種類の数を変えて、WHERE y = 7700 の実行計画を比べる</label> <pre class="src src-sql"> <code>-- 出力を短くするため、並列実行を切る
 SET max_parallel_workers_per_gather = 0;
 
 CREATE TABLE few (x int, y int);
@@ -1483,7 +1483,7 @@ SELECT * FROM few WHERE y = 7700;
 EXPLAIN (ANALYZE, FORMAT JSON, COSTS OFF, TIMING OFF,
          SUMMARY OFF, BUFFERS OFF)
 SELECT * FROM many WHERE y = 7700;
-</pre>
+</code></pre>
 </div>
 
  <p>
@@ -1502,9 +1502,9 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgf964f85" class="outline-2">
- <h2 id="orgf964f85"> <a href="#orgf964f85">関連</a></h2>
- <div class="outline-text-2" id="text-orgf964f85">
+ <div id="outline-container-orge7d27f3" class="outline-2">
+ <h2 id="orge7d27f3"> <a href="#orge7d27f3">関連</a></h2>
+ <div class="outline-text-2" id="text-orge7d27f3">
  <p>
 なし。
 </p>
@@ -1513,16 +1513,16 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 654: Goはオブジェクト指向言語か?</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orga31abfd" class="outline-2">
- <h2 id="orga31abfd"> <a href="#orga31abfd">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga31abfd">
+ <div id="outline-container-org493d329" class="outline-2">
+ <h2 id="org493d329"> <a href="#org493d329">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org493d329">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -1531,9 +1531,9 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org4eadecb" class="outline-2">
- <h2 id="org4eadecb"> <a href="#org4eadecb">概要</a></h2>
- <div class="outline-text-2" id="text-org4eadecb">
+ <div id="outline-container-orgeeb4685" class="outline-2">
+ <h2 id="orgeeb4685"> <a href="#orgeeb4685">概要</a></h2>
+ <div class="outline-text-2" id="text-orgeeb4685">
  <p>
 Goはオブジェクト指向言語か、の公式の回答は yes and no である。
 </p>
@@ -1553,9 +1553,9 @@ Yes and no. Although Go has types and methods and allows an object-oriented styl
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org0aea2ce" class="outline-2">
- <h2 id="org0aea2ce"> <a href="#org0aea2ce">関連</a></h2>
- <div class="outline-text-2" id="text-org0aea2ce">
+ <div id="outline-container-org65e18ec" class="outline-2">
+ <h2 id="org65e18ec"> <a href="#org65e18ec">関連</a></h2>
+ <div class="outline-text-2" id="text-org65e18ec">
  <p>
 なし。
 </p>
@@ -1564,16 +1564,16 @@ Yes and no. Although Go has types and methods and allows an object-oriented styl
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org1d0ec28" class="outline-2">
- <h2 id="org1d0ec28"> <a href="#org1d0ec28">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org1d0ec28">
+ <div id="outline-container-org6453b64" class="outline-2">
+ <h2 id="org6453b64"> <a href="#org6453b64">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6453b64">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -1582,9 +1582,9 @@ Yes and no. Although Go has types and methods and allows an object-oriented styl
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga419920" class="outline-2">
- <h2 id="orga419920"> <a href="#orga419920">概要</a></h2>
- <div class="outline-text-2" id="text-orga419920">
+ <div id="outline-container-org296046c" class="outline-2">
+ <h2 id="org296046c"> <a href="#org296046c">概要</a></h2>
+ <div class="outline-text-2" id="text-org296046c">
  <p>
 RDS Performance Insights の値は何に由来しているのだろう、と考えた。PostgreSQL に同梱された拡張 pg_stat_statements の値を集計しているように見える。
 </p>
@@ -1634,17 +1634,17 @@ SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_sta
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgf07cfbb" class="outline-2">
- <h2 id="orgf07cfbb"> <a href="#orgf07cfbb">関連</a></h2>
- <div class="outline-text-2" id="text-orgf07cfbb">
+ <div id="outline-container-orgee18788" class="outline-2">
+ <h2 id="orgee18788"> <a href="#orgee18788">関連</a></h2>
+ <div class="outline-text-2" id="text-orgee18788">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org7f85e46" class="outline-2">
- <h2 id="org7f85e46"> <a href="#org7f85e46">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org7f85e46">
+ <div id="outline-container-org8e4a10f" class="outline-2">
+ <h2 id="org8e4a10f"> <a href="#org8e4a10f">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org8e4a10f">
  <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
  <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
  <li> <a href="./20261013T200358--kdoc-659-1秒より短いクエリも-performance-insights-の負荷には実行時間どおりに出る__permanent.html">KDOC 659: 1秒より短いクエリも Performance Insights の負荷には実行時間どおりに出る</a></li>
@@ -1653,16 +1653,16 @@ SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_sta
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 646: require.Eventuallyは時間内で繰り返す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org03e5e27" class="outline-2">
- <h2 id="org03e5e27"> <a href="#org03e5e27">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org03e5e27">
+ <div id="outline-container-org2ce99ae" class="outline-2">
+ <h2 id="org2ce99ae"> <a href="#org2ce99ae">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2ce99ae">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -1671,9 +1671,9 @@ SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_sta
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org26b6ddb" class="outline-2">
- <h2 id="org26b6ddb"> <a href="#org26b6ddb">概要</a></h2>
- <div class="outline-text-2" id="text-org26b6ddb">
+ <div id="outline-container-orgb4da701" class="outline-2">
+ <h2 id="orgb4da701"> <a href="#orgb4da701">概要</a></h2>
+ <div class="outline-text-2" id="text-orgb4da701">
  <p>
 Go のライブラリ testify に  <code>require.Eventually</code> 関数がある。非同期処理を含む非決定的な挙動のテストに便利である。
 </p>
@@ -1689,9 +1689,9 @@ func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick t
 </p>
 </div>
 </div>
- <div id="outline-container-orgc552f4a" class="outline-2">
- <h2 id="orgc552f4a"> <a href="#orgc552f4a">関連</a></h2>
- <div class="outline-text-2" id="text-orgc552f4a">
+ <div id="outline-container-orgbacd375" class="outline-2">
+ <h2 id="orgbacd375"> <a href="#orgbacd375">関連</a></h2>
+ <div class="outline-text-2" id="text-orgbacd375">
  <ul class="org-ul"> <li>実例:  <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8754">sdk/log: add queue_full shutdown regression test by RedZapdos123 · Pull Request #8754 · open-telemetry/opentelemetry-go</a></li>
  <li>正典:  <a href="https://pkg.go.dev/github.com/stretchr/testify/require#Eventually">require package - github.com/stretchr/testify/require - Go Packages</a></li>
 </ul></div>
@@ -1699,16 +1699,16 @@ func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick t
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 645: sync.OnceFuncは1度だけ実行する関数を返す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org64f2faf" class="outline-2">
- <h2 id="org64f2faf"> <a href="#org64f2faf">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org64f2faf">
+ <div id="outline-container-orgb88f3a7" class="outline-2">
+ <h2 id="orgb88f3a7"> <a href="#orgb88f3a7">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgb88f3a7">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -1717,9 +1717,9 @@ func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick t
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orge2c684a" class="outline-2">
- <h2 id="orge2c684a"> <a href="#orge2c684a">概要</a></h2>
- <div class="outline-text-2" id="text-orge2c684a">
+ <div id="outline-container-org26910d1" class="outline-2">
+ <h2 id="org26910d1"> <a href="#org26910d1">概要</a></h2>
+ <div class="outline-text-2" id="text-org26910d1">
  <p>
 Go の  <code>sync.OnceFunc</code> は1度だけ実行される関数を返す。
 </p>
@@ -1730,37 +1730,37 @@ Go の  <code>sync.OnceFunc</code> は1度だけ実行される関数を返す�
 
 
  <div class="org-src-container">
- <pre class="src src-git-permalink">https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/record.go#L30-L32
-</pre>
+ <pre class="src src-git-permalink"> <code>https://github.com/open-telemetry/opentelemetry-go/blob/d7b03712f3fb0a577ecadf79a960e255ea772fab/sdk/log/record.go#L30-L32
+</code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil">var logAttrDropped = sync.OnceFunc(func() {
-	global.Warn("limit reached: dropping log Record attributes")
+ <pre class="src src-nil"> <code>var logAttrDropped = sync.OnceFunc(func() {
+	global.Warn(&quot;limit reached: dropping log Record attributes&quot;)
 })
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
- <div id="outline-container-org62aafba" class="outline-2">
- <h2 id="org62aafba"> <a href="#org62aafba">関連</a></h2>
- <div class="outline-text-2" id="text-org62aafba">
+ <div id="outline-container-org414cb7f" class="outline-2">
+ <h2 id="org414cb7f"> <a href="#org414cb7f">関連</a></h2>
+ <div class="outline-text-2" id="text-org414cb7f">
  <ul class="org-ul"> <li>正典:  <a href="https://pkg.go.dev/sync@go1.26.7#OnceFunc">sync package - sync - Go Packages</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261003T120627--kdoc-645-synconcefuncは1度だけ実行する関数を返す__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 643: WHERE条件の大小によって実行計画が変わる例</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org24f9779" class="outline-2">
- <h2 id="org24f9779"> <a href="#org24f9779">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org24f9779">
+ <div id="outline-container-org1b407ff" class="outline-2">
+ <h2 id="org1b407ff"> <a href="#org1b407ff">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1b407ff">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -1769,15 +1769,15 @@ Go の  <code>sync.OnceFunc</code> は1度だけ実行される関数を返す�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org2f23803" class="outline-2">
- <h2 id="org2f23803"> <a href="#org2f23803">概要</a></h2>
- <div class="outline-text-2" id="text-org2f23803">
+ <div id="outline-container-org75a6e78" class="outline-2">
+ <h2 id="org75a6e78"> <a href="#org75a6e78">概要</a></h2>
+ <div class="outline-text-2" id="text-org75a6e78">
  <p>
 推定した取得行数によって、全部読むか一部だけ読むかの判断が変わって実行計画が変わるのを見る。
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ条件式で値だけを変えると、Index Scan、Bitmap Heap Scan、Seq Scan と計画が変わる</label> <pre class="src src-sql">CREATE TABLE users (
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ条件式で値だけを変えると、Index Scan、Bitmap Heap Scan、Seq Scan と計画が変わる</label> <pre class="src src-sql"> <code>CREATE TABLE users (
     id   integer PRIMARY KEY,
     name varchar(255)
 );
@@ -1795,60 +1795,60 @@ ORDER BY random();
 ANALYZE users;
 
 -- 1件
-EXPLAIN SELECT * FROM users WHERE id < 2;
+EXPLAIN SELECT * FROM users WHERE id &lt; 2;
 
 -- 約1000件
-EXPLAIN SELECT * FROM users WHERE id < 1000;
+EXPLAIN SELECT * FROM users WHERE id &lt; 1000;
 
 -- 約70000件
-EXPLAIN SELECT * FROM users WHERE id < 70000;
-</pre>
+EXPLAIN SELECT * FROM users WHERE id &lt; 70000;
+</code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil">|                                                                          |
+ <pre class="src src-nil"> <code>|                                                                          |
 |--------------------------------------------------------------------------|
-| > CREATE TABLE users (                                                   |
-| >     id   integer PRIMARY KEY,                                          |
-| >     name varchar(255)                                                  |
-| > );                                                                     |
+| &gt; CREATE TABLE users (                                                   |
+| &gt;     id   integer PRIMARY KEY,                                          |
+| &gt;     name varchar(255)                                                  |
+| &gt; );                                                                     |
 | CREATE TABLE                                                             |
 |                                                                          |
-| > INSERT INTO users (id, name)                                           |
-| > SELECT                                                                 |
-| >      i,                                                                |
-| >      -- 32x2 文字                                                       |
-| >      concat(md5(random()::text), md5(random()::text))                  |
-| > FROM generate_series(1, 100000) i                                      |
-| > ORDER BY random();                                                     |
+| &gt; INSERT INTO users (id, name)                                           |
+| &gt; SELECT                                                                 |
+| &gt;      i,                                                                |
+| &gt;      -- 32x2 文字                                                       |
+| &gt;      concat(md5(random()::text), md5(random()::text))                  |
+| &gt; FROM generate_series(1, 100000) i                                      |
+| &gt; ORDER BY random();                                                     |
 | INSERT 0 100000                                                          |
 |                                                                          |
-| > ANALYZE users;                                                         |
+| &gt; ANALYZE users;                                                         |
 | ANALYZE                                                                  |
 |                                                                          |
-| > EXPLAIN SELECT * FROM users WHERE id < 2;                              |
+| &gt; EXPLAIN SELECT * FROM users WHERE id &lt; 2;                              |
 | QUERY PLAN                                                               |
 | Index Scan using users_pkey on users  (cost=0.29..8.31 rows=1 width=69)  |
-| Index Cond: (id < 2)                                                     |
+| Index Cond: (id &lt; 2)                                                     |
 |                                                                          |
-| > EXPLAIN SELECT * FROM users WHERE id < 1000;                           |
+| &gt; EXPLAIN SELECT * FROM users WHERE id &lt; 1000;                           |
 | QUERY PLAN                                                               |
 | Bitmap Heap Scan on users  (cost=23.70..1248.40 rows=956 width=69)       |
-| Recheck Cond: (id < 1000)                                                |
-| ->  Bitmap Index Scan on users_pkey  (cost=0.00..23.46 rows=956 width=0) |
-| Index Cond: (id < 1000)                                                  |
+| Recheck Cond: (id &lt; 1000)                                                |
+| -&gt;  Bitmap Index Scan on users_pkey  (cost=0.00..23.46 rows=956 width=0) |
+| Index Cond: (id &lt; 1000)                                                  |
 |                                                                          |
-| > EXPLAIN SELECT * FROM users WHERE id < 70000;                          |
+| &gt; EXPLAIN SELECT * FROM users WHERE id &lt; 70000;                          |
 | QUERY PLAN                                                               |
 | Seq Scan on users  (cost=0.00..2485.00 rows=69782 width=69)              |
-| Filter: (id < 70000)                                                     |
-</pre>
+| Filter: (id &lt; 70000)                                                     |
+</code></pre>
 </div>
 </div>
 </div>
- <div id="outline-container-org6422381" class="outline-2">
- <h2 id="org6422381"> <a href="#org6422381">関連</a></h2>
- <div class="outline-text-2" id="text-org6422381">
+ <div id="outline-container-org4b3d9ab" class="outline-2">
+ <h2 id="org4b3d9ab"> <a href="#org4b3d9ab">関連</a></h2>
+ <div class="outline-text-2" id="text-org4b3d9ab">
  <ul class="org-ul"> <li>参照:  <a href="https://www.postgresql.jp/docs/18/using-explain.html">14.1. EXPLAINの利用</a></li>
  <li>類似:  <a href="20251206T213844--kdoc-496-index-only-scanの様子を見る__permanent.html#ID-20251206T213844">KDOC 496: Index (Only) Scanの様子を見る</a>。実行計画に関する話題</li>
 </ul></div>
@@ -1856,6 +1856,6 @@ EXPLAIN SELECT * FROM users WHERE id < 70000;
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261001T205156--kdoc-643-where条件の大小によって実行計画が変わる例__permanent.html</id>
-  <updated>2026-10-14T21:39:00+09:00</updated>
+  <updated>2026-10-15T09:36:00+09:00</updated>
 </entry>
 </feed>

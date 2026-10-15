@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:39 -->
+<!-- 2026-10-15 木 09:36 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 415: io.Readerのシグネチャはヒープエスケープを避けられる設計になっている</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 415: io.Readerのシグネチャはヒープエスケープを避けられる設計になっている</h1>
-<div id="outline-container-org7cae501" class="outline-2">
-<h2 id="org7cae501"><a href="#org7cae501">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org7cae501">
+<div id="outline-container-org03a1945" class="outline-2">
+<h2 id="org03a1945"><a href="#org03a1945">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org03a1945">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,18 +37,18 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org72862db" class="outline-2">
-<h2 id="org72862db"><a href="#org72862db">概要</a></h2>
-<div class="outline-text-2" id="text-org72862db">
+<div id="outline-container-org3d3d712" class="outline-2">
+<h2 id="org3d3d712"><a href="#org3d3d712">概要</a></h2>
+<div class="outline-text-2" id="text-org3d3d712">
 <p>
 io.Reader, io.Writerのインターフェース設計には、ヒープのエスケープも関係しているという。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>io.Readerのシグネチャ</label><pre class="src src-go">type Reader interface {
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>io.Readerのシグネチャ</label><pre class="src src-go"><code>type Reader interface {
         Read(p []byte) (n int, err error)
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -60,7 +60,7 @@ io.Reader, io.Writerのインターフェース設計には、ヒープのエス
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>Read1だけがヒープのエスケープが発生する</label><pre class="src src-shell">tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>Read1だけがヒープのエスケープが発生する</label><pre class="src src-shell"><code>tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
 
 cat &gt; $tmpfile &lt;&lt;EOF
 package main
@@ -80,21 +80,21 @@ EOF
 go build -gcflags="-m" -o bin $tmpfile 2&gt;&amp;1
 rm bin
 rm $tmpfile
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil">/tmp/tmpgo.s6wAwW.go:3:6: can inline main
+<pre class="src src-nil"><code>/tmp/tmpgo.s6wAwW.go:3:6: can inline main
 /tmp/tmpgo.s6wAwW.go:6:6: can inline Read1
 /tmp/tmpgo.s6wAwW.go:11:6: can inline Read2
 /tmp/tmpgo.s6wAwW.go:7:14: make([]byte, 1) escapes to heap
-</pre>
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-orgafbeccb" class="outline-2">
-<h2 id="orgafbeccb"><a href="#orgafbeccb">関連</a></h2>
-<div class="outline-text-2" id="text-orgafbeccb">
+<div id="outline-container-orge54b0ea" class="outline-2">
+<h2 id="orge54b0ea"><a href="#orge54b0ea">関連</a></h2>
+<div class="outline-text-2" id="text-orge54b0ea">
 <ul class="org-ul">
 <li>参照: <a href="https://syntactic-sugar.dev/blog/nested-route/go-escape-analysis">Stack or Heap? Going Deeper with Escape Analysis in Go for Better Performance</a>。調べている中でio.Readerとio.Writerインターフェースの設計について言及していたのを見つけた</li>
 <li>動機: <a href="20250701T193212--kdoc-414-インターフェースがヒープにエスケープされるのを見る__permanent.html#ID-20250701T193212">KDOC 414: インターフェースがヒープにエスケープされるのを見る</a>。調べるきっかけになった</li>

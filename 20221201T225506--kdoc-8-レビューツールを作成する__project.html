@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-14 水 21:40 -->
+<!-- 2026-10-15 木 09:37 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 8: レビューツールを作成する</title>
@@ -25,9 +25,9 @@
 <p>
 <a href="20210926103926-github.html#ID-6b889822-21f1-4a3e-9755-e3ca52fa0bc4">GitHub</a>のレビュー返しで、対応したコミットをまとめて送るツールを<a href="20210911113057-go.html#ID-7cacbaa3-3995-41cf-8b72-58d6e07468b1">Go</a>で作成した。
 </p>
-<div id="outline-container-orga9738e2" class="outline-2">
-<h2 id="orga9738e2"><a href="#orga9738e2">開発メモ</a></h2>
-<div class="outline-text-2" id="text-orga9738e2">
+<div id="outline-container-orgee5900b" class="outline-2">
+<h2 id="orgee5900b"><a href="#orgee5900b">開発メモ</a></h2>
+<div class="outline-text-2" id="text-orgee5900b">
 <p>
 GitHub のレビューで、対応コミットを返信するツールを作る。レビューしてもらったとき、対応したコミットを返信する。自分が対応したことのチェックと、相手にとってわかりやすくするため。
 </p>
@@ -57,22 +57,22 @@ GitHub のレビューで、対応コミットを返信するツールを作る�
 </p>
 
 <p>
-バッチでコメントを送信することで、[Git→GitHub]→[Git→GitHub]→&#x2026;→push→コマンド実行 となる。
+バッチでコメントを送信することで、[Git→GitHub]→[Git→GitHub]→&hellip;→push→コマンド実行 となる。
 </p>
 </div>
 </div>
-<div id="outline-container-org4ffb89a" class="outline-2">
-<h2 id="org4ffb89a"><a href="#org4ffb89a">使う流れ</a></h2>
-<div class="outline-text-2" id="text-org4ffb89a">
+<div id="outline-container-org8bd22a5" class="outline-2">
+<h2 id="org8bd22a5"><a href="#org8bd22a5">使う流れ</a></h2>
+<div class="outline-text-2" id="text-org8bd22a5">
 <ul class="org-ul">
 <li>リンクをつけてコミットする</li>
 </ul>
 
 <div class="org-src-container">
-<pre class="src src-nil">build: 修正した
+<pre class="src src-nil"><code>build: 修正した
 
 https://github.com/kijimaD/gar/pull/1#discussion_r1037682054
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -84,9 +84,9 @@ https://github.com/kijimaD/gar/pull/1#discussion_r1037682054
 </ul>
 </div>
 </div>
-<div id="outline-container-orga5f397f" class="outline-2">
-<h2 id="orga5f397f"><a href="#orga5f397f">memo</a></h2>
-<div class="outline-text-2" id="text-orga5f397f">
+<div id="outline-container-org7b195aa" class="outline-2">
+<h2 id="org7b195aa"><a href="#org7b195aa">memo</a></h2>
+<div class="outline-text-2" id="text-org7b195aa">
 <p>
 <a href="https://github.com/kijimaD/gar/pull/1#discussion_r1037682054">https://github.com/kijimaD/gar/pull/1#discussion_r1037682054</a>
 </p>
@@ -96,21 +96,21 @@ https://github.com/kijimaD/gar/pull/1#discussion_r1037682054
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">curl \
+<pre class="src src-shell"><code>curl \
 -H "Accept: application/vnd.github+json" \
 -H "Authorization: Bearer ..." \
 https://api.github.com/repos/kijimaD/gar/pulls/1/reviews
-</pre>
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>コメント返信。コメントのURLからrを除いたのがID</label><pre class="src src-shell">curl \
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>コメント返信。コメントのURLからrを除いたのがID</label><pre class="src src-shell"><code>curl \
     -X POST \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ..." \
     https://api.github.com/repos/kijimaD/gar/pulls/1/comments/1037682054/replies \
     -d '{"body":"comment from API!"}'
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -122,16 +122,16 @@ PRからターゲットブランチとブランチ名を取得して、対象コ
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>例</label><pre class="src src-shell">gar 111
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>例</label><pre class="src src-shell"><code>gar 111
+</code></pre>
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>PRの詳細</label><pre class="src src-shell">curl \
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>PRの詳細</label><pre class="src src-shell"><code>curl \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ..." \
   https://api.github.com/repos/kijimaD/gar/pulls/1
-</pre>
+</code></pre>
 </div>
 
 <ul class="org-ul">
@@ -140,8 +140,8 @@ PRからターゲットブランチとブランチ名を取得して、対象コ
 </ul>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>リモートを取得する</label><pre class="src src-shell">git config --get remote.origin.url
-</pre>
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>リモートを取得する</label><pre class="src src-shell"><code>git config --get remote.origin.url
+</code></pre>
 </div>
 </div>
 </div>
