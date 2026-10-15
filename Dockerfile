@@ -17,10 +17,12 @@ RUN apt -y update && \
     ruby \
     ruby-dev \
     gnuplot \
-    emacs \
     language-pack-ja \
     # feed作成用
     libxml2-dev
+
+COPY --from=silex/emacs:31.1 /nix/store /nix/store
+ENV PATH=/nix/store/emacs/bin:$PATH
 
 COPY Gemfile* ./
 RUN gem install bundler && bundle install
