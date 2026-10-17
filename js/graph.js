@@ -1,502 +1,391 @@
-d3.json("js/graph.json").then(function(data) {
-    // Canvas size
-    height = 600;
-    width = 1800;
-    scale = 1.0;
+import ForceGraph3D from "https://cdn.jsdelivr.net/npm/3d-force-graph@1.80.1/+esm";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.186.1/+esm";
+import { CSS3DRenderer, CSS3DObject } from "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/renderers/CSS3DRenderer.js/+esm";
+import { ShaderPass } from "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/postprocessing/ShaderPass.js/+esm";
 
-    // Create custom tooltip with modern design
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "graph-tooltip")
-        .style("position", "absolute")
-        .style("visibility", "hidden")
-        .style("background", "linear-gradient(135deg, rgba(30, 30, 40, 0.95), rgba(50, 50, 70, 0.95))")
-        .style("color", "white")
-        .style("padding", "10px 16px")
-        .style("border-radius", "8px")
-        .style("font-size", "14px")
-        .style("font-weight", "500")
-        .style("pointer-events", "none")
-        .style("z-index", "1000")
-        .style("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.3)")
-        .style("border", "1px solid rgba(255, 255, 255, 0.1)")
-        .style("backdrop-filter", "blur(10px)");
-    // Radius function for nodes. Node radius are function of centrality
-    radius = d => {
-        if (!d.radius) {
-            d.radius = 4 + 40 * Math.sqrt(d.centrality);
-        }
-        return d.radius;
+const band = document.getElementById("main-graph");
+
+const GOLD = "#ffd700";
+const LINK = "#8a8470";
+const ease = x => x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+const pick = list => list[Math.floor(Math.random() * list.length)];
+const deg = THREE.MathUtils.degToRad;
+const tween = (ms, step, done) => {
+    const started = performance.now();
+    const frame = now => {
+        const k = Math.min(1, (now - started) / ms);
+        if (step(k) === false) return;
+        if (k < 1) requestAnimationFrame(frame);
+        else done?.();
     };
-    color = "#ffffff";
+    requestAnimationFrame(frame);
+};
 
-    // Number of colors is the number of clusters (given by communityLabel)
-    num_colors = Math.max(...data.nodes.map(d => d.communityLabel)) + 1;
-    angleArr = [...Array(num_colors).keys()].map(x => 2 * Math.PI * x / num_colors);
-    // Cluster centers around an circle
-    centersx = angleArr.map(x => Math.cos(Math.PI + x));
-    centersy = angleArr.map(x => Math.sin(Math.PI + x));
-    // Color palette
-    nodeColors = [
-        '#E0E0C0',
-        '#E0E080',
-        '#E0E040',
-        '#E0E000',
-        '#E0C0C0',
-        '#E0C080',
-        '#E0C040',
-        '#E0C000',
-        '#E0A0C0',
-        '#E0A080',
-        '#E0A040',
-        '#E0A000',
-        '#E080C0',
-        '#E08080',
-        '#E08040',
-        '#E08000',
-        '#E060C0',
-        '#E06080',
-        '#E06040',
-        '#E06000',
-        '#E040C0',
-        '#E04080',
-        '#E04040',
-        '#E04000',
-        '#E020C0',
-        '#E02080',
-        '#E02040',
-        '#E02000',
-        '#E000C0',
-        '#E00080',
-        '#E00040',
-        '#E00000',
-        '#C0E0C0',
-        '#C0E080',
-        '#C0E040',
-        '#C0E000',
-        '#C0C0C0',
-        '#C0C080',
-        '#C0C040',
-        '#C0C000',
-        '#C0A0C0',
-        '#C0A080',
-        '#C0A040',
-        '#C0A000',
-        '#C080C0',
-        '#C08080',
-        '#C08040',
-        '#C08000',
-        '#C060C0',
-        '#C06080',
-        '#C06040',
-        '#C06000',
-        '#C040C0',
-        '#C04080',
-        '#C04040',
-        '#C04000',
-        '#C020C0',
-        '#C02080',
-        '#C02040',
-        '#C02000',
-        '#C000C0',
-        '#C00080',
-        '#C00040',
-        '#C00000',
-        '#A0E0C0',
-        '#A0E080',
-        '#A0E040',
-        '#A0E000',
-        '#A0C0C0',
-        '#A0C080',
-        '#A0C040',
-        '#A0C000',
-        '#A0A0C0',
-        '#A0A080',
-        '#A0A040',
-        '#A0A000',
-        '#A080C0',
-        '#A08080',
-        '#A08040',
-        '#A08000',
-        '#A060C0',
-        '#A06080',
-        '#A06040',
-        '#A06000',
-        '#A040C0',
-        '#A04080',
-        '#A04040',
-        '#A04000',
-        '#A020C0',
-        '#A02080',
-        '#A02040',
-        '#A02000',
-        '#A000C0',
-        '#A00080',
-        '#A00040',
-        '#A00000',
-        '#80E0C0',
-        '#80E080',
-        '#80E040',
-        '#80E000',
-        '#80C0C0',
-        '#80C080',
-        '#80C040',
-        '#80C000',
-        '#80A0C0',
-        '#80A080',
-        '#80A040',
-        '#80A000',
-        '#8080C0',
-        '#808080',
-        '#808040',
-        '#808000',
-        '#8060C0',
-        '#806080',
-        '#806040',
-        '#806000',
-        '#8040C0',
-        '#804080',
-        '#804040',
-        '#804000',
-        '#8020C0',
-        '#802080',
-        '#802040',
-        '#802000',
-        '#8000C0',
-        '#800080',
-        '#800040',
-        '#800000',
-        '#60E0C0',
-        '#60E080',
-        '#60E040',
-        '#60E000',
-        '#60C0C0',
-        '#60C080',
-        '#60C040',
-        '#60C000',
-        '#60A0C0',
-        '#60A080',
-        '#60A040',
-        '#60A000',
-        '#6080C0',
-        '#608080',
-        '#608040',
-        '#608000',
-        '#6060C0',
-        '#606080',
-        '#606040',
-        '#606000',
-        '#6040C0',
-        '#604080',
-        '#604040',
-        '#604000',
-        '#6020C0',
-        '#602080',
-        '#602040',
-        '#602000',
-        '#6000C0',
-        '#600080',
-        '#600040',
-        '#600000',
-        '#40E0C0',
-        '#40E080',
-        '#40E040',
-        '#40E000',
-        '#40C0C0',
-        '#40C080',
-        '#40C040',
-        '#40C000',
-        '#40A0C0',
-        '#40A080',
-        '#40A040',
-        '#40A000',
-        '#4080C0',
-        '#408080',
-        '#408040',
-        '#408000',
-        '#4060C0',
-        '#406080',
-        '#406040',
-        '#406000',
-        '#4040C0',
-        '#404080',
-        '#404040',
-        '#404000',
-        '#4020C0',
-        '#402080',
-        '#402040',
-        '#402000',
-        '#4000C0',
-        '#400080',
-        '#400040',
-        '#400000',
-        '#20E0C0',
-        '#20E080',
-        '#20E040',
-        '#20E000',
-        '#20C0C0',
-        '#20C080',
-        '#20C040',
-        '#20C000',
-        '#20A0C0',
-        '#20A080',
-        '#20A040',
-        '#20A000',
-        '#2080C0',
-        '#208080',
-        '#208040',
-        '#208000',
-        '#2060C0',
-        '#206080',
-        '#206040',
-        '#206000',
-        '#2040C0',
-        '#204080',
-        '#204040',
-        '#204000',
-        '#2020C0',
-        '#202080',
-        '#202040',
-        '#202000',
-        '#2000C0',
-        '#200080',
-        '#200040',
-        '#200000',
-        '#00E0C0',
-        '#00E080',
-        '#00E040',
-        '#00E000',
-        '#00C0C0',
-        '#00C080',
-        '#00C040',
-        '#00C000',
-        '#00A0C0',
-        '#00A080',
-        '#00A040',
-        '#00A000',
-        '#0080C0',
-        '#008080',
-        '#008040',
-        '#008000',
-        '#0060C0',
-        '#006080',
-        '#006040',
-        '#006000',
-        '#0040C0',
-        '#004080',
-        '#004040',
-        '#004000',
-        '#0020C0',
-        '#002080',
-        '#002040',
-        '#002000',
-        '#0000C0',
-        '#000080',
-        '#000040',
-        '#000000',
-    ];
-    // Color function just maps cluster to color palette
-    nodeColor = d => {
-        return nodeColors[d.communityLabel];
+// 頂点の画面上の位置を格子に丸め、初期の3Dゲーム機のように震わせる
+const snap = { value: new THREE.Vector2() };
+const snapVertex = shader => {
+    shader.uniforms.uSnap = snap;
+    shader.vertexShader = "uniform vec2 uSnap;\n" + shader.vertexShader.replace("#include <project_vertex>", `#include <project_vertex>
+        gl_Position.xy = round(gl_Position.xy / gl_Position.w * uSnap) / uSnap * gl_Position.w;`);
+};
+
+// 15bit 相当に色を落とし、4x4 の網目で中間色を出す。
+// 半透明の色は不透明度を割り戻してから sRGB に直す。掛けたままだと薄い線が明るくなりすぎる
+const dither = {
+    uniforms: { tDiffuse: { value: null } },
+    vertexShader: `varying vec2 vUv;
+        void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform sampler2D tDiffuse;
+        varying vec2 vUv;
+        const mat4 bayer = mat4(0., 8., 2., 10., 12., 4., 14., 6., 3., 11., 1., 9., 15., 7., 13., 5.) / 16.;
+        void main() {
+            vec4 c = texture2D(tDiffuse, vUv);
+            vec3 rgb = c.rgb / max(c.a, 1e-4);
+            rgb = mix(rgb * 12.92, 1.055 * pow(rgb, vec3(1. / 2.4)) - .055, step(.0031308, rgb));
+            ivec2 p = ivec2(mod(gl_FragCoord.xy, 4.));
+            gl_FragColor = vec4(floor(rgb * 31. + bayer[p.x][p.y]) / 31. * c.a, c.a);
+        }`,
+};
+
+try {
+    const data = await (await fetch("js/graph.json")).json();
+    const nameOf = d => d.label.replace(/"/g, "");
+
+    // 大きいコミュニティだけにくすんだ色を付け、ここ30日のメモは灯りの色にする
+    const palette = [0xc8a050, 0xb0603a, 0x8a9a50, 0x5a7aa0, 0x8a5a80, 0x6a9a8a];
+    const sizes = new Map();
+    for (const n of data.nodes) sizes.set(n.communityLabel, (sizes.get(n.communityLabel) || 0) + 1);
+    const ranked = [...sizes.keys()].sort((a, b) => sizes.get(b) - sizes.get(a));
+    const recent = d => {
+        const m = d.lnk.match(/(\d{4})(\d{2})(\d{2})/);
+        return m && Date.now() - new Date(m[1], m[2] - 1, m[3]) < 30 * 24 * 60 * 60 * 1000;
     };
-    // Make the nodes draggable
-    drag = simulation => {
-        function dragsubject(event) {
-            return simulation.find(event.x, event.y);
-        }
+    const colorOf = d => recent(d) ? 0xffd98a : palette[ranked.indexOf(d.communityLabel)] ?? 0x7d7766;
 
-        function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.1).restart();
-            event.subject.fx = event.subject.x;
-            event.subject.fy = event.subject.y;
-        }
-
-        function dragged(event) {
-            // Smooth interpolation
-            const smoothFactor = 0.3;
-            event.subject.fx += (event.x - event.subject.fx) * smoothFactor;
-            event.subject.fy += (event.y - event.subject.fy) * smoothFactor;
-        }
-
-        function dragended(event) {
-            if (!event.active) simulation.alphaTarget(0);
-            event.subject.fx = null;
-            event.subject.fy = null;
-        }
-
-        return d3.drag()
-                 .subject(dragsubject)
-                 .on("start", dragstarted)
-                 .on("drag", dragged)
-                 .on("end", dragended);
+    const mesh = d => {
+        const m = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(4 + 30 * Math.sqrt(d.centrality), 0),
+            new THREE.MeshLambertMaterial({
+                color: colorOf(d),
+                flatShading: true,
+                emissive: recent(d) ? 0x806020 : 0x000000,
+                transparent: true,
+            }),
+        );
+        m.material.onBeforeCompile = snapVertex;
+        m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+        return m;
     };
-    // Track highlighted links for efficient cleanup
-    let highlightedLinks = [];
 
-    // Make nodes interactive to hovering
-    handleMouseOver = (event, i) => {
-        nde = d3.select(event.currentTarget);
-        const r = nde.attr("r") * 1.5;
-        nde.attr("fill", "#FFD700")  // Gold color on hover
-           .attr("r", r)
-           .attr("stroke-width", Math.max(2, r / 6))
-           .attr("stroke", "#FFD700")
-           .style("filter", "drop-shadow(0 0 8px rgba(255, 215, 0, 0.6))");
+    const neighbors = new Map(data.nodes.map(n => [n.id, new Set([n.id])]));
+    for (const e of data.edges) {
+        neighbors.get(e.source).add(e.target);
+        neighbors.get(e.target).add(e.source);
+    }
 
-        // Highlight only connected links
-        highlightedLinks = d3.selectAll("line")
-          .filter((l, _) => {
-              return l && l.source && l.source.index == i.index || l && l.target && l.target.index == i.index
-          })
-          .attr("stroke", "#FFD700")
-          .attr("stroke-opacity", 0.8)
-          .attr("stroke-width", 3)
-          .nodes();
-
-        // Show tooltip immediately
-        tooltip.html(i.label.replace(/"/g, ''))
-            .style("visibility", "visible")
-            .style("top", (event.pageY - 10) + "px")
-            .style("left", (event.pageX + 10) + "px");
+    // 照らすのは手でホバーしたものを優先し、なければツアーの主役。
+    // ホバーは周りを強く沈め、ツアーは全体が見えるようつながりを金色にするだけにする
+    let hovered = null, featured = null;
+    const focused = () => hovered || featured;
+    const linkColor = l => {
+        const f = focused();
+        if (f && (l.source.id === f.id || l.target.id === f.id)) return GOLD;
+        return hovered ? "#1a1814" : LINK;
     };
-    handleMouseOut = (event, i) => {
-        nde = d3.select(event.currentTarget);
-        const r = nde.attr("r") / 1.5;
-        nde.attr("fill", nodeColor(i))
-           .attr("r", r)
-           .attr("stroke-width", Math.max(1, r / 8))
-           .attr("stroke", "#fff")
-           .style("filter", r > 20 ? "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))" : "none");
 
-        // Reset only previously highlighted links
-        highlightedLinks.forEach(link => {
-            d3.select(link)
-                .attr("stroke", "#666")
-                .attr("stroke-opacity", 0.3)
-                .attr("stroke-width", 1.5);
+    const view = document.createElement("div");
+    view.style.cssText = "position: absolute; inset: 0;";
+    band.append(view);
+
+    const labels = new CSS3DRenderer();
+    const graph = new ForceGraph3D(view, {
+        controlType: "orbit",
+        rendererConfig: { antialias: false },
+        extraRenderers: [labels],
+    })
+        .backgroundColor("rgba(0,0,0,0)")
+        .showNavInfo(false)
+        .graphData({ nodes: data.nodes, links: data.edges })
+        .nodeThreeObject(mesh)
+        .nodeLabel(nameOf)
+        .linkColor(linkColor)
+        .linkOpacity(0.35)
+        .warmupTicks(300)
+        .cooldownTicks(0)
+        .onNodeClick(d => { location.href = "./" + d.lnk + ".html"; })
+        .onNodeHover(d => hover(d));
+
+    const illuminate = () => {
+        const f = focused();
+        const near = f && neighbors.get(f.id);
+        for (const n of data.nodes) n.__threeObj.material.opacity = !hovered || near.has(n.id) ? 1 : 0.15;
+        graph.linkColor(linkColor);
+    };
+    const hover = d => {
+        hovered = d;
+        view.style.cursor = d ? "pointer" : null;
+        illuminate();
+    };
+    // ライブラリは最後のマウス位置で当たり判定を続けるので、帯の外では止める
+    graph.enablePointerInteraction(false);
+    view.addEventListener("pointerenter", () => graph.enablePointerInteraction(true));
+    view.addEventListener("pointerleave", () => {
+        graph.enablePointerInteraction(false);
+        hover(null);
+    });
+
+    const camera = graph.camera();
+    const controls = graph.controls();
+    const composer = graph.postProcessingComposer();
+    // 解像度を半分にして、ぼかさずに引き伸ばす
+    graph.renderer().setPixelRatio(0.5);
+    composer.setPixelRatio(0.5);
+    composer.addPass(new ShaderPass(dither));
+    graph.renderer().domElement.style.imageRendering = "pixelated";
+    graph.scene().fog = new THREE.Fog(0x000000, 600, 1600);
+    graph.cameraPosition({ x: 0, y: 0, z: 900 });
+
+    // 主役の名前の注記。主役の縁から斜めに線を引き、折れた先の下線の上に名前を書く。
+    // 線は場面の中に描いてノードと同じ粗さにし、名前は読めるよう HTML で重ねる。
+    // 空間に固定するので、カメラが動くと別の角度から見える
+    const title = (() => {
+        const measure = document.createElement("canvas").getContext("2d");
+        let current = null;
+        const make = (n, from) => {
+            const edge = n.__threeObj.geometry.parameters.radius * Math.SQRT1_2;
+            const bend = edge + 40;
+            const el = document.createElement("div");
+            // 裏から見たときは描かない
+            el.style.cssText = "width: 0; height: 0; pointer-events: none; backface-visibility: hidden;";
+            const text = document.createElement("div");
+            text.style.cssText = `position: absolute; left: ${bend}px; top: ${-bend}px; transform: translateY(-100%);
+                white-space: nowrap; padding: 0 8px 4px 4px; font: 20px "Izumi16", monospace; line-height: 1.4; color: ${GOLD};`;
+            text.textContent = nameOf(n);
+            el.append(text);
+
+            const obj = new CSS3DObject(el);
+            obj.position.set(n.x, n.y, n.z);
+            obj.lookAt(from);
+            // 少し斜めに振って遠近をつける。文字の先が手前に迫らないよう、奥へ遠ざかる向きに振る
+            obj.rotateY(deg(20 + 10 * Math.random()));
+            obj.rotateX(deg(-10));
+
+            // CSS は下向きが正、場面は上向きが正なので y の符号が逆になる
+            measure.font = '20px "Izumi16"';
+            const end = bend + measure.measureText(text.textContent).width + 12;
+            const points = [new THREE.Vector3(edge, edge, 0), new THREE.Vector3(bend, bend, 0), new THREE.Vector3(end, bend, 0)];
+            const line = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([points[0], points[0], points[0]]),
+                // 名前の HTML は常に手前に出るので、線もノードに隠れないようにする
+                new THREE.LineBasicMaterial({ color: GOLD, transparent: true, depthTest: false }),
+            );
+            line.renderOrder = 1;
+            obj.add(line);
+            graph.scene().add(obj);
+
+            // 斜めの線、下線、名前の順に出す
+            const position = line.geometry.getAttribute("position");
+            tween(600, k => {
+                if (!line.parent) return false;
+                const tip = k < 0.5
+                    ? points[0].clone().lerp(points[1], ease(k * 2))
+                    : points[1].clone().lerp(points[2], ease(k * 2 - 1));
+                position.setXYZ(1, ...(k < 0.5 ? tip : points[1]).toArray());
+                position.setXYZ(2, ...tip.toArray());
+                position.needsUpdate = true;
+            });
+            text.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: 450, fill: "both" });
+            return { obj, el, line };
+        };
+        return {
+            show(n, from) {
+                this.hide();
+                current = make(n, from);
+            },
+            // 前の注記が消えきる前に次を出せるよう、消すものは手放してから消す
+            hide() {
+                if (!current) return;
+                const { obj, el, line } = current;
+                current = null;
+                el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: "forwards" });
+                tween(300, k => { line.material.opacity = 1 - k; }, () => {
+                    obj.removeFromParent();
+                    line.geometry.dispose();
+                    line.material.dispose();
+                });
+            },
+        };
+    })();
+
+    // ツアー: 3本以上つながるノードをランダムに訪ね、ショットごとに撮り方を変える。
+    // 1つのショットは「照らして待つ → 移動 → 撮影 → 静止」
+    const candidates = data.nodes.filter(n => neighbors.get(n.id).size > 3);
+    const UP = new THREE.Vector3(0, 1, 0);
+    const WAIT = 1, TRAVEL = 2.5, MOVE = 6, HOLD = 1.5;
+    const baseFov = camera.fov;
+    // c は主役、dir は主役から見たカメラの向き、side は横、p は撮影の進み(0→1)
+    const shots = {
+        pushIn: (c, dir, side, p) => c.clone().addScaledVector(dir, 380 - 150 * p),
+        truck: (c, dir, side, p) => c.clone().addScaledVector(dir, 300).addScaledVector(side, -160 + 320 * p),
+        low: (c, dir, side, p) => c.clone().addScaledVector(dir, 280).addScaledVector(UP, -220 + 60 * p),
+        top: (c, dir, side, p) => c.clone().addScaledVector(UP, 330).addScaledVector(dir, 60 * Math.cos(p)).addScaledVector(side, 60 * Math.sin(p)),
+        orbit: (c, dir, side, p) => c.clone().addScaledVector(dir, 300 * Math.cos(p)).addScaledVector(side, 300 * Math.sin(p)).addScaledVector(UP, 80),
+        // 寄りながら画角を広げ、主役の大きさを保ったまま背景だけを伸ばす
+        vertigo: (c, dir, side, p) => c.clone().addScaledVector(dir, 380 - 180 * p),
+    };
+    // tan(画角/2)×距離を一定に保つ
+    const vertigoFov = () => 2 * THREE.MathUtils.radToDeg(Math.atan(
+        380 * Math.tan(deg(baseFov / 2)) / camera.position.distanceTo(controls.target)));
+    const pose = (sh, p) => {
+        // 手で動かした後の続きは、離した時の視点のまま見ていた点のまわりを回る
+        if (sh.offset) return { eye: sh.offset.clone().applyAxisAngle(UP, 0.8 * p).add(sh.look), look: sh.look };
+        const c = new THREE.Vector3(sh.node.x, sh.node.y, sh.node.z);
+        return { eye: shots[sh.kind](c, sh.dir, sh.side, p), look: c };
+    };
+
+    let shot = null, roll = 0;
+    const startShot = t => {
+        let node;
+        do node = pick(candidates); while (shot && node === shot.node);
+        const a = Math.random() * Math.PI * 2;
+        const dir = new THREE.Vector3(Math.cos(a), 0.3 * (Math.random() - 0.5), Math.sin(a)).normalize();
+        shot = {
+            node, dir,
+            side: new THREE.Vector3().crossVectors(UP, dir).normalize(),
+            kind: pick(Object.keys(shots)),
+            roll: Math.random() < 0.5 ? 0 : (Math.random() - 0.5) * 0.12,
+            start: t + WAIT * 1000,
+            travel: TRAVEL,
+            fromEye: camera.position.clone(),
+            fromLook: controls.target.clone(),
+            fromRoll: roll,
+            fromFov: camera.fov,
+            arrived: false,
+        };
+        // 先に次の主役を照らす。名前は着いてから出し、出る様子を画面の中で見せる
+        featured = node;
+        illuminate();
+        title.hide();
+    };
+
+    // 手で動かしている間と、離してから 1 秒は止める。離したことは指をどこで離しても拾う
+    let engaged = false, paused = false, lastInput = -Infinity;
+    const touched = () => { lastInput = performance.now(); };
+    const release = () => { if (engaged) { engaged = false; touched(); } };
+    controls.addEventListener("start", () => { engaged = true; touched(); });
+    controls.addEventListener("end", release);
+    for (const type of ["pointerup", "pointercancel"]) addEventListener(type, release, true);
+
+    const tour = t => {
+        if (engaged || t - lastInput < 1000) {
+            paused = true;
+            roll = 0;
+            return;
+        }
+        // 配置が済むまでは座標がない
+        if (data.nodes[0].x === undefined) return;
+        if (!shot) startShot(t);
+        // 手で動かした後は、決めてあった構図へ戻らず、離した時の視点から続ける。
+        // まだ着いていなければ、照らしている主役への移動を今の視点からやり直す
+        if (paused && !shot.arrived) {
+            paused = false;
+            Object.assign(shot, {
+                start: t,
+                fromEye: camera.position.clone(),
+                fromLook: controls.target.clone(),
+                fromRoll: 0,
+                fromFov: camera.fov,
+            });
+        }
+        if (paused) {
+            paused = false;
+            Object.assign(shot, {
+                start: t,
+                travel: 0,
+                look: controls.target.clone(),
+                offset: camera.position.clone().sub(controls.target),
+                roll: 0,
+                keepFov: true,
+            });
+        }
+        if ((t - shot.start) / 1000 > shot.travel + MOVE + HOLD) startShot(t);
+        const e = (t - shot.start) / 1000;
+        if (e < 0) return;
+
+        let fov;
+        if (e < shot.travel) {
+            // 位置も傾きも画角も、前のショットの値から移す
+            const q = ease(e / shot.travel);
+            const start = pose(shot, 0);
+            camera.position.lerpVectors(shot.fromEye, start.eye, q);
+            controls.target.lerpVectors(shot.fromLook, start.look, q);
+            roll = THREE.MathUtils.lerp(shot.fromRoll, shot.roll, q);
+            fov = THREE.MathUtils.lerp(shot.fromFov, baseFov, q);
+        } else {
+            const { eye, look } = pose(shot, ease(Math.min(1, (e - shot.travel) / MOVE)));
+            camera.position.copy(eye);
+            controls.target.copy(look);
+            roll = shot.roll;
+            fov = shot.kind === "vertigo" ? vertigoFov() : baseFov;
+            if (!shot.arrived) {
+                shot.arrived = true;
+                // 着いた時ではなく撮影の中ほどの視点に向ける。着いた時に向けると撮影の終わりに裏返りやすい
+                title.show(shot.node, pose(shot, 0.5).eye);
+            }
+        }
+        if (!shot.keepFov && camera.fov !== fov) {
+            camera.fov = fov;
+            camera.updateProjectionMatrix();
+        }
+    };
+
+    const resize = () => {
+        graph.width(band.clientWidth).height(band.clientHeight);
+        // 4px の格子。画面の端から端が -1 から 1 なので、半分の数で割る
+        snap.value.set(band.clientWidth / 8, band.clientHeight / 8);
+    };
+    addEventListener("resize", resize);
+    resize();
+
+    // 描く回数だけを 20fps に間引く。カメラは時間どおり進む。
+    // 名前の HTML も同じコマで描き、場面の中の線とずれないようにする
+    const renderFrame = composer.render.bind(composer);
+    const renderLabels = labels.render.bind(labels);
+    let last = 0, drawn = false;
+    labels.render = (...args) => { if (drawn) renderLabels(...args); };
+    composer.render = () => {
+        // ライブラリがカメラを主役に向け直した後で傾ける
+        camera.rotateZ(roll);
+        const now = performance.now();
+        drawn = now - last >= 1000 / 20;
+        if (!drawn) return;
+        last = now;
+        // ライブラリが作る線にも震えを付ける
+        graph.scene().traverse(o => {
+            if (o.isLine && o.material.onBeforeCompile !== snapVertex) {
+                o.material.onBeforeCompile = snapVertex;
+                o.material.needsUpdate = true;
+            }
         });
-        highlightedLinks = [];
-
-        // Hide tooltip
-        tooltip.style("visibility", "hidden");
+        renderFrame();
     };
-    handleMouseMove = (event, i) => {
-        // Update tooltip position as mouse moves
-        tooltip.style("top", (event.pageY - 10) + "px")
-            .style("left", (event.pageX + 10) + "px");
+    // 帯が画面の外にある間は、ツアーも描画も止める
+    let visible = true;
+    new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) graph.resumeAnimation();
+        else graph.pauseAnimation();
+    }).observe(band);
+    const loop = t => {
+        if (visible) tour(t);
+        requestAnimationFrame(loop);
     };
+    requestAnimationFrame(loop);
 
-    // Graph data
-    const links = data.edges.map(d => Object.create(d));
-    const nodes = data.nodes.map(d => Object.create(d));
-
-    // Force simulation for the graph
-    simulation = d3.forceSimulation(nodes)
-                   .alpha(0.9)
-                   .velocityDecay(0.6)
-                   .force("link", d3.forceLink(links).id(d => d.id).strength(.1))
-                   .force("charge", d3.forceManyBody()
-                                      .strength(-500))
-                   .force('collision',
-                          d3.forceCollide().radius(d => radius(d) * 1.2).strength(1.5))
-                   .force('x', d3.forceX().x(function(d) {
-                       return width / 2 +  (width / 4) * centersx[d.communityLabel];
-                   }).strength(0.25))
-                   .force('y', d3.forceY().y(function(d) {
-                       return height / 2 +  (height / 8) * centersy[d.communityLabel];
-                   }).strength(0.25))
-                   .stop();
-
-    // Create all the graph elements
-    const svg = d3.select("#main-graph svg")
-                  .attr('width', '100%')
-                  .attr('height', '300')
-                  .attr('class', 'node-graph')
-                  .attr("viewBox", [0, 0, width, height])
-                  .attr("preserveAspectRatio", "xMidYMid meet")
-                  .style("background", "transparent")
-                  .style("display", "block");
-
-    // Zoom and pan container
-    const g = svg.append("g").attr("visibility", "hidden");
-
-    let isWheelZoom = false;
-
-    const zoom = d3.zoom()
-        .scaleExtent([0.1, 10])
-        .on("start", (event) => {
-            isWheelZoom = event.sourceEvent && event.sourceEvent.type === "wheel";
-            g.style("transition", isWheelZoom ? "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)" : "none");
-        })
-        .on("zoom", (event) => {
-            const transform = event.transform;
-            g.style("transform", `translate(${transform.x}px, ${transform.y}px) scale(${transform.k})`);
-        })
-        .on("end", (event) => {
-            if (isWheelZoom) g.style("transition", "none");
-        });
-
-    // Calculate initial position to center the graph
-    const svgNode = svg.node();
-    const svgRect = svgNode.getBoundingClientRect();
-    const initialScale = 1.2;
-    const translateX = svgRect.width / 2 - (width / 2) * initialScale;
-    const translateY = svgRect.height / 2 - (height / 2) * initialScale;
-    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(translateX, translateY).scale(initialScale));
-
-    const link = g.append("g")
-                    .attr("stroke", "#666")
-                    .attr("stroke-opacity", 0.3)
-                    .selectAll("line")
-                    .data(links)
-                    .join("line")
-                    .attr("stroke-dasharray", d => (d.predicted? "5,5": "0,0"))
-                    .attr("stroke-width", 1.5);
-
-    const node = g.append("g")
-                    .selectAll("circle")
-                    .data(nodes)
-                    .join("a")
-                    .attr("xlink:href", d => {
-                        return "./" + d.lnk + ".html";
-                    })
-                    .attr("id", d => "circle_" + d.lnk)
-                    .append("circle")
-                    .attr("id", d => d.id.toLowerCase())
-                    .attr("r", radius)
-                    .attr("fill", nodeColor)
-                    .attr("stroke", "#fff")
-                    .attr("stroke-width", d => Math.max(1, radius(d) / 8))
-                    .attr("stroke-opacity", 0.8)
-                    .style("cursor", "pointer")
-                    .style("filter", d => radius(d) > 20 ? "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))" : "none")
-                    .on("mouseover", handleMouseOver)
-                    .on("mousemove", handleMouseMove)
-                    .on("mouseout", handleMouseOut)
-                    .call(drag(simulation));
-
-    const ticked = () => {
-        node.attr("cx", d => d.x)
-            .attr("cy", d => d.y);
-
-        link.attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-    };
-    // 落ち着くまで毎フレーム描き直すと重いので、配置を計算しきってから描く。
-    // 計算は小分けにして、その間もページを操作できるようにする
-    const settle = () => {
-        const deadline = performance.now() + 30;
-        while (simulation.alpha() > simulation.alphaMin() && performance.now() < deadline) simulation.tick();
-        if (simulation.alpha() > simulation.alphaMin()) return setTimeout(settle);
-        ticked();
-        g.attr("visibility", null);
-        svg.select(".graph-loading").remove();
-        simulation.on("tick", ticked);
-    };
-    settle();
-}).catch(() => {
-    const loading = d3.select("#main-graph .graph-loading");
-    loading.selectAll("rect").remove();
-    loading.append("text").attr("text-anchor", "middle").text("グラフを読み込めませんでした");
-});
+    band.querySelector("svg")?.remove();
+} catch (e) {
+    console.error(e);
+    const loading = band.querySelector(".graph-loading");
+    loading?.querySelectorAll("rect").forEach(r => r.remove());
+    loading?.insertAdjacentHTML("beforeend", '<text text-anchor="middle">グラフを読み込めませんでした</text>');
+}
