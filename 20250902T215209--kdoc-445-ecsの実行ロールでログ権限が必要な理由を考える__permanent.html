@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-17 土 16:47 -->
+<!-- 2026-10-17 土 17:34 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 445: ECSの実行ロールでログ権限が必要な理由を考える</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 445: ECSの実行ロールでログ権限が必要な理由を考える</h1>
-<div id="outline-container-org312b068" class="outline-2">
-<h2 id="org312b068"><a href="#org312b068">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org312b068">
+<div id="outline-container-org2e59cf5" class="outline-2">
+<h2 id="org2e59cf5"><a href="#org2e59cf5">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org2e59cf5">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,35 +37,100 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgce7fe88" class="outline-2">
-<h2 id="orgce7fe88"><a href="#orgce7fe88">概要</a></h2>
-<div class="outline-text-2" id="text-orgce7fe88">
+<div id="outline-container-orgc1b20c8" class="outline-2">
+<h2 id="orgc1b20c8"><a href="#orgc1b20c8">概要</a></h2>
+<div class="outline-text-2" id="text-orgc1b20c8">
 <p>
-AWS ECSに関連したロールには2つあり、よく混同する。
+ECS には、タスクロールとタスク実行ロールの2つの IAM ロールがあり、よく混同する。どちらに権限を付けるかは、「その AWS の API を呼ぶのは誰か」で決まる。
 </p>
 
-<ul class="org-ul">
-<li>タスクロール
-<ul class="org-ul">
-<li><b>タスク内のアプリケーションが</b> AWSサービスへアクセスするのに使う。例: S3, DynamoDB, SQS など、アプリケーションが直接使うサービスへの権限</li>
-</ul></li>
-<li>タスク実行ロール
-<ul class="org-ul">
-<li><b>ECS 実行基盤 が</b> AWSサービスへアクセスするのに使う。例: CloudWatch Logs、ECR、Secrets Manager など</li>
-</ul></li>
-</ul>
+<table class="table" data-bs-theme="dark">
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">ロール</th>
+<th scope="col" class="org-left">API を呼ぶもの</th>
+<th scope="col" class="org-left">例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">タスクロール</td>
+<td class="org-left">タスクの中で動くアプリケーション</td>
+<td class="org-left">S3、DynamoDB、SQS</td>
+</tr>
+
+<tr>
+<td class="org-left">タスク実行ロール</td>
+<td class="org-left">コンテナを動かす側</td>
+<td class="org-left">Fargate での ECR からのイメージ取得、Fargate での CloudWatch Logs へのログ送信</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote>
+<p>
+The task execution role grants the Amazon ECS container and Fargate agents permission to make AWS API calls on your behalf.
+</p>
 
 <p>
-タスクの標準出力をログとしてCloudWatchに保存するときは、「アプリケーションは標準出力するだけで、ログを送るのはタスク実行基盤なので、タスク実行ロールが必要」と考えるとよい。
+<a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html">Amazon ECS task execution IAM role</a>
 </p>
+</blockquote>
+
+<blockquote>
+<p>
+The permissions granted in the IAM role are vended to containers running in the task. This role allows your application code (running in the container) to use other AWS services.
+</p>
+
+<p>
+<a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html">Amazon ECS task IAM role</a>
+</p>
+</blockquote>
+
+<p>
+タスクの標準出力を CloudWatch Logs に保存するときは、Fargate ではタスク実行ロールにログの権限が要る。アプリケーションは標準出力に書くだけで、CloudWatch Logs に送るのはコンテナを動かす側の <code>awslogs</code> ログドライバーだからである。
+</p>
+
+<p>
+一方、ECS Exec でコンテナに入るときは、タスクロールに権限が要る。ECS Exec はコンテナの中で SSM エージェントを動かし、それが SSM と通信するので、API を呼ぶのはタスクの中のプロセスになる。Exec で打ったコマンドのログを CloudWatch Logs に送る権限もタスクロールに付ける。同じ CloudWatch Logs でも、送るのが誰かで付けるロールが変わる。
+</p>
+
+<blockquote>
+<p>
+The ECS Exec feature requires a task IAM role to grant containers the permissions needed for communication between the managed SSM agent (execute-command agent) and the SSM service.
+</p>
+
+<p>
+<a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html">Amazon ECS task IAM role</a>
+</p>
+</blockquote>
+
+<blockquote>
+<p>
+To enable logging, the Amazon ECS task role that&rsquo;s referenced in your task definition needs to have additional permissions.
+</p>
+
+<p>
+<a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html">Monitor Amazon ECS containers with ECS Exec</a>
+</p>
+</blockquote>
 </div>
 </div>
-<div id="outline-container-org6b593a0" class="outline-2">
-<h2 id="org6b593a0"><a href="#org6b593a0">関連</a></h2>
-<div class="outline-text-2" id="text-org6b593a0">
-<ul class="org-ul">
-<li>類推: ECSについて戸惑う部分</li>
-</ul>
+<div id="outline-container-orge1eb4fa" class="outline-2">
+<h2 id="orge1eb4fa"><a href="#orge1eb4fa">関連</a></h2>
+<div class="outline-text-2" id="text-orge1eb4fa">
+<p>
+なし。
+</p>
 </div>
 </div>
 </div>
