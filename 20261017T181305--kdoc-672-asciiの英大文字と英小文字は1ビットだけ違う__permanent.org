@@ -1,0 +1,42 @@
+:properties:
+:ID: 20261017T181305
+:end:
+#+title:      KDOC 672: ASCIIの英大文字と英小文字は1ビットだけ違う
+#+date:       [2026-10-17 Sat 18:13]
+#+filetags:   :permanent:
+#+identifier: 20261017T181305
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+ASCII の英大文字と英小文字の文字コードは、0x20 のビットだけが違う。大文字と小文字を区別しない照合などを簡単にするため、そうなるように並べてあるという。
+
+#+begin_quote
+Locating the lowercase letters in sticks 6 and 7 caused the characters to differ in bit pattern from the upper case by a single bit, which simplified case-insensitive character matching and the construction of keyboards and printers.
+
+[[https://en.wikipedia.org/wiki/ASCII][ASCII - Wikipedia]]
+#+end_quote
+
+#+caption: 大文字と小文字の文字コードを2進数で並べる
+#+begin_src shell :results output
+  for c in A a Z z; do
+    printf '%s 0x%x %s\n' "$c" "'$c" "$(echo "obase=2; $(printf '%d' "'$c")" | bc)"
+  done
+#+end_src
+
+#+RESULTS:
+#+begin_src
+A 0x41 1000001
+a 0x61 1100001
+Z 0x5a 1011010
+z 0x7a 1111010
+#+end_src
+
+* 関連
+
+なし。
