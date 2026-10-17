@@ -9,7 +9,6 @@ const GOLD = "#ffd700";
 const LINK = "#8a8470";
 const ease = x => x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
 const pick = list => list[Math.floor(Math.random() * list.length)];
-const deg = THREE.MathUtils.degToRad;
 const tween = (ms, step, done) => {
     const started = performance.now();
     const frame = now => {
@@ -145,9 +144,7 @@ try {
     graph.scene().fog = new THREE.Fog(0x000000, 600, 1600);
     graph.cameraPosition({ x: 0, y: 0, z: 900 });
 
-    // 主役の名前の注記。主役の縁から斜めに線を引き、折れた先の下線の上に名前を書く。
-    // 線は場面の中に描いてノードと同じ粗さにし、名前は読めるよう HTML で重ねる。
-    // 空間に固定するので、カメラが動くと別の角度から見える
+    // 主役の名前の注記。線は場面の中に描いてノードと同じ粗さにし、名前は読めるよう HTML で重ねる
     const title = (() => {
         const measure = document.createElement("canvas").getContext("2d");
         let current = null;
@@ -155,7 +152,6 @@ try {
             const edge = n.__threeObj.geometry.parameters.radius * Math.SQRT1_2;
             const bend = edge + 40;
             const el = document.createElement("div");
-            // 裏から見たときは描かない
             el.style.cssText = "width: 0; height: 0; pointer-events: none; backface-visibility: hidden;";
             const text = document.createElement("div");
             text.style.cssText = `position: absolute; left: ${bend}px; top: ${-bend}px; transform: translateY(-100%);
@@ -166,9 +162,6 @@ try {
             const obj = new CSS3DObject(el);
             obj.position.set(n.x, n.y, n.z);
             obj.lookAt(from);
-            // 少し斜めに振って遠近をつける。文字の先が手前に迫らないよう、奥へ遠ざかる向きに振る
-            obj.rotateY(deg(20 + 10 * Math.random()));
-            obj.rotateX(deg(-10));
 
             // CSS は下向きが正、場面は上向きが正なので y の符号が逆になる
             measure.font = '20px "Izumi16"';
@@ -217,52 +210,33 @@ try {
         };
     })();
 
-    // ツアー: 3本以上つながるノードをランダムに訪ね、ショットごとに撮り方を変える。
-    // 1つのショットは「照らして待つ → 移動 → 撮影 → 静止」
+    // ツアー: 3本以上つながるノードをランダムに訪ね、照らして待つ → 移動 → 主役のまわりを水平に回る → 静止
     const candidates = data.nodes.filter(n => neighbors.get(n.id).size > 3);
     const UP = new THREE.Vector3(0, 1, 0);
-    const WAIT = 1, TRAVEL = 2.5, MOVE = 6, HOLD = 1.5;
-    const baseFov = camera.fov;
-    // c は主役、dir は主役から見たカメラの向き、side は横、p は撮影の進み(0→1)
-    const shots = {
-        pushIn: (c, dir, side, p) => c.clone().addScaledVector(dir, 380 - 150 * p),
-        truck: (c, dir, side, p) => c.clone().addScaledVector(dir, 300).addScaledVector(side, -160 + 320 * p),
-        low: (c, dir, side, p) => c.clone().addScaledVector(dir, 280).addScaledVector(UP, -220 + 60 * p),
-        top: (c, dir, side, p) => c.clone().addScaledVector(UP, 330).addScaledVector(dir, 60 * Math.cos(p)).addScaledVector(side, 60 * Math.sin(p)),
-        orbit: (c, dir, side, p) => c.clone().addScaledVector(dir, 300 * Math.cos(p)).addScaledVector(side, 300 * Math.sin(p)).addScaledVector(UP, 80),
-        // 寄りながら画角を広げ、主役の大きさを保ったまま背景だけを伸ばす
-        vertigo: (c, dir, side, p) => c.clone().addScaledVector(dir, 380 - 180 * p),
-    };
-    // tan(画角/2)×距離を一定に保つ
-    const vertigoFov = () => 2 * THREE.MathUtils.radToDeg(Math.atan(
-        380 * Math.tan(deg(baseFov / 2)) / camera.position.distanceTo(controls.target)));
+    const WAIT = 1, TRAVEL = 2.5, MOVE = 6, HOLD = 1.5, RADIUS = 300, HEIGHT = 80;
+    const positionOf = n => new THREE.Vector3(n.x, n.y, n.z);
+    // 見る点からの位置 offset を、UP のまわりに sweep × p だけ回す。p は撮影の進み(0→1)
     const pose = (sh, p) => {
-        // 手で動かした後の続きは、離した時の視点のまま見ていた点のまわりを回る
-        if (sh.offset) return { eye: sh.offset.clone().applyAxisAngle(UP, 0.8 * p).add(sh.look), look: sh.look };
-        const c = new THREE.Vector3(sh.node.x, sh.node.y, sh.node.z);
-        return { eye: shots[sh.kind](c, sh.dir, sh.side, p), look: c };
+        const look = sh.look ?? positionOf(sh.node);
+        return { eye: sh.offset.clone().applyAxisAngle(UP, sh.sweep * p).add(look), look };
     };
 
-    let shot = null, roll = 0;
+    let shot = null;
     const startShot = t => {
         let node;
         do node = pick(candidates); while (shot && node === shot.node);
         const a = Math.random() * Math.PI * 2;
-        const dir = new THREE.Vector3(Math.cos(a), 0.3 * (Math.random() - 0.5), Math.sin(a)).normalize();
         shot = {
-            node, dir,
-            side: new THREE.Vector3().crossVectors(UP, dir).normalize(),
-            kind: pick(Object.keys(shots)),
-            roll: Math.random() < 0.5 ? 0 : (Math.random() - 0.5) * 0.12,
+            node,
+            offset: new THREE.Vector3(RADIUS * Math.cos(a), HEIGHT, RADIUS * Math.sin(a)),
+            sweep: 1,
             start: t + WAIT * 1000,
             travel: TRAVEL,
             fromEye: camera.position.clone(),
             fromLook: controls.target.clone(),
-            fromRoll: roll,
-            fromFov: camera.fov,
             arrived: false,
         };
-        // 先に次の主役を照らす。名前は着いてから出し、出る様子を画面の中で見せる
+        // 名前は着いてから出し、出る様子を画面の中で見せる
         featured = node;
         illuminate();
         title.hide();
@@ -279,63 +253,36 @@ try {
     const tour = t => {
         if (engaged || t - lastInput < 1000) {
             paused = true;
-            roll = 0;
             return;
         }
         // 配置が済むまでは座標がない
         if (data.nodes[0].x === undefined) return;
         if (!shot) startShot(t);
-        // 手で動かした後は、決めてあった構図へ戻らず、離した時の視点から続ける。
-        // まだ着いていなければ、照らしている主役への移動を今の視点からやり直す
-        if (paused && !shot.arrived) {
-            paused = false;
-            Object.assign(shot, {
-                start: t,
-                fromEye: camera.position.clone(),
-                fromLook: controls.target.clone(),
-                fromRoll: 0,
-                fromFov: camera.fov,
-            });
-        }
+        // 手で動かした後は、決めてあった構図へ戻らず今の視点から続ける。
+        // 着く前なら主役への移動をやり直し、着いた後なら見ていた点のまわりを回る
         if (paused) {
             paused = false;
-            Object.assign(shot, {
-                start: t,
-                travel: 0,
-                look: controls.target.clone(),
-                offset: camera.position.clone().sub(controls.target),
-                roll: 0,
-                keepFov: true,
-            });
+            Object.assign(shot, { start: t }, shot.arrived
+                ? { travel: 0, sweep: 0.8, look: controls.target.clone(), offset: camera.position.clone().sub(controls.target) }
+                : { fromEye: camera.position.clone(), fromLook: controls.target.clone() });
         }
         if ((t - shot.start) / 1000 > shot.travel + MOVE + HOLD) startShot(t);
         const e = (t - shot.start) / 1000;
         if (e < 0) return;
 
-        let fov;
         if (e < shot.travel) {
-            // 位置も傾きも画角も、前のショットの値から移す
             const q = ease(e / shot.travel);
             const start = pose(shot, 0);
             camera.position.lerpVectors(shot.fromEye, start.eye, q);
             controls.target.lerpVectors(shot.fromLook, start.look, q);
-            roll = THREE.MathUtils.lerp(shot.fromRoll, shot.roll, q);
-            fov = THREE.MathUtils.lerp(shot.fromFov, baseFov, q);
         } else {
             const { eye, look } = pose(shot, ease(Math.min(1, (e - shot.travel) / MOVE)));
             camera.position.copy(eye);
             controls.target.copy(look);
-            roll = shot.roll;
-            fov = shot.kind === "vertigo" ? vertigoFov() : baseFov;
             if (!shot.arrived) {
                 shot.arrived = true;
-                // 着いた時ではなく撮影の中ほどの視点に向ける。着いた時に向けると撮影の終わりに裏返りやすい
-                title.show(shot.node, pose(shot, 0.5).eye);
+                title.show(shot.node, camera.position);
             }
-        }
-        if (!shot.keepFov && camera.fov !== fov) {
-            camera.fov = fov;
-            camera.updateProjectionMatrix();
         }
     };
 
@@ -354,8 +301,6 @@ try {
     let last = 0, drawn = false;
     labels.render = (...args) => { if (drawn) renderLabels(...args); };
     composer.render = () => {
-        // ライブラリがカメラを主役に向け直した後で傾ける
-        camera.rotateZ(roll);
         const now = performance.now();
         drawn = now - last >= 1000 / 20;
         if (!drawn) return;
