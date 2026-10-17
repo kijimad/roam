@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-17 土 10:47 -->
+<!-- 2026-10-17 土 16:46 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CI</title>
+<title>KDOC 669: Makeは前提条件のないターゲットと同じ名前のファイルがあるとレシピを実行しない</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
 <link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
@@ -21,39 +21,71 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<h1 class="title">CI</h1>
-<div id="outline-container-org7ba0dfb" class="outline-2">
-<h2 id="org7ba0dfb"><a href="#org7ba0dfb">概要</a></h2>
-<div class="outline-text-2" id="text-org7ba0dfb">
-<p>
-CIは、継続的インテグレーションのこと。
-ビルドの各段階のTestで安全に変更を行える。
-</p>
-</div>
-</div>
-<div id="outline-container-org6cfdd9f" class="outline-2">
-<h2 id="org6cfdd9f"><a href="#org6cfdd9f">Memo</a></h2>
-</div>
-<div id="outline-container-org165d301" class="outline-2">
-<h2 id="org165d301"><a href="#org165d301">Tasks</a></h2>
-<div class="outline-text-2" id="text-org165d301">
-</div>
-<div id="outline-container-org6aa2ff3" class="outline-3">
-<h3 id="org6aa2ff3"><a href="#org6aa2ff3"><span class="done DONE">DONE</span> <a href="https://gihyo.jp/book/2020/978-4-297-11411-4">CircleCI実践入門 ──CI/CDがもたらす開発速度と品質の両立：書籍案内｜技術評論社</a></a></h3>
-<div class="outline-text-3" id="text-org6aa2ff3">
+<h1 class="title">KDOC 669: Makeは前提条件のないターゲットと同じ名前のファイルがあるとレシピを実行しない</h1>
+<div id="outline-container-org0e0b857" class="outline-2">
+<h2 id="org0e0b857"><a href="#org0e0b857">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org0e0b857">
 <ul class="org-ul">
-<li>yamlでエイリアスが使えるらしい。重複を減らせる</li>
-<li>本番環境の監視(合成モニタリング): datadog</li>
-<li>本番環境に対するE2Eテスト</li>
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-17 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-17 貴島</li>
+</ul></li>
 </ul>
 </div>
 </div>
+<div id="outline-container-org875aa66" class="outline-2">
+<h2 id="org875aa66"><a href="#org875aa66">概要</a></h2>
+<div class="outline-text-2" id="text-org875aa66">
+<p>
+Make は、前提条件のないターゲットと同じ名前のファイルがあると、もう作ってあるとみなしてレシピを実行しない。ファイルを作らないターゲットは <code>.PHONY</code> にすると、同じ名前のファイルがあっても実行する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>clean ファイルがある状態で、 .PHONY なしとありで make clean する</label><pre class="src src-shell"><code>dir=$(mktemp -d); trap 'rm -rf "$dir"' EXIT; cd "$dir"
+touch clean
+printf 'clean:\n\t@echo "clean のレシピを実行した"\n' &gt; Makefile
+echo "== .PHONY なし"
+make clean 2&gt;&amp;1
+printf '.PHONY: clean\nclean:\n\t@echo "clean のレシピを実行した"\n' &gt; Makefile
+echo "== .PHONY あり"
+make clean 2&gt;&amp;1
+</code></pre>
 </div>
-<div id="outline-container-org2976f33" class="outline-2">
-<h2 id="org2976f33"><a href="#org2976f33">Reference</a></h2>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>== .PHONY なし
+make: 'clean' is up to date.
+== .PHONY あり
+clean のレシピを実行した
+</code></pre>
 </div>
-<div id="outline-container-org815c7ef" class="outline-2">
-<h2 id="org815c7ef"><a href="#org815c7ef">Archives</a></h2>
+
+<p>
+前提条件があれば、それがファイルより新しいときに作り直す。前提条件がないと比べる相手がないので、ファイルがあるだけで最新とみなされる。
+</p>
+
+<blockquote>
+<p>
+Since it has no prerequisites, clean would always be considered up to date and its recipe would not be executed. To avoid this problem you can explicitly declare the target to be phony by making it a prerequisite of the special target .PHONY …
+</p>
+
+<p>
+<a href="https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html">GNU make 4.4.1 - 4.6 Phony Targets</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-orgae401ab" class="outline-2">
+<h2 id="orgae401ab"><a href="#orgae401ab">関連</a></h2>
+<div class="outline-text-2" id="text-orgae401ab">
+<p>
+なし。
+</p>
+</div>
 </div>
 </div>
 <div id="postamble" class="status">
