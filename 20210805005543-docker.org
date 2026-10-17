@@ -9,7 +9,7 @@
 * 概要
 Dockerはパフォーマンスに優れた仮想環境を作るプログラム。
 得られる可搬性によって、作成したイメージを開発における各ステージ(テスト、ビルド、リリース…)で適用できるようになる。
-その意味で[[id:eaf6ed04-7927-4a16-ba94-fbb9f6e76166][CI]], [[id:2c4cb3a7-7a8a-4a3b-88c2-2c5e69515764][CD]]の基礎的な技術となっている。
+その意味でCI, CDの基礎的な技術となっている。
 * Memo
 ** バインドマウント先を削除した場合の挙動
 :LOGBOOK:
@@ -180,8 +180,8 @@ id $(whoami) # dockerが追加されたのを確認する
 
 - [[https://tech.librastudio.co.jp/entry/index.php/2018/07/14/post-1924/][dockerコマンド実行時の「Got permission denied while trying to connect to the Docker daemon socket」 - Libra Studio Log]]
 
-** [[id:2d35ac9e-554a-4142-bba7-3c614cbfe4c4][GitHub Actions]]でビルドする
-[[id:eaf6ed04-7927-4a16-ba94-fbb9f6e76166][CI]]によるコンテナビルドには、--cache-from を使って、レジストリに送信したイメージから各ステージのキャッシュを取得していく方法と、CIのキャッシュ機能を使う方法の2つがある。
+** GitHub Actionsでビルドする
+CIによるコンテナビルドには、--cache-from を使って、レジストリに送信したイメージから各ステージのキャッシュを取得していく方法と、CIのキャッシュ機能を使う方法の2つがある。
 
 レジストリからキャッシュを取る方法には弱点がある。
 
@@ -206,7 +206,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build go build
 
 をキャッシュしておくことで高速化できる。
 ** ビルドキャッシュをレジストリに保存し、CI環境でキャッシュを使ってビルドする
-レジストリのキャッシュを利用してビルドできる。これによって、キャッシュがローカル環境に保持されない[[id:eaf6ed04-7927-4a16-ba94-fbb9f6e76166][CI]]環境などでもキャッシュを利用して高速にビルドできる。
+レジストリのキャッシュを利用してビルドできる。これによって、キャッシュがローカル環境に保持されないCI環境などでもキャッシュを利用して高速にビルドできる。
 
 ポイントは--build-argと--cache-from。
 --build-argでメタ情報を含めてビルドする。このイメージをpushしておくことで、次回からキャッシュを利用できる。
@@ -240,7 +240,7 @@ node_modulesはいらなくて、ビルド成果物だけあればよい。
 COPY --from=rails-yarn-build $HOME/public/webpack/ $HOME/public/webpack/
 #+end_src
 ** Rails開発のMy docker-compose
-[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]開発をすべてdockerでやる想定。
+Rails開発をすべてdockerでやる想定。
 一発ですべてが準備され、クリーンな環境を構築する。bundle install やyarn install など、立ち上げ続ける前提でないコマンドも含まれる。そのコマンドだけ再度実行したいときは ~docker-compose restart bundle~ などとする。
 
 元ネタ: foremのdocker-compose.yml。
@@ -616,12 +616,12 @@ Dockerイメージをインターネット上にアップロードできるス�
 複数の環境が関係する場合、マルチステージビルドを行うとキャッシュが効くため高速化できる。
 
 - Linux関連のイメージ
-- [[id:cfd092c4-1bb2-43d3-88b1-9f647809e546][Ruby]]関連のイメージ
+- Ruby関連のイメージ
 - node関連のイメージ
-- [[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]アプリのイメージ
+- Railsアプリのイメージ
 
 のように。
-Linux → [[id:cfd092c4-1bb2-43d3-88b1-9f647809e546][Ruby]] + node → [[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]という依存関係になる。
+Linux → Ruby + node → Railsという依存関係になる。
 ** Dockerfileは何か
 Dockrfileはイメージを作る。(image build)
 docker-compose upは↑で作られたイメージを元にコンテナを作り起動までする。そのなかアプリケーションを走らせて開発する。
@@ -630,9 +630,9 @@ image構築 → コンテナ構築 → コンテナ起動 という流れ。
 
 コンテナの作り方には2種類ある。
 - 自作する必要があるものは↑Dockerfileで作る
-- 既存コンテナ([[id:7dab097c-60ba-43b9-949f-c58bf3151aa8][MySQL]]とか)はイメージをダウンロードする
+- 既存コンテナ(MySQLとか)はイメージをダウンロードする
 ** コンテナ内でコマンド実行する
-コンテナ内部で実行したいコマンドがあるときにやりたいこと、たとえば[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]だと、gemfileが新しくなったときにbundle installしたい。
+コンテナ内部で実行したいコマンドがあるときにやりたいこと、たとえばRailsだと、gemfileが新しくなったときにbundle installしたい。
 
 runは新しくコンテナを作成し、内部でコマンドを実行する。サービス名はdocker-compose.ymlから取っている。つまり立ち上がっているコンテナ名は関係ないのに注意。何も指定してない場合、docker-compose.ymlからサービス名を決定する。ほかのファイルの場合には-fオプションが必要。外部で永続化される…volumeが指定されてるような処理(bundle install)とか、データベース関係はいいのだが、その他は永続化されないので注意。
 
@@ -656,7 +656,7 @@ docker-compose up --build -d # コンテナ作成する
 docker-compose down
 #+end_src
 ** docker外に公開する
-[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]
+Rails
 Dockerfileで。
 #+begin_src shell
   CMD bundle exec rails server -b 0.0.0.0
@@ -693,7 +693,7 @@ CLOCK: [2022-08-07 Sun 12:05]--[2022-08-07 Sun 12:30] =>  0:25
 :END:
 仮想化をどうやっているか、なぜ独立した環境にできるのか知らない。
 
-解説は↓にある。非常にわかりやすい。[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]のミニマル実装もある。
+解説は↓にある。非常にわかりやすい。Goのミニマル実装もある。
 - [[https://kaminashi-developer.hatenablog.jp/entry/dive-into-swamp-container-scratch][【Go言語】自作コンテナ沼。スクラッチでミニDockerを作ろう - カミナシ エンジニアブログ]]
 
 dockerの構成。
@@ -720,7 +720,7 @@ network, container, image, volumesはCli経由でDocker daemonの機能を呼び
   -> /usr/bin/emacs # unshareしてない状態だとEmacsはguixディレクトリ化に入っているので、確かに環境が別になっている
 #+end_src
 
-コンテナに必要な[[id:7a81eb7c-8e2b-400a-b01a-8fa597ea527a][Linux]]の機能3つ。
+コンテナに必要なLinuxの機能3つ。
 
 - Namespace
   - プロセスはそれぞれでNamespaceを持っている。unshareはプロセスを分離させNamespaceを作成した
@@ -974,7 +974,7 @@ https://github.com/kd-collective/buildkit/blob/37d54ebc592a54db8764911eb320d02d2
 - ファイルを読み込み、パスのスライスを出しているだけ
 
 ** TODO [[https://www.youtube.com/watch?v=HPuvDm8IC-4][Golang UK Conf. 2016 - Liz Rice - What is a container, really? Let's write one in Go from scratch - YouTube]]
-コンテナランタイムを使わずに[[id:7cacbaa3-3995-41cf-8b72-58d6e07468b1][Go]]でコンテナを作ることで、コンテナとは何かを学ぶ。
+コンテナランタイムを使わずにGoでコンテナを作ることで、コンテナとは何かを学ぶ。
 ** TODO [[https://gihyo.jp/book/2020/978-4-297-11837-2][イラストでわかる DockerとKubernetes：書籍案内｜技術評論社]]
 仕組みの説明。
 ** TODO [[https://dev.classmethod.jp/articles/container-journey/][「コンテナジャーニー」〜明日から速攻始めるAWSでのコンテナ導入運用〜 #cmdevio2018 | DevelopersIO]]
@@ -988,7 +988,7 @@ CLOCK: [2023-09-09 Sat 14:33]--[2023-09-09 Sat 14:58] =>  0:25
 swarmを学ぶ。
 ** DONE タスクを簡単に実行する方法を調べる
 CLOSED: [2022-08-07 Sun 17:58]
-[[id:1ad8c3d5-97ba-4905-be11-e6f2626127ad][Emacs]]拡張あるいは、Makefile的なのにまとめる。
+Emacs拡張あるいは、Makefile的なのにまとめる。
 
 ありがちなbundle-installなどはdocker-composeにワンショットのコマンドを書くことで、定形コマンドを実行することが少なくなった。自動で動かしたいやつはこれでOK。コマンドはdockerだから特殊ということはなく、ローカルと同じようにやれば良い。
 ** DONE Dockerドキュメントのタイポ修正
@@ -1058,7 +1058,7 @@ CLOSED: [2021-12-25 Sat 23:51]
 簡単な解決策と環境変数によって解決する方法を調べた。
 *** DONE 基本コマンド
 CLOSED: [2021-12-20 Mon 22:57]
-[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]部分をDocker化する。表示はまったく問題なさそう。
+Rails部分をDocker化する。表示はまったく問題なさそう。
 リロードするとちゃんとローカルの変更が反映される。
 
 最初にルートファイルのdockerfileでベースイメージをビルドして、名前を付ける。
@@ -1148,7 +1148,7 @@ CLOSED: [2021-12-20 Mon 22:57]
 *** DONE docker-compose.ymlのオーバーライド
 CLOSED: [2021-12-20 Mon 22:57]
 個人で微妙に設定が異なることもある。
-Dockerでやるのはミドルウェアだけとか、[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]もすべてやる、といったような。
+Dockerでやるのはミドルウェアだけとか、Railsもすべてやる、といったような。
 そのときはgitignoreを指定したymlを指定して起動する。
 
 #+caption: 後から読み込まれた設定ファイルで上書きされる
@@ -1156,9 +1156,9 @@ Dockerでやるのはミドルウェアだけとか、[[id:e04aa1a3-509c-45b2-ac
   docker-compose -f docker-compose.yml -f docker-compose-app.override.yml up
 #+end_src
 
-もちろん一般性があるならgit管理にするのがベストだが、人によって構成が異なるので仕方ない。とくにMacだと速度に問題あるため、[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]は[[id:1658782a-d331-464b-9fd7-1f8233b8b7f8][Docker]]で立ち上げないのが多数派。
+もちろん一般性があるならgit管理にするのがベストだが、人によって構成が異なるので仕方ない。とくにMacだと速度に問題あるため、RailsはDockerで立ち上げないのが多数派。
 
-[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]サービスをoverride.ymlに、それ以外のミドルウェアサービスをdocker-compose.ymlに書いてる場合は、明示する必要がある。
+Railsサービスをoverride.ymlに、それ以外のミドルウェアサービスをdocker-compose.ymlに書いてる場合は、明示する必要がある。
 #+caption: overrideしたときのbundle install。-f指定が必要。
 #+begin_src shell
   docker-compose -f docker-compose.yml -f docker-compose-app.override.yml run rails bundle install
@@ -1179,7 +1179,7 @@ runはコンテナを新しく作る…つまりymlを見てるので、指定�
 #+end_src
 *** DONE DBのGUIツールとの接続
 CLOSED: [2021-12-17 Fri 20:58]
-Linux用のsqlectronがよさそう。が、上手く[[id:7dab097c-60ba-43b9-949f-c58bf3151aa8][MySQL]]と接続できない
+Linux用のsqlectronがよさそう。が、上手くMySQLと接続できない
 docker-compose.ymlで ~MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'~ を追加すると入れるように。
 パスワードを指定してるとログインできない。
 
@@ -1234,7 +1234,7 @@ CLOCK: [2023-03-07 Tue 00:29]--[2023-03-07 Tue 00:54] =>  0:25
 - Namespace(名前空間)はプロセスをグループ化して、コンテナの隔離された空間を作り出す。独立させたいリソースによっていくつかの機能がある
 - Dockerの初期はコンテナ内でコマンドを実行できなかった
 - カーネルでsetnsがすべてのNamespaceに対して動作するようになってから、docker execコマンドが実行できるようになった
-- Mount Namespaceは[[id:7a81eb7c-8e2b-400a-b01a-8fa597ea527a][Linux]]カーネルに最初に実装されたNamespace(2002年)
+- Mount NamespaceはLinuxカーネルに最初に実装されたNamespace(2002年)
   - あるNamespaceごとに異なるマウントポイントの一覧を持てる
   - コンテナ内でマウント操作を行った場合でも、そのマウントはホストOSや他のコンテナから見えないようにできる
   - ~$ cat /proc/self/mounts~ でマウント状況を確認できる

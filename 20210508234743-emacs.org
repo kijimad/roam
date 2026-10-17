@@ -7,16 +7,16 @@
 #+title: Emacs
 * 概要
 Emacsは非常に優れた拡張性を特徴とするテキストエディタ。
-エディタに内蔵された言語[[id:c7e81fac-9f8b-4538-9851-21d4ff3c2b08][Emacs Lisp]]で柔軟に設定を変更できる。
+エディタに内蔵された言語Emacs Lispで柔軟に設定を変更できる。
 
 できること。
 
-- 情報集積([[id:7e85e3f3-a6b9-447e-9826-307a3618dac8][org-mode]], [[id:815a2c31-7ddb-40ad-bae0-f84e1cfd8de1][Org-roam]])
-- タスク管理([[id:7e85e3f3-a6b9-447e-9826-307a3618dac8][org-mode]])
-- [[id:90c6b715-9324-46ce-a354-63d09403b066][Git]]([[id:5ba43a42-93cb-48fa-8578-0558c757493f][magit]]) + [[id:6b889822-21f1-4a3e-9755-e3ca52fa0bc4][GitHub]]([[id:4a80d381-2620-40dc-8588-cda910c3d785][magit-forge]])
-- コマンド実行と結果出力([[id:7e85e3f3-a6b9-447e-9826-307a3618dac8][org-mode]])
-- ウィンドウマネージャ([[id:eb196529-bdbd-48c5-9d5b-a156fe5c2f41][EXWM]])
-- 静的サイトジェネレータ([[id:7e85e3f3-a6b9-447e-9826-307a3618dac8][org-mode]])
+- 情報集積(org-mode, Org-roam)
+- タスク管理(org-mode)
+- Git(magit) + GitHub(magit-forge)
+- コマンド実行と結果出力(org-mode)
+- ウィンドウマネージャ(EXWM)
+- 静的サイトジェネレータ(org-mode)
 - ブラウザ(eww)
 - インターネットラジオプレーヤ(eradio)
 - フィードリーダー(elfeed.el)
@@ -24,7 +24,7 @@ Emacsは非常に優れた拡張性を特徴とするテキストエディタ。
 - 表計算
 - テスト実行(rspec-mode)
 - ターミナル実行(vterm)
-- [[id:1658782a-d331-464b-9fd7-1f8233b8b7f8][Docker]]管理(docker-mode)
+- Docker管理(docker-mode)
 - リマインダー(org-alert)
 - PDF閲覧(pdf-tools)
 
@@ -794,9 +794,9 @@ https://systemcrafters.net/live-streams/august-20-2021/
   guix environment --pure emacs-next --ad-hoc git
 #+end_src
 
-ほとんどは[[id:c7e81fac-9f8b-4538-9851-21d4ff3c2b08][Emacs Lisp]]で書かれている。コアな部分は[[id:656a0aa4-e5d3-416f-82d5-f909558d0639][C言語]]。
+ほとんどはEmacs Lispで書かれている。コアな部分はC言語。
 ~src/*~ にはCのコードがある。
-~src/lisp.h~ は[[id:c7e81fac-9f8b-4538-9851-21d4ff3c2b08][Emacs Lisp]]そのもののコードで重要。
+~src/lisp.h~ はEmacs Lispそのもののコードで重要。
 
 [[https://www.reddit.com/r/emacs/comments/7i2alo/how_to_read_and_understand_gnu_emacs_source_code/][How to read (and understand) GNU Emacs source code? : emacs]]
 
@@ -816,12 +816,12 @@ lspと接続しているとそっちを使って辿るようだ。
 :LOGBOOK:
 CLOCK: [2022-03-05 Sat 17:14]--[2022-03-05 Sat 17:39] =>  0:25
 :END:
-[[id:eb807577-cd69-478c-8f82-264243c67354][LSP]]を設定する。
+LSPを設定する。
 
-- lsp-modeは[[id:eb807577-cd69-478c-8f82-264243c67354][LSP]]全般を扱うパッケージである。lsp-install-serverで各プログラミング言語の[[id:eb807577-cd69-478c-8f82-264243c67354][LSP]] serverをダウンロード・起動することで有効化できる。
+- lsp-modeはLSP全般を扱うパッケージである。lsp-install-serverで各プログラミング言語のLSP serverをダウンロード・起動することで有効化できる。
 - lsp-ui-modeはlsp-modeのグラフィック面を強化するパッケージである(optional)。ドキュメント表示、エラー表示などができるようになる
 
-[[id:b2f63c13-4b30-481c-9c95-8abe388254fd][Scala]]の[[id:eb807577-cd69-478c-8f82-264243c67354][LSP]]サーバーであるmetalsはGPGエラーでインストールできない状態だった。
+ScalaのLSPサーバーであるmetalsはGPGエラーでインストールできない状態だった。
 ~(setq lsp-verify-signature nil)~ するとインストールできる。
 
 https://github.com/coursier/coursier/issues/2346
@@ -930,7 +930,7 @@ fi
 ** (magit-topic)
 一覧でPRとIssueにアクセスできると行き来がしやすそう。
 Forgeのトピック間移動がhelmでできたらいいのにな。
-** [[id:7dab097c-60ba-43b9-949f-c58bf3151aa8][MySQL]]と接続して[[id:8b69b8d4-1612-4dc5-8412-96b431fdd101][SQL]]を直に実行する
+** MySQLと接続してSQLを直に実行する
 #+begin_src
 M-x customize-variable RET sql-connection-alist RET ...
 M-x sql-connect
@@ -942,8 +942,8 @@ sqlup-capitalize-keywords-in-region (C-c u)
 #+end_src
 ** Macでの置換
 - Macでは ~query-replace~ (~M-%~)が奪われて押せないので、 ~query-replace-regexp~ (~C-M-%~)する。
-** spring [[id:afccf86d-70b8-44c0-86a8-cdac25f7dfd3][RSpec]]
-[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]でspringを走らせておくと[[id:afccf86d-70b8-44c0-86a8-cdac25f7dfd3][RSpec]]が高速に動作する。
+** spring RSpec
+Railsでspringを走らせておくとRSpecが高速に動作する。
 
 いつのまにかEmacsでspringが動かなくなっていた。コマンドでは ~spring rspec~ などで動かせるが、Emacsではふつうの ~bundle exec ...~ になっていた。前は早くできていたはず。ネットの記事を参考に修正した。
 
@@ -975,7 +975,7 @@ irc.libera.chat
 /join #systemcrafters
 #+end_quote
 ** mermaid.jsをEmacsで使う
-mermaidはプレーンテキストで図を作れるツール。[[id:a6980e15-ecee-466e-9ea7-2c0210243c0d][JavaScript]]で書かれている。
+mermaidはプレーンテキストで図を作れるツール。JavaScriptで書かれている。
 これをEmacsで扱えるようにするのがmermaid-mode。
 
 - https://github.com/abrochard/mermaid-mode
@@ -1111,7 +1111,7 @@ projectile-switch-to-buffer (C-c p b)
 ** TODO プロジェクトをag検索
 projectile-ag (~C-c p s s~)
 ** TODO vtermでカッコが入力できない
-vtermは互換性が高い[[id:585d3b5e-989d-4363-bcc3-894402fcfcf9][Shell]]のターミナルパッケージ。
+vtermは互換性が高いShellのターミナルパッケージ。
 
 カッコを自動入力するモードにしていると入力できなる。
 なのでカッコ関係はコピペする羽目になる。
@@ -1152,10 +1152,10 @@ Emacsでdeeplを使う方法。
 CLOCK: [2022-02-19 Sat 20:57]--[2022-02-19 Sat 21:22] =>  0:25
 CLOCK: [2022-02-19 Sat 20:31]--[2022-02-19 Sat 20:56] =>  0:25
 :END:
-[[id:36da3e35-29c9-480f-99b3-4a297345bd5d][Conventional Commits]]を絵文字表示にする。
+Conventional Commitsを絵文字表示にする。
 ** [[https://www.slideshare.net/yukihiro_matz/how-emacs-changed-my-life][How Emacs changed my life]]
 Matzのスライド。
-Emacsを単に道具として使うだけでなく、[[id:cfd092c4-1bb2-43d3-88b1-9f647809e546][Ruby]]を書くうえでの参考にもなったという。
+Emacsを単に道具として使うだけでなく、Rubyを書くうえでの参考にもなったという。
 ** [[https://zenn.dev/lambdagonbei/articles/1b2bce27673078][【Emacs入門】②バージョン28で新たにビルトインされるModus Themesを使おう]]
 新しく追加されたthemeとその設定方法。
 ** [[https://karthinks.com/software/avy-can-do-anything/][Avy can do anything | Karthinks]]
@@ -1340,7 +1340,7 @@ org-refileでも同じような感じ。要調査。
 ** DONE org-mode のキーバインド
 CLOSED: [2021-08-29 Sun 23:52]
 見出し移動とか。
-** DONE lsp setup([[id:ad1527ee-63b3-4a9b-a553-10899f57c234][TypeScript]])
+** DONE lsp setup(TypeScript)
 CLOSED: [2021-09-04 Sat 14:39]
 1. install language-server
 https://deno.land/#installation

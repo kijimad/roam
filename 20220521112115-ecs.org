@@ -5,7 +5,7 @@
 :END:
 #+title: ECS
 * 概要
-ECS(Amazon Elastic Container Service)は、[[id:d17ea774-2739-44f3-89dc-97a86b2c7bf7][AWS]]のコンテナ管理サービス。[[id:1658782a-d331-464b-9fd7-1f8233b8b7f8][Docker]]コンテナを実行、管理してWEBサービスを提供できる。
+ECS(Amazon Elastic Container Service)は、AWSのコンテナ管理サービス。Dockerコンテナを実行、管理してWEBサービスを提供できる。
 * Memo
 ** ecsTaskRoleとecsTaskExecutionRole
 2つのロールがある。
@@ -20,11 +20,11 @@ ECS(Amazon Elastic Container Service)は、[[id:d17ea774-2739-44f3-89dc-97a86b2c
 ** 概念図
 独自用語がある。[[https://qiita.com/NewGyu/items/9597ed2eda763bd504d7][Amazon EC2 Container Service(ECS)の概念整理 - Qiita]]が非常にわかりやすい。
 
-[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]の構成の例。
+Railsの構成の例。
 - Production Cluster
   - main Service ... Webサーバ+アプリケーションサーバ
     - Task
-      - App Container ... [[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]を動かす
+      - App Container ... Railsを動かす
       - nginx Container
   - worker Service ... バッチ処理
     - Task
@@ -32,16 +32,16 @@ ECS(Amazon Elastic Container Service)は、[[id:d17ea774-2739-44f3-89dc-97a86b2c
 
 ServiceはTaskのデプロイ戦略、Task数を管理する。Taskはtask-definitionをもとに作成され、容易にスケールできる。
 ** デプロイ方法
-ECSにおける[[id:5f669fae-12c2-4562-a037-a67f58a0dc72][deploy]]は、「task-definitionのimageタグを書き換えること」となる。これによって使用イメージを最新のものに切り替えてtask-definitionをpushすることで、新しいTaskは新しいイメージを使用してコンテナを立ち上げる。これによって変更を本番環境に反映できる。
+ECSにおけるdeployは、「task-definitionのimageタグを書き換えること」となる。これによって使用イメージを最新のものに切り替えてtask-definitionをpushすることで、新しいTaskは新しいイメージを使用してコンテナを立ち上げる。これによって変更を本番環境に反映できる。
 
 このようにデプロイは本質的にシンプルなので、いくつかの方法がある。
 
-- AWS公式の[[id:2d35ac9e-554a-4142-bba7-3c614cbfe4c4][GitHub Actions]]
+- AWS公式のGitHub Actions
   シンプルな機能だけを提供し、使い方がとても簡単。だが、環境やServiceが複数になったときtask-definitionの重複が大きくなり、管理が難しくなる。
 - ecs-cli
   細かく設定でき高機能。オーバライドで重複をなくすこともできるが、コマンドが冗長。
 - ecspresso(ecs-cliの管理に特化したラッパーライブラリ)
-  おすすめ。カヤック社が提供する[[id:bb71747d-8599-4aee-b747-13cb44c05773][OSS]]。task-definitionにテンプレートを定義し、実行時に環境変数で埋め込める機能が便利。さらにenvfile指定によって環境変数の組み合わせを環境ごと、Serviceごとに定義でき、メンテナンスしやすくなる。
+  おすすめ。カヤック社が提供するOSS。task-definitionにテンプレートを定義し、実行時に環境変数で埋め込める機能が便利。さらにenvfile指定によって環境変数の組み合わせを環境ごと、Serviceごとに定義でき、メンテナンスしやすくなる。
 
 task-definitionは微妙に異なる内容で環境×Service分必要になるので、DRYにするためには柔軟にオーバーライドできる機能は必須。
 * Tasks

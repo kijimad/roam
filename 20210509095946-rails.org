@@ -5,7 +5,7 @@
 :END:
 #+title: Rails
 * 概要
-Railsは[[id:cfd092c4-1bb2-43d3-88b1-9f647809e546][Ruby]]でWEBサイトを作るためのフレームワーク。
+RailsはRubyでWEBサイトを作るためのフレームワーク。
 * Memo
 ** 集計時のN+1回避
 異なる条件の複数の件数を表示したいとき。たとえば↓レコードで、Receiptsに載っているproductの数ごとに集計したい。
@@ -70,8 +70,8 @@ controllerオブジェクトが柔軟な感じ。
   controller.class.included_modules.include?(User::concern)
 #+end_src
 ** 定義ジャンプ
-[[id:1ad8c3d5-97ba-4905-be11-e6f2626127ad][Emacs]]から定義ジャンプしたい。
-ほかの言語やフレームワークだと[[id:eb807577-cd69-478c-8f82-264243c67354][LSP]]だのを使えばいいが、Railsではどうするのかよくわからない。
+Emacsから定義ジャンプしたい。
+ほかの言語やフレームワークだとLSPだのを使えばいいが、Railsではどうするのかよくわからない。
 TAGSファイルを生成して使う。
 
 #+begin_src shell
@@ -90,7 +90,7 @@ gemも定義ジャンプ対象にしたい場合、作業ディレクトリ内�
 ** mailerはキューにためられるので、Serializationできない値は渡すとエラーになる
 SerializationErrorになる。
 メーラーに対して、シリアライゼーションできないオブジェクトは渡すことができない。
-Railsから[[id:48b99bce-05ce-49af-921d-1e321e5a4f8b][Redis]]に渡されるが、[[id:48b99bce-05ce-49af-921d-1e321e5a4f8b][Redis]]はkey-value storeの形でないと保存できないから。
+RailsからRedisに渡されるが、Redisはkey-value storeの形でないと保存できないから。
 [[https://github.com/rails/rails/issues/18519][Mail and deliver_later doesn't work with date argument · Issue #18519 · rails/rails]]
 ** join先のテーブルでwhere
 A -< B -< C -< D みたいな関係。
@@ -107,7 +107,7 @@ A -< B -< C -< D みたいな関係。
         .where(a: { flag_a: true })
         .where(d: { flag_d: true })
 #+end_src
-** [[id:1658782a-d331-464b-9fd7-1f8233b8b7f8][Docker]]サンプル
+** Dockerサンプル
 開発用環境のサンプル。サクっと起動したい用。
 プロジェクトのあちこちで使ってるので、どこかにまとめたほうがよさそうだな。
 
@@ -242,10 +242,10 @@ Webにおける非同期処理はメールとか、外部とのAPI連携とか�
 とりあえず画面を返し、待たせないようにする。
 
 sidekiqは非同期タスクワーカー。
-[[id:48b99bce-05ce-49af-921d-1e321e5a4f8b][Redis]]はインメモリデータベース。
+Redisはインメモリデータベース。
 
 たとえばRails上でメールを送る処理が走るとき、railsはそのタスクをredisに送り、保持する(キューする)。sidekiqは、キューされたタスクを順次処理していく。
-クラウドサービスの[[id:48b99bce-05ce-49af-921d-1e321e5a4f8b][Redis]]を用いることで、ダウンしても未処理のジョブを失わない。
+クラウドサービスのRedisを用いることで、ダウンしても未処理のジョブを失わない。
 ** preload, eager_load, includes
 ややこしいがパフォーマンスを考えるうえで必要なので理解しておく。
 
@@ -273,7 +273,7 @@ sidekiqは非同期タスクワーカー。
 
 - preload
   - 多対多のアソシエーションの場合
-    - [[id:8b69b8d4-1612-4dc5-8412-96b431fdd101][SQL]]を分割して取得するため、レスポンスタイムが早くなるため
+    - SQLを分割して取得するため、レスポンスタイムが早くなるため
   - アソシエーション先のデータ参照ができない
   - データ量が大きいと、メモリを圧迫する可能性がある
 
@@ -290,7 +290,7 @@ sidekiqは非同期タスクワーカー。
   - 条件によってpreloadとeager_loadを振り分ける
 
 - [[https://qiita.com/k0kubun/items/80c5a5494f53bb88dc58][ActiveRecordのjoinsとpreloadとincludesとeager_loadの違い - Qiita]]
-** Railsの[[id:bb71747d-8599-4aee-b747-13cb44c05773][OSS]]
+** RailsのOSS
 Railsをどう書くかの参考になりそうなリポジトリ。
 
 - [[https://github.com/gitlabhq/gitlabhq][gitlabhq/gitlabhq: GitLab CE Mirror | Please open new issues in our issue tracker on GitLab.com]]
@@ -382,7 +382,7 @@ usersのdeleted_atカラムをinteger型 から datetime型に変える例。
 2. 旧カラムを削除する
 3. 一時カラムの名前を変えて新カラムにする
 
-~ActiveRecord::Base.connection.execute(sql)~ を使うと生の[[id:8b69b8d4-1612-4dc5-8412-96b431fdd101][SQL]]を実行できる。
+~ActiveRecord::Base.connection.execute(sql)~ を使うと生のSQLを実行できる。
 
 #+caption:
 #+begin_src ruby
@@ -570,7 +570,7 @@ namespace :assets do
   end
 end
 #+end_src
-** [[id:cfd092c4-1bb2-43d3-88b1-9f647809e546][Ruby]]バージョンアップデート
+** Rubyバージョンアップデート
 超強い人が言っていたメモ。
 コマンドを組み合わせて一気に置換して検討していく。
 #+caption: 2.6.5 -> 2.7.1に全体を置換する
@@ -1043,7 +1043,7 @@ scopeはクラスメソッド的なやつ。
   validates :term_date, date: { after: proc { Time.zone.now } }, if: proc { |p| p.term_date? && p.sellable?  }
 #+end_src
 ** N+1問題
-[[id:8b69b8d4-1612-4dc5-8412-96b431fdd101][SQL]]がたくさん実行されて遅くなること。ループしているとレコードの数だけSQLが発行され、一気に遅くなる。
+SQLがたくさん実行されて遅くなること。ループしているとレコードの数だけSQLが発行され、一気に遅くなる。
 includesを使うと少ないSQLにまとめられる。
 https://qiita.com/hirotakasasaki/items/e0be0b3fd7b0eb350327
 
@@ -1163,7 +1163,7 @@ CLOCK: [2022-01-15 Sat 00:02]--[2022-01-15 Sat 00:27] =>  0:25
 CLOCK: [2022-01-10 Mon 20:08]--[2022-01-10 Mon 20:33] =>  0:25
 CLOCK: [2022-01-10 Mon 19:30]--[2022-01-10 Mon 19:55] =>  0:25
 :END:
-[[id:e04aa1a3-509c-45b2-ac64-53d69c961214][Rails]]  + [[id:dc50d818-d7d1-48a8-ad76-62ead617c670][React]]の本。
+Rails  + Reactの本。
 
 ホットリロードができない。
 ** CLOSE loggerを自動オン
@@ -1178,7 +1178,7 @@ CLOCK: [2022-01-31 Mon 23:36]--[2022-02-01 Tue 00:01] =>  0:25
 CLOCK: [2022-01-31 Mon 22:03]--[2022-01-31 Mon 22:28] =>  0:25
 CLOCK: [2022-01-31 Mon 21:24]--[2022-01-31 Mon 21:49] =>  0:25
 :END:
-[[id:b4f456cf-d250-4877-ac4c-4b03144392f0][GraphQL]]をrailsでやるチュートリアル。
+GraphQLをrailsでやるチュートリアル。
 ** CLOSE [[https://www.amazon.co.jp/dp/B01N0SS6NF/ref=dp-kindle-redirect?_encoding=UTF8&btkr=1][Amazon.co.jp: Deploying Rails with Docker, Kubernetes and ECS (English Edition) eBook : Acuña, Pablo: Foreign Language Books]]
 CLOSED: [2022-01-29 Sat 11:16]
 :LOGBOOK:
