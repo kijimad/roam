@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-17 土 09:35 -->
+<!-- 2026-10-17 土 10:06 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 93: Access-Control-Allow-Headersを調べた</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 93: Access-Control-Allow-Headersを調べた</h1>
-<div id="outline-container-orgddde41a" class="outline-2">
-<h2 id="orgddde41a"><a href="#orgddde41a">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgddde41a">
+<div id="outline-container-orgb1f236d" class="outline-2">
+<h2 id="orgb1f236d"><a href="#orgb1f236d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgb1f236d">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,17 +37,17 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org9a2bb2f" class="outline-2">
-<h2 id="org9a2bb2f"><a href="#org9a2bb2f">概要</a></h2>
-<div class="outline-text-2" id="text-org9a2bb2f">
+<div id="outline-container-orgd8ff5aa" class="outline-2">
+<h2 id="orgd8ff5aa"><a href="#orgd8ff5aa">概要</a></h2>
+<div class="outline-text-2" id="text-orgd8ff5aa">
 <p>
 POSTリクエストは成功するのに、GETリクエストがCORSエラーな状態になった。デベロッパーツールを見るとCORSエラーが出ていた。真の違いの理由は、トークンで <code>Authorization</code> ヘッダーを使っていたことだった。調べて <code>Access-Control-Allow-Headers</code> を返すようにしたら解決したが、知らなかったので調べる。
 </p>
 </div>
 </div>
-<div id="outline-container-org725f593" class="outline-2">
-<h2 id="org725f593"><a href="#org725f593">何か</a></h2>
-<div class="outline-text-2" id="text-org725f593">
+<div id="outline-container-orga74fccc" class="outline-2">
+<h2 id="orga74fccc"><a href="#orga74fccc">何か</a></h2>
+<div class="outline-text-2" id="text-orga74fccc">
 <p>
 <code>Access-Control-Allow-Headers</code> は、同一オリジンでないときに、実際のリクエスト(プリフライトリクエストと対置して)で使用できるヘッダーの種類を示すものだ。デフォルトでは <code>Accept</code>, <code>Accept-Language</code>, <code>Content-Language</code>, <code>Content-Type</code> だけが許可されていて、 <code>Authorization</code> ヘッダーは含まれていない。
 </p>
@@ -57,11 +57,11 @@ Google Chromeの挙動を見る限り、同一オリジンでないときに許�
 </p>
 </div>
 </div>
-<div id="outline-container-orge73b7f7" class="outline-2">
-<h2 id="orge73b7f7"><a href="#orge73b7f7">流れ</a></h2>
-<div class="outline-text-2" id="text-orge73b7f7">
+<div id="outline-container-org1197c99" class="outline-2">
+<h2 id="org1197c99"><a href="#org1197c99">流れ</a></h2>
+<div class="outline-text-2" id="text-org1197c99">
 <p>
-プリフライトリクエストから一連の流れを見る。まず、ブラウザは実際のリクエスト前にOriginヘッダーが同一でないのを見て、CORSによってリソースに<a href="20210509100112-javascript.html#ID-a6980e15-ecee-466e-9ea7-2c0210243c0d">JavaScript</a>コードがアクセスできるか判断しようとする。検証するため、ブラウザは実際に行いたいリクエストを元にプリフライトリクエストを作成する。
+プリフライトリクエストから一連の流れを見る。まず、ブラウザは実際のリクエスト前にOriginヘッダーが同一でないのを見て、CORSによってリソースにJavaScriptコードがアクセスできるか判断しようとする。検証するため、ブラウザは実際に行いたいリクエストを元にプリフライトリクエストを作成する。
 </p>
 
 <div class="org-src-container">
@@ -129,9 +129,9 @@ Google Chromeの挙動を見る限り、同一オリジンでないときに許�
 </div>
 </div>
 </div>
-<div id="outline-container-org712d7cb" class="outline-2">
-<h2 id="org712d7cb"><a href="#org712d7cb">関連</a></h2>
-<div class="outline-text-2" id="text-org712d7cb">
+<div id="outline-container-org077a0d0" class="outline-2">
+<h2 id="org077a0d0"><a href="#org077a0d0">関連</a></h2>
+<div class="outline-text-2" id="text-org077a0d0">
 <ul class="org-ul">
 <li>参照: <a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Headers">Access-Control-Allow-Headers - HTTP | MDN</a></li>
 <li>類似: <a href="20240209T111023--kdoc-83-corsを確認する__permanent.html#ID-20240209T111023">KDOC 83: CORSを確認する</a>。同様にCORSを調べた</li>

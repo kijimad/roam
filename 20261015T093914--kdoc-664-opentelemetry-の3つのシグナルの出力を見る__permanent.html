@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-17 土 09:35 -->
+<!-- 2026-10-17 土 10:06 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</h1>
-<div id="outline-container-org3de1c6f" class="outline-2">
-<h2 id="org3de1c6f"><a href="#org3de1c6f">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org3de1c6f">
+<div id="outline-container-org4886c73" class="outline-2">
+<h2 id="org4886c73"><a href="#org4886c73">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4886c73">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org9c640a8" class="outline-2">
-<h2 id="org9c640a8"><a href="#org9c640a8">概要</a></h2>
-<div class="outline-text-2" id="text-org9c640a8">
+<div id="outline-container-orga058837" class="outline-2">
+<h2 id="orga058837"><a href="#orga058837">概要</a></h2>
+<div class="outline-text-2" id="text-orga058837">
 <p>
 OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれいちばん小さい例で出力して見る。どれも標準出力の exporter で JSON を書き出し、整形して出力をそのまま見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>3つの例で使う共通部分</label><pre class="src src-shell" id="org5fe2e19"><code># 例ごとに一時ディレクトリを作り、終わったら消す
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>3つの例で使う共通部分</label><pre class="src src-shell" id="org0c69b57"><code># 例ごとに一時ディレクトリを作り、終わったら消す
 dir=$(mktemp -d)
 trap 'rm -rf "$dir"' EXIT
 cd "$dir"
@@ -62,9 +62,9 @@ go get \
 </code></pre>
 </div>
 </div>
-<div id="outline-container-orgd0e10c7" class="outline-3">
-<h3 id="orgd0e10c7"><a href="#orgd0e10c7">trace</a></h3>
-<div class="outline-text-3" id="text-orgd0e10c7">
+<div id="outline-container-orge6fbcaf" class="outline-3">
+<h3 id="orge6fbcaf"><a href="#orge6fbcaf">trace</a></h3>
+<div class="outline-text-3" id="text-orge6fbcaf">
 <p>
 親の span の中で子の span を作る。
 </p>
@@ -100,7 +100,7 @@ go run ./trace
 </code></pre>
 </div>
 
-<pre class="example" id="orgfa08cc7">
+<pre class="example" id="orgcb5df52">
 {
 	"Name": "child",
 	"SpanContext": {
@@ -256,9 +256,9 @@ go run ./trace
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc4d3c26" class="outline-3">
-<h3 id="orgc4d3c26"><a href="#orgc4d3c26">metric</a></h3>
-<div class="outline-text-3" id="text-orgc4d3c26">
+<div id="outline-container-org7363719" class="outline-3">
+<h3 id="org7363719"><a href="#org7363719">metric</a></h3>
+<div class="outline-text-3" id="text-org7363719">
 <p>
 カウンタに 1、2、3 を足す。
 </p>
@@ -293,7 +293,7 @@ go run ./metric
 </code></pre>
 </div>
 
-<pre class="example" id="org44314fa">
+<pre class="example" id="org53262f4">
 {
 	"Resource": [
 		{
@@ -362,9 +362,9 @@ go run ./metric
 </ul>
 </div>
 </div>
-<div id="outline-container-orge7bc41f" class="outline-3">
-<h3 id="orge7bc41f"><a href="#orge7bc41f">log</a></h3>
-<div class="outline-text-3" id="text-orge7bc41f">
+<div id="outline-container-org42e1297" class="outline-3">
+<h3 id="org42e1297"><a href="#org42e1297">log</a></h3>
+<div class="outline-text-3" id="text-org42e1297">
 <p>
 ログを1件書く。
 </p>
@@ -401,7 +401,7 @@ go run ./log
 </code></pre>
 </div>
 
-<pre class="example" id="orga09d3f2">
+<pre class="example" id="org3b6157d">
 {
 	"Timestamp": "0001-01-01T00:00:00Z",
 	"ObservedTimestamp": "2026-10-15T09:50:59.139404628+09:00",
@@ -461,9 +461,9 @@ go run ./log
 </div>
 </div>
 </div>
-<div id="outline-container-org9f74523" class="outline-2">
-<h2 id="org9f74523"><a href="#org9f74523">関連</a></h2>
-<div class="outline-text-2" id="text-org9f74523">
+<div id="outline-container-orgd9c03b3" class="outline-2">
+<h2 id="orgd9c03b3"><a href="#orgd9c03b3">関連</a></h2>
+<div class="outline-text-2" id="text-orgd9c03b3">
 <ul class="org-ul">
 <li>類似: <a href="20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html#ID-20261014T220427">KDOC 663: リングキューの動作を試す</a>。ただしこの例の log は SimpleProcessor なのでキューは通らない</li>
 </ul>

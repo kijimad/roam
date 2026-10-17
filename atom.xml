@@ -5,1279 +5,15 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-10-17T09:35:54+09:00</updated>
-<entry>
-  <title>KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org3de1c6f" class="outline-2">
- <h2 id="org3de1c6f"> <a href="#org3de1c6f">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org3de1c6f">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org9c640a8" class="outline-2">
- <h2 id="org9c640a8"> <a href="#org9c640a8">概要</a></h2>
- <div class="outline-text-2" id="text-org9c640a8">
- <p>
-OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれいちばん小さい例で出力して見る。どれも標準出力の exporter で JSON を書き出し、整形して出力をそのまま見る。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>3つの例で使う共通部分</label> <pre class="src src-shell" id="org5fe2e19"> <code># 例ごとに一時ディレクトリを作り、終わったら消す
-dir=$(mktemp -d)
-trap 'rm -rf &quot;$dir&quot;' EXIT
-cd &quot;$dir&quot;
-go mod init example &gt;/dev/null 2&gt;&amp;1
-go get \
-  go.opentelemetry.io/otel@v1.47.0 \
-  go.opentelemetry.io/otel/sdk@v1.47.0 \
-  go.opentelemetry.io/otel/sdk/metric@v1.47.0 \
-  go.opentelemetry.io/otel/sdk/log@v1.47.0 \
-  go.opentelemetry.io/otel/log@v1.47.0 \
-  go.opentelemetry.io/otel/exporters/stdout/stdouttrace@v1.47.0 \
-  go.opentelemetry.io/otel/exporters/stdout/stdoutmetric@v1.47.0 \
-  go.opentelemetry.io/otel/exporters/stdout/stdoutlog@v0.23.0 2&gt;/dev/null
-</code></pre>
-</div>
-</div>
- <div id="outline-container-orgd0e10c7" class="outline-3">
- <h3 id="orgd0e10c7"> <a href="#orgd0e10c7">trace</a></h3>
- <div class="outline-text-3" id="text-orgd0e10c7">
- <p>
-親の span の中で子の span を作る。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>親と子の span を1つずつ作る</label> <pre class="src src-shell"> <code>&lt;&lt;setup&gt;&gt;
-mkdir -p trace
-cat &gt; trace/main.go &lt;&lt;'GO'
-package main
-
-import (
-	&quot;context&quot;
-
-	&quot;go.opentelemetry.io/otel/exporters/stdout/stdouttrace&quot;
-	sdktrace &quot;go.opentelemetry.io/otel/sdk/trace&quot;
-)
-
-func main() {
-	ctx := context.Background()
-	exp, _ := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	tp := sdktrace.NewTracerProvider(sdktrace.WithSyncer(exp))
-	defer tp.Shutdown(ctx)
-
-	tracer := tp.Tracer(&quot;example&quot;)
-	ctx, parent := tracer.Start(ctx, &quot;parent&quot;)
-	_, child := tracer.Start(ctx, &quot;child&quot;)
-	child.End()
-	parent.End()
-}
-GO
-go mod tidy 2&gt;/dev/null
-go run ./trace
-</code></pre>
-</div>
-
- <pre class="example" id="orgfa08cc7">
-{
-	&quot;Name&quot;: &quot;child&quot;,
-	&quot;SpanContext&quot;: {
-		&quot;TraceID&quot;: &quot;23fc88efba48028dd9d7717ccb8a1b61&quot;,
-		&quot;SpanID&quot;: &quot;af787e4c4d7bf055&quot;,
-		&quot;TraceFlags&quot;: &quot;01&quot;,
-		&quot;TraceState&quot;: &quot;&quot;,
-		&quot;Remote&quot;: false
-	},
-	&quot;Parent&quot;: {
-		&quot;TraceID&quot;: &quot;23fc88efba48028dd9d7717ccb8a1b61&quot;,
-		&quot;SpanID&quot;: &quot;d3973a5b2f677925&quot;,
-		&quot;TraceFlags&quot;: &quot;01&quot;,
-		&quot;TraceState&quot;: &quot;&quot;,
-		&quot;Remote&quot;: false
-	},
-	&quot;SpanKind&quot;: 1,
-	&quot;StartTime&quot;: &quot;2026-10-15T09:50:57.99213578+09:00&quot;,
-	&quot;EndTime&quot;: &quot;2026-10-15T09:50:57.99213599+09:00&quot;,
-	&quot;Attributes&quot;: null,
-	&quot;Events&quot;: null,
-	&quot;Links&quot;: null,
-	&quot;Status&quot;: {
-		&quot;Code&quot;: &quot;Unset&quot;,
-		&quot;Description&quot;: &quot;&quot;
-	},
-	&quot;DroppedAttributes&quot;: 0,
-	&quot;DroppedEvents&quot;: 0,
-	&quot;DroppedLinks&quot;: 0,
-	&quot;ChildSpanCount&quot;: 0,
-	&quot;Resource&quot;: [
-		{
-			&quot;Key&quot;: &quot;service.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;unknown_service:trace&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;go&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;opentelemetry&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;1.47.0&quot;
-			}
-		}
-	],
-	&quot;InstrumentationScope&quot;: {
-		&quot;Name&quot;: &quot;example&quot;,
-		&quot;Version&quot;: &quot;&quot;,
-		&quot;SchemaURL&quot;: &quot;&quot;,
-		&quot;Attributes&quot;: null
-	},
-	&quot;InstrumentationLibrary&quot;: {
-		&quot;Name&quot;: &quot;example&quot;,
-		&quot;Version&quot;: &quot;&quot;,
-		&quot;SchemaURL&quot;: &quot;&quot;,
-		&quot;Attributes&quot;: null
-	}
-}
-{
-	&quot;Name&quot;: &quot;parent&quot;,
-	&quot;SpanContext&quot;: {
-		&quot;TraceID&quot;: &quot;23fc88efba48028dd9d7717ccb8a1b61&quot;,
-		&quot;SpanID&quot;: &quot;d3973a5b2f677925&quot;,
-		&quot;TraceFlags&quot;: &quot;01&quot;,
-		&quot;TraceState&quot;: &quot;&quot;,
-		&quot;Remote&quot;: false
-	},
-	&quot;Parent&quot;: {
-		&quot;TraceID&quot;: &quot;00000000000000000000000000000000&quot;,
-		&quot;SpanID&quot;: &quot;0000000000000000&quot;,
-		&quot;TraceFlags&quot;: &quot;00&quot;,
-		&quot;TraceState&quot;: &quot;&quot;,
-		&quot;Remote&quot;: false
-	},
-	&quot;SpanKind&quot;: 1,
-	&quot;StartTime&quot;: &quot;2026-10-15T09:50:57.992133605+09:00&quot;,
-	&quot;EndTime&quot;: &quot;2026-10-15T09:50:57.992240576+09:00&quot;,
-	&quot;Attributes&quot;: null,
-	&quot;Events&quot;: null,
-	&quot;Links&quot;: null,
-	&quot;Status&quot;: {
-		&quot;Code&quot;: &quot;Unset&quot;,
-		&quot;Description&quot;: &quot;&quot;
-	},
-	&quot;DroppedAttributes&quot;: 0,
-	&quot;DroppedEvents&quot;: 0,
-	&quot;DroppedLinks&quot;: 0,
-	&quot;ChildSpanCount&quot;: 1,
-	&quot;Resource&quot;: [
-		{
-			&quot;Key&quot;: &quot;service.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;unknown_service:trace&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;go&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;opentelemetry&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;1.47.0&quot;
-			}
-		}
-	],
-	&quot;InstrumentationScope&quot;: {
-		&quot;Name&quot;: &quot;example&quot;,
-		&quot;Version&quot;: &quot;&quot;,
-		&quot;SchemaURL&quot;: &quot;&quot;,
-		&quot;Attributes&quot;: null
-	},
-	&quot;InstrumentationLibrary&quot;: {
-		&quot;Name&quot;: &quot;example&quot;,
-		&quot;Version&quot;: &quot;&quot;,
-		&quot;SchemaURL&quot;: &quot;&quot;,
-		&quot;Attributes&quot;: null
-	}
-}
-</pre>
-
- <ul class="org-ul"> <li>子の Parent.SpanID が親の SpanID と同じで、TraceID も同じである。これで1つのトレースの中の親子を表現している</li>
- <li>親の Parent.SpanID はすべて 0 で、根の span である</li>
- <li>WithSyncer を使っていて span が終わったときにすぐに書き出すので先に終わった子が先に出力される</li>
-</ul></div>
-</div>
- <div id="outline-container-orgc4d3c26" class="outline-3">
- <h3 id="orgc4d3c26"> <a href="#orgc4d3c26">metric</a></h3>
- <div class="outline-text-3" id="text-orgc4d3c26">
- <p>
-カウンタに 1、2、3 を足す。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 3: </span>カウンタに3回足す</label> <pre class="src src-shell"> <code>&lt;&lt;setup&gt;&gt;
-mkdir -p metric
-cat &gt; metric/main.go &lt;&lt;'GO'
-package main
-
-import (
-	&quot;context&quot;
-
-	&quot;go.opentelemetry.io/otel/exporters/stdout/stdoutmetric&quot;
-	sdkmetric &quot;go.opentelemetry.io/otel/sdk/metric&quot;
-)
-
-func main() {
-	ctx := context.Background()
-	exp, _ := stdoutmetric.New(stdoutmetric.WithPrettyPrint())
-	mp := sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exp)))
-	defer mp.Shutdown(ctx)
-
-	counter, _ := mp.Meter(&quot;example&quot;).Int64Counter(&quot;requests&quot;)
-	counter.Add(ctx, 1)
-	counter.Add(ctx, 2)
-	counter.Add(ctx, 3)
-}
-GO
-go mod tidy 2&gt;/dev/null
-go run ./metric
-</code></pre>
-</div>
-
- <pre class="example" id="org44314fa">
-{
-	&quot;Resource&quot;: [
-		{
-			&quot;Key&quot;: &quot;service.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;unknown_service:metric&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;go&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;opentelemetry&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;1.47.0&quot;
-			}
-		}
-	],
-	&quot;ScopeMetrics&quot;: [
-		{
-			&quot;Scope&quot;: {
-				&quot;Name&quot;: &quot;example&quot;,
-				&quot;Version&quot;: &quot;&quot;,
-				&quot;SchemaURL&quot;: &quot;&quot;,
-				&quot;Attributes&quot;: null
-			},
-			&quot;Metrics&quot;: [
-				{
-					&quot;Name&quot;: &quot;requests&quot;,
-					&quot;Description&quot;: &quot;&quot;,
-					&quot;Unit&quot;: &quot;&quot;,
-					&quot;Data&quot;: {
-						&quot;DataPoints&quot;: [
-							{
-								&quot;Attributes&quot;: [],
-								&quot;StartTime&quot;: &quot;2026-10-15T09:50:58.694178323+09:00&quot;,
-								&quot;Time&quot;: &quot;2026-10-15T09:50:58.69420339+09:00&quot;,
-								&quot;Value&quot;: 6
-							}
-						],
-						&quot;Temporality&quot;: &quot;CumulativeTemporality&quot;,
-						&quot;IsMonotonic&quot;: true
-					}
-				}
-			]
-		}
-	]
-}
-</pre>
-
- <ul class="org-ul"> <li>3回の Add が、値 6 に集計された</li>
-</ul></div>
-</div>
- <div id="outline-container-orge7bc41f" class="outline-3">
- <h3 id="orge7bc41f"> <a href="#orge7bc41f">log</a></h3>
- <div class="outline-text-3" id="text-orge7bc41f">
- <p>
-ログを1件書く。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 4: </span>ログを1件書く</label> <pre class="src src-shell"> <code>&lt;&lt;setup&gt;&gt;
-mkdir -p log
-cat &gt; log/main.go &lt;&lt;'GO'
-package main
-
-import (
-	&quot;context&quot;
-
-	&quot;go.opentelemetry.io/otel/attribute&quot;
-	&quot;go.opentelemetry.io/otel/exporters/stdout/stdoutlog&quot;
-	&quot;go.opentelemetry.io/otel/log&quot;
-	sdklog &quot;go.opentelemetry.io/otel/sdk/log&quot;
-)
-
-func main() {
-	ctx := context.Background()
-	exp, _ := stdoutlog.New(stdoutlog.WithPrettyPrint())
-	lp := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewSimpleProcessor(exp)))
-	defer lp.Shutdown(ctx)
-
-	var r log.Record
-	r.SetSeverity(log.SeverityInfo)
-	r.SetBody(attribute.StringValue(&quot;hello&quot;))
-	lp.Logger(&quot;example&quot;).Emit(ctx, r)
-}
-GO
-go mod tidy 2&gt;/dev/null
-go run ./log
-</code></pre>
-</div>
-
- <pre class="example" id="orga09d3f2">
-{
-	&quot;Timestamp&quot;: &quot;0001-01-01T00:00:00Z&quot;,
-	&quot;ObservedTimestamp&quot;: &quot;2026-10-15T09:50:59.139404628+09:00&quot;,
-	&quot;Severity&quot;: 9,
-	&quot;SeverityText&quot;: &quot;&quot;,
-	&quot;Body&quot;: {
-		&quot;Type&quot;: &quot;STRING&quot;,
-		&quot;Value&quot;: &quot;hello&quot;
-	},
-	&quot;Attributes&quot;: [],
-	&quot;TraceID&quot;: &quot;00000000000000000000000000000000&quot;,
-	&quot;SpanID&quot;: &quot;0000000000000000&quot;,
-	&quot;TraceFlags&quot;: &quot;00&quot;,
-	&quot;Resource&quot;: [
-		{
-			&quot;Key&quot;: &quot;service.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;unknown_service:log&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;go&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;opentelemetry&quot;
-			}
-		},
-		{
-			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
-			&quot;Value&quot;: {
-				&quot;Type&quot;: &quot;STRING&quot;,
-				&quot;Value&quot;: &quot;1.47.0&quot;
-			}
-		}
-	],
-	&quot;Scope&quot;: {
-		&quot;Name&quot;: &quot;example&quot;,
-		&quot;Version&quot;: &quot;&quot;,
-		&quot;SchemaURL&quot;: &quot;&quot;,
-		&quot;Attributes&quot;: {}
-	},
-	&quot;DroppedAttributes&quot;: 0
-}
-</pre>
-
- <ul class="org-ul"> <li> <code>Scope</code> にロガーに渡した文字列が入っている</li>
-</ul></div>
-</div>
-</div>
- <div id="outline-container-org9f74523" class="outline-2">
- <h2 id="org9f74523"> <a href="#org9f74523">関連</a></h2>
- <div class="outline-text-2" id="text-org9f74523">
- <ul class="org-ul"> <li>類似:  <a href="20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html#ID-20261014T220427">KDOC 663: リングキューの動作を試す</a>。ただしこの例の log は SimpleProcessor なのでキューは通らない</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261015T093914--kdoc-664-opentelemetry-の3つのシグナルの出力を見る__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261015T093914--kdoc-664-opentelemetry-の3つのシグナルの出力を見る__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 663: リングキューの動作を試す</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org4beccbb" class="outline-2">
- <h2 id="org4beccbb"> <a href="#org4beccbb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4beccbb">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org4a0238e" class="outline-2">
- <h2 id="org4a0238e"> <a href="#org4a0238e">概要</a></h2>
- <div class="outline-text-2" id="text-org4a0238e">
- <p>
-リングキューで実装しているのを見かけた。opentelemetry-go の sdk/log は、ログを溜めておくキューをリング上に作っている。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-git-permalink"> <code>https://github.com/kijimad/opentelemetry-go/blob/f013f0ec436a436795beaa57a181ebecd34aad3d/sdk/log/batch.go#L331-L335
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>// queue holds a queue of logging records.
-//
-// When the queue becomes full, the oldest records in the queue are
-// overwritten.
-type queue struct {
-</code></pre>
-</div>
-
- <p>
-同じ仕組みを container/ring で素朴に書き、出し入れ操作して1手ごとの中身を見る。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>容量 3 のリングキューに5つ入れ、2つ取り出し、2つ入れる</label> <pre class="src src-go"> <code>// 容量 n の輪の上で、read(いちばん古い要素)と write(次に書く場所)の2つの位置を進める
-type queue struct {
-	head        *ring.Ring // 表示のための起点。動かさない
-	read, write *ring.Ring
-	cap, len    int
-	dropped     int
-}
-
-func newQueue(n int) *queue {
-	r := ring.New(n)
-	return &amp;queue{head: r, read: r, write: r, cap: n}
-}
-
-func (q *queue) Enqueue(v int) {
-	q.write.Value = v
-	q.write = q.write.Next()
-	q.len++
-	// 満杯なら、いちばん古い要素を上書きし、read も1つ進める
-	if q.len &gt; q.cap {
-		q.len = q.cap
-		q.read = q.read.Next()
-		q.dropped++
-	}
-}
-
-func (q *queue) Dequeue() (int, bool) {
-	if q.len == 0 {
-		return 0, false
-	}
-	v := q.read.Value.(int)
-	q.read.Value = nil
-	q.read = q.read.Next()
-	q.len--
-	return v, true
-}
-
-func (q *queue) String() string {
-	slots := []string{}
-	var read, write int
-	p := q.head
-	for i := 0; i &lt; q.cap; i++ {
-		if p == q.read {
-			read = i
-		}
-		if p == q.write {
-			write = i
-		}
-		if p.Value == nil {
-			slots = append(slots, &quot;_&quot;)
-		} else {
-			slots = append(slots, fmt.Sprint(p.Value))
-		}
-		p = p.Next()
-	}
-	return fmt.Sprintf(&quot;%v read=%d write=%d len=%d dropped=%d&quot;, slots, read, write, q.len, q.dropped)
-}
-
-func main() {
-	q := newQueue(3)
-	fmt.Println(&quot;初期         &quot;, q)
-	for i := 1; i &lt;= 5; i++ {
-		q.Enqueue(i)
-		fmt.Printf(&quot;Enqueue(%d)    %v\n&quot;, i, q)
-	}
-	for range 2 {
-		v, _ := q.Dequeue()
-		fmt.Printf(&quot;Dequeue() = %d %v\n&quot;, v, q)
-	}
-	for i := 1; i &lt;= 2; i++ {
-		q.Enqueue(i)
-		fmt.Printf(&quot;Enqueue(%d)    %v\n&quot;, i, q)
-	}
-}
-</code></pre>
-</div>
-
- <pre class="example" id="org1ff8698">
-初期          [_ _ _] read=0 write=0 len=0 dropped=0
-Enqueue(1)    [1 _ _] read=0 write=1 len=1 dropped=0
-Enqueue(2)    [1 2 _] read=0 write=2 len=2 dropped=0
-Enqueue(3)    [1 2 3] read=0 write=0 len=3 dropped=0
-Enqueue(4)    [4 2 3] read=1 write=1 len=3 dropped=1
-Enqueue(5)    [4 5 3] read=2 write=2 len=3 dropped=2
-Dequeue() = 3 [4 5 _] read=0 write=2 len=2 dropped=2
-Dequeue() = 4 [_ 5 _] read=1 write=2 len=1 dropped=2
-Enqueue(1)    [_ 5 1] read=1 write=0 len=2 dropped=2
-Enqueue(2)    [2 5 1] read=1 write=1 len=3 dropped=2
-</pre>
-
- <ul class="org-ul"> <li>Enqueue が満杯になったときの挙動が鍵に見える。write が一番古い要素を上書きして read も1つ進む</li>
-</ul></div>
-</div>
- <div id="outline-container-org1ea56fe" class="outline-2">
- <h2 id="org1ea56fe"> <a href="#org1ea56fe">関連</a></h2>
- <div class="outline-text-2" id="text-org1ea56fe">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-org5b3627c" class="outline-2">
- <h2 id="org5b3627c"> <a href="#org5b3627c">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org5b3627c">
- <ul class="org-ul"> <li> <a href="./20261015T093914--kdoc-664-opentelemetry-の3つのシグナルの出力を見る__permanent.html">KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 662: 使われていないインデックスは pg_stat_user_indexes で見つけられる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orga7a1ebb" class="outline-2">
- <h2 id="orga7a1ebb"> <a href="#orga7a1ebb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga7a1ebb">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-14 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-14 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org82c8497" class="outline-2">
- <h2 id="org82c8497"> <a href="#org82c8497">概要</a></h2>
- <div class="outline-text-2" id="text-org82c8497">
- <p>
-使われていないインデックスを見つけるために  <code>pg_stat_user_indexes.idx_scan</code> が使えるという。
-</p>
-
- <blockquote>
- <p>
-idx_scan bigint
-</p>
-
- <p>
-インデックスに対して開始されたインデックススキャンの実行回数です。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/monitoring-stats.html">27.2. 累積統計システム</a>
-</p>
-</blockquote>
-
- <p>
-2つのインデックスのうち片方 t_a だけを使う問い合わせを100回流して、idx_scan を見る。統計は待機状態へ入る直前に反映されるが、1秒に1回までなので、流した直後に同じ接続で読むと 0 に見える。pg_stat_force_next_flush() で次の反映を早めてから読む。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>t_a だけを100回使ってから、インデックスが使われた回数を見る</label> <pre class="src src-sql"> <code>CREATE TABLE t (a int, b int);
-CREATE INDEX t_a ON t (a);
-CREATE INDEX t_b ON t (b);
-INSERT INTO t
-SELECT i, i FROM generate_series(1, 10000) i;
-ANALYZE t;
-
--- t_a だけを100回使う
-DO $$
-BEGIN
-  FOR i IN 1..100 LOOP
-    PERFORM * FROM t WHERE a = i;
-  END LOOP;
-END $$;
-SELECT pg_stat_force_next_flush();
-
-SELECT indexrelname, idx_scan
-FROM pg_stat_user_indexes
-ORDER BY idx_scan;
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>|                                                 |          |
-|-------------------------------------------------+----------|
-| &gt; CREATE TABLE t (a int, b int);                |          |
-| CREATE TABLE                                    |          |
-|                                                 |          |
-| &gt; CREATE INDEX t_a ON t (a);                    |          |
-| CREATE INDEX                                    |          |
-|                                                 |          |
-| &gt; CREATE INDEX t_b ON t (b);                    |          |
-| CREATE INDEX                                    |          |
-|                                                 |          |
-| &gt; INSERT INTO t                                 |          |
-| &gt; SELECT i, i FROM generate_series(1, 10000) i; |          |
-| INSERT 0 10000                                  |          |
-|                                                 |          |
-| &gt; ANALYZE t;                                    |          |
-| ANALYZE                                         |          |
-|                                                 |          |
-| &gt; DO $$                                         |          |
-| &gt; BEGIN                                         |          |
-| &gt;   FOR i IN 1..100 LOOP                        |          |
-| &gt;     PERFORM * FROM t WHERE a = i;             |          |
-| &gt;   END LOOP;                                   |          |
-| &gt; END $$;                                       |          |
-| DO                                              |          |
-|                                                 |          |
-| &gt; SELECT pg_stat_force_next_flush();            |          |
-| pg_stat_force_next_flush                        |          |
-|                                                 |          |
-|                                                 |          |
-| &gt; SELECT indexrelname, idx_scan                 |          |
-| &gt; FROM pg_stat_user_indexes                     |          |
-| &gt; ORDER BY idx_scan;                            |          |
-| indexrelname                                    | idx_scan |
-| t_b                                             |        0 |
-| t_a                                             |      100 |
-</code></pre>
-</div>
-
- <p>
-100回使った t_a は idx_scan が 100、使っていない t_b は 0 だった。0 のインデックスは消す候補になる。
-</p>
-</div>
-</div>
- <div id="outline-container-org23e3a7a" class="outline-2">
- <h2 id="org23e3a7a"> <a href="#org23e3a7a">関連</a></h2>
- <div class="outline-text-2" id="text-org23e3a7a">
- <ul class="org-ul"> <li>前提:  <a href="20251210T084437--kdoc-501-インデックスのオーバーヘッドを検証する__permanent.html#ID-20251210T084437">KDOC 501: インデックスのオーバーヘッドを検証する</a>。オーバーヘッドがあるので使ってないのは消さなければならない</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261014T084150--kdoc-662-使われていないインデックスは-pg-stat-user-indexes-で見つけられる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261014T084150--kdoc-662-使われていないインデックスは-pg-stat-user-indexes-で見つけられる__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org26d34b2" class="outline-2">
- <h2 id="org26d34b2"> <a href="#org26d34b2">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org26d34b2">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgd568b9d" class="outline-2">
- <h2 id="orgd568b9d"> <a href="#orgd568b9d">概要</a></h2>
- <div class="outline-text-2" id="text-orgd568b9d">
- <p>
-集計や並べ替えの後ろにある LIMIT は、下の処理が全部の行を読み終えるまで効かないので、読む行を減らさないのを確かめる。
-</p>
-
- <p>
-ユーザー、注文、明細を結合し、ユーザーごとに金額を合計して、上位5件を取る。比べるため、集計と並べ替えを外して 5 件取る問い合わせも流す。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SET max_parallel_workers_per_gather = 0;
-CREATE TABLE users (id int PRIMARY KEY, name text);
-CREATE TABLE orders (id int PRIMARY KEY, user_id int);
-CREATE TABLE items (order_id int, price int);
-INSERT INTO users
-SELECT i, 'user' || i FROM generate_series(1, 10000) i;
-INSERT INTO orders
-SELECT i, i % 10000 + 1 FROM generate_series(1, 100000) i;
-INSERT INTO items
-SELECT i % 100000 + 1, i % 1000 FROM generate_series(1, 300000) i;
-ANALYZE users;
-ANALYZE orders;
-ANALYZE items;
-
--- 集計して並べ替えてから 5 件取る
-EXPLAIN (ANALYZE, FORMAT JSON, COSTS OFF, TIMING OFF,
-         SUMMARY OFF, BUFFERS OFF)
-SELECT u.name, sum(i.price) AS total
-FROM users u
-JOIN orders o ON o.user_id = u.id
-JOIN items i ON i.order_id = o.id
-WHERE u.id &lt; 100
-GROUP BY u.name
-ORDER BY total DESC
-LIMIT 5;
-
--- 集計も並べ替えもせずに 5 件取る
-EXPLAIN (ANALYZE, FORMAT JSON, COSTS OFF, TIMING OFF,
-         SUMMARY OFF, BUFFERS OFF)
-SELECT u.name, i.price
-FROM users u
-JOIN orders o ON o.user_id = u.id
-JOIN items i ON i.order_id = o.id
-WHERE u.id &lt; 100
-LIMIT 5;
-</code></pre>
-</div>
-
- <p>
- <img src="images/plan-2afc5d2495db.svg" alt="plan-2afc5d2495db.svg" class="org-svg"></img> <img src="images/plan-3de4fc1f58c4.svg" alt="plan-3de4fc1f58c4.svg" class="org-svg"></img></p>
-
- <ul class="org-ul"> <li>集計して並べ替えると、下の items の Seq Scan は 300,000 行をすべて読み、最後の Limit で 5 行に絞っている</li>
- <li>集計も並べ替えもしないと、items の Seq Scan は 5 行しか読まない。Limit が 5 行を受け取った時点で、下に行を要求するのをやめている。結合のしかたも Hash Join から、1 行ずつ相手を探す Nested Loop に変わった</li>
-</ul> <p>
-計画は上のノードが下のノードに 1 行ずつ要求し、行は下のノードで作られて上へ渡る。上が要求をやめれば、下も止まる。
-</p>
-
- <blockquote>
- <p>
-これは本質的に要求引き寄せ型（demand-pull）パイプライン機能です。 計画ノードが呼ばれる度にもう1つの行を引き渡すか、行を引き渡したことの報告を行わなければなりません。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/executor.html">51.6. エグゼキュータ</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org61434d2" class="outline-2">
- <h2 id="org61434d2"> <a href="#org61434d2">関連</a></h2>
- <div class="outline-text-2" id="text-org61434d2">
- <ul class="org-ul"> <li>前提:  <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。文芸的に確認する道具</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 656: データベースで列の並び順によってサイズが変わる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org2c9a76e" class="outline-2">
- <h2 id="org2c9a76e"> <a href="#org2c9a76e">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2c9a76e">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org76eeda2" class="outline-2">
- <h2 id="org76eeda2"> <a href="#org76eeda2">概要</a></h2>
- <div class="outline-text-2" id="text-org76eeda2">
- <p>
-データベースでも、プログラミング言語と同様に、フィールドのデータ型を定義する順序によって使うデータサイズが変わりうる。
-</p>
-
- <p>
-型ごとに、値を置く位置の境界(整列)が決まっている。境界に合わないときは、前にパディングが入る。
-</p>
-
- <blockquote>
- <p>
-ディスク上の完全な行の表現のように、複数の値が隣接して格納される際には、指定された境界で始まるように、この型のデータの前にパディングが挿入されます。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/catalog-pg-type.html">52.64. pg_type</a>
-</p>
-</blockquote>
-
- <p>
-同じ列を、並び順だけ変えた2つのテーブルで比べる。boolean は1バイトで整列なし、bigint は8バイトで8バイト境界(double 整列)である。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ列を並び順だけ変えて、1行の大きさを比べる</label> <pre class="src src-sql"> <code>-- boolean と bigint を交互に並べる
-CREATE TABLE padded
-  (a boolean, b bigint, c boolean, d bigint);
--- bigint を先に、boolean をあとにまとめる
-CREATE TABLE packed
-  (b bigint, d bigint, a boolean, c boolean);
-
-INSERT INTO padded VALUES (true, 1, false, 2);
-INSERT INTO packed VALUES (1, 2, true, false);
-
--- 列ごとの長さと整列
-SELECT format('%s : %s : 長さ %s : 整列 %s',
-              attname, typname, typlen, typalign)
-       AS cols
-FROM pg_attribute a
-JOIN pg_type t ON t.oid = a.atttypid
-WHERE attrelid = 'padded'::regclass
-  AND attnum &gt; 0
-ORDER BY attnum;
-
--- 1行の大きさ(行ヘッダを含む)
-SELECT pg_column_size(p.*) AS padded FROM padded p;
-SELECT pg_column_size(p.*) AS packed FROM packed p;
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>|                                                       |
-|-------------------------------------------------------|
-| &gt; CREATE TABLE padded                                 |
-| &gt;   (a boolean, b bigint, c boolean, d bigint);       |
-| CREATE TABLE                                          |
-|                                                       |
-| &gt; CREATE TABLE packed                                 |
-| &gt;   (b bigint, d bigint, a boolean, c boolean);       |
-| CREATE TABLE                                          |
-|                                                       |
-| &gt; INSERT INTO padded VALUES (true, 1, false, 2);      |
-| INSERT 0 1                                            |
-|                                                       |
-| &gt; INSERT INTO packed VALUES (1, 2, true, false);      |
-| INSERT 0 1                                            |
-|                                                       |
-| &gt; SELECT format('%s : %s : 長さ %s : 整列 %s',        |
-| &gt;               attname, typname, typlen, typalign)   |
-| &gt;        AS cols                                      |
-| &gt; FROM pg_attribute a                                 |
-| &gt; JOIN pg_type t ON t.oid = a.atttypid                |
-| &gt; WHERE attrelid = 'padded'::regclass                 |
-| &gt;   AND attnum &gt; 0                                    |
-| &gt; ORDER BY attnum;                                    |
-| cols                                                  |
-| a : bool : 長さ 1 : 整列 c                            |
-| b : int8 : 長さ 8 : 整列 d                            |
-| c : bool : 長さ 1 : 整列 c                            |
-| d : int8 : 長さ 8 : 整列 d                            |
-|                                                       |
-| &gt; SELECT pg_column_size(p.*) AS padded FROM padded p; |
-| padded                                                |
-| 56                                                    |
-|                                                       |
-| &gt; SELECT pg_column_size(p.*) AS packed FROM packed p; |
-| packed                                                |
-| 42                                                    |
-</code></pre>
-</div>
-
- <p>
-padded は1行 56 バイト、packed は 42 バイトで、14 バイト違う。padded では、boolean(1バイト)のあとの bigint を8バイト境界へ置くため、7バイトのパディングが2回入る。その 7 × 2 = 14 バイトが差になる。
-</p>
-
- <pre class="example" id="org4474da8">
-※行ヘッダを除く
-
-padded (boolean, bigint, boolean, bigint) : 32 バイト
-0        8        16       24       32
-|a.......|bbbbbbbb|c.......|dddddddd|
-  ^^^^^^^           ^^^^^^^
-  パディング 7      パディング 7
-
-packed (bigint, bigint, boolean, boolean) : 18 バイト
-0        8        16 18
-|bbbbbbbb|dddddddd|ac|
-
-a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = パディング
-</pre>
-</div>
-</div>
- <div id="outline-container-orgc4c3be3" class="outline-2">
- <h2 id="orgc4c3be3"> <a href="#orgc4c3be3">関連</a></h2>
- <div class="outline-text-2" id="text-orgc4c3be3">
- <ul class="org-ul"> <li>類似:  <a href="20240825T101916--kdoc-227-フィールド定義の順番によってメモリサイズが変わることがある__permanent.html#ID-20240825T101916">KDOC 227: フィールド定義の順番によってメモリサイズが変わることがある</a>。C言語での同様の例</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 655: 式の照合順序を変えて並び替えの結果を変える</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgbe01f06" class="outline-2">
- <h2 id="orgbe01f06"> <a href="#orgbe01f06">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgbe01f06">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org55bad16" class="outline-2">
- <h2 id="org55bad16"> <a href="#org55bad16">概要</a></h2>
- <div class="outline-text-2" id="text-org55bad16">
- <p>
-データベースシステムが並び替えや文字区別をする場合、データベースは入力の照合順序(collation)を使用する。
-</p>
-
- <p>
-たとえば同じ文字列を並び替えても、どの照合順序(並び替えの規則)を使うかで結果が変わる。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ UTF8 の文字列を、照合順序だけ変えて並び替える</label> <pre class="src src-sql"> <code>SHOW server_encoding;
-
--- コードポイントの値の順
-SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;C&quot;) AS c
-FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
-
--- 言語の規則の順(ICU)
-SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;und-x-icu&quot;) AS und_x_icu
-FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>|                                                                         |
-|-------------------------------------------------------------------------|
-| &gt; SHOW server_encoding;                                                 |
-| server_encoding                                                         |
-| UTF8                                                                    |
-|                                                                         |
-| &gt; SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;C&quot;) AS c                 |
-| &gt; FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
-| c                                                                       |
-| A B a b                                                                 |
-|                                                                         |
-| &gt; SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;und-x-icu&quot;) AS und_x_icu |
-| &gt; FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
-| und_x_icu                                                               |
-| a A b B                                                                 |
-</code></pre>
-</div>
-
- <blockquote>
- <p>
-概念的に照合可能なデータ型のそれぞれの式は、照合順序を保持しています （組み込みの照合可能なデータ型はtext、varchar、 charです。 ユーザ定義の基本型は照合可能とマーキングできます。もちろん照合可能なデータ型上のドメインは照合可能となります）。 もし、式が列参照である場合は、式の照合順序は列の定義された照合順序となります。 もし、式が定数である場合は、照合順序は定数のデータ型のデフォルトの照合順序となります。 より複雑な式の照合順序は、下記に示すように、その入力の照合順序から引き出されます。
-</p>
-
- <p>
-(略)
-</p>
-
- <p>
-データベースシステムが並べ替えや文字区別を行う場合、データベースは入力の照合順序を使用します。 これは、たとえばORDER BY句や &lt; 演算子や関数を使用する際に発生します。 ORDER BY句に適用する照合順序は、単純にソートキーの照合順序です。 関数や演算子の呼び出しに対して適用される照合順序は、以下に述べるように引数により決まります。 比較演算子に加えて、照合順序はlower、upper、initcapといった小文字と大文字を変換する関数やパターンマッチングの演算子、to_char関連の関数で考慮されています。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/document/18/html/collation.html">23.2. 照合順序サポート</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org957cbcd" class="outline-2">
- <h2 id="org957cbcd"> <a href="#org957cbcd">関連</a></h2>
- <div class="outline-text-2" id="text-org957cbcd">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 653: var と := の違い</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org4e47c95" class="outline-2">
- <h2 id="org4e47c95"> <a href="#org4e47c95">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4e47c95">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org787a54a" class="outline-2">
- <h2 id="org787a54a"> <a href="#org787a54a">概要</a></h2>
- <div class="outline-text-2" id="text-org787a54a">
- <p>
-Go で当たり前に使っている  <code>var x = 1</code> と  <code>x := 1</code> の違いが気になった。微妙な違いがある。
-</p>
-
- <blockquote>
- <p>
-It is shorthand for a regular variable declaration with initializer expressions but no types:
-</p>
-
- <p>
-“var” IdentifierList “=” ExpressionList .
-</p>
-
- <p>
-Unlike regular variable declarations, a short variable declaration may redeclare variables provided they were originally declared earlier in the same block (or the parameter lists if the block is the function body) with the same type, and at least one of the non-blank variables is new. As a consequence, redeclaration can only appear in a multi-variable short declaration. Redeclaration does not introduce a new variable; it just assigns a new value to the original.
-</p>
-
- <p>
-Short variable declarations may appear only inside functions. In some contexts such as the initializers for “if”, “for”, or “switch” statements, they can be used to declare local temporary variables.
-</p>
-
- <p>
-訳
-</p>
-
- <p>
-これは、初期化式を含むが型指定のない通常の変数宣言の省略形です：
-</p>
-
- <p>
-“var” IdentifierList “=” ExpressionList .
-</p>
-
- <p>
-通常の変数宣言とは異なり、短縮変数宣言では、同じブロック内（ブロックが関数本体である場合はパラメータリスト内）で以前に同じ型で宣言されており、かつ空白以外の変数のうち少なくとも1つが新規である場合に限り、変数を再宣言することができます。その結果、再宣言は多変数短縮宣言でのみ使用できます。再宣言によって新しい変数が導入されるわけではなく、元の変数に新しい値が代入されるだけです。
-</p>
-
- <p>
-短縮変数宣言は関数内部でのみ使用できます。「if」、「for」、または「switch」文の初期化子など、一部の文脈では、ローカルの一時変数を宣言するために使用できます。
-</p>
-
- <p>
- <a href="https://go.dev/ref/spec#Short_variable_declarations">The Go Programming Language Specification - Short variable declarations</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org1888e36" class="outline-2">
- <h2 id="org1888e36"> <a href="#org1888e36">関連</a></h2>
- <div class="outline-text-2" id="text-org1888e36">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org5890adb" class="outline-2">
- <h2 id="org5890adb"> <a href="#org5890adb">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5890adb">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org1780da4" class="outline-2">
- <h2 id="org1780da4"> <a href="#org1780da4">概要</a></h2>
- <div class="outline-text-2" id="text-org1780da4">
- <p>
-Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
-</p>
-
- <p>
-pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに pg_stat_activity でアクティブなセッションの文を数える。2つのセッションが同時に要るので、この実験は pgpg のプロキシを通さず、PostgreSQL に直接つなぐ。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label> <pre class="src src-shell"> <code># 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
-sample() {
-  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F ' | ' &lt;&lt;'SQL'
-CREATE TABLE samples (query text, wait text);
-DO $$
-BEGIN
-  FOR i IN 1..400 LOOP
-    PERFORM pg_stat_clear_snapshot();
-    INSERT INTO samples
-    -- 待機イベントがなければ CPU で動いている
-    SELECT query, coalesce(wait_event_type || ':' || wait_event, 'CPU')
-    FROM pg_stat_activity
-    WHERE application_name = 'pgbench' AND state = 'active';
-    PERFORM pg_sleep(0.01);
-  END LOOP;
-END $$;
-SELECT query, wait, count(*) FROM samples GROUP BY 1, 2 ORDER BY 3 DESC;
-DROP TABLE samples;
-SQL
-}
-
-# $1: 説明、$2: pgbench に流す SQL、$3: pgbench のオプション
-run() {
-  echo &quot;== $1&quot;
-  docker exec pgpg-postgres-1 psql -U postgres -qAt \
-    -c &quot;DROP TABLE IF EXISTS w&quot; -c &quot;CREATE TABLE w (id int, pad text)&quot; \
-    -c &quot;CREATE INDEX ON w (id)&quot; -c &quot;CREATE INDEX ON w (pad)&quot; 2&gt;/dev/null
-  printf &quot;$2&quot; | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/bench.sql'
-  out=$(mktemp)
-  # 拡張プロトコル(-M extended)で書き込む
-  docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $3 \
-    -f /tmp/bench.sql postgres &gt; &quot;$out&quot; 2&gt;/dev/null &amp;
-  sleep 0.3
-  sample
-  wait
-  grep 'latency average' &quot;$out&quot;
-  rm -f &quot;$out&quot;
-}
-
-run &quot;小さい INSERT を明示的なトランザクションで(4並列、5秒)&quot; \
-    'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n' &quot;-c 4 -T 5&quot;
-run &quot;小さい INSERT を自動コミットで(4並列、5秒)&quot; \
-    'INSERT INTO w VALUES (1, md5(random()::text));\n' &quot;-c 4 -T 5&quot;
-run &quot;50万行の INSERT を明示的なトランザクションで1回&quot; \
-    'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n' &quot;-c 1 -t 1&quot;
-docker exec pgpg-postgres-1 psql -U postgres -qAt -c &quot;DROP TABLE w&quot;
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
-COMMIT; | LWLock:WALWrite | 1128
-COMMIT; | IO:WalSync | 395
-INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 21
-COMMIT; | CPU | 8
-INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 3
-BEGIN; | CPU | 3
-BEGIN; | Client:ClientRead | 2
-COMMIT; | IO:WalWrite | 2
-INSERT INTO w VALUES (1, md5(random()::text)); | IO:DataFileExtend | 1
-latency average = 1.684 ms
-== 小さい INSERT を自動コミットで(4並列、5秒)
-INSERT INTO w VALUES (1, md5(random()::text)); | LWLock:WALWrite | 1144
-INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalSync | 394
-INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 38
-INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 6
-INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalWrite | 3
-latency average = 1.678 ms
-== 50万行の INSERT を明示的なトランザクションで1回
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | CPU | 148
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:DataFileExtend | 6
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalWrite | 4
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalSync | 4
-INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | LWLock:WALWrite | 3
-COMMIT; | IO:WalSync | 1
-latency average = 1934.744 ms
-</code></pre>
-</div>
-
- <ul class="org-ul"> <li>小さい INSERT を明示的なトランザクションで繰り返すと、標本の約98%が COMMIT だった。COMMIT の標本のほとんどは、WAL の確定を待つ IO:WalSync と LWLock:WALWrite だった</li>
- <li>同じ INSERT を自動コミットにすると、標本はすべて INSERT になった。待機イベントの内訳も、1回あたりの時間も変わらない</li>
- <li>50万行の INSERT を1回でコミットすると、標本のほとんどは INSERT の CPU で、COMMIT は1回だけだった。INSERT の最中にも IO:WalWrite と IO:WalSync が出ている。</li>
-</ul> <blockquote>
- <p>
-WalSync: WALファイルが永続的ストレージに達するのを待機しています。
-</p>
-
- <p>
-WALWrite: WALバッファがディスクに書き込まれるのを待機しています。
-</p>
-
- <p>
- <a href="https://www.postgresql.jp/docs/18/monitoring-stats.html#WAIT-EVENT-TABLE">27.2. 累積統計システム</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org9b2b28d" class="outline-2">
- <h2 id="org9b2b28d"> <a href="#org9b2b28d">関連</a></h2>
- <div class="outline-text-2" id="text-org9b2b28d">
- <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
- <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
- <li>前提:  <a href="20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html#ID-20261010T095355">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
-</entry>
+<updated>2026-10-17T10:07:14+09:00</updated>
 <entry>
   <title>KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org138041b" class="outline-2">
- <h2 id="org138041b"> <a href="#org138041b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org138041b">
+ <div id="outline-container-org0c77b71" class="outline-2">
+ <h2 id="org0c77b71"> <a href="#org0c77b71">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0c77b71">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -1286,9 +22,9 @@ WALWrite: WALバッファがディスクに書き込まれるのを待機して�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb586b1d" class="outline-2">
- <h2 id="orgb586b1d"> <a href="#orgb586b1d">概要</a></h2>
- <div class="outline-text-2" id="text-orgb586b1d">
+ <div id="outline-container-orgeb49e01" class="outline-2">
+ <h2 id="orgeb49e01"> <a href="#orgeb49e01">概要</a></h2>
+ <div class="outline-text-2" id="text-orgeb49e01">
  <p>
 Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
 </p>
@@ -1302,7 +38,7 @@ COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT
 </p>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label> <pre class="src src-sql" id="orge80ad2e"> <code>CREATE EXTENSION pg_stat_statements;
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label> <pre class="src src-sql" id="org5eedf09"> <code>CREATE EXTENSION pg_stat_statements;
 CREATE TABLE t (id int);
 
 -- COMMIT のときに1秒かかる処理を作る
@@ -1316,7 +52,7 @@ END $$;
 </div>
 
  <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label> <pre class="src src-sql" id="orga7a40d6"> <code>SELECT pg_stat_statements_reset() IS NOT NULL AS reset;
+ <label class="org-src-name"> <span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label> <pre class="src src-sql" id="org47851ee"> <code>SELECT pg_stat_statements_reset() IS NOT NULL AS reset;
 
 BEGIN;
 INSERT INTO t VALUES (1);
@@ -1474,32 +210,32 @@ FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
 </p>
 </div>
 </div>
- <div id="outline-container-org2dedf5e" class="outline-2">
- <h2 id="org2dedf5e"> <a href="#org2dedf5e">関連</a></h2>
- <div class="outline-text-2" id="text-org2dedf5e">
+ <div id="outline-container-org36dde8a" class="outline-2">
+ <h2 id="org36dde8a"> <a href="#org36dde8a">関連</a></h2>
+ <div class="outline-text-2" id="text-org36dde8a">
  <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ</a>。コミット処理の中で何を待っているか</li>
  <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
 </ul></div>
 </div>
- <div id="outline-container-orgde349ce" class="outline-2">
- <h2 id="orgde349ce"> <a href="#orgde349ce">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgde349ce">
+ <div id="outline-container-org65113fc" class="outline-2">
+ <h2 id="org65113fc"> <a href="#org65113fc">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org65113fc">
  <ul class="org-ul"> <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
+  <updated>2026-10-17T10:07:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org1d9dddf" class="outline-2">
- <h2 id="org1d9dddf"> <a href="#org1d9dddf">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org1d9dddf">
+ <div id="outline-container-orgb4be3d6" class="outline-2">
+ <h2 id="orgb4be3d6"> <a href="#orgb4be3d6">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgb4be3d6">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -1508,9 +244,9 @@ FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgfded484" class="outline-2">
- <h2 id="orgfded484"> <a href="#orgfded484">概要</a></h2>
- <div class="outline-text-2" id="text-orgfded484">
+ <div id="outline-container-orgaab2753" class="outline-2">
+ <h2 id="orgaab2753"> <a href="#orgaab2753">概要</a></h2>
+ <div class="outline-text-2" id="text-orgaab2753">
  <p>
 PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL)を作成する。COMMIT は書き込みがある場合は主にその記録の永続化を待ち、ページは書かない。Aurora だと待機イベント  <code>IO:XactSync</code> として現れる。
 </p>
@@ -1520,17 +256,17 @@ PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL
 </p>
 </div>
 </div>
- <div id="outline-container-orgfa8992e" class="outline-2">
- <h2 id="orgfa8992e"> <a href="#orgfa8992e">関連</a></h2>
- <div class="outline-text-2" id="text-orgfa8992e">
+ <div id="outline-container-org3a652aa" class="outline-2">
+ <h2 id="org3a652aa"> <a href="#org3a652aa">関連</a></h2>
+ <div class="outline-text-2" id="text-org3a652aa">
  <ul class="org-ul"> <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-intro.html">28.3. 先行書き込みログ(WAL)</a></li>
  <li>正典:  <a href="https://www.postgresql.jp/docs/18/wal-configuration.html">28.5. WALの設定</a></li>
  <li>正典:  <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/AuroraUserGuide/apg-waits.xactsync.html">IO:XactSync - Amazon Aurora</a></li>
 </ul></div>
 </div>
- <div id="outline-container-org8dd5f24" class="outline-2">
- <h2 id="org8dd5f24"> <a href="#org8dd5f24">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org8dd5f24">
+ <div id="outline-container-orgd98a0b6" class="outline-2">
+ <h2 id="orgd98a0b6"> <a href="#orgd98a0b6">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgd98a0b6">
  <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
  <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
 </ul></div>
@@ -1538,16 +274,1280 @@ PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
+  <updated>2026-10-17T10:07:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org4886c73" class="outline-2">
+ <h2 id="org4886c73"> <a href="#org4886c73">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4886c73">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orga058837" class="outline-2">
+ <h2 id="orga058837"> <a href="#orga058837">概要</a></h2>
+ <div class="outline-text-2" id="text-orga058837">
+ <p>
+OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれいちばん小さい例で出力して見る。どれも標準出力の exporter で JSON を書き出し、整形して出力をそのまま見る。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>3つの例で使う共通部分</label> <pre class="src src-shell" id="org0c69b57"> <code># 例ごとに一時ディレクトリを作り、終わったら消す
+dir=$(mktemp -d)
+trap 'rm -rf &quot;$dir&quot;' EXIT
+cd &quot;$dir&quot;
+go mod init example &gt;/dev/null 2&gt;&amp;1
+go get \
+  go.opentelemetry.io/otel@v1.47.0 \
+  go.opentelemetry.io/otel/sdk@v1.47.0 \
+  go.opentelemetry.io/otel/sdk/metric@v1.47.0 \
+  go.opentelemetry.io/otel/sdk/log@v1.47.0 \
+  go.opentelemetry.io/otel/log@v1.47.0 \
+  go.opentelemetry.io/otel/exporters/stdout/stdouttrace@v1.47.0 \
+  go.opentelemetry.io/otel/exporters/stdout/stdoutmetric@v1.47.0 \
+  go.opentelemetry.io/otel/exporters/stdout/stdoutlog@v0.23.0 2&gt;/dev/null
+</code></pre>
+</div>
+</div>
+ <div id="outline-container-orge6fbcaf" class="outline-3">
+ <h3 id="orge6fbcaf"> <a href="#orge6fbcaf">trace</a></h3>
+ <div class="outline-text-3" id="text-orge6fbcaf">
+ <p>
+親の span の中で子の span を作る。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 2: </span>親と子の span を1つずつ作る</label> <pre class="src src-shell"> <code>&lt;&lt;setup&gt;&gt;
+mkdir -p trace
+cat &gt; trace/main.go &lt;&lt;'GO'
+package main
+
+import (
+	&quot;context&quot;
+
+	&quot;go.opentelemetry.io/otel/exporters/stdout/stdouttrace&quot;
+	sdktrace &quot;go.opentelemetry.io/otel/sdk/trace&quot;
+)
+
+func main() {
+	ctx := context.Background()
+	exp, _ := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	tp := sdktrace.NewTracerProvider(sdktrace.WithSyncer(exp))
+	defer tp.Shutdown(ctx)
+
+	tracer := tp.Tracer(&quot;example&quot;)
+	ctx, parent := tracer.Start(ctx, &quot;parent&quot;)
+	_, child := tracer.Start(ctx, &quot;child&quot;)
+	child.End()
+	parent.End()
+}
+GO
+go mod tidy 2&gt;/dev/null
+go run ./trace
+</code></pre>
+</div>
+
+ <pre class="example" id="orgcb5df52">
+{
+	&quot;Name&quot;: &quot;child&quot;,
+	&quot;SpanContext&quot;: {
+		&quot;TraceID&quot;: &quot;23fc88efba48028dd9d7717ccb8a1b61&quot;,
+		&quot;SpanID&quot;: &quot;af787e4c4d7bf055&quot;,
+		&quot;TraceFlags&quot;: &quot;01&quot;,
+		&quot;TraceState&quot;: &quot;&quot;,
+		&quot;Remote&quot;: false
+	},
+	&quot;Parent&quot;: {
+		&quot;TraceID&quot;: &quot;23fc88efba48028dd9d7717ccb8a1b61&quot;,
+		&quot;SpanID&quot;: &quot;d3973a5b2f677925&quot;,
+		&quot;TraceFlags&quot;: &quot;01&quot;,
+		&quot;TraceState&quot;: &quot;&quot;,
+		&quot;Remote&quot;: false
+	},
+	&quot;SpanKind&quot;: 1,
+	&quot;StartTime&quot;: &quot;2026-10-15T09:50:57.99213578+09:00&quot;,
+	&quot;EndTime&quot;: &quot;2026-10-15T09:50:57.99213599+09:00&quot;,
+	&quot;Attributes&quot;: null,
+	&quot;Events&quot;: null,
+	&quot;Links&quot;: null,
+	&quot;Status&quot;: {
+		&quot;Code&quot;: &quot;Unset&quot;,
+		&quot;Description&quot;: &quot;&quot;
+	},
+	&quot;DroppedAttributes&quot;: 0,
+	&quot;DroppedEvents&quot;: 0,
+	&quot;DroppedLinks&quot;: 0,
+	&quot;ChildSpanCount&quot;: 0,
+	&quot;Resource&quot;: [
+		{
+			&quot;Key&quot;: &quot;service.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;unknown_service:trace&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;go&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;opentelemetry&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;1.47.0&quot;
+			}
+		}
+	],
+	&quot;InstrumentationScope&quot;: {
+		&quot;Name&quot;: &quot;example&quot;,
+		&quot;Version&quot;: &quot;&quot;,
+		&quot;SchemaURL&quot;: &quot;&quot;,
+		&quot;Attributes&quot;: null
+	},
+	&quot;InstrumentationLibrary&quot;: {
+		&quot;Name&quot;: &quot;example&quot;,
+		&quot;Version&quot;: &quot;&quot;,
+		&quot;SchemaURL&quot;: &quot;&quot;,
+		&quot;Attributes&quot;: null
+	}
+}
+{
+	&quot;Name&quot;: &quot;parent&quot;,
+	&quot;SpanContext&quot;: {
+		&quot;TraceID&quot;: &quot;23fc88efba48028dd9d7717ccb8a1b61&quot;,
+		&quot;SpanID&quot;: &quot;d3973a5b2f677925&quot;,
+		&quot;TraceFlags&quot;: &quot;01&quot;,
+		&quot;TraceState&quot;: &quot;&quot;,
+		&quot;Remote&quot;: false
+	},
+	&quot;Parent&quot;: {
+		&quot;TraceID&quot;: &quot;00000000000000000000000000000000&quot;,
+		&quot;SpanID&quot;: &quot;0000000000000000&quot;,
+		&quot;TraceFlags&quot;: &quot;00&quot;,
+		&quot;TraceState&quot;: &quot;&quot;,
+		&quot;Remote&quot;: false
+	},
+	&quot;SpanKind&quot;: 1,
+	&quot;StartTime&quot;: &quot;2026-10-15T09:50:57.992133605+09:00&quot;,
+	&quot;EndTime&quot;: &quot;2026-10-15T09:50:57.992240576+09:00&quot;,
+	&quot;Attributes&quot;: null,
+	&quot;Events&quot;: null,
+	&quot;Links&quot;: null,
+	&quot;Status&quot;: {
+		&quot;Code&quot;: &quot;Unset&quot;,
+		&quot;Description&quot;: &quot;&quot;
+	},
+	&quot;DroppedAttributes&quot;: 0,
+	&quot;DroppedEvents&quot;: 0,
+	&quot;DroppedLinks&quot;: 0,
+	&quot;ChildSpanCount&quot;: 1,
+	&quot;Resource&quot;: [
+		{
+			&quot;Key&quot;: &quot;service.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;unknown_service:trace&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;go&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;opentelemetry&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;1.47.0&quot;
+			}
+		}
+	],
+	&quot;InstrumentationScope&quot;: {
+		&quot;Name&quot;: &quot;example&quot;,
+		&quot;Version&quot;: &quot;&quot;,
+		&quot;SchemaURL&quot;: &quot;&quot;,
+		&quot;Attributes&quot;: null
+	},
+	&quot;InstrumentationLibrary&quot;: {
+		&quot;Name&quot;: &quot;example&quot;,
+		&quot;Version&quot;: &quot;&quot;,
+		&quot;SchemaURL&quot;: &quot;&quot;,
+		&quot;Attributes&quot;: null
+	}
+}
+</pre>
+
+ <ul class="org-ul"> <li>子の Parent.SpanID が親の SpanID と同じで、TraceID も同じである。これで1つのトレースの中の親子を表現している</li>
+ <li>親の Parent.SpanID はすべて 0 で、根の span である</li>
+ <li>WithSyncer を使っていて span が終わったときにすぐに書き出すので先に終わった子が先に出力される</li>
+</ul></div>
+</div>
+ <div id="outline-container-org7363719" class="outline-3">
+ <h3 id="org7363719"> <a href="#org7363719">metric</a></h3>
+ <div class="outline-text-3" id="text-org7363719">
+ <p>
+カウンタに 1、2、3 を足す。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 3: </span>カウンタに3回足す</label> <pre class="src src-shell"> <code>&lt;&lt;setup&gt;&gt;
+mkdir -p metric
+cat &gt; metric/main.go &lt;&lt;'GO'
+package main
+
+import (
+	&quot;context&quot;
+
+	&quot;go.opentelemetry.io/otel/exporters/stdout/stdoutmetric&quot;
+	sdkmetric &quot;go.opentelemetry.io/otel/sdk/metric&quot;
+)
+
+func main() {
+	ctx := context.Background()
+	exp, _ := stdoutmetric.New(stdoutmetric.WithPrettyPrint())
+	mp := sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exp)))
+	defer mp.Shutdown(ctx)
+
+	counter, _ := mp.Meter(&quot;example&quot;).Int64Counter(&quot;requests&quot;)
+	counter.Add(ctx, 1)
+	counter.Add(ctx, 2)
+	counter.Add(ctx, 3)
+}
+GO
+go mod tidy 2&gt;/dev/null
+go run ./metric
+</code></pre>
+</div>
+
+ <pre class="example" id="org53262f4">
+{
+	&quot;Resource&quot;: [
+		{
+			&quot;Key&quot;: &quot;service.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;unknown_service:metric&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;go&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;opentelemetry&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;1.47.0&quot;
+			}
+		}
+	],
+	&quot;ScopeMetrics&quot;: [
+		{
+			&quot;Scope&quot;: {
+				&quot;Name&quot;: &quot;example&quot;,
+				&quot;Version&quot;: &quot;&quot;,
+				&quot;SchemaURL&quot;: &quot;&quot;,
+				&quot;Attributes&quot;: null
+			},
+			&quot;Metrics&quot;: [
+				{
+					&quot;Name&quot;: &quot;requests&quot;,
+					&quot;Description&quot;: &quot;&quot;,
+					&quot;Unit&quot;: &quot;&quot;,
+					&quot;Data&quot;: {
+						&quot;DataPoints&quot;: [
+							{
+								&quot;Attributes&quot;: [],
+								&quot;StartTime&quot;: &quot;2026-10-15T09:50:58.694178323+09:00&quot;,
+								&quot;Time&quot;: &quot;2026-10-15T09:50:58.69420339+09:00&quot;,
+								&quot;Value&quot;: 6
+							}
+						],
+						&quot;Temporality&quot;: &quot;CumulativeTemporality&quot;,
+						&quot;IsMonotonic&quot;: true
+					}
+				}
+			]
+		}
+	]
+}
+</pre>
+
+ <ul class="org-ul"> <li>3回の Add が、値 6 に集計された</li>
+</ul></div>
+</div>
+ <div id="outline-container-org42e1297" class="outline-3">
+ <h3 id="org42e1297"> <a href="#org42e1297">log</a></h3>
+ <div class="outline-text-3" id="text-org42e1297">
+ <p>
+ログを1件書く。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 4: </span>ログを1件書く</label> <pre class="src src-shell"> <code>&lt;&lt;setup&gt;&gt;
+mkdir -p log
+cat &gt; log/main.go &lt;&lt;'GO'
+package main
+
+import (
+	&quot;context&quot;
+
+	&quot;go.opentelemetry.io/otel/attribute&quot;
+	&quot;go.opentelemetry.io/otel/exporters/stdout/stdoutlog&quot;
+	&quot;go.opentelemetry.io/otel/log&quot;
+	sdklog &quot;go.opentelemetry.io/otel/sdk/log&quot;
+)
+
+func main() {
+	ctx := context.Background()
+	exp, _ := stdoutlog.New(stdoutlog.WithPrettyPrint())
+	lp := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewSimpleProcessor(exp)))
+	defer lp.Shutdown(ctx)
+
+	var r log.Record
+	r.SetSeverity(log.SeverityInfo)
+	r.SetBody(attribute.StringValue(&quot;hello&quot;))
+	lp.Logger(&quot;example&quot;).Emit(ctx, r)
+}
+GO
+go mod tidy 2&gt;/dev/null
+go run ./log
+</code></pre>
+</div>
+
+ <pre class="example" id="org3b6157d">
+{
+	&quot;Timestamp&quot;: &quot;0001-01-01T00:00:00Z&quot;,
+	&quot;ObservedTimestamp&quot;: &quot;2026-10-15T09:50:59.139404628+09:00&quot;,
+	&quot;Severity&quot;: 9,
+	&quot;SeverityText&quot;: &quot;&quot;,
+	&quot;Body&quot;: {
+		&quot;Type&quot;: &quot;STRING&quot;,
+		&quot;Value&quot;: &quot;hello&quot;
+	},
+	&quot;Attributes&quot;: [],
+	&quot;TraceID&quot;: &quot;00000000000000000000000000000000&quot;,
+	&quot;SpanID&quot;: &quot;0000000000000000&quot;,
+	&quot;TraceFlags&quot;: &quot;00&quot;,
+	&quot;Resource&quot;: [
+		{
+			&quot;Key&quot;: &quot;service.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;unknown_service:log&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.language&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;go&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.name&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;opentelemetry&quot;
+			}
+		},
+		{
+			&quot;Key&quot;: &quot;telemetry.sdk.version&quot;,
+			&quot;Value&quot;: {
+				&quot;Type&quot;: &quot;STRING&quot;,
+				&quot;Value&quot;: &quot;1.47.0&quot;
+			}
+		}
+	],
+	&quot;Scope&quot;: {
+		&quot;Name&quot;: &quot;example&quot;,
+		&quot;Version&quot;: &quot;&quot;,
+		&quot;SchemaURL&quot;: &quot;&quot;,
+		&quot;Attributes&quot;: {}
+	},
+	&quot;DroppedAttributes&quot;: 0
+}
+</pre>
+
+ <ul class="org-ul"> <li> <code>Scope</code> にロガーに渡した文字列が入っている</li>
+</ul></div>
+</div>
+</div>
+ <div id="outline-container-orgd9c03b3" class="outline-2">
+ <h2 id="orgd9c03b3"> <a href="#orgd9c03b3">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd9c03b3">
+ <ul class="org-ul"> <li>類似:  <a href="20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html#ID-20261014T220427">KDOC 663: リングキューの動作を試す</a>。ただしこの例の log は SimpleProcessor なのでキューは通らない</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261015T093914--kdoc-664-opentelemetry-の3つのシグナルの出力を見る__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261015T093914--kdoc-664-opentelemetry-の3つのシグナルの出力を見る__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 663: リングキューの動作を試す</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org949af2c" class="outline-2">
+ <h2 id="org949af2c"> <a href="#org949af2c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org949af2c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-15 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orge3115e5" class="outline-2">
+ <h2 id="orge3115e5"> <a href="#orge3115e5">概要</a></h2>
+ <div class="outline-text-2" id="text-orge3115e5">
+ <p>
+リングキューで実装しているのを見かけた。opentelemetry-go の sdk/log は、ログを溜めておくキューをリング上に作っている。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-git-permalink"> <code>https://github.com/kijimad/opentelemetry-go/blob/f013f0ec436a436795beaa57a181ebecd34aad3d/sdk/log/batch.go#L331-L335
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>// queue holds a queue of logging records.
+//
+// When the queue becomes full, the oldest records in the queue are
+// overwritten.
+type queue struct {
+</code></pre>
+</div>
+
+ <p>
+同じ仕組みを container/ring で素朴に書き、出し入れ操作して1手ごとの中身を見る。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>容量 3 のリングキューに5つ入れ、2つ取り出し、2つ入れる</label> <pre class="src src-go"> <code>// 容量 n の輪の上で、read(いちばん古い要素)と write(次に書く場所)の2つの位置を進める
+type queue struct {
+	head        *ring.Ring // 表示のための起点。動かさない
+	read, write *ring.Ring
+	cap, len    int
+	dropped     int
+}
+
+func newQueue(n int) *queue {
+	r := ring.New(n)
+	return &amp;queue{head: r, read: r, write: r, cap: n}
+}
+
+func (q *queue) Enqueue(v int) {
+	q.write.Value = v
+	q.write = q.write.Next()
+	q.len++
+	// 満杯なら、いちばん古い要素を上書きし、read も1つ進める
+	if q.len &gt; q.cap {
+		q.len = q.cap
+		q.read = q.read.Next()
+		q.dropped++
+	}
+}
+
+func (q *queue) Dequeue() (int, bool) {
+	if q.len == 0 {
+		return 0, false
+	}
+	v := q.read.Value.(int)
+	q.read.Value = nil
+	q.read = q.read.Next()
+	q.len--
+	return v, true
+}
+
+func (q *queue) String() string {
+	slots := []string{}
+	var read, write int
+	p := q.head
+	for i := 0; i &lt; q.cap; i++ {
+		if p == q.read {
+			read = i
+		}
+		if p == q.write {
+			write = i
+		}
+		if p.Value == nil {
+			slots = append(slots, &quot;_&quot;)
+		} else {
+			slots = append(slots, fmt.Sprint(p.Value))
+		}
+		p = p.Next()
+	}
+	return fmt.Sprintf(&quot;%v read=%d write=%d len=%d dropped=%d&quot;, slots, read, write, q.len, q.dropped)
+}
+
+func main() {
+	q := newQueue(3)
+	fmt.Println(&quot;初期         &quot;, q)
+	for i := 1; i &lt;= 5; i++ {
+		q.Enqueue(i)
+		fmt.Printf(&quot;Enqueue(%d)    %v\n&quot;, i, q)
+	}
+	for range 2 {
+		v, _ := q.Dequeue()
+		fmt.Printf(&quot;Dequeue() = %d %v\n&quot;, v, q)
+	}
+	for i := 1; i &lt;= 2; i++ {
+		q.Enqueue(i)
+		fmt.Printf(&quot;Enqueue(%d)    %v\n&quot;, i, q)
+	}
+}
+</code></pre>
+</div>
+
+ <pre class="example" id="org922d355">
+初期          [_ _ _] read=0 write=0 len=0 dropped=0
+Enqueue(1)    [1 _ _] read=0 write=1 len=1 dropped=0
+Enqueue(2)    [1 2 _] read=0 write=2 len=2 dropped=0
+Enqueue(3)    [1 2 3] read=0 write=0 len=3 dropped=0
+Enqueue(4)    [4 2 3] read=1 write=1 len=3 dropped=1
+Enqueue(5)    [4 5 3] read=2 write=2 len=3 dropped=2
+Dequeue() = 3 [4 5 _] read=0 write=2 len=2 dropped=2
+Dequeue() = 4 [_ 5 _] read=1 write=2 len=1 dropped=2
+Enqueue(1)    [_ 5 1] read=1 write=0 len=2 dropped=2
+Enqueue(2)    [2 5 1] read=1 write=1 len=3 dropped=2
+</pre>
+
+ <ul class="org-ul"> <li>Enqueue が満杯になったときの挙動が鍵に見える。write が一番古い要素を上書きして read も1つ進む</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgf1075e7" class="outline-2">
+ <h2 id="orgf1075e7"> <a href="#orgf1075e7">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf1075e7">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-org8916c13" class="outline-2">
+ <h2 id="org8916c13"> <a href="#org8916c13">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org8916c13">
+ <ul class="org-ul"> <li> <a href="./20261015T093914--kdoc-664-opentelemetry-の3つのシグナルの出力を見る__permanent.html">KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 662: 使われていないインデックスは pg_stat_user_indexes で見つけられる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org6176220" class="outline-2">
+ <h2 id="org6176220"> <a href="#org6176220">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6176220">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-14 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-14 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgc7ecefe" class="outline-2">
+ <h2 id="orgc7ecefe"> <a href="#orgc7ecefe">概要</a></h2>
+ <div class="outline-text-2" id="text-orgc7ecefe">
+ <p>
+使われていないインデックスを見つけるために  <code>pg_stat_user_indexes.idx_scan</code> が使えるという。
+</p>
+
+ <blockquote>
+ <p>
+idx_scan bigint
+</p>
+
+ <p>
+インデックスに対して開始されたインデックススキャンの実行回数です。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/monitoring-stats.html">27.2. 累積統計システム</a>
+</p>
+</blockquote>
+
+ <p>
+2つのインデックスのうち片方 t_a だけを使う問い合わせを100回流して、idx_scan を見る。統計は待機状態へ入る直前に反映されるが、1秒に1回までなので、流した直後に同じ接続で読むと 0 に見える。pg_stat_force_next_flush() で次の反映を早めてから読む。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>t_a だけを100回使ってから、インデックスが使われた回数を見る</label> <pre class="src src-sql"> <code>CREATE TABLE t (a int, b int);
+CREATE INDEX t_a ON t (a);
+CREATE INDEX t_b ON t (b);
+INSERT INTO t
+SELECT i, i FROM generate_series(1, 10000) i;
+ANALYZE t;
+
+-- t_a だけを100回使う
+DO $$
+BEGIN
+  FOR i IN 1..100 LOOP
+    PERFORM * FROM t WHERE a = i;
+  END LOOP;
+END $$;
+SELECT pg_stat_force_next_flush();
+
+SELECT indexrelname, idx_scan
+FROM pg_stat_user_indexes
+ORDER BY idx_scan;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>|                                                 |          |
+|-------------------------------------------------+----------|
+| &gt; CREATE TABLE t (a int, b int);                |          |
+| CREATE TABLE                                    |          |
+|                                                 |          |
+| &gt; CREATE INDEX t_a ON t (a);                    |          |
+| CREATE INDEX                                    |          |
+|                                                 |          |
+| &gt; CREATE INDEX t_b ON t (b);                    |          |
+| CREATE INDEX                                    |          |
+|                                                 |          |
+| &gt; INSERT INTO t                                 |          |
+| &gt; SELECT i, i FROM generate_series(1, 10000) i; |          |
+| INSERT 0 10000                                  |          |
+|                                                 |          |
+| &gt; ANALYZE t;                                    |          |
+| ANALYZE                                         |          |
+|                                                 |          |
+| &gt; DO $$                                         |          |
+| &gt; BEGIN                                         |          |
+| &gt;   FOR i IN 1..100 LOOP                        |          |
+| &gt;     PERFORM * FROM t WHERE a = i;             |          |
+| &gt;   END LOOP;                                   |          |
+| &gt; END $$;                                       |          |
+| DO                                              |          |
+|                                                 |          |
+| &gt; SELECT pg_stat_force_next_flush();            |          |
+| pg_stat_force_next_flush                        |          |
+|                                                 |          |
+|                                                 |          |
+| &gt; SELECT indexrelname, idx_scan                 |          |
+| &gt; FROM pg_stat_user_indexes                     |          |
+| &gt; ORDER BY idx_scan;                            |          |
+| indexrelname                                    | idx_scan |
+| t_b                                             |        0 |
+| t_a                                             |      100 |
+</code></pre>
+</div>
+
+ <p>
+100回使った t_a は idx_scan が 100、使っていない t_b は 0 だった。0 のインデックスは消す候補になる。
+</p>
+</div>
+</div>
+ <div id="outline-container-org3e95fa5" class="outline-2">
+ <h2 id="org3e95fa5"> <a href="#org3e95fa5">関連</a></h2>
+ <div class="outline-text-2" id="text-org3e95fa5">
+ <ul class="org-ul"> <li>前提:  <a href="20251210T084437--kdoc-501-インデックスのオーバーヘッドを検証する__permanent.html#ID-20251210T084437">KDOC 501: インデックスのオーバーヘッドを検証する</a>。オーバーヘッドがあるので使ってないのは消さなければならない</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261014T084150--kdoc-662-使われていないインデックスは-pg-stat-user-indexes-で見つけられる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261014T084150--kdoc-662-使われていないインデックスは-pg-stat-user-indexes-で見つけられる__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさないのを確かめる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org5c7938c" class="outline-2">
+ <h2 id="org5c7938c"> <a href="#org5c7938c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org5c7938c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org9120023" class="outline-2">
+ <h2 id="org9120023"> <a href="#org9120023">概要</a></h2>
+ <div class="outline-text-2" id="text-org9120023">
+ <p>
+集計や並べ替えの後ろにある LIMIT は、下の処理が全部の行を読み終えるまで効かないので、読む行を減らさないのを確かめる。
+</p>
+
+ <p>
+ユーザー、注文、明細を結合し、ユーザーごとに金額を合計して、上位5件を取る。比べるため、集計と並べ替えを外して 5 件取る問い合わせも流す。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-sql"> <code>SET max_parallel_workers_per_gather = 0;
+CREATE TABLE users (id int PRIMARY KEY, name text);
+CREATE TABLE orders (id int PRIMARY KEY, user_id int);
+CREATE TABLE items (order_id int, price int);
+INSERT INTO users
+SELECT i, 'user' || i FROM generate_series(1, 10000) i;
+INSERT INTO orders
+SELECT i, i % 10000 + 1 FROM generate_series(1, 100000) i;
+INSERT INTO items
+SELECT i % 100000 + 1, i % 1000 FROM generate_series(1, 300000) i;
+ANALYZE users;
+ANALYZE orders;
+ANALYZE items;
+
+-- 集計して並べ替えてから 5 件取る
+EXPLAIN (ANALYZE, FORMAT JSON, COSTS OFF, TIMING OFF,
+         SUMMARY OFF, BUFFERS OFF)
+SELECT u.name, sum(i.price) AS total
+FROM users u
+JOIN orders o ON o.user_id = u.id
+JOIN items i ON i.order_id = o.id
+WHERE u.id &lt; 100
+GROUP BY u.name
+ORDER BY total DESC
+LIMIT 5;
+
+-- 集計も並べ替えもせずに 5 件取る
+EXPLAIN (ANALYZE, FORMAT JSON, COSTS OFF, TIMING OFF,
+         SUMMARY OFF, BUFFERS OFF)
+SELECT u.name, i.price
+FROM users u
+JOIN orders o ON o.user_id = u.id
+JOIN items i ON i.order_id = o.id
+WHERE u.id &lt; 100
+LIMIT 5;
+</code></pre>
+</div>
+
+ <p>
+ <img src="images/plan-2afc5d2495db.svg" alt="plan-2afc5d2495db.svg" class="org-svg"></img> <img src="images/plan-3de4fc1f58c4.svg" alt="plan-3de4fc1f58c4.svg" class="org-svg"></img></p>
+
+ <ul class="org-ul"> <li>集計して並べ替えると、下の items の Seq Scan は 300,000 行をすべて読み、最後の Limit で 5 行に絞っている</li>
+ <li>集計も並べ替えもしないと、items の Seq Scan は 5 行しか読まない。Limit が 5 行を受け取った時点で、下に行を要求するのをやめている。結合のしかたも Hash Join から、1 行ずつ相手を探す Nested Loop に変わった</li>
+</ul> <p>
+計画は上のノードが下のノードに 1 行ずつ要求し、行は下のノードで作られて上へ渡る。上が要求をやめれば、下も止まる。
+</p>
+
+ <blockquote>
+ <p>
+これは本質的に要求引き寄せ型（demand-pull）パイプライン機能です。 計画ノードが呼ばれる度にもう1つの行を引き渡すか、行を引き渡したことの報告を行わなければなりません。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/executor.html">51.6. エグゼキュータ</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org1b34f94" class="outline-2">
+ <h2 id="org1b34f94"> <a href="#org1b34f94">関連</a></h2>
+ <div class="outline-text-2" id="text-org1b34f94">
+ <ul class="org-ul"> <li>前提:  <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。文芸的に確認する道具</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさないのを確かめる__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 656: データベースで列の並び順によってサイズが変わる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org9626ca4" class="outline-2">
+ <h2 id="org9626ca4"> <a href="#org9626ca4">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org9626ca4">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org985719b" class="outline-2">
+ <h2 id="org985719b"> <a href="#org985719b">概要</a></h2>
+ <div class="outline-text-2" id="text-org985719b">
+ <p>
+データベースでも、プログラミング言語と同様に、フィールドのデータ型を定義する順序によって使うデータサイズが変わりうる。
+</p>
+
+ <p>
+型ごとに、値を置く位置の境界(整列)が決まっている。境界に合わないときは、前にパディングが入る。
+</p>
+
+ <blockquote>
+ <p>
+ディスク上の完全な行の表現のように、複数の値が隣接して格納される際には、指定された境界で始まるように、この型のデータの前にパディングが挿入されます。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/catalog-pg-type.html">52.64. pg_type</a>
+</p>
+</blockquote>
+
+ <p>
+同じ列を、並び順だけ変えた2つのテーブルで比べる。boolean は1バイトで整列なし、bigint は8バイトで8バイト境界(double 整列)である。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ列を並び順だけ変えて、1行の大きさを比べる</label> <pre class="src src-sql"> <code>-- boolean と bigint を交互に並べる
+CREATE TABLE padded
+  (a boolean, b bigint, c boolean, d bigint);
+-- bigint を先に、boolean をあとにまとめる
+CREATE TABLE packed
+  (b bigint, d bigint, a boolean, c boolean);
+
+INSERT INTO padded VALUES (true, 1, false, 2);
+INSERT INTO packed VALUES (1, 2, true, false);
+
+-- 列ごとの長さと整列
+SELECT format('%s : %s : 長さ %s : 整列 %s',
+              attname, typname, typlen, typalign)
+       AS cols
+FROM pg_attribute a
+JOIN pg_type t ON t.oid = a.atttypid
+WHERE attrelid = 'padded'::regclass
+  AND attnum &gt; 0
+ORDER BY attnum;
+
+-- 1行の大きさ(行ヘッダを含む)
+SELECT pg_column_size(p.*) AS padded FROM padded p;
+SELECT pg_column_size(p.*) AS packed FROM packed p;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>|                                                       |
+|-------------------------------------------------------|
+| &gt; CREATE TABLE padded                                 |
+| &gt;   (a boolean, b bigint, c boolean, d bigint);       |
+| CREATE TABLE                                          |
+|                                                       |
+| &gt; CREATE TABLE packed                                 |
+| &gt;   (b bigint, d bigint, a boolean, c boolean);       |
+| CREATE TABLE                                          |
+|                                                       |
+| &gt; INSERT INTO padded VALUES (true, 1, false, 2);      |
+| INSERT 0 1                                            |
+|                                                       |
+| &gt; INSERT INTO packed VALUES (1, 2, true, false);      |
+| INSERT 0 1                                            |
+|                                                       |
+| &gt; SELECT format('%s : %s : 長さ %s : 整列 %s',        |
+| &gt;               attname, typname, typlen, typalign)   |
+| &gt;        AS cols                                      |
+| &gt; FROM pg_attribute a                                 |
+| &gt; JOIN pg_type t ON t.oid = a.atttypid                |
+| &gt; WHERE attrelid = 'padded'::regclass                 |
+| &gt;   AND attnum &gt; 0                                    |
+| &gt; ORDER BY attnum;                                    |
+| cols                                                  |
+| a : bool : 長さ 1 : 整列 c                            |
+| b : int8 : 長さ 8 : 整列 d                            |
+| c : bool : 長さ 1 : 整列 c                            |
+| d : int8 : 長さ 8 : 整列 d                            |
+|                                                       |
+| &gt; SELECT pg_column_size(p.*) AS padded FROM padded p; |
+| padded                                                |
+| 56                                                    |
+|                                                       |
+| &gt; SELECT pg_column_size(p.*) AS packed FROM packed p; |
+| packed                                                |
+| 42                                                    |
+</code></pre>
+</div>
+
+ <p>
+padded は1行 56 バイト、packed は 42 バイトで、14 バイト違う。padded では、boolean(1バイト)のあとの bigint を8バイト境界へ置くため、7バイトのパディングが2回入る。その 7 × 2 = 14 バイトが差になる。
+</p>
+
+ <pre class="example" id="org6e1f708">
+※行ヘッダを除く
+
+padded (boolean, bigint, boolean, bigint) : 32 バイト
+0        8        16       24       32
+|a.......|bbbbbbbb|c.......|dddddddd|
+  ^^^^^^^           ^^^^^^^
+  パディング 7      パディング 7
+
+packed (bigint, bigint, boolean, boolean) : 18 バイト
+0        8        16 18
+|bbbbbbbb|dddddddd|ac|
+
+a, c = boolean(1バイト)  b, d = bigint(8バイト、8バイト境界)  . = パディング
+</pre>
+</div>
+</div>
+ <div id="outline-container-org115bacd" class="outline-2">
+ <h2 id="org115bacd"> <a href="#org115bacd">関連</a></h2>
+ <div class="outline-text-2" id="text-org115bacd">
+ <ul class="org-ul"> <li>類似:  <a href="20240825T101916--kdoc-227-フィールド定義の順番によってメモリサイズが変わることがある__permanent.html#ID-20240825T101916">KDOC 227: フィールド定義の順番によってメモリサイズが変わることがある</a>。C言語での同様の例</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T231047--kdoc-656-データベースで列の並び順によってサイズが変わる__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 655: 式の照合順序を変えて並び替えの結果を変える</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org1db9286" class="outline-2">
+ <h2 id="org1db9286"> <a href="#org1db9286">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1db9286">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org9d0ff44" class="outline-2">
+ <h2 id="org9d0ff44"> <a href="#org9d0ff44">概要</a></h2>
+ <div class="outline-text-2" id="text-org9d0ff44">
+ <p>
+データベースシステムが並び替えや文字区別をする場合、データベースは入力の照合順序(collation)を使用する。
+</p>
+
+ <p>
+たとえば同じ文字列を並び替えても、どの照合順序(並び替えの規則)を使うかで結果が変わる。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>同じ UTF8 の文字列を、照合順序だけ変えて並び替える</label> <pre class="src src-sql"> <code>SHOW server_encoding;
+
+-- コードポイントの値の順
+SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;C&quot;) AS c
+FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
+
+-- 言語の規則の順(ICU)
+SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;und-x-icu&quot;) AS und_x_icu
+FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>|                                                                         |
+|-------------------------------------------------------------------------|
+| &gt; SHOW server_encoding;                                                 |
+| server_encoding                                                         |
+| UTF8                                                                    |
+|                                                                         |
+| &gt; SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;C&quot;) AS c                 |
+| &gt; FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| c                                                                       |
+| A B a b                                                                 |
+|                                                                         |
+| &gt; SELECT string_agg(x, ' ' ORDER BY x COLLATE &quot;und-x-icu&quot;) AS und_x_icu |
+| &gt; FROM (VALUES ('a'), ('B'), ('b'), ('A')) AS v(x);                     |
+| und_x_icu                                                               |
+| a A b B                                                                 |
+</code></pre>
+</div>
+
+ <blockquote>
+ <p>
+概念的に照合可能なデータ型のそれぞれの式は、照合順序を保持しています （組み込みの照合可能なデータ型はtext、varchar、 charです。 ユーザ定義の基本型は照合可能とマーキングできます。もちろん照合可能なデータ型上のドメインは照合可能となります）。 もし、式が列参照である場合は、式の照合順序は列の定義された照合順序となります。 もし、式が定数である場合は、照合順序は定数のデータ型のデフォルトの照合順序となります。 より複雑な式の照合順序は、下記に示すように、その入力の照合順序から引き出されます。
+</p>
+
+ <p>
+(略)
+</p>
+
+ <p>
+データベースシステムが並べ替えや文字区別を行う場合、データベースは入力の照合順序を使用します。 これは、たとえばORDER BY句や &lt; 演算子や関数を使用する際に発生します。 ORDER BY句に適用する照合順序は、単純にソートキーの照合順序です。 関数や演算子の呼び出しに対して適用される照合順序は、以下に述べるように引数により決まります。 比較演算子に加えて、照合順序はlower、upper、initcapといった小文字と大文字を変換する関数やパターンマッチングの演算子、to_char関連の関数で考慮されています。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/document/18/html/collation.html">23.2. 照合順序サポート</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org73297f6" class="outline-2">
+ <h2 id="org73297f6"> <a href="#org73297f6">関連</a></h2>
+ <div class="outline-text-2" id="text-org73297f6">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T220401--kdoc-655-式の照合順序を変えて並び替えの結果を変える__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 653: var と := の違い</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgb41ef16" class="outline-2">
+ <h2 id="orgb41ef16"> <a href="#orgb41ef16">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgb41ef16">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org3a19c31" class="outline-2">
+ <h2 id="org3a19c31"> <a href="#org3a19c31">概要</a></h2>
+ <div class="outline-text-2" id="text-org3a19c31">
+ <p>
+Go で当たり前に使っている  <code>var x = 1</code> と  <code>x := 1</code> の違いが気になった。微妙な違いがある。
+</p>
+
+ <blockquote>
+ <p>
+It is shorthand for a regular variable declaration with initializer expressions but no types:
+</p>
+
+ <p>
+“var” IdentifierList “=” ExpressionList .
+</p>
+
+ <p>
+Unlike regular variable declarations, a short variable declaration may redeclare variables provided they were originally declared earlier in the same block (or the parameter lists if the block is the function body) with the same type, and at least one of the non-blank variables is new. As a consequence, redeclaration can only appear in a multi-variable short declaration. Redeclaration does not introduce a new variable; it just assigns a new value to the original.
+</p>
+
+ <p>
+Short variable declarations may appear only inside functions. In some contexts such as the initializers for “if”, “for”, or “switch” statements, they can be used to declare local temporary variables.
+</p>
+
+ <p>
+訳
+</p>
+
+ <p>
+これは、初期化式を含むが型指定のない通常の変数宣言の省略形です：
+</p>
+
+ <p>
+“var” IdentifierList “=” ExpressionList .
+</p>
+
+ <p>
+通常の変数宣言とは異なり、短縮変数宣言では、同じブロック内（ブロックが関数本体である場合はパラメータリスト内）で以前に同じ型で宣言されており、かつ空白以外の変数のうち少なくとも1つが新規である場合に限り、変数を再宣言することができます。その結果、再宣言は多変数短縮宣言でのみ使用できます。再宣言によって新しい変数が導入されるわけではなく、元の変数に新しい値が代入されるだけです。
+</p>
+
+ <p>
+短縮変数宣言は関数内部でのみ使用できます。「if」、「for」、または「switch」文の初期化子など、一部の文脈では、ローカルの一時変数を宣言するために使用できます。
+</p>
+
+ <p>
+ <a href="https://go.dev/ref/spec#Short_variable_declarations">The Go Programming Language Specification - Short variable declarations</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org57acd32" class="outline-2">
+ <h2 id="org57acd32"> <a href="#org57acd32">関連</a></h2>
+ <div class="outline-text-2" id="text-org57acd32">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T190125--kdoc-653-var-と-の違い__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org0c35a4b" class="outline-2">
+ <h2 id="org0c35a4b"> <a href="#org0c35a4b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0c35a4b">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org0175dee" class="outline-2">
+ <h2 id="org0175dee"> <a href="#org0175dee">概要</a></h2>
+ <div class="outline-text-2" id="text-org0175dee">
+ <p>
+Aurora PostgreSQL の Performance Insights で、Top SQL の1位が COMMIT だった。SELECTのクエリは集計の項目として出ていたが、DMLのクエリは出てないように見えた。アプリケーションは RLS のために、すべてのクエリを BEGIN〜COMMIT のトランザクションで実行していた。書き込みの時間は、どんな書き方のときに COMMIT の行に出るのかを確かめる。
+</p>
+
+ <p>
+pgbench で INSERT を流しながら、別のセッションが 10 ms ごとに pg_stat_activity でアクティブなセッションの文を数える。2つのセッションが同時に要るので、この実験は pgpg のプロキシを通さず、PostgreSQL に直接つなぐ。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>標本の実験: 書き込みながら、10 ms ごとにアクティブなセッションの文と待機イベントを数える</label> <pre class="src src-shell"> <code># 書き込む側と標本を取る側の2つのセッションが同時に要るので、pgpg のプロキシを通さず PostgreSQL に直接(15433)つなぐ
+sample() {
+  psql -h localhost -p 15433 -U postgres -d postgres -qAt -F ' | ' &lt;&lt;'SQL'
+CREATE TABLE samples (query text, wait text);
+DO $$
+BEGIN
+  FOR i IN 1..400 LOOP
+    PERFORM pg_stat_clear_snapshot();
+    INSERT INTO samples
+    -- 待機イベントがなければ CPU で動いている
+    SELECT query, coalesce(wait_event_type || ':' || wait_event, 'CPU')
+    FROM pg_stat_activity
+    WHERE application_name = 'pgbench' AND state = 'active';
+    PERFORM pg_sleep(0.01);
+  END LOOP;
+END $$;
+SELECT query, wait, count(*) FROM samples GROUP BY 1, 2 ORDER BY 3 DESC;
+DROP TABLE samples;
+SQL
+}
+
+# $1: 説明、$2: pgbench に流す SQL、$3: pgbench のオプション
+run() {
+  echo &quot;== $1&quot;
+  docker exec pgpg-postgres-1 psql -U postgres -qAt \
+    -c &quot;DROP TABLE IF EXISTS w&quot; -c &quot;CREATE TABLE w (id int, pad text)&quot; \
+    -c &quot;CREATE INDEX ON w (id)&quot; -c &quot;CREATE INDEX ON w (pad)&quot; 2&gt;/dev/null
+  printf &quot;$2&quot; | docker exec -i pgpg-postgres-1 sh -c 'cat &gt; /tmp/bench.sql'
+  out=$(mktemp)
+  # 拡張プロトコル(-M extended)で書き込む
+  docker exec pgpg-postgres-1 pgbench -U postgres -n -M extended $3 \
+    -f /tmp/bench.sql postgres &gt; &quot;$out&quot; 2&gt;/dev/null &amp;
+  sleep 0.3
+  sample
+  wait
+  grep 'latency average' &quot;$out&quot;
+  rm -f &quot;$out&quot;
+}
+
+run &quot;小さい INSERT を明示的なトランザクションで(4並列、5秒)&quot; \
+    'BEGIN;\nINSERT INTO w VALUES (1, md5(random()::text));\nCOMMIT;\n' &quot;-c 4 -T 5&quot;
+run &quot;小さい INSERT を自動コミットで(4並列、5秒)&quot; \
+    'INSERT INTO w VALUES (1, md5(random()::text));\n' &quot;-c 4 -T 5&quot;
+run &quot;50万行の INSERT を明示的なトランザクションで1回&quot; \
+    'BEGIN;\nINSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i;\nCOMMIT;\n' &quot;-c 1 -t 1&quot;
+docker exec pgpg-postgres-1 psql -U postgres -qAt -c &quot;DROP TABLE w&quot;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>== 小さい INSERT を明示的なトランザクションで(4並列、5秒)
+COMMIT; | LWLock:WALWrite | 1128
+COMMIT; | IO:WalSync | 395
+INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 21
+COMMIT; | CPU | 8
+INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 3
+BEGIN; | CPU | 3
+BEGIN; | Client:ClientRead | 2
+COMMIT; | IO:WalWrite | 2
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:DataFileExtend | 1
+latency average = 1.684 ms
+== 小さい INSERT を自動コミットで(4並列、5秒)
+INSERT INTO w VALUES (1, md5(random()::text)); | LWLock:WALWrite | 1144
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalSync | 394
+INSERT INTO w VALUES (1, md5(random()::text)); | CPU | 38
+INSERT INTO w VALUES (1, md5(random()::text)); | Client:ClientRead | 6
+INSERT INTO w VALUES (1, md5(random()::text)); | IO:WalWrite | 3
+latency average = 1.678 ms
+== 50万行の INSERT を明示的なトランザクションで1回
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | CPU | 148
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:DataFileExtend | 6
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalWrite | 4
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | IO:WalSync | 4
+INSERT INTO w SELECT i, md5(i::text) FROM generate_series(1, 500000) i; | LWLock:WALWrite | 3
+COMMIT; | IO:WalSync | 1
+latency average = 1934.744 ms
+</code></pre>
+</div>
+
+ <ul class="org-ul"> <li>小さい INSERT を明示的なトランザクションで繰り返すと、標本の約98%が COMMIT だった。COMMIT の標本のほとんどは、WAL の確定を待つ IO:WalSync と LWLock:WALWrite だった</li>
+ <li>同じ INSERT を自動コミットにすると、標本はすべて INSERT になった。待機イベントの内訳も、1回あたりの時間も変わらない</li>
+ <li>50万行の INSERT を1回でコミットすると、標本のほとんどは INSERT の CPU で、COMMIT は1回だけだった。INSERT の最中にも IO:WalWrite と IO:WalSync が出ている。</li>
+</ul> <blockquote>
+ <p>
+WalSync: WALファイルが永続的ストレージに達するのを待機しています。
+</p>
+
+ <p>
+WALWrite: WALバッファがディスクに書き込まれるのを待機しています。
+</p>
+
+ <p>
+ <a href="https://www.postgresql.jp/docs/18/monitoring-stats.html#WAIT-EVENT-TABLE">27.2. 累積統計システム</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org781015c" class="outline-2">
+ <h2 id="org781015c"> <a href="#org781015c">関連</a></h2>
+ <div class="outline-text-2" id="text-org781015c">
+ <ul class="org-ul"> <li>前提:  <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: DML は文の中で記録を作り COMMIT は永続化を待つ</a>。コミット処理で何を待っているか</li>
+ <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
+ <li>前提:  <a href="20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html#ID-20261010T095355">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html</id>
+  <updated>2026-10-17T10:06:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgc981321" class="outline-2">
- <h2 id="orgc981321"> <a href="#orgc981321">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc981321">
+ <div id="outline-container-orge7d9d0f" class="outline-2">
+ <h2 id="orge7d9d0f"> <a href="#orge7d9d0f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orge7d9d0f">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-07 貴島</li>
 </ul></li>
@@ -1556,9 +1556,9 @@ PostgreSQLで、DMLは文の中でメモリ上の行を書き換えてログ(WAL
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org98fc78d" class="outline-2">
- <h2 id="org98fc78d"> <a href="#org98fc78d">概要</a></h2>
- <div class="outline-text-2" id="text-org98fc78d">
+ <div id="outline-container-org255e601" class="outline-2">
+ <h2 id="org255e601"> <a href="#org255e601">概要</a></h2>
+ <div class="outline-text-2" id="text-org255e601">
  <p>
 Go の  <code>select</code> では、複数の case が同時に進行できるときランダムに選ばれる。なので例えばシャットダウン用とキュー追加用の両方のチャネルに値が届いていると、どちらを処理するかはランダムになる。キュー追加をせずシャットダウンの後処理だけをやるなど、一貫させたほうがよいこともある。その場合、優先したい  <code>case</code> だけを  <code>default</code> 付きの  <code>select</code> で先に確かめ、なければ全部の  <code>case</code> を並べた  <code>select</code> で待つ。
 </p>
@@ -1625,25 +1625,25 @@ Go の  <code>select</code> では、複数の case が同時に進行できる�
 </div>
 </div>
 </div>
- <div id="outline-container-org1a03fd5" class="outline-2">
- <h2 id="org1a03fd5"> <a href="#org1a03fd5">関連</a></h2>
- <div class="outline-text-2" id="text-org1a03fd5">
+ <div id="outline-container-orgc89011f" class="outline-2">
+ <h2 id="orgc89011f"> <a href="#orgc89011f">関連</a></h2>
+ <div class="outline-text-2" id="text-orgc89011f">
  <ul class="org-ul"> <li>前提:  <a href="20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html#ID-20261005T223831">KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
+  <updated>2026-10-17T10:06:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6bb100b" class="outline-2">
- <h2 id="org6bb100b"> <a href="#org6bb100b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6bb100b">
+ <div id="outline-container-org6faf5d2" class="outline-2">
+ <h2 id="org6faf5d2"> <a href="#org6faf5d2">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6faf5d2">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -1652,9 +1652,9 @@ Go の  <code>select</code> では、複数の case が同時に進行できる�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org43fb66b" class="outline-2">
- <h2 id="org43fb66b"> <a href="#org43fb66b">概要</a></h2>
- <div class="outline-text-2" id="text-org43fb66b">
+ <div id="outline-container-org6456e9b" class="outline-2">
+ <h2 id="org6456e9b"> <a href="#org6456e9b">概要</a></h2>
+ <div class="outline-text-2" id="text-org6456e9b">
  <p>
 select は複数の case が同時に実行できる状態だとランダムに選ぶ。
 </p>
@@ -1667,33 +1667,33 @@ If one or more of the communications can proceed, a single one that can proceed 
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orgf868ea5" class="outline-2">
- <h2 id="orgf868ea5"> <a href="#orgf868ea5">関連</a></h2>
- <div class="outline-text-2" id="text-orgf868ea5">
+ <div id="outline-container-orga926dec" class="outline-2">
+ <h2 id="orga926dec"> <a href="#orga926dec">関連</a></h2>
+ <div class="outline-text-2" id="text-orga926dec">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgd142b7c" class="outline-2">
- <h2 id="orgd142b7c"> <a href="#orgd142b7c">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgd142b7c">
+ <div id="outline-container-org3503fa5" class="outline-2">
+ <h2 id="org3503fa5"> <a href="#org3503fa5">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org3503fa5">
  <ul class="org-ul"> <li> <a href="./20261007T004113--kdoc-648-select-の-case-に優先度をつけるには-default-付き-select-を優先度順に重ねる__permanent.html">KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html</id>
-  <updated>2026-10-17T09:35:00+09:00</updated>
+  <updated>2026-10-17T10:06:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 665: 『DK Eyewitness California』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org5e5e956" class="outline-2">
- <h2 id="org5e5e956"> <a href="#org5e5e956"> <span class="todo TODO">TODO</span> この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5e5e956">
+ <div id="outline-container-org45f35f7" class="outline-2">
+ <h2 id="org45f35f7"> <a href="#org45f35f7"> <span class="todo TODO">TODO</span> この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org45f35f7">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="off"> <input type="checkbox"></input> &lt;署名&gt;</li>
 </ul></li>
@@ -1702,17 +1702,17 @@ If one or more of the communications can proceed, a single one that can proceed 
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga2baefe" class="outline-2">
- <h2 id="orga2baefe"> <a href="#orga2baefe">概要</a></h2>
- <div class="outline-text-2" id="text-orga2baefe">
+ <div id="outline-container-org6305a38" class="outline-2">
+ <h2 id="org6305a38"> <a href="#org6305a38">概要</a></h2>
+ <div class="outline-text-2" id="text-org6305a38">
  <p>
 『DK Eyewitness California』は、カリフォルニア州の旅行ガイドである。
 </p>
 </div>
 </div>
- <div id="outline-container-org0cdf730" class="outline-2">
- <h2 id="org0cdf730"> <a href="#org0cdf730">関連</a></h2>
- <div class="outline-text-2" id="text-org0cdf730">
+ <div id="outline-container-orgbfaf2f5" class="outline-2">
+ <h2 id="orgbfaf2f5"> <a href="#orgbfaf2f5">関連</a></h2>
+ <div class="outline-text-2" id="text-orgbfaf2f5">
  <p>
 なし。
 </p>
@@ -1721,16 +1721,16 @@ If one or more of the communications can proceed, a single one that can proceed 
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261016T091612--kdoc-665-『dk-eyewitness-california』__draft_book.html"/>
   <id>https://kijimad.github.io/roam/20261016T091612--kdoc-665-『dk-eyewitness-california』__draft_book.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 661: AAS は標本の平均、AAE は実行時間の平均で、標本が多いとほぼ一致する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org5922b91" class="outline-2">
- <h2 id="org5922b91"> <a href="#org5922b91">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5922b91">
+ <div id="outline-container-org77c3ca7" class="outline-2">
+ <h2 id="org77c3ca7"> <a href="#org77c3ca7">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org77c3ca7">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-14 貴島</li>
 </ul></li>
@@ -1739,9 +1739,9 @@ If one or more of the communications can proceed, a single one that can proceed 
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgdcf5355" class="outline-2">
- <h2 id="orgdcf5355"> <a href="#orgdcf5355">概要</a></h2>
- <div class="outline-text-2" id="text-orgdcf5355">
+ <div id="outline-container-org2c288c1" class="outline-2">
+ <h2 id="org2c288c1"> <a href="#org2c288c1">概要</a></h2>
+ <div class="outline-text-2" id="text-org2c288c1">
  <p>
 AAS(平均アクティブセッション)と AAE(平均アクティブ実行)は、どちらも平均して、同時にいくつのクエリが動いていたかを表す。AAS は1秒ごとにアクティブなセッションを数えた標本から求め、AAE は実行時間の合計から求める。
 </p>
@@ -1768,7 +1768,7 @@ AAE を計算するために、Database Insights では、クエリの合計実�
 4秒の間に、3秒かかるクエリ X が1回、0.2秒かかるクエリ Y が別のセッションで2回動き、1秒ごとに4回標本を取る例で、両方を手で計算する。
 </p>
 
- <pre class="example" id="org25cbc00">
+ <pre class="example" id="org559ce54">
 時刻(秒)    0         1         2         3         4
             +---------+---------+---------+---------+
 X (3秒)       [=============================]
@@ -1858,31 +1858,31 @@ AAE は、クエリが動いていた時間の合計を、経過時間で割る�
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org9c346fe" class="outline-2">
- <h2 id="org9c346fe"> <a href="#org9c346fe">関連</a></h2>
- <div class="outline-text-2" id="text-org9c346fe">
+ <div id="outline-container-orga95aa39" class="outline-2">
+ <h2 id="orga95aa39"> <a href="#orga95aa39">関連</a></h2>
+ <div class="outline-text-2" id="text-orga95aa39">
  <ul class="org-ul"> <li>正典:  <a href="https://docs.aws.amazon.com/ja_jp/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.ActiveSessions.html">データベース負荷 - Amazon Relational Database Service</a></li>
 </ul></div>
 </div>
- <div id="outline-container-org4796fd7" class="outline-2">
- <h2 id="org4796fd7"> <a href="#org4796fd7">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org4796fd7">
+ <div id="outline-container-org18fa02f" class="outline-2">
+ <h2 id="org18fa02f"> <a href="#org18fa02f">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org18fa02f">
  <ul class="org-ul"> <li> <a href="./20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html">KDOC 660: Performance Insights で vCPU が重要な理由</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261013T211643--kdoc-661-aas-は標本の平均、aae-は実行時間の平均で、標本が多いとほぼ一致する__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261013T211643--kdoc-661-aas-は標本の平均、aae-は実行時間の平均で、標本が多いとほぼ一致する__permanent.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 660: Performance Insights で vCPU が重要な理由</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org8d52ee4" class="outline-2">
- <h2 id="org8d52ee4"> <a href="#org8d52ee4">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org8d52ee4">
+ <div id="outline-container-orgf62121d" class="outline-2">
+ <h2 id="orgf62121d"> <a href="#orgf62121d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgf62121d">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
@@ -1891,9 +1891,9 @@ AAE は、クエリが動いていた時間の合計を、経過時間で割る�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgdacbf0b" class="outline-2">
- <h2 id="orgdacbf0b"> <a href="#orgdacbf0b">概要</a></h2>
- <div class="outline-text-2" id="text-orgdacbf0b">
+ <div id="outline-container-orgc66c3ce" class="outline-2">
+ <h2 id="orgc66c3ce"> <a href="#orgc66c3ce">概要</a></h2>
+ <div class="outline-text-2" id="text-orgc66c3ce">
  <p>
 RDS Performance Insights ではvCPUが重要な指標というが、なぜ重要なのかを理解していなかった。
 </p>
@@ -1903,7 +1903,7 @@ RDS Performance Insights ではvCPUが重要な指標というが、なぜ重要
 </p>
 
 
- <div id="orgc603ab7" class="figure">
+ <div id="org3bcbbba" class="figure">
  <p> <img src="images/20261013-pi-wait-breakdown.svg" alt="20261013-pi-wait-breakdown.svg" class="org-svg"></img></p>
  <p> <span class="figure-number">Figure 1: </span>セッションの状態を毎秒標本に取り、待機イベントごとに積み上げる。 <a href="https://pages.awscloud.com/rs/112-TZM-766/images/B3-04.pdf">Amazon RDSにおけるパフォーマンス最適化とパフォーマンス管理</a>の19ページの図を描き直し、vCPU が 2 のときの最大 vCPU の線を足した</p>
 </div>
@@ -1927,25 +1927,25 @@ vCPU では一度に 1 つのプロセスを実行できます。プロセスの
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org456bf1a" class="outline-2">
- <h2 id="org456bf1a"> <a href="#org456bf1a">関連</a></h2>
- <div class="outline-text-2" id="text-org456bf1a">
+ <div id="outline-container-org20545b2" class="outline-2">
+ <h2 id="org20545b2"> <a href="#org20545b2">関連</a></h2>
+ <div class="outline-text-2" id="text-org20545b2">
  <ul class="org-ul"> <li>前提:  <a href="20261013T211643--kdoc-661-aas-は標本の平均、aae-は実行時間の平均で、標本が多いとほぼ一致する__permanent.html#ID-20261013T211643">KDOC 661: AASとAAEを理解する</a>。DB 負荷の単位 AAS は同時に動いているセッション数の平均なので、vCPU の数と同じ単位で比べられる</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 659: 1秒より短いクエリも Performance Insights の負荷には実行時間どおりに出る</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgcc33aed" class="outline-2">
- <h2 id="orgcc33aed"> <a href="#orgcc33aed">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgcc33aed">
+ <div id="outline-container-org352a761" class="outline-2">
+ <h2 id="org352a761"> <a href="#org352a761">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org352a761">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
@@ -1954,9 +1954,9 @@ vCPU では一度に 1 つのプロセスを実行できます。プロセスの
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org4563fa0" class="outline-2">
- <h2 id="org4563fa0"> <a href="#org4563fa0">概要</a></h2>
- <div class="outline-text-2" id="text-org4563fa0">
+ <div id="outline-container-org314e69a" class="outline-2">
+ <h2 id="org314e69a"> <a href="#org314e69a">概要</a></h2>
+ <div class="outline-text-2" id="text-org314e69a">
  <p>
 RDS Performance Insights は1秒間隔でサンプリングするが、1秒かからないクエリはどうなるのかと考えた。たしかに1回ずつは確率的にしか標本に出ないが、標本が多ければ負荷の大きさは実行時間どおりに出て問題ない。
 </p>
@@ -2055,31 +2055,31 @@ wait
  <li>1000 ms の文は、26回の呼び出しが26回の標本に出た。1回の呼び出しが、ほぼ1回の標本に出ている</li>
  <li>100 ms の文は305回呼ばれて標本に出たのは31回、10 ms の文は3000回呼ばれて29回だった。1秒より短い文は、呼び出しのうち「文の時間 / 1秒」くらいの割合しか標本に出ない</li>
  <li>1秒より短い文は、1回ずつは確率的にしか標本に出ないが、数が集まれば負荷の大きさは実行時間どおりに出る</li>
-</ul> <div id="org9555810" class="figure">
+</ul> <div id="orgdfcc4ee" class="figure">
  <p> <img src="images/20261013-pi-sampling.svg" alt="20261013-pi-sampling.svg" class="org-svg"></img></p>
  <p> <span class="figure-number">Figure 1: </span>1秒ごとの標本に捕まる実行の模式図。短い文ほど1回ずつは捕まりにくいが、回数が多いので、捕まる数は同じくらいになる</p>
 </div>
 </div>
 </div>
- <div id="outline-container-orgfc4e79b" class="outline-2">
- <h2 id="orgfc4e79b"> <a href="#orgfc4e79b">関連</a></h2>
- <div class="outline-text-2" id="text-orgfc4e79b">
+ <div id="outline-container-org1a0bf2e" class="outline-2">
+ <h2 id="org1a0bf2e"> <a href="#org1a0bf2e">関連</a></h2>
+ <div class="outline-text-2" id="text-org1a0bf2e">
  <ul class="org-ul"> <li>前提:  <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261013T200358--kdoc-659-1秒より短いクエリも-performance-insights-の負荷には実行時間どおりに出る__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261013T200358--kdoc-659-1秒より短いクエリも-performance-insights-の負荷には実行時間どおりに出る__permanent.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 657: PostgreSQL 18のスキップスキャンを試す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgf5c3aa8" class="outline-2">
- <h2 id="orgf5c3aa8"> <a href="#orgf5c3aa8">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgf5c3aa8">
+ <div id="outline-container-orgf298e92" class="outline-2">
+ <h2 id="orgf298e92"> <a href="#orgf298e92">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgf298e92">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-13 貴島</li>
 </ul></li>
@@ -2088,9 +2088,9 @@ wait
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgcbe8f05" class="outline-2">
- <h2 id="orgcbe8f05"> <a href="#orgcbe8f05">概要</a></h2>
- <div class="outline-text-2" id="text-orgcbe8f05">
+ <div id="outline-container-orge64574b" class="outline-2">
+ <h2 id="orge64574b"> <a href="#orge64574b">概要</a></h2>
+ <div class="outline-text-2" id="text-orge64574b">
  <p>
 PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列に条件がないとき、先頭の列の値ごとにインデックスを探し直して、関係のない部分を読み飛ばせるようになった(スキップスキャン)。
 </p>
@@ -2152,9 +2152,9 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org74ff762" class="outline-2">
- <h2 id="org74ff762"> <a href="#org74ff762">関連</a></h2>
- <div class="outline-text-2" id="text-org74ff762">
+ <div id="outline-container-org0c46824" class="outline-2">
+ <h2 id="org0c46824"> <a href="#org0c46824">関連</a></h2>
+ <div class="outline-text-2" id="text-org0c46824">
  <p>
 なし。
 </p>
@@ -2163,16 +2163,16 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261012T010120--kdoc-657-postgresql-18のスキップスキャンを試す__permanent.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 654: Goはオブジェクト指向言語か?</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org7a08924" class="outline-2">
- <h2 id="org7a08924"> <a href="#org7a08924">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org7a08924">
+ <div id="outline-container-org8277562" class="outline-2">
+ <h2 id="org8277562"> <a href="#org8277562">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8277562">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -2181,9 +2181,9 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb6cc1f2" class="outline-2">
- <h2 id="orgb6cc1f2"> <a href="#orgb6cc1f2">概要</a></h2>
- <div class="outline-text-2" id="text-orgb6cc1f2">
+ <div id="outline-container-orgc00ff07" class="outline-2">
+ <h2 id="orgc00ff07"> <a href="#orgc00ff07">概要</a></h2>
+ <div class="outline-text-2" id="text-orgc00ff07">
  <p>
 Goはオブジェクト指向言語か、の公式の回答は yes and no である。
 </p>
@@ -2203,9 +2203,9 @@ Yes and no. Although Go has types and methods and allows an object-oriented styl
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org56ed1c2" class="outline-2">
- <h2 id="org56ed1c2"> <a href="#org56ed1c2">関連</a></h2>
- <div class="outline-text-2" id="text-org56ed1c2">
+ <div id="outline-container-org7af71db" class="outline-2">
+ <h2 id="org7af71db"> <a href="#org7af71db">関連</a></h2>
+ <div class="outline-text-2" id="text-org7af71db">
  <p>
 なし。
 </p>
@@ -2214,16 +2214,16 @@ Yes and no. Although Go has types and methods and allows an object-oriented styl
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261010T191723--kdoc-654-goはオブジェクト指向言語か__permanent.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgd2dd83d" class="outline-2">
- <h2 id="orgd2dd83d"> <a href="#orgd2dd83d">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgd2dd83d">
+ <div id="outline-container-orga2950dd" class="outline-2">
+ <h2 id="orga2950dd"> <a href="#orga2950dd">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orga2950dd">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-11 貴島</li>
 </ul></li>
@@ -2232,9 +2232,9 @@ Yes and no. Although Go has types and methods and allows an object-oriented styl
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org30a5a17" class="outline-2">
- <h2 id="org30a5a17"> <a href="#org30a5a17">概要</a></h2>
- <div class="outline-text-2" id="text-org30a5a17">
+ <div id="outline-container-org963ffba" class="outline-2">
+ <h2 id="org963ffba"> <a href="#org963ffba">概要</a></h2>
+ <div class="outline-text-2" id="text-org963ffba">
  <p>
 RDS Performance Insights の値は何に由来しているのだろう、と考えた。PostgreSQL に同梱された拡張 pg_stat_statements の値を集計しているように見える。
 </p>
@@ -2284,17 +2284,17 @@ SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_sta
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org611dd29" class="outline-2">
- <h2 id="org611dd29"> <a href="#org611dd29">関連</a></h2>
- <div class="outline-text-2" id="text-org611dd29">
+ <div id="outline-container-orga93baca" class="outline-2">
+ <h2 id="orga93baca"> <a href="#orga93baca">関連</a></h2>
+ <div class="outline-text-2" id="text-orga93baca">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-org4837fd2" class="outline-2">
- <h2 id="org4837fd2"> <a href="#org4837fd2">Backlinks</a></h2>
- <div class="outline-text-2" id="text-org4837fd2">
+ <div id="outline-container-org5ffc5ec" class="outline-2">
+ <h2 id="org5ffc5ec"> <a href="#org5ffc5ec">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org5ffc5ec">
  <ul class="org-ul"> <li> <a href="./20261010T095355--kdoc-651-pg-stat-statements-は-commit-のときに走る処理の時間を記録しない__permanent.html">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</a></li>
  <li> <a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
  <li> <a href="./20261013T200358--kdoc-659-1秒より短いクエリも-performance-insights-の負荷には実行時間どおりに出る__permanent.html">KDOC 659: 1秒より短いクエリも Performance Insights の負荷には実行時間どおりに出る</a></li>
@@ -2303,16 +2303,16 @@ SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_sta
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 646: require.Eventuallyは時間内で繰り返す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org80fa016" class="outline-2">
- <h2 id="org80fa016"> <a href="#org80fa016">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org80fa016">
+ <div id="outline-container-org2b2f01b" class="outline-2">
+ <h2 id="org2b2f01b"> <a href="#org2b2f01b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2b2f01b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-05 貴島</li>
 </ul></li>
@@ -2321,9 +2321,9 @@ SQL ダイジェストの統計を表示するには、RDS PostgreSQL が pg_sta
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org1e3b186" class="outline-2">
- <h2 id="org1e3b186"> <a href="#org1e3b186">概要</a></h2>
- <div class="outline-text-2" id="text-org1e3b186">
+ <div id="outline-container-org0afe42c" class="outline-2">
+ <h2 id="org0afe42c"> <a href="#org0afe42c">概要</a></h2>
+ <div class="outline-text-2" id="text-org0afe42c">
  <p>
 Go のライブラリ testify に  <code>require.Eventually</code> 関数がある。非同期処理を含む非決定的な挙動のテストに便利である。
 </p>
@@ -2339,9 +2339,9 @@ func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick t
 </p>
 </div>
 </div>
- <div id="outline-container-orgd027dc5" class="outline-2">
- <h2 id="orgd027dc5"> <a href="#orgd027dc5">関連</a></h2>
- <div class="outline-text-2" id="text-orgd027dc5">
+ <div id="outline-container-orge3ed4ed" class="outline-2">
+ <h2 id="orge3ed4ed"> <a href="#orge3ed4ed">関連</a></h2>
+ <div class="outline-text-2" id="text-orge3ed4ed">
  <ul class="org-ul"> <li>実例:  <a href="https://github.com/open-telemetry/opentelemetry-go/pull/8754">sdk/log: add queue_full shutdown regression test by RedZapdos123 · Pull Request #8754 · open-telemetry/opentelemetry-go</a></li>
  <li>正典:  <a href="https://pkg.go.dev/github.com/stretchr/testify/require#Eventually">require package - github.com/stretchr/testify/require - Go Packages</a></li>
 </ul></div>
@@ -2349,6 +2349,6 @@ func Eventually(t TestingT, condition func() bool, waitFor time.Duration, tick t
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261004T133733--kdoc-646-requireeventuallyは時間内で繰り返す__permanent.html</id>
-  <updated>2026-10-17T09:34:00+09:00</updated>
+  <updated>2026-10-17T10:05:00+09:00</updated>
 </entry>
 </feed>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-17 土 09:34 -->
+<!-- 2026-10-17 土 10:05 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 179: 『ハロー“Hello, World” OSと標準ライブラリのシゴトとしくみ』</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 179: 『ハロー“Hello, World” OSと標準ライブラリのシゴトとしくみ』</h1>
-<div id="outline-container-org4aaf819" class="outline-2">
-<h2 id="org4aaf819"><a href="#org4aaf819">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org4aaf819">
+<div id="outline-container-orgec4572e" class="outline-2">
+<h2 id="orgec4572e"><a href="#orgec4572e">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgec4572e">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,23 +37,23 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgbbe7dee" class="outline-2">
-<h2 id="orgbbe7dee"><a href="#orgbbe7dee">概要</a></h2>
-<div class="outline-text-2" id="text-orgbbe7dee">
+<div id="outline-container-org1df33cf" class="outline-2">
+<h2 id="org1df33cf"><a href="#org1df33cf">概要</a></h2>
+<div class="outline-text-2" id="text-org1df33cf">
 <p>
 <a href="https://www.shuwasystem.co.jp/book/9784798044781.html">ハロー“Hello, World” OSと標準ライブラリのシゴトとしくみ</a>は、おなじみの&ldquo;Hello, World&rdquo;を表示するまでの流れを詳しく解説する本。
 </p>
 </div>
 </div>
-<div id="outline-container-org0b987b8" class="outline-2">
-<h2 id="org0b987b8"><a href="#org0b987b8">メモ</a></h2>
-<div class="outline-text-2" id="text-org0b987b8">
+<div id="outline-container-org65c8146" class="outline-2">
+<h2 id="org65c8146"><a href="#org65c8146">メモ</a></h2>
+<div class="outline-text-2" id="text-org65c8146">
 <ul class="org-ul">
 <li>writeとwrite() の違い。writeはシステムコール、OSカーネルのことを指している。それに対してwrite()はPOSIXで定義されているwriteシステムコールを呼び出すためのC言語用API、つまりアプリーケーション用のAPIのことを指している(p143)</li>
 <li>main関数ではいったい何をしているのか。なぜexit()を呼び出すとプログラムは終了するのだろうか。main()から戻った先には何があるのか、を調べる(p159)</li>
 <li>スタートアップは標準Cライブラリの役割であり、GNU/Linuxディストリビューションの場合はglibcによって提供される(p170)</li>
 <li>標準Cライブラリでもっとも重要なのはシステムコール・ラッパーである(p170)</li>
-<li><a href="20220108110637-linux.html#ID-7a81eb7c-8e2b-400a-b01a-8fa597ea527a">Linux</a>カーネルが提供するのはシステムコールのABIであり、APIを提供するのはglibcの役割。POSIXの <code>exit()</code> と <code>_exit()</code> を実現するための機能としてLinuxには <code>exit_group</code> や <code>exit</code> システムコールがあり、glibcは <code>exit_group</code> システムコールを呼び出すことで、POSIXの <code>_exit()</code> を提供している。 <code>_exit()</code> は、システムコール・ラッパーとしてユーザに提供されるAPIである、という(p183)</li>
+<li>Linuxカーネルが提供するのはシステムコールのABIであり、APIを提供するのはglibcの役割。POSIXの <code>exit()</code> と <code>_exit()</code> を実現するための機能としてLinuxには <code>exit_group</code> や <code>exit</code> システムコールがあり、glibcは <code>exit_group</code> システムコールを呼び出すことで、POSIXの <code>_exit()</code> を提供している。 <code>_exit()</code> は、システムコール・ラッパーとしてユーザに提供されるAPIである、という(p183)</li>
 <li>UNIXライクなシステムでは、新しいプロセスは <code>fork()</code> によって生成され、 <code>exec()</code> 系の関数により新たなプログラムとして書き換わることで実行されるのが基本形、だという(p191)</li>
 <li><code>execve</code> システムコールが発行されたときカーネルがやること(p191)
 <ul class="org-ul">
@@ -72,7 +72,7 @@
 </ul></li>
 <li>OSとは何か、は人によって曖昧である。万人にしっくりくる定義は、「自身がメインテーマとしている分野に対して、その下層にあってその先は知らなくていいとしている部分」のことをOSと呼ぶ、ということ(p233)</li>
 <li>UNIXではパイプというプロセス間通信機能によって、あるプロセスの出力を別のプロセスの入力に与えるようなことが簡単にできる。ひとつのプログラムに様々な機能をもたせるのではなく、入出力はテキストという標準的なフォーマットを基本として、複数のアプリケーションをパイプで接続して順に処理する、という思想になっている。この特徴はほかの汎用OSには必ずしも当てはまらない(p240)</li>
-<li>技術的な意味で、「GNU/Linux」と呼ぶべきだという。GNU/Linuxディストリビューションは<a href="20210926144734-gnu.html#ID-5c26b8e3-7dcb-47c4-833b-4fd2e7e8bfda">GNU</a>アプリケーション群に強く依存していて、それをLinuxとだけ呼ぶことに違和感があるという。GCCによるプログラミング環境やbashによるシェル環境のことをLinux環境と呼ぶのは誤解の原因になる(p245)</li>
+<li>技術的な意味で、「GNU/Linux」と呼ぶべきだという。GNU/LinuxディストリビューションはGNUアプリケーション群に強く依存していて、それをLinuxとだけ呼ぶことに違和感があるという。GCCによるプログラミング環境やbashによるシェル環境のことをLinux環境と呼ぶのは誤解の原因になる(p245)</li>
 <li>「LinuxはUNIX互換」といわれるが、POSIXのAPIはglibcによって提供され、ユーザインターフェースはbashなどのGNUアプリケーションによって提供される、という。LinuxはUNIX互換のシステムを作り上げるためのベースとしてUNIXに備わっている機能を提供するカーネル、くらいが適当か(p246)</li>
 </ul>
 
@@ -138,9 +138,9 @@ ELF Header:
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf21dea3" class="outline-2">
-<h2 id="orgf21dea3"><a href="#orgf21dea3">関連</a></h2>
-<div class="outline-text-2" id="text-orgf21dea3">
+<div id="outline-container-org5ceb081" class="outline-2">
+<h2 id="org5ceb081"><a href="#org5ceb081">関連</a></h2>
+<div class="outline-text-2" id="text-org5ceb081">
 <ul class="org-ul">
 <li>類似: <a href="20240324T214548--kdoc-129-『ポインタ理解のためのアセンブリ入門』__book.html#ID-20240324T214548">KDOC 129: 『ポインタ理解のためのアセンブリ入門』</a>。アセンブラがよく出てくるつながり</li>
 <li>参照: <a href="https://ja.wikipedia.org/wiki/Executable_and_Linkable_Format">Executable and Linkable Format - Wikipedia</a>。ELFフォーマットの概要</li>
@@ -148,9 +148,9 @@ ELF Header:
 </ul>
 </div>
 </div>
-<div id="outline-container-org93f997a" class="outline-2">
-<h2 id="org93f997a"><a href="#org93f997a">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org93f997a">
+<div id="outline-container-orge9c7989" class="outline-2">
+<h2 id="orge9c7989"><a href="#orge9c7989">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orge9c7989">
 <ul class="org-ul">
 <li><a href="./20240601T120632--kdoc-181-『linuxシステムプログラミング』__book.html">KDOC 181: 『Linuxシステムプログラミング』</a></li>
 <li><a href="./20240623T212808--kdoc-193-プログラミング言語は共通言語として役立つ__essay.html">KDOC 193: プログラミング言語は共通言語として役立つ</a></li>
