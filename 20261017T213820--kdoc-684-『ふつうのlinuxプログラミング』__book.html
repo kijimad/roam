@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-18 日 00:13 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 684: 『ふつうのLinuxプログラミング』</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 684: 『ふつうのLinuxプログラミング』</h1>
+<div id="outline-container-org6c38b3d" class="outline-2">
+<h2 id="org6c38b3d"><a href="#org6c38b3d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org6c38b3d">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-17 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-17 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgcf4e730" class="outline-2">
+<h2 id="orgcf4e730"><a href="#orgcf4e730">概要</a></h2>
+<div class="outline-text-2" id="text-orgcf4e730">
+<p>
+<a href="https://www.amazon.co.jp/dp/4797386479">『ふつうのLinuxプログラミング 第2版』</a>は、Linuxの仕組みから学ぶシステムプログラミングの本である。
+</p>
+</div>
+</div>
+<div id="outline-container-org1113c0b" class="outline-2">
+<h2 id="org1113c0b"><a href="#org1113c0b">メモ</a></h2>
+<div class="outline-text-2" id="text-org1113c0b">
+<ul class="org-ul">
+<li>Linuxはファイルシステムとプロセスとストリームでできている</li>
+<li>Linux上において、活動する主体はユーザではなく、プロセス</li>
+<li>ログイン時にクレデンシャルが作られ、プロセスに渡している</li>
+<li>シェルと端末は異なる
+<ul class="org-ul">
+<li>端末はユーザとのインターフェースになる部分。現代では仮想化されていて無数にある。端末に対応するデバイスファイル <code>/dev/tty0</code> などがある</li>
+<li>シェルはユーザからの命令を解釈し実行するプログラムのこと。ストリームからコマンドを読み込んで実行するプログラムにすぎない</li>
+</ul></li>
+<li>ttyの語源はテレタイプ。ディスプレイがなかったので長い紙に結果を出力していた</li>
+<li>tabの語源はtable</li>
+<li>キーボード → 端末ドライバ → ストリーム → プロセス → ストリーム → 端末ドライバ → ディスプレイ</li>
+<li>Linuxの入出力の主な4つのシステムコール
+<ul class="org-ul">
+<li>ストリームからバイト列を読み込むread</li>
+<li>ストリームにバイト列を書き込むwrite</li>
+<li>ストリームを作るopen</li>
+<li>用済みのストリームを始末するclose</li>
+</ul></li>
+<li>ファイルディスクリプタは整数値にすぎない</li>
+<li>固定のファイルディスクリプタ
+<ul class="org-ul">
+<li>0: 標準入力</li>
+<li>1: 標準出力</li>
+<li>2: 標準エラー出力</li>
+</ul></li>
+<li>標準エラー出力がある理由。標準出力は次のプログラムの標準入力につながれている場合が多いので、ここでエラーを出しても気づかない可能性が高いから</li>
+<li>ストリームはファイルディスクリプタで表現され、read()またはwrite()で操作できるもののこと</li>
+<li>システムコールは遅いので、バッファに溜まってからシステムコールするとよい</li>
+<li>gets()はバッファオーバーフローを起こす可能性があり、使ってはいけない。世界初のインターネットワームはバッファオーバーフローの脆弱性を利用した</li>
+<li>ビルド
+<ul class="org-ul">
+<li>プリプロセス
+<ul class="org-ul">
+<li>純粋なC言語のソースコードを出力する</li>
+</ul></li>
+<li>コンパイル
+<ul class="org-ul">
+<li>C言語のソースコードをアセンブリ言語のソースコードに変換する</li>
+</ul></li>
+<li>アセンブル
+<ul class="org-ul">
+<li>アセンブリ言語のソースコードを機械語を含むオブジェクトファイルに変換する</li>
+</ul></li>
+<li>リンク
+<ul class="org-ul">
+<li>オブジェクトファイルから実行ファイルを生成する</li>
+</ul></li>
+</ul></li>
+<li>/proc にはプロセスの情報がファイルに格納されている</li>
+<li>ダイナミックロードは、すべてのリンク作業を実行時に行う手法</li>
+<li>0は成功、1はエラーというのはUnixに特有の決まりごと</li>
+<li>プロセスの親子関係を調べる <code>pstree</code></li>
+<li>ログインシェルを調べる <code>w</code>, <code>last</code></li>
+<li>HTTPの仕組みとファイルシステムはよく似ている</li>
+<li>HTTPで公開されるのはファイルシステムの一部だけ。これをドキュメントツリーという。ドキュメントツリーのルートディレクトリをドキュメントルートという。デフォルト設定のWebサーバでいうところの <code>/var/www/html</code> のことか</li>
+<li>HTTPサーバのしごと: HTTPリクエストをドキュメントルート以下のファイルにマップし、レスポンスとして送り返すこと</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgf49679f" class="outline-2">
+<h2 id="orgf49679f"><a href="#orgf49679f">関連</a></h2>
+<div class="outline-text-2" id="text-orgf49679f">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
