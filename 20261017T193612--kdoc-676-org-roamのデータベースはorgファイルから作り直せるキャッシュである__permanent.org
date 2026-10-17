@@ -1,0 +1,46 @@
+:properties:
+:ID: 20261017T193612
+:end:
+#+title:      KDOC 676: org-roamのデータベースはorgファイルから作り直せるキャッシュである
+#+date:       [2026-10-17 Sat 19:36]
+#+filetags:   :permanent:
+#+identifier: 20261017T193612
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+org-roamは、ノードやリンクの情報をSQLiteに保存する。ただし正となるのはorgファイルのほうで、データベースはファイルから作り直せるキャッシュにすぎない。
+
+#+begin_quote
+Org-roam’s capabilities stem from its aggressive caching: it crawls all files within org-roam-directory, and maintains a cache of all links and nodes.
+
+[[https://www.orgroam.com/manual.html][Org-roam User Manual]]
+#+end_quote
+
+~org-roam-db-sync~ は、内容のハッシュがデータベースの記録と違うファイルだけを処理し直す。 ~org-roam-db-autosync-mode~ を有効にした時点でこれを実行し、以降はEmacsでの変更をそのつど反映する。
+
+#+caption: 内容のハッシュを比べて、変わったファイルを集める
+#+begin_src git-permalink :wrap src emacs-lisp
+https://github.com/kd-collective/org-roam/blob/abe63b436035049923ae96639b9b856697047779/org-roam-db.el#L624-L629
+#+end_src
+
+#+RESULTS:
+#+begin_src emacs-lisp
+    (dolist (file org-roam-files)
+      (let ((contents-hash (org-roam-db--file-hash file)))
+        (unless (string= (gethash file current-files)
+                         contents-hash)
+          (push file modified-files)))
+      (remhash file current-files))
+#+end_src
+
+そのため、データベースがおかしくなったら ~C-u M-x org-roam-db-sync~ で作り直せばよい。
+
+* 関連
+
+なし。
