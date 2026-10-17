@@ -1,0 +1,84 @@
+:properties:
+:ID: 20261017T200713
+:end:
+#+title:      KDOC 677: 代入やifが式か文かは言語によって違う
+#+date:       [2026-10-17 Sat 20:07]
+#+filetags:   :permanent:
+#+identifier: 20261017T200713
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+式は値を生成し、文は生成しない。たとえば ~5~ や ~1 + 2~ は値になるので式である。
+
+#+begin_quote
+文 (statement) はなんらかの動作をして値を返さない命令です。
+式 (expression) は結果値に評価されます。
+
+[[https://doc.rust-jp.rs/book-ja/ch03-03-how-functions-work.html][関数 - The Rust Programming Language 日本語版]]
+#+end_quote
+
+どの構文が式になるかは、言語によって変わる。
+
+| 言語 | 代入                       | ~if~ |
+|------+----------------------------+------|
+| C    | 式                         | 文   |
+| Rust | 式(値は ~()~ )。 ~let~ は文 | 式   |
+| Ruby | 式                         | 式   |
+
+Cの代入は、代入後の値を返す式である。 ~if~ は文なので、値として使えない([[https://port70.net/~nsz/c/c11/n1570.html#6.5.16][N1570 6.5.16]]、[[https://port70.net/~nsz/c/c11/n1570.html#6.8.4][6.8.4]])。
+
+#+begin_src C :includes <stdio.h>
+  int x, y;
+  x = y = 6;
+  printf("%d %d\n", x, y);
+#+end_src
+
+#+RESULTS:
+#+begin_src
+6 6
+#+end_src
+
+~int z = if (1) 1; else 2;~ のように ~if~ を値として使うと、 ~expected expression before 'if'~ というコンパイルエラーになる。
+
+Rustの代入は式だが、値は常に ~()~ になる([[https://doc.rust-lang.org/reference/expressions/operator-expr.html#assignment-expressions][The Rust Reference: Assignment expressions]])。 ~let~ は文なので値にならない。 ~let x = (let y = 6);~ は ~expected expression, found `let` statement~ というコンパイルエラーになる。
+
+~if~ は式なので ~let~ の右辺に書ける([[https://doc.rust-jp.rs/book-ja/ch03-05-control-flow.html][制御フロー - The Rust Programming Language 日本語版]])。
+
+#+begin_src rust
+  fn main() {
+      let z = if true { 1 } else { 2 };
+      println!("{z}");
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+1
+#+end_src
+
+Rubyの代入は代入した値を返し、 ~if~ などの制御構造も値を返す([[https://docs.ruby-lang.org/en/master/syntax/assignment_rdoc.html][assignment]]、[[https://docs.ruby-lang.org/en/master/syntax/control_expressions_rdoc.html][control expressions]])。
+
+#+begin_src ruby :results output
+  x = y = 6
+  p [x, y]
+  z = if true then 1 else 2 end
+  p z
+#+end_src
+
+#+RESULTS:
+#+begin_src
+[6, 6]
+1
+#+end_src
+
+gcc 13.3.0、rustc 1.97.1、ruby 3.4.9で確かめた。
+
+* 関連
+
+なし。
