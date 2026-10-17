@@ -1,0 +1,49 @@
+:properties:
+:ID: 20261017T104430
+:end:
+#+title:      KDOC 669: Makeは前提条件のないターゲットと同じ名前のファイルがあるとレシピを実行しない
+#+date:       [2026-10-17 Sat 10:44]
+#+filetags:   :permanent:
+#+identifier: 20261017T104430
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+Make は、前提条件のないターゲットと同じ名前のファイルがあると、もう作ってあるとみなしてレシピを実行しない。ファイルを作らないターゲットは ~.PHONY~ にすると、同じ名前のファイルがあっても実行する。
+
+#+caption: clean ファイルがある状態で、 .PHONY なしとありで make clean する
+#+begin_src shell :results output
+  dir=$(mktemp -d); trap 'rm -rf "$dir"' EXIT; cd "$dir"
+  touch clean
+  printf 'clean:\n\t@echo "clean のレシピを実行した"\n' > Makefile
+  echo "== .PHONY なし"
+  make clean 2>&1
+  printf '.PHONY: clean\nclean:\n\t@echo "clean のレシピを実行した"\n' > Makefile
+  echo "== .PHONY あり"
+  make clean 2>&1
+#+end_src
+
+#+RESULTS:
+#+begin_src
+== .PHONY なし
+make: 'clean' is up to date.
+== .PHONY あり
+clean のレシピを実行した
+#+end_src
+
+前提条件があれば、それがファイルより新しいときに作り直す。前提条件がないと比べる相手がないので、ファイルがあるだけで最新とみなされる。
+
+#+begin_quote
+Since it has no prerequisites, clean would always be considered up to date and its recipe would not be executed. To avoid this problem you can explicitly declare the target to be phony by making it a prerequisite of the special target .PHONY …
+
+[[https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html][GNU make 4.4.1 - 4.6 Phony Targets]]
+#+end_quote
+
+* 関連
+
+なし。
