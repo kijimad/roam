@@ -1,0 +1,44 @@
+:properties:
+:ID: 20261017T205646
+:end:
+#+title:      KDOC 680: constは宣言より前では外側に同名の変数があっても読めない
+#+date:       [2026-10-17 Sat 20:56]
+#+filetags:   :permanent:
+#+identifier: 20261017T205646
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+JavaScriptの ~const~ の宣言はスコープに入った時点で作られ、宣言の行を実行するまでは参照できない(一時的デッドゾーン)。そのため宣言より前では、外側に同名の変数があっても読めず ~ReferenceError~ になる。
+
+#+begin_src js :results output
+  const x = 1;
+  {
+    try {
+      console.log(x);
+    } catch (e) {
+      console.log(`${e.name}: ${e.message}`);
+    }
+    const x = 2;
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+ReferenceError: Cannot access 'x' before initialization
+#+end_src
+
+#+begin_quote
+The variables are created when their containing Environment Record is instantiated but may not be accessed in any way until the variable's LexicalBinding is evaluated.
+
+[[https://262.ecma-international.org/16.0/#sec-let-and-const-declarations][ECMAScript 2025 Language Specification 14.3.1]]
+#+end_quote
+
+* 関連
+
+なし。

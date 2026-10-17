@@ -1,0 +1,48 @@
+:properties:
+:ID: 20261017T205647
+:end:
+#+title:      KDOC 681: JavaScriptのクラスは関数なので定義したあとにプロパティを追加できる
+#+date:       [2026-10-17 Sat 20:56]
+#+filetags:   :permanent:
+#+identifier: 20261017T205647
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+JavaScriptのクラスは特別な関数で、関数はオブジェクトである。そのため、定義したあとのクラスにもふつうのオブジェクトと同じようにプロパティを追加できる。追加したプロパティはクラス自身に付き、 ~static~ で定義したものと同じくインスタンスからは見えない。
+
+#+begin_quote
+クラスは実際には「特別な関数」であり、(後略)
+
+[[https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Classes][クラス - MDN]]
+#+end_quote
+
+#+begin_src js :results output
+  class MyClass {}
+  MyClass.key = "value";
+  console.log(typeof MyClass, MyClass.key);
+  console.log(new MyClass().key);
+#+end_src
+
+#+RESULTS:
+#+begin_src
+function value
+undefined
+#+end_src
+
+~typeof~ が ~function~ を返すのは、クラスが ~[[Call]]~ を持つオブジェクトだからである。
+
+#+begin_quote
+If val has a ~[[Call]]~ internal slot, return "function".
+
+[[https://262.ecma-international.org/16.0/#sec-typeof-operator-runtime-semantics-evaluation][ECMAScript 2025 Language Specification 13.5.3.1]]
+#+end_quote
+
+* 関連
+
+なし。
