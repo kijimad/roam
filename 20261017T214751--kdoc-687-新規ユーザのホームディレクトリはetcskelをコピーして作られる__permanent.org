@@ -1,0 +1,50 @@
+:properties:
+:ID: 20261017T214751
+:end:
+#+title:      KDOC 687: 新規ユーザのホームディレクトリは/etc/skelをコピーして作られる
+#+date:       [2026-10-17 Sat 21:47]
+#+filetags:   :permanent:
+#+identifier: 20261017T214751
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+~useradd -m~ や ~adduser~ でユーザを作ると、ホームディレクトリに ~/etc/skel~ の中身がコピーされる。新しいユーザに最初から置いておきたい設定ファイルは、 ~/etc/skel~ に入れておけばよい。
+
+#+begin_quote
+The skeleton directory, which contains files and directories to be copied in the user's home directory, when the home directory is created by useradd.
+
+useradd(8)
+#+end_quote
+
+#+begin_quote
+SKEL   The directory from which skeletal user configuration files will be copied.  Defaults to /etc/skel.
+
+adduser.conf(5)
+#+end_quote
+
+確認する。
+
+#+begin_src shell :results output
+  ls -A /etc/skel
+#+end_src
+
+#+RESULTS:
+#+begin_src
+.bash_logout
+.bashrc
+.config
+.gtkrc-2.0
+.gtkrc-xfce
+.local
+.profile
+#+end_src
+
+* 関連
+
+なし。
