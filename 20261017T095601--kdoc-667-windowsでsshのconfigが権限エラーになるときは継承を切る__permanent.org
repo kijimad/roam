@@ -1,0 +1,49 @@
+:properties:
+:ID: 20261017T095601
+:end:
+#+title:      KDOC 667: Windowsでsshのconfigが権限エラーになるときは継承を切る
+#+date:       [2026-10-17 Sat 09:56]
+#+filetags:   :permanent:
+#+identifier: 20261017T095601
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+Windows の OpenSSH クライアントで ~%USERPROFILE%\.ssh\config~ を置くと、ssh が ~Bad owner or permissions on …\.ssh\config~ と出して止まることがある。設定を読み飛ばして接続を続けるのではなく、そこで終了する。
+
+Windows の OpenSSH は、ユーザーの config に秘密鍵と同じような権限の制限を課している。
+
+#+begin_quote
+User level default ssh_config is located in user's profile (~/.ssh/config). This has similar restrictions as the user's private keys described above.
+
+[[https://github.com/PowerShell/Win32-OpenSSH/wiki/Security-protection-of-various-files-in-Win32-OpenSSH][Security protection of various files in Win32 OpenSSH]]
+#+end_quote
+
+実際の判定は、Windows 向けに書き換えられた ssh のソースにある。config の所有者が本人・Administrators・SYSTEM のどれかで、この3つ以外に書き込み権限がなければ通る。条件を満たさないと、上のエラーで止まる。
+
+#+caption: Windows 版 ssh の config の権限の判定
+#+begin_src git-permalink :wrap src c
+https://github.com/PowerShell/openssh-portable/blob/9737e3122155b6a2be29836911c7e365a7edbf8e/readconf.c#L2654-L2660
+#+end_src
+
+#+RESULTS:
+#+begin_src c
+		/*
+		file permissions are designed differently on windows.
+		implementation on windows to make sure the config file is owned by a user, administrators group, or LOCALSYSTEM account
+		and nobody else except Administrators group, LOCALSYSTEM, and file owner account has the write permission
+		,*/
+		if (check_secure_file_permission(filename, pw, 1) != 0)
+			fatal("Bad owner or permissions on %s", filename);
+#+end_src
+
+Windows のファイルの権限(ACL)は親フォルダから継承されるので、ほかのユーザーやグループの書き込み権限が付いたままになることがある。ファイルのプロパティのセキュリティ設定で継承を無効にし、本人・Administrators・SYSTEM 以外の書き込み権限を外すと通る。
+
+* 関連
+
+なし。

@@ -1,0 +1,53 @@
+:properties:
+:ID: 20261017T095600
+:end:
+#+title:      KDOC 666: HTMLのbuttonはtypeを書かないとフォームを送信する
+#+date:       [2026-10-17 Sat 09:56]
+#+filetags:   :permanent:
+#+identifier: 20261017T095600
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-17 貴島
+- レビュー
+  - [X] 2026-10-17 貴島
+
+* 概要
+
+HTMLでフォームの中に置いた ~<button>~ は、 ~type~ 属性を書かないと、フォームを送信するボタンになる。JavaScript の処理を呼ぶきっかけのつもりで置いても、押すと送信が走り、ふつうは画面が遷移する。
+
+#+caption: どちらもフォームを送信する
+#+begin_src html
+<button>ボタン</button>
+<button type="submit">ボタン</button>
+#+end_src
+
+送信させないときは、 ~type="button"~ を指定する。
+
+#+caption: 送信しない
+#+begin_src html
+<button type="button">ボタン</button>
+#+end_src
+
+仕様では、 ~type~ を書かないときと、不正な値を書いたときは、Auto という状態になる。
+
+#+begin_quote
+The attribute's missing value default and invalid value default are both the Auto state.
+
+[[https://html.spec.whatwg.org/multipage/form-elements.html#attr-button-type][HTML Standard - The button element]]
+#+end_quote
+
+Auto 状態のボタンは、 ~command~ 属性と ~commandfor~ 属性のどちらもなく、親が ~select~ 要素でなければ、送信ボタンになる。ふつうにフォームの中へ置いた ~<button>~ はこの条件にすべて当てはまるので、送信ボタンとして動く。
+
+#+begin_quote
+A button element is said to be a submit button if any of the following are true:
+
+- the type attribute is in the Auto state, both the command and commandfor content attributes are not present, and the parent node is not a select element; or
+- the type attribute is in the Submit Button state.
+
+[[https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element][HTML Standard - The button element]]
+#+end_quote
+
+* 関連
+
+なし。
