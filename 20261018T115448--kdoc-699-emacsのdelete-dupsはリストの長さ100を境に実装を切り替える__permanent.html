@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-18 日 13:26 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 699: Emacsのdelete-dupsはリストの長さ100を境に実装を切り替える</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 699: Emacsのdelete-dupsはリストの長さ100を境に実装を切り替える</h1>
+<div id="outline-container-org8cd7160" class="outline-2">
+<h2 id="org8cd7160"><a href="#org8cd7160">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org8cd7160">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org10a990c" class="outline-2">
+<h2 id="org10a990c"><a href="#org10a990c">概要</a></h2>
+<div class="outline-text-2" id="text-org10a990c">
+<p>
+Emacs Lispでリストから重複を除く <code>delete-dups</code> は、リストの長さで実装を切り替える。100より長いときはハッシュテーブルに出てきた要素を記録しながら1回なめる。100以下のときは、先頭から1つずつ取り、残りから同じ要素を <code>delete</code> で消していく。
+</p>
+
+<p>
+<code>delete</code> で消すやり方は要素ごとに残り全体をなめるので、手間が長さの2乗で増える。ハッシュテーブルを使うやり方は1回なめるだけで済むが、表を作る手間がかかる。長いリストで遅かったため、100を超えたらハッシュテーブルを使うようにした。100という値の根拠は書かれていない。
+</p>
+
+<blockquote>
+<p>
+When there are more than 100 candidates, use a hash table. This can result in ~500 times speed-up for typical collections of size 5000, like that of `load-library&rsquo;.
+</p>
+
+<p>
+<a href="https://github.com/emacs-mirror/emacs/commit/1f052a5f26250d726618570a816ddb6fd0cc11a0">lisp/subr.el (delete-dups): Use a hash table (2015-05-06)</a>
+</p>
+</blockquote>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Emacs 31.1 の lisp/subr.el</label><pre class="src src-git-permalink"><code>https://github.com/emacs-mirror/emacs/blob/a360712c9d272d950d8d8255ef74570f7e90b7d9/lisp/subr.el#L929-L943
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>(let ((l (length list)))
+  (if (&gt; l 100)
+      (let ((hash (make-hash-table :test #'equal :size l))
+            (tail list) retail)
+        (puthash (car list) t hash)
+        (while (setq retail (cdr tail))
+          (let ((elt (car retail)))
+            (if (gethash elt hash)
+                (setcdr tail (cdr retail))
+              (puthash elt t hash)
+              (setq tail retail)))))
+    (let ((tail list))
+      (while tail
+        (setcdr tail (delete (car tail) (cdr tail)))
+        (setq tail (cdr tail))))))
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org0aca2b5" class="outline-2">
+<h2 id="org0aca2b5"><a href="#org0aca2b5">関連</a></h2>
+<div class="outline-text-2" id="text-org0aca2b5">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

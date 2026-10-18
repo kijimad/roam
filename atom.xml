@@ -5,15 +5,15 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-10-18T12:02:19+09:00</updated>
+<updated>2026-10-18T13:26:32+09:00</updated>
 <entry>
-  <title>KDOC 697: 『Linux Container Book』</title>
+  <title>KDOC 705: Emacsのパッケージの依存はPackage-Requiresヘッダで決まる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org559cb1b" class="outline-2">
- <h2 id="org559cb1b"> <a href="#org559cb1b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org559cb1b">
+ <div id="outline-container-org4d2950c" class="outline-2">
+ <h2 id="org4d2950c"> <a href="#org4d2950c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4d2950c">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -22,17 +22,305 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org8635ba4" class="outline-2">
- <h2 id="org8635ba4"> <a href="#org8635ba4">概要</a></h2>
- <div class="outline-text-2" id="text-org8635ba4">
+ <div id="outline-container-orgd53b82d" class="outline-2">
+ <h2 id="orgd53b82d"> <a href="#orgd53b82d">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd53b82d">
+ <p>
+Emacsのパッケージが依存するパッケージは、  <code>require</code> ではなく、ファイル先頭のコメント  <code>;; Package-Requires:</code> で決まる。package.elはこのヘッダを読んで、依存をダウンロードし、依存がそろっているときだけパッケージを有効にする。  <code>require</code> は読み込むだけで、インストールはしない。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>etc=$(emacs -Q --batch --eval '(princ data-directory)')
+info -f &quot;$etc/../../../info/elisp.info.gz&quot; -n 'Library Headers' -o - | sed -n '110,116p'
+echo
+info -f &quot;$etc/../../../info/elisp.info.gz&quot; -n 'Named Features' -o - | sed -n '106,112p' | sed 's/  If FILENAME is not supplied.*//'
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>‘Package-Requires’
+     If this exists, it names packages on which the current package
+     depends for proper operation.  *Note Packaging Basics::.  This is
+     used by the package manager both at download time (to ensure that a
+     complete set of packages is downloaded) and at activation time (to
+     ensure that a package is only activated if all its dependencies
+     have been).
+
+ -- Function: require feature &amp;optional filename noerror
+     This function checks whether FEATURE is present in the current
+     Emacs session (using ‘(featurep FEATURE)’; see below).  The
+     argument FEATURE must be a symbol.
+
+     If the feature is not present, then ‘require’ loads FILENAME with
+     ‘load’.
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-emacs-lisp"> <code>(require 'package)
+(with-temp-buffer
+  (insert &quot;;;; foo.el --- test -*- lexical-binding: t -*-\n&quot;
+          &quot;;; Version: 1.0\n&quot;
+          &quot;;; Package-Requires: ((emacs \&quot;25.1\&quot;) (dash \&quot;2.0\&quot;))\n&quot;
+          &quot;;;; Code:\n(provide 'foo)\n;;; foo.el ends here\n&quot;)
+  (emacs-lisp-mode)
+  (format &quot;package.elが読んだ依存: %S&quot; (package-desc-reqs (package-buffer-info))))
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>package.elが読んだ依存: ((emacs (25 1)) (dash (2 0)))
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-orga54f0d9" class="outline-2">
+ <h2 id="orga54f0d9"> <a href="#orga54f0d9">関連</a></h2>
+ <div class="outline-text-2" id="text-orga54f0d9">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T122450--kdoc-705-emacsのパッケージの依存はpackage-requiresヘッダで決まる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T122450--kdoc-705-emacsのパッケージの依存はpackage-requiresヘッダで決まる__permanent.html</id>
+  <updated>2026-10-18T13:26:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 703: Emacs Lispのinteractiveの指定は対話的に呼んだときだけ引数を埋める</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org0156103" class="outline-2">
+ <h2 id="org0156103"> <a href="#org0156103">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org0156103">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgbfa1626" class="outline-2">
+ <h2 id="orgbfa1626"> <a href="#orgbfa1626">概要</a></h2>
+ <div class="outline-text-2" id="text-orgbfa1626">
+ <p>
+Emacs Lispのコマンドは、  <code>interactive</code> の指定にしたがって引数を集める。ただしそれが効くのは、  <code>M-x</code> やキー、  <code>call-interactively</code> で対話的に呼んだときだけである。ふつうの関数としてLispから呼ぶときは、呼んだ側が引数を渡す必要がある。そのため  <code>M-x</code> では動くコマンドも、直接呼ぶと引数の不足でエラーになる。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>etc=$(emacs -Q --batch --eval '(princ data-directory)')
+info -f &quot;$etc/../../../info/elisp.info.gz&quot; -n 'Using Interactive' -o - | sed -n '10,19p'
+echo
+info -f &quot;$etc/../../../info/elisp.info.gz&quot; -n 'Interactive Call' -o - | sed -n '37,40p'
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>-- Special Form: interactive &amp;optional arg-descriptor &amp;rest modes
+    This special form declares that a function is a command, and that
+    it may therefore be called interactively (via ‘M-x’ or by entering
+    a key sequence bound to it).  The argument ARG-DESCRIPTOR declares
+    how to compute the arguments to the command when the command is
+    called interactively.
+
+    A command may be called from Lisp programs like any other function,
+    but then the caller supplies the arguments and ARG-DESCRIPTOR has
+    no effect.
+
+-- Function: call-interactively command &amp;optional record-flag keys
+    This function calls the interactively callable function COMMAND,
+    providing arguments according to its interactive calling
+    specifications.  It returns whatever COMMAND returns.
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-emacs-lisp"> <code>(defun kd-greet (name)
+  (interactive &quot;sName: &quot;)
+  (format &quot;hello %s&quot; name))
+(format &quot;直接呼ぶと: %S、対話的に呼ぶときに使う指定: %S&quot;
+        (condition-case e (kd-greet) (error (car e)))
+        (interactive-form 'kd-greet))
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>直接呼ぶと: wrong-number-of-arguments、対話的に呼ぶときに使う指定: (interactive &quot;sName: &quot;)
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org7aa9377" class="outline-2">
+ <h2 id="org7aa9377"> <a href="#org7aa9377">関連</a></h2>
+ <div class="outline-text-2" id="text-org7aa9377">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T122448--kdoc-703-emacs-lispのinteractiveの指定は対話的に呼んだときだけ引数を埋める__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T122448--kdoc-703-emacs-lispのinteractiveの指定は対話的に呼んだときだけ引数を埋める__permanent.html</id>
+  <updated>2026-10-18T13:26:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 701: Emacsでリージョンが光るのはtransient-mark-modeのおかげ</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org7a35863" class="outline-2">
+ <h2 id="org7a35863"> <a href="#org7a35863">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7a35863">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org29a74cf" class="outline-2">
+ <h2 id="org29a74cf"> <a href="#org29a74cf">概要</a></h2>
+ <div class="outline-text-2" id="text-org29a74cf">
+ <p>
+Emacsでマークを置くとリージョンが光るのは、Transient Mark modeが有効だからである。これが既定で有効になったのはEmacs 23.1からである。それより前は既定ではリージョンが画面に出ず、マークの位置を覚えておく必要があった。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>etc=$(emacs -Q --batch --eval '(princ data-directory)')
+grep -n -E '^\* Editing Changes in Emacs 23\.1$|Transient Mark mode is now on by default' &quot;$etc/NEWS.23&quot;
+info -f &quot;$etc/../../../info/emacs.info.gz&quot; -n 'Disabled Transient Mark' -o - | sed -n '13,15p'
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>999:* Editing Changes in Emacs 23.1
+1013:*** Transient Mark mode is now on by default.
+   • Setting the mark, with commands like ‘C-&lt;SPC&gt;’ or ‘C-x C-x’, does
+     not highlight the region.  Therefore, you can't tell by looking
+     where the mark is located; you have to remember.
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org686998d" class="outline-2">
+ <h2 id="org686998d"> <a href="#org686998d">関連</a></h2>
+ <div class="outline-text-2" id="text-org686998d">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T115450--kdoc-701-emacsでリージョンが光るのはtransient-mark-modeのおかげ__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T115450--kdoc-701-emacsでリージョンが光るのはtransient-mark-modeのおかげ__permanent.html</id>
+  <updated>2026-10-18T13:26:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 699: Emacsのdelete-dupsはリストの長さ100を境に実装を切り替える</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org8cd7160" class="outline-2">
+ <h2 id="org8cd7160"> <a href="#org8cd7160">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8cd7160">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org10a990c" class="outline-2">
+ <h2 id="org10a990c"> <a href="#org10a990c">概要</a></h2>
+ <div class="outline-text-2" id="text-org10a990c">
+ <p>
+Emacs Lispでリストから重複を除く  <code>delete-dups</code> は、リストの長さで実装を切り替える。100より長いときはハッシュテーブルに出てきた要素を記録しながら1回なめる。100以下のときは、先頭から1つずつ取り、残りから同じ要素を  <code>delete</code> で消していく。
+</p>
+
+ <p>
+ <code>delete</code> で消すやり方は要素ごとに残り全体をなめるので、手間が長さの2乗で増える。ハッシュテーブルを使うやり方は1回なめるだけで済むが、表を作る手間がかかる。長いリストで遅かったため、100を超えたらハッシュテーブルを使うようにした。100という値の根拠は書かれていない。
+</p>
+
+ <blockquote>
+ <p>
+When there are more than 100 candidates, use a hash table. This can result in ~500 times speed-up for typical collections of size 5000, like that of `load-library’.
+</p>
+
+ <p>
+ <a href="https://github.com/emacs-mirror/emacs/commit/1f052a5f26250d726618570a816ddb6fd0cc11a0">lisp/subr.el (delete-dups): Use a hash table (2015-05-06)</a>
+</p>
+</blockquote>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>Emacs 31.1 の lisp/subr.el</label> <pre class="src src-git-permalink"> <code>https://github.com/emacs-mirror/emacs/blob/a360712c9d272d950d8d8255ef74570f7e90b7d9/lisp/subr.el#L929-L943
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-emacs-lisp"> <code>(let ((l (length list)))
+  (if (&gt; l 100)
+      (let ((hash (make-hash-table :test #'equal :size l))
+            (tail list) retail)
+        (puthash (car list) t hash)
+        (while (setq retail (cdr tail))
+          (let ((elt (car retail)))
+            (if (gethash elt hash)
+                (setcdr tail (cdr retail))
+              (puthash elt t hash)
+              (setq tail retail)))))
+    (let ((tail list))
+      (while tail
+        (setcdr tail (delete (car tail) (cdr tail)))
+        (setq tail (cdr tail))))))
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org0aca2b5" class="outline-2">
+ <h2 id="org0aca2b5"> <a href="#org0aca2b5">関連</a></h2>
+ <div class="outline-text-2" id="text-org0aca2b5">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T115448--kdoc-699-emacsのdelete-dupsはリストの長さ100を境に実装を切り替える__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T115448--kdoc-699-emacsのdelete-dupsはリストの長さ100を境に実装を切り替える__permanent.html</id>
+  <updated>2026-10-18T13:26:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 697: 『Linux Container Book』</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org91da55e" class="outline-2">
+ <h2 id="org91da55e"> <a href="#org91da55e">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org91da55e">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgbda076d" class="outline-2">
+ <h2 id="orgbda076d"> <a href="#orgbda076d">概要</a></h2>
+ <div class="outline-text-2" id="text-orgbda076d">
  <p>
  <a href="https://tatsu-zine.com/books/linux-container-book">『Linux Container Book』</a>は、コンテナを作るLinuxの機能(名前空間など)を解説する本である。
 </p>
 </div>
 </div>
- <div id="outline-container-org358aa65" class="outline-2">
- <h2 id="org358aa65"> <a href="#org358aa65">メモ</a></h2>
- <div class="outline-text-2" id="text-org358aa65">
+ <div id="outline-container-org936c1b3" class="outline-2">
+ <h2 id="org936c1b3"> <a href="#org936c1b3">メモ</a></h2>
+ <div class="outline-text-2" id="text-org936c1b3">
  <ul class="org-ul"> <li> <code>$ sudo mount --bind dir1 dir2</code> みたいに、バインドマウントするコマンドが存在する</li>
  <li>Namespace(名前空間)はプロセスをグループ化して、コンテナの隔離された空間を作り出す。独立させたいリソースによっていくつかの機能がある</li>
  <li>Dockerの初期はコンテナ内でコマンドを実行できなかった</li>
@@ -47,33 +335,33 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org5f0e292" class="outline-2">
- <h2 id="org5f0e292"> <a href="#org5f0e292">関連</a></h2>
- <div class="outline-text-2" id="text-org5f0e292">
+ <div id="outline-container-orgf23d1fa" class="outline-2">
+ <h2 id="orgf23d1fa"> <a href="#orgf23d1fa">関連</a></h2>
+ <div class="outline-text-2" id="text-orgf23d1fa">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgdd52f2f" class="outline-2">
- <h2 id="orgdd52f2f"> <a href="#orgdd52f2f">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgdd52f2f">
+ <div id="outline-container-orgf66f53b" class="outline-2">
+ <h2 id="orgf66f53b"> <a href="#orgf66f53b">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgf66f53b">
  <ul class="org-ul"> <li> <a href="./20261018T104855--kdoc-698-コンテナは名前空間で分離したプロセスにすぎない__permanent.html">KDOC 698: コンテナは名前空間で分離したプロセスにすぎない</a></li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T104854--kdoc-697-『linux-container-book』__book.html"/>
   <id>https://kijimad.github.io/roam/20261018T104854--kdoc-697-『linux-container-book』__book.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 696: コンテナの中のlocalhostはそのコンテナ自身を指す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org06d08d2" class="outline-2">
- <h2 id="org06d08d2"> <a href="#org06d08d2">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org06d08d2">
+ <div id="outline-container-orgfca44c7" class="outline-2">
+ <h2 id="orgfca44c7"> <a href="#orgfca44c7">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgfca44c7">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -82,9 +370,9 @@
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb104de1" class="outline-2">
- <h2 id="orgb104de1"> <a href="#orgb104de1">概要</a></h2>
- <div class="outline-text-2" id="text-orgb104de1">
+ <div id="outline-container-orgf666ffc" class="outline-2">
+ <h2 id="orgf666ffc"> <a href="#orgf666ffc">概要</a></h2>
+ <div class="outline-text-2" id="text-orgf666ffc">
  <p>
 既定のブリッジネットワークでは、コンテナはそれぞれ自分のネットワークを持つので、コンテナの中の  <code>localhost</code> (127.0.0.1)はそのコンテナ自身を指す。そのため、次の2つがよく起きる。
 </p>
@@ -149,9 +437,9 @@ done
 </div>
 </div>
 </div>
- <div id="outline-container-orgebbf067" class="outline-2">
- <h2 id="orgebbf067"> <a href="#orgebbf067">関連</a></h2>
- <div class="outline-text-2" id="text-orgebbf067">
+ <div id="outline-container-orga4d3b9d" class="outline-2">
+ <h2 id="orga4d3b9d"> <a href="#orga4d3b9d">関連</a></h2>
+ <div class="outline-text-2" id="text-orga4d3b9d">
  <p>
 なし。
 </p>
@@ -160,16 +448,16 @@ done
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T104853--kdoc-696-コンテナの中のlocalhostはそのコンテナ自身を指す__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261018T104853--kdoc-696-コンテナの中のlocalhostはそのコンテナ自身を指す__permanent.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 695: バインドマウント元のディレクトリを消して作り直すとコンテナからは見えなくなる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgfacc2f5" class="outline-2">
- <h2 id="orgfacc2f5"> <a href="#orgfacc2f5">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgfacc2f5">
+ <div id="outline-container-org01f6a1b" class="outline-2">
+ <h2 id="org01f6a1b"> <a href="#org01f6a1b">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org01f6a1b">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -178,9 +466,9 @@ done
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org83d75e0" class="outline-2">
- <h2 id="org83d75e0"> <a href="#org83d75e0">概要</a></h2>
- <div class="outline-text-2" id="text-org83d75e0">
+ <div id="outline-container-org09b9db7" class="outline-2">
+ <h2 id="org09b9db7"> <a href="#org09b9db7">概要</a></h2>
+ <div class="outline-text-2" id="text-org09b9db7">
  <p>
 バインドマウントは、パスではなく、マウントした時点のディレクトリそのものを別の場所に見せる。ホスト側でそのディレクトリを消して同じ名前で作り直しても、コンテナは消された古いディレクトリを見続けるので、中身は消えたままに見える。コンテナを再起動すると、新しいディレクトリがマウントし直される。
 </p>
@@ -215,9 +503,9 @@ A bind mount makes a file or a directory subtree visible at another point within
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org334103f" class="outline-2">
- <h2 id="org334103f"> <a href="#org334103f">関連</a></h2>
- <div class="outline-text-2" id="text-org334103f">
+ <div id="outline-container-org576525b" class="outline-2">
+ <h2 id="org576525b"> <a href="#org576525b">関連</a></h2>
+ <div class="outline-text-2" id="text-org576525b">
  <p>
 なし。
 </p>
@@ -226,16 +514,16 @@ A bind mount makes a file or a directory subtree visible at another point within
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T104852--kdoc-695-バインドマウント元のディレクトリを消して作り直すとコンテナからは見えなくなる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261018T104852--kdoc-695-バインドマウント元のディレクトリを消して作り直すとコンテナからは見えなくなる__permanent.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 694: rails consoleの–sandboxは終了時にデータベースの変更をロールバックする</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgfd35ac1" class="outline-2">
- <h2 id="orgfd35ac1"> <a href="#orgfd35ac1">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgfd35ac1">
+ <div id="outline-container-org737f4a6" class="outline-2">
+ <h2 id="org737f4a6"> <a href="#org737f4a6">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org737f4a6">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -244,9 +532,9 @@ A bind mount makes a file or a directory subtree visible at another point within
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org106b984" class="outline-2">
- <h2 id="org106b984"> <a href="#org106b984">概要</a></h2>
- <div class="outline-text-2" id="text-org106b984">
+ <div id="outline-container-orgd1d2990" class="outline-2">
+ <h2 id="orgd1d2990"> <a href="#orgd1d2990">概要</a></h2>
+ <div class="outline-text-2" id="text-orgd1d2990">
  <p>
  <code>rails console --sandbox</code> (短くは  <code>-s</code> )で起動すると、コンソールでのデータベース操作がすべてトランザクションに包まれ、終了するとロールバックされる。データベースを壊さずにコードを試せる。
 </p>
@@ -273,9 +561,9 @@ sandboxモードでは、すべてのデータベース操作がトランザク�
 </div>
 </div>
 </div>
- <div id="outline-container-org03adcd6" class="outline-2">
- <h2 id="org03adcd6"> <a href="#org03adcd6">関連</a></h2>
- <div class="outline-text-2" id="text-org03adcd6">
+ <div id="outline-container-org280e06b" class="outline-2">
+ <h2 id="org280e06b"> <a href="#org280e06b">関連</a></h2>
+ <div class="outline-text-2" id="text-org280e06b">
  <p>
 なし。
 </p>
@@ -284,16 +572,16 @@ sandboxモードでは、すべてのデータベース操作がトランザク�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T010042--kdoc-694-rails-consoleの-sandboxは終了時にデータベースの変更をロールバックする__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261018T010042--kdoc-694-rails-consoleの-sandboxは終了時にデータベースの変更をロールバックする__permanent.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 690: Railsのモデルのバリデーションは既存のレコードを検査しない</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgc0bd785" class="outline-2">
- <h2 id="orgc0bd785"> <a href="#orgc0bd785">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc0bd785">
+ <div id="outline-container-org828bc7c" class="outline-2">
+ <h2 id="org828bc7c"> <a href="#org828bc7c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org828bc7c">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -302,9 +590,9 @@ sandboxモードでは、すべてのデータベース操作がトランザク�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0581752" class="outline-2">
- <h2 id="org0581752"> <a href="#org0581752">概要</a></h2>
- <div class="outline-text-2" id="text-org0581752">
+ <div id="outline-container-org9afb18d" class="outline-2">
+ <h2 id="org9afb18d"> <a href="#org9afb18d">概要</a></h2>
+ <div class="outline-text-2" id="text-org9afb18d">
  <p>
 Railsのモデルのバリデーションは、  <code>save</code> や  <code>update</code> でデータベースに送る前のオブジェクトにだけ走る。そのため、あとから  <code>presence: true</code> を足しても、すでに  <code>NULL</code> が入っているレコードはそのまま残る。そのレコードは、ほかのカラムを直して保存しようとしてもバリデーションで弾かれ、ふつうの  <code>save</code> や  <code>update</code> では更新できなくなる。
 </p>
@@ -328,9 +616,9 @@ Railsのモデルのバリデーションは、  <code>save</code> や  <code>up
 </blockquote>
 </div>
 </div>
- <div id="outline-container-orged9b764" class="outline-2">
- <h2 id="orged9b764"> <a href="#orged9b764">関連</a></h2>
- <div class="outline-text-2" id="text-orged9b764">
+ <div id="outline-container-org4a86da6" class="outline-2">
+ <h2 id="org4a86da6"> <a href="#org4a86da6">関連</a></h2>
+ <div class="outline-text-2" id="text-org4a86da6">
  <p>
 なし。
 </p>
@@ -339,16 +627,16 @@ Railsのモデルのバリデーションは、  <code>save</code> や  <code>up
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T002719--kdoc-690-railsのモデルのバリデーションは既存のレコードを検査しない__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261018T002719--kdoc-690-railsのモデルのバリデーションは既存のレコードを検査しない__permanent.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 688: i386はIntel 80386の型番に由来する</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org355f728" class="outline-2">
- <h2 id="org355f728"> <a href="#org355f728">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org355f728">
+ <div id="outline-container-org3b9a0fd" class="outline-2">
+ <h2 id="org3b9a0fd"> <a href="#org3b9a0fd">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org3b9a0fd">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -357,9 +645,9 @@ Railsのモデルのバリデーションは、  <code>save</code> や  <code>up
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0355c4d" class="outline-2">
- <h2 id="org0355c4d"> <a href="#org0355c4d">概要</a></h2>
- <div class="outline-text-2" id="text-org0355c4d">
+ <div id="outline-container-org615e9c7" class="outline-2">
+ <h2 id="org615e9c7"> <a href="#org615e9c7">概要</a></h2>
+ <div class="outline-text-2" id="text-org615e9c7">
  <p>
 i386は、Linuxなどで32ビットx86を指すアーキテクチャ名である。謎に見えていたが、i386はIntel 80386の型番に由来する。Linuxが生まれたころは、CPUを型番で呼んでいたという。
 </p>
@@ -393,9 +681,9 @@ Intel 80386（またはi386）はインテルの32ビットマイクロプロセ
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org02a3a8b" class="outline-2">
- <h2 id="org02a3a8b"> <a href="#org02a3a8b">関連</a></h2>
- <div class="outline-text-2" id="text-org02a3a8b">
+ <div id="outline-container-org0b8022c" class="outline-2">
+ <h2 id="org0b8022c"> <a href="#org0b8022c">関連</a></h2>
+ <div class="outline-text-2" id="text-org0b8022c">
  <p>
 なし。
 </p>
@@ -404,16 +692,16 @@ Intel 80386（またはi386）はインテルの32ビットマイクロプロセ
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T214752--kdoc-688-i386はintel-80386の型番に由来する__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261017T214752--kdoc-688-i386はintel-80386の型番に由来する__permanent.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 687: 新規ユーザのホームディレクトリは/etc/skelをコピーして作られる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org2d1ce3c" class="outline-2">
- <h2 id="org2d1ce3c"> <a href="#org2d1ce3c">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2d1ce3c">
+ <div id="outline-container-org1e06044" class="outline-2">
+ <h2 id="org1e06044"> <a href="#org1e06044">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org1e06044">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -422,9 +710,9 @@ Intel 80386（またはi386）はインテルの32ビットマイクロプロセ
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org59d99e5" class="outline-2">
- <h2 id="org59d99e5"> <a href="#org59d99e5">概要</a></h2>
- <div class="outline-text-2" id="text-org59d99e5">
+ <div id="outline-container-org5383e54" class="outline-2">
+ <h2 id="org5383e54"> <a href="#org5383e54">概要</a></h2>
+ <div class="outline-text-2" id="text-org5383e54">
  <p>
  <code>useradd -m</code> や  <code>adduser</code> でユーザを作ると、ホームディレクトリに  <code>/etc/skel</code> の中身がコピーされる。新しいユーザに最初から置いておきたい設定ファイルは、  <code>/etc/skel</code> に入れておけばよい。
 </p>
@@ -468,9 +756,9 @@ passwd 1:4.13+dfsg1-4ubuntu3.2
 </div>
 </div>
 </div>
- <div id="outline-container-org5b46027" class="outline-2">
- <h2 id="org5b46027"> <a href="#org5b46027">関連</a></h2>
- <div class="outline-text-2" id="text-org5b46027">
+ <div id="outline-container-org2ff4bb7" class="outline-2">
+ <h2 id="org2ff4bb7"> <a href="#org2ff4bb7">関連</a></h2>
+ <div class="outline-text-2" id="text-org2ff4bb7">
  <p>
 なし。
 </p>
@@ -479,233 +767,16 @@ passwd 1:4.13+dfsg1-4ubuntu3.2
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T214751--kdoc-687-新規ユーザのホームディレクトリはetcskelをコピーして作られる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261017T214751--kdoc-687-新規ユーザのホームディレクトリはetcskelをコピーして作られる__permanent.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 684: 『ふつうのLinuxプログラミング』</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org762ef91" class="outline-2">
- <h2 id="org762ef91"> <a href="#org762ef91">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org762ef91">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org16821a3" class="outline-2">
- <h2 id="org16821a3"> <a href="#org16821a3">概要</a></h2>
- <div class="outline-text-2" id="text-org16821a3">
- <p>
- <a href="https://www.amazon.co.jp/dp/4797386479">『ふつうのLinuxプログラミング 第2版』</a>は、Linuxの仕組みから学ぶシステムプログラミングの本である。
-</p>
-</div>
-</div>
- <div id="outline-container-orgf0d4933" class="outline-2">
- <h2 id="orgf0d4933"> <a href="#orgf0d4933">メモ</a></h2>
- <div class="outline-text-2" id="text-orgf0d4933">
- <ul class="org-ul"> <li>Linuxはファイルシステムとプロセスとストリームでできている</li>
- <li>Linux上において、活動する主体はユーザではなく、プロセス</li>
- <li>ログイン時にクレデンシャルが作られ、プロセスに渡している</li>
- <li>シェルと端末は異なる
- <ul class="org-ul"> <li>端末はユーザとのインターフェースになる部分。現代では仮想化されていて無数にある。端末に対応するデバイスファイル  <code>/dev/tty0</code> などがある</li>
- <li>シェルはユーザからの命令を解釈し実行するプログラムのこと。ストリームからコマンドを読み込んで実行するプログラムにすぎない</li>
-</ul></li>
- <li>ttyの語源はテレタイプ。ディスプレイがなかったので長い紙に結果を出力していた</li>
- <li>tabの語源はtable</li>
- <li>キーボード → 端末ドライバ → ストリーム → プロセス → ストリーム → 端末ドライバ → ディスプレイ</li>
- <li>Linuxの入出力の主な4つのシステムコール
- <ul class="org-ul"> <li>ストリームからバイト列を読み込むread</li>
- <li>ストリームにバイト列を書き込むwrite</li>
- <li>ストリームを作るopen</li>
- <li>用済みのストリームを始末するclose</li>
-</ul></li>
- <li>ファイルディスクリプタは整数値にすぎない</li>
- <li>固定のファイルディスクリプタ
- <ul class="org-ul"> <li>0: 標準入力</li>
- <li>1: 標準出力</li>
- <li>2: 標準エラー出力</li>
-</ul></li>
- <li>標準エラー出力がある理由。標準出力は次のプログラムの標準入力につながれている場合が多いので、ここでエラーを出しても気づかない可能性が高いから</li>
- <li>ストリームはファイルディスクリプタで表現され、read()またはwrite()で操作できるもののこと</li>
- <li>システムコールは遅いので、バッファに溜まってからシステムコールするとよい</li>
- <li>gets()はバッファオーバーフローを起こす可能性があり、使ってはいけない。世界初のインターネットワームはバッファオーバーフローの脆弱性を利用した</li>
- <li>ビルド
- <ul class="org-ul"> <li>プリプロセス
- <ul class="org-ul"> <li>純粋なC言語のソースコードを出力する</li>
-</ul></li>
- <li>コンパイル
- <ul class="org-ul"> <li>C言語のソースコードをアセンブリ言語のソースコードに変換する</li>
-</ul></li>
- <li>アセンブル
- <ul class="org-ul"> <li>アセンブリ言語のソースコードを機械語を含むオブジェクトファイルに変換する</li>
-</ul></li>
- <li>リンク
- <ul class="org-ul"> <li>オブジェクトファイルから実行ファイルを生成する</li>
-</ul></li>
-</ul></li>
- <li>/proc にはプロセスの情報がファイルに格納されている</li>
- <li>ダイナミックロードは、すべてのリンク作業を実行時に行う手法</li>
- <li>0は成功、1はエラーというのはUnixに特有の決まりごと</li>
- <li>プロセスの親子関係を調べる  <code>pstree</code></li>
- <li>ログインシェルを調べる  <code>w</code>,  <code>last</code></li>
- <li>HTTPの仕組みとファイルシステムはよく似ている</li>
- <li>HTTPで公開されるのはファイルシステムの一部だけ。これをドキュメントツリーという。ドキュメントツリーのルートディレクトリをドキュメントルートという。デフォルト設定のWebサーバでいうところの  <code>/var/www/html</code> のことか</li>
- <li>HTTPサーバのしごと: HTTPリクエストをドキュメントルート以下のファイルにマップし、レスポンスとして送り返すこと</li>
-</ul></div>
-</div>
- <div id="outline-container-org21b9ba0" class="outline-2">
- <h2 id="org21b9ba0"> <a href="#org21b9ba0">関連</a></h2>
- <div class="outline-text-2" id="text-org21b9ba0">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T213820--kdoc-684-『ふつうのlinuxプログラミング』__book.html"/>
-  <id>https://kijimad.github.io/roam/20261017T213820--kdoc-684-『ふつうのlinuxプログラミング』__book.html</id>
-  <updated>2026-10-18T12:02:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 693: RailsのBooleanのcastは文字列の&quot;0&quot;や&quot;f&quot;もfalseにする</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org092df71" class="outline-2">
- <h2 id="org092df71"> <a href="#org092df71">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org092df71">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgf92c545" class="outline-2">
- <h2 id="orgf92c545"> <a href="#orgf92c545">概要</a></h2>
- <div class="outline-text-2" id="text-orgf92c545">
- <p>
-Rubyでは  <code>false</code> と  <code>nil</code> 以外はすべて真なので、文字列の  <code>&quot;false&quot;</code> も真になる。
-</p>
-
- <p>
-Railsの  <code>ActiveModel::Type::Boolean</code> は、フォームやDBから文字列で来た真偽値を変換する。booleanのカラムに代入した値は、Active Recordがこの型を使って自動的に変換するので、ふだんは自分で  <code>cast</code> を呼ばない。決まった一覧にある値(  <code>&quot;false&quot;</code> ・  <code>&quot;0&quot;</code> ・  <code>&quot;f&quot;</code> ・  <code>&quot;off&quot;</code> など)を  <code>false</code> にし、空文字列を  <code>nil</code> にし、一覧にない値はすべて  <code>true</code> にする。そのため  <code>&quot;no&quot;</code> は  <code>true</code> になる。一覧には  <code>&quot;false&quot;</code> と  <code>&quot;FALSE&quot;</code> はあるが  <code>&quot;False&quot;</code> はないので、  <code>&quot;False&quot;</code> も  <code>true</code> になる。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>Rails 8.1.4 の ActiveModel::Type::Boolean</label> <pre class="src src-git-permalink"> <code>https://github.com/rails/rails/blob/c3466ea00d7121798e3aa3144ffdf7174b81d8cb/activemodel/lib/active_model/type/boolean.rb#L10-L25
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-ruby"> <code># - &lt;tt&gt;&quot;false&quot;&lt;/tt&gt;, &lt;tt&gt;&quot;f&quot;&lt;/tt&gt;, &lt;tt&gt;&quot;0&quot;&lt;/tt&gt;, +0+ or any other value in
-#   +FALSE_VALUES+ will be coerced to +false+.
-# - Empty strings are coerced to +nil+.
-# - All other values will be coerced to +true+.
-class Boolean &lt; Value
-  include Helpers::Immutable
-  FALSE_VALUES = [
-    false, 0,
-    &quot;0&quot;, :&quot;0&quot;,
-    &quot;f&quot;, :f,
-    &quot;F&quot;, :F,
-    &quot;false&quot;, :false,
-    &quot;FALSE&quot;, :FALSE,
-    &quot;off&quot;, :off,
-    &quot;OFF&quot;, :OFF,
-  ].to_set.freeze
-</code></pre>
-</div>
-</div>
-</div>
- <div id="outline-container-org8c40e78" class="outline-2">
- <h2 id="org8c40e78"> <a href="#org8c40e78">関連</a></h2>
- <div class="outline-text-2" id="text-org8c40e78">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261018T010041--kdoc-693-railsのbooleanのcastは文字列の0やfもfalseにする__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261018T010041--kdoc-693-railsのbooleanのcastは文字列の0やfもfalseにする__permanent.html</id>
-  <updated>2026-10-18T12:01:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 691: Railsではカラム名やテーブル名の変更をアプリとDBの2段階に分けられる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgdb8fdab" class="outline-2">
- <h2 id="orgdb8fdab"> <a href="#orgdb8fdab">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgdb8fdab">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org762cfbe" class="outline-2">
- <h2 id="org762cfbe"> <a href="#org762cfbe">概要</a></h2>
- <div class="outline-text-2" id="text-org762cfbe">
- <p>
-Railsでは、モデルから見える名前とデータベースの名前をずらせる。これを使うと、カラム名やテーブル名の変更を2回のリリースに分けられる。
-</p>
-
- <ol class="org-ol"> <li>エイリアスを足し、コードを新しい名前へ移す</li>
- <li>データベースの名前を変え、エイリアスを消す</li>
-</ol> <p>
-エイリアスは、カラムなら  <code>alias_attribute :new_name, :old_name</code> 、テーブルならモデルのクラス名を新しくして  <code>self.table_name = &quot;old_table&quot;</code> とする。量の多いコードの書き換えと、戻しにくいデータベースの変更を別々のリリースにできる。
-。
-</p>
- <blockquote>
- <p>
-Allows you to make aliases for attributes.
-</p>
-
- <p>
- <a href="https://api.rubyonrails.org/v8.1.4/classes/ActiveModel/AttributeMethods/ClassMethods.html">ActiveModel::AttributeMethods::ClassMethods#alias_attribute (Rails 8.1.4)</a>
-</p>
-</blockquote>
-
- <blockquote>
- <p>
-Sets the table name explicitly.
-</p>
-
- <p>
- <a href="https://api.rubyonrails.org/v8.1.4/classes/ActiveRecord/ModelSchema/ClassMethods.html">ActiveRecord::ModelSchema::ClassMethods#table_name= (Rails 8.1.4)</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-orgf870e2a" class="outline-2">
- <h2 id="orgf870e2a"> <a href="#orgf870e2a">関連</a></h2>
- <div class="outline-text-2" id="text-orgf870e2a">
- <ul class="org-ul"> <li>補足:  <a href="20260529T091134--kdoc-593-安全なマイグレーション手法をチームに導入する__permanent.html#ID-20260529T091134">KDOC 593: 安全なマイグレーション手法をチームに導入する</a>。Expand and Contractの、名前を変えるときの具体策</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261018T002720--kdoc-691-railsではカラム名やテーブル名の変更をアプリとdbの2段階に分けられる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261018T002720--kdoc-691-railsではカラム名やテーブル名の変更をアプリとdbの2段階に分けられる__permanent.html</id>
-  <updated>2026-10-18T12:01:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 686: ELFヘッダを見る</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6953eb1" class="outline-2">
- <h2 id="org6953eb1"> <a href="#org6953eb1">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6953eb1">
+ <div id="outline-container-org2ae3697" class="outline-2">
+ <h2 id="org2ae3697"> <a href="#org2ae3697">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org2ae3697">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -714,9 +785,9 @@ Sets the table name explicitly.
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgc895d14" class="outline-2">
- <h2 id="orgc895d14"> <a href="#orgc895d14">概要</a></h2>
- <div class="outline-text-2" id="text-orgc895d14">
+ <div id="outline-container-orgf3a376d" class="outline-2">
+ <h2 id="orgf3a376d"> <a href="#orgf3a376d">概要</a></h2>
+ <div class="outline-text-2" id="text-orgf3a376d">
  <p>
 ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64バイトで、構造体  <code>Elf64_Ehdr</code> のフィールドが順に並んでいる(elf(5))。生のバイトを見て、  <code>readelf -h</code> の表示と照らし合わせる。
 </p>
@@ -809,226 +880,265 @@ ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64�
 </div>
 </div>
 </div>
- <div id="outline-container-orgead30a8" class="outline-2">
- <h2 id="orgead30a8"> <a href="#orgead30a8">関連</a></h2>
- <div class="outline-text-2" id="text-orgead30a8">
+ <div id="outline-container-org25f479f" class="outline-2">
+ <h2 id="org25f479f"> <a href="#org25f479f">関連</a></h2>
+ <div class="outline-text-2" id="text-org25f479f">
  <ul class="org-ul"> <li>補足:  <a href="20240529T002323--kdoc-179-『ハローhello-world-osと標準ライブラリのシゴトとしくみ』__book.html#ID-20240529T002323">KDOC 179: 『ハロー“Hello, World” OSと標準ライブラリのシゴトとしくみ』</a>。readelfでELFを読む例が出てくる</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T214011--kdoc-686-elfヘッダを見る__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261017T214011--kdoc-686-elfヘッダを見る__permanent.html</id>
-  <updated>2026-10-18T12:01:00+09:00</updated>
+  <updated>2026-10-18T13:26:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 685: 『低レベルプログラミング』</title>
+  <title>KDOC 704: cl-letfで関数の定義を一時的に差し替えられる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orga47b590" class="outline-2">
- <h2 id="orga47b590"> <a href="#orga47b590">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga47b590">
+ <div id="outline-container-org92aef06" class="outline-2">
+ <h2 id="org92aef06"> <a href="#org92aef06">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org92aef06">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul> <p>
-途中までしか読んでない。
-</p>
-</div>
-</div>
- <div id="outline-container-orge81ba69" class="outline-2">
- <h2 id="orge81ba69"> <a href="#orge81ba69">概要</a></h2>
- <div class="outline-text-2" id="text-orge81ba69">
- <p>
- <a href="https://www.shoeisha.co.jp/book/detail/9784798155036">『低レベルプログラミング』</a>は、アセンブリ言語とCから、コンピュータの低レベルな仕組みを解説する本である。
-</p>
-</div>
-</div>
- <div id="outline-container-org2c4dc8f" class="outline-2">
- <h2 id="org2c4dc8f"> <a href="#org2c4dc8f">メモ</a></h2>
- <div class="outline-text-2" id="text-org2c4dc8f">
- <ul class="org-ul"> <li>フォン・ノイマンのモデルの問題点
- <ul class="org-ul"> <li>インタラクティブでない</li>
- <li>マルチタスクに適してない</li>
- <li>誰でもすべての命令を実行できる</li>
-</ul></li>
- <li>Intel64での、フォン・ノイマンのモデル拡張
- <ul class="org-ul"> <li>レジスタ群</li>
- <li>ハードウェアスタック</li>
- <li>割り込み</li>
- <li>プロテクションリング</li>
- <li>仮想メモリ</li>
-</ul></li>
- <li>ファイルをメモリにマッピングする手順
- <ul class="org-ul"> <li>openシステムコールでファイルを開く。ファイルディスクリプタを得る</li>
- <li>mmapシステムコールでメモリにマッピングする。引数でファイルディスクリプタを渡す</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org958f3d4" class="outline-2">
- <h2 id="org958f3d4"> <a href="#org958f3d4">関連</a></h2>
- <div class="outline-text-2" id="text-org958f3d4">
+ <div id="outline-container-org87a61c3" class="outline-2">
+ <h2 id="org87a61c3"> <a href="#org87a61c3">概要</a></h2>
+ <div class="outline-text-2" id="text-org87a61c3">
+ <p>
+Emacs Lispの  <code>cl-letf</code> は、  <code>let</code> と同じように値を一時的に置き換えて、終わったら元に戻す。変数だけでなく  <code>(symbol-function 'princ)</code> のような場所も置き換えられる。テストで関数をモックへ差し替えるのに使える。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>etc=$(emacs -Q --batch --eval '(princ data-directory)')
+info -f &quot;$etc/../../../info/cl.info.gz&quot; -n 'Modify Macros' -o - | sed -n '54,61p'
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>-- Macro: cl-letf (bindings...) forms...
+    This macro is analogous to ‘let’, but for generalized variables
+    rather than just symbols.  Each BINDING should be of the form
+    ‘(PLACE VALUE)’; the original contents of the PLACEs are saved, the
+    VALUEs are stored in them, and then the body FORMs are executed.
+    Afterwards, the PLACES are set back to their original saved
+    contents.  This cleanup happens even if the FORMs exit irregularly
+    due to a ‘throw’ or an error.
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>emacs -Q --batch --eval &quot;(require 'cl-lib)&quot; --eval &quot;
+  (progn
+    (defun kd-hello () (princ \&quot;hi\&quot;))
+    (let ((orig (symbol-function 'princ)))
+      (princ (format \&quot;差し替え中の出力: %S、終わったあと元に戻ったか: %S\&quot;
+                     (with-temp-buffer
+                       (cl-letf (((symbol-function 'princ) #'insert))
+                         (kd-hello))
+                       (buffer-string))
+                     (eq orig (symbol-function 'princ))))))&quot;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>差し替え中の出力: &quot;hi&quot;、終わったあと元に戻ったか: t
+</code></pre>
+</div>
+
+ <p>
+ただし、  <code>car</code> のようにバイトコンパイルで専用の命令になる関数は、コンパイル済みの呼び出し元では差し替えが効かない。呼び出しが命令に置き換わっていて、関数セルを見に行かないからである。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>emacs -Q --batch --eval &quot;(require 'cl-lib)&quot; --eval &quot;
+  (let ((compiled (byte-compile (lambda () (car (list 1 2)))))
+        (interpreted (lambda () (car (list 1 2)))))
+    (cl-letf (((symbol-function 'car) (lambda (_) :mocked)))
+      (princ (format \&quot;コンパイル済み: %S、インタプリタ: %S\&quot;
+                     (funcall compiled) (funcall interpreted)))))&quot;
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>コンパイル済み: 1、インタプリタ: :mocked
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-orgc3ff6e6" class="outline-2">
+ <h2 id="orgc3ff6e6"> <a href="#orgc3ff6e6">関連</a></h2>
+ <div class="outline-text-2" id="text-orgc3ff6e6">
+ <ul class="org-ul"> <li>補足:  <a href="20261018T115449--kdoc-700-defsubstで定義した関数はバイトコンパイルで呼び出し元に展開される__permanent.html#ID-20261018T115449">KDOC 700: defsubstで定義した関数はバイトコンパイルで呼び出し元に展開される</a>。同じく、バイトコンパイルで呼び出しが消えると、関数を定義し直しても効かない</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T122449--kdoc-704-cl-letfで関数の定義を一時的に差し替えられる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T122449--kdoc-704-cl-letfで関数の定義を一時的に差し替えられる__permanent.html</id>
+  <updated>2026-10-18T13:25:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 702: Emacs Lispのシンボルは値と関数を別々に持つ</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgaf2d3d2" class="outline-2">
+ <h2 id="orgaf2d3d2"> <a href="#orgaf2d3d2">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgaf2d3d2">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgb872160" class="outline-2">
+ <h2 id="orgb872160"> <a href="#orgb872160">概要</a></h2>
+ <div class="outline-text-2" id="text-orgb872160">
+ <p>
+Emacs Lispのシンボルは、変数としての値を入れる値セルと、関数を入れる関数セルを別々に持つ。そのため同じ名前で、  <code>setq</code> で値を、  <code>defun</code> で関数を両方定義できる。関数そのものには名前がなく、関数セルに関数を持つシンボルが関数の名前になる。  <code>defun</code> はシンボルの関数セルに関数を入れているだけである。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>etc=$(emacs -Q --batch --eval '(princ data-directory)')
+info -f &quot;$etc/../../../info/elisp.info.gz&quot; -n 'Symbol Components' -o - | sed -n '35,36p' | sed 's/  \*Note$//'
+echo
+info -f &quot;$etc/../../../info/elisp.info.gz&quot; -n 'Function Names' -o - | sed -n '6,10p'
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>   The value cell holds a symbol's value as a variable, which is what
+you get if the symbol itself is evaluated as a Lisp expression.
+
+A symbol can serve as the name of a function.  This happens when the
+symbol's “function cell” (*note Symbol Components::) contains a function
+object (e.g., a lambda expression).  Then the symbol itself becomes a
+valid, callable function, equivalent to the function object in its
+function cell.
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-emacs-lisp"> <code>(setq kd-foo 1)
+(defun kd-foo () 2)
+(format &quot;変数として: %S、関数として: %S&quot; kd-foo (kd-foo))
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>変数として: 1、関数として: 2
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org02e0288" class="outline-2">
+ <h2 id="org02e0288"> <a href="#org02e0288">関連</a></h2>
+ <div class="outline-text-2" id="text-org02e0288">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T213821--kdoc-685-『低レベルプログラミング』__book.html"/>
-  <id>https://kijimad.github.io/roam/20261017T213821--kdoc-685-『低レベルプログラミング』__book.html</id>
-  <updated>2026-10-18T12:01:00+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261018T122447--kdoc-702-emacs-lispのシンボルは値と関数を別々に持つ__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T122447--kdoc-702-emacs-lispのシンボルは値と関数を別々に持つ__permanent.html</id>
+  <updated>2026-10-18T13:25:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 681: JavaScriptのクラスは関数なので定義したあとにプロパティを追加できる</title>
+  <title>KDOC 700: defsubstで定義した関数はバイトコンパイルで呼び出し元に展開される</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org5553059" class="outline-2">
- <h2 id="org5553059"> <a href="#org5553059">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5553059">
+ <div id="outline-container-org4440437" class="outline-2">
+ <h2 id="org4440437"> <a href="#org4440437">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4440437">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga3cb8fe" class="outline-2">
- <h2 id="orga3cb8fe"> <a href="#orga3cb8fe">概要</a></h2>
- <div class="outline-text-2" id="text-orga3cb8fe">
+ <div id="outline-container-orgad90317" class="outline-2">
+ <h2 id="orgad90317"> <a href="#orgad90317">概要</a></h2>
+ <div class="outline-text-2" id="text-orgad90317">
  <p>
-JavaScriptのクラスは特別な関数で、関数はオブジェクトである。そのため、定義したあとのクラスにもふつうのオブジェクトと同じようにプロパティを追加できる。追加したプロパティはクラス自身に付き、  <code>static</code> で定義したものと同じくインスタンスからは見えない。
+Emacs Lispで  <code>defun</code> の代わりに  <code>defsubst</code> で関数を定義すると、その関数を呼ぶコードをバイトコンパイルしたときに、関数の中身が呼び出し元に埋め込まれる。関数呼び出しの手間がなくなる。
 </p>
-
- <blockquote>
- <p>
-クラスは実際には「特別な関数」であり、(後略)
-</p>
-
- <p>
- <a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Classes">クラス - MDN</a>
-</p>
-</blockquote>
 
  <div class="org-src-container">
- <pre class="src src-js"> <code>class MyClass {}
-MyClass.key = &quot;value&quot;;
-console.log(typeof MyClass, MyClass.key);
-console.log(new MyClass().key);
+ <pre class="src src-shell"> <code>etc=$(emacs -Q --batch --eval '(princ data-directory)')
+info -f &quot;$etc/../../../info/elisp.info.gz&quot; -n 'Inline Functions' -o - | sed -n '6,9p;20,22p'
 </code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil"> <code>function value
-undefined
+ <pre class="src src-nil"> <code>An “inline function” is a function that works just like an ordinary
+function, except for one thing: when you byte-compile a call to the
+function (*note Byte Compilation::), the function's definition is
+expanded into the caller.
+But it also has disadvantages.  For one thing, it reduces flexibility;
+if you change the definition of the function, calls already inlined
+still use the old definition until you recompile them.
 </code></pre>
 </div>
 
  <p>
- <code>typeof</code> が  <code>function</code> を返すのは、クラスが  <code>[[Call]]</code> を持つオブジェクトだからである。
+埋め込まれたことは、呼び出し元をバイトコンパイルしたあとで関数を定義し直すと分かる。  <code>(* x 2)</code> を  <code>(* x 3)</code> に定義し直してから1を渡すと、  <code>defun</code> 版は新しい定義を使って3を返す。  <code>defsubst</code> 版は埋め込まれた古い中身のまま2を返す。
 </p>
 
- <blockquote>
- <p>
-If val has a  <code>[[Call]]</code> internal slot, return “function”.
-</p>
+ <div class="org-src-container">
+ <pre class="src src-emacs-lisp"> <code>(defun kd-mul (x) (* x 2))
+(defsubst kd-mul-inline (x) (* x 2))
+(let ((f (byte-compile (lambda () (kd-mul 1))))
+      (g (byte-compile (lambda () (kd-mul-inline 1)))))
+  (defun kd-mul (x) (* x 3))
+  (defsubst kd-mul-inline (x) (* x 3))
+  (format &quot;defun版: %d、defsubst版: %d&quot; (funcall f) (funcall g)))
+</code></pre>
+</div>
 
- <p>
- <a href="https://262.ecma-international.org/16.0/#sec-typeof-operator-runtime-semantics-evaluation">ECMAScript 2025 Language Specification 13.5.3.1</a>
-</p>
-</blockquote>
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>defun版: 3、defsubst版: 2
+</code></pre>
 </div>
 </div>
- <div id="outline-container-org8557db6" class="outline-2">
- <h2 id="org8557db6"> <a href="#org8557db6">関連</a></h2>
- <div class="outline-text-2" id="text-org8557db6">
+</div>
+ <div id="outline-container-orgb7946f0" class="outline-2">
+ <h2 id="orgb7946f0"> <a href="#orgb7946f0">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb7946f0">
  <p>
 なし。
 </p>
 </div>
 </div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T205647--kdoc-681-javascriptのクラスは関数なので定義したあとにプロパティを追加できる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T205647--kdoc-681-javascriptのクラスは関数なので定義したあとにプロパティを追加できる__permanent.html</id>
-  <updated>2026-10-18T12:01:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 680: constは宣言より前では外側に同名の変数があっても読めない</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org036bb84" class="outline-2">
- <h2 id="org036bb84"> <a href="#org036bb84">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org036bb84">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
+ <div id="outline-container-org0e2071a" class="outline-2">
+ <h2 id="org0e2071a"> <a href="#org0e2071a">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-org0e2071a">
+ <ul class="org-ul"> <li> <a href="./20261018T122449--kdoc-704-cl-letfで関数の定義を一時的に差し替えられる__permanent.html">KDOC 704: cl-letfで関数の定義を一時的に差し替えられる</a></li>
 </ul></div>
 </div>
- <div id="outline-container-orga69142a" class="outline-2">
- <h2 id="orga69142a"> <a href="#orga69142a">概要</a></h2>
- <div class="outline-text-2" id="text-orga69142a">
- <p>
-JavaScriptの  <code>const</code> の宣言はスコープに入った時点で作られ、宣言の行を実行するまでは参照できない(一時的デッドゾーン)。そのため宣言より前では、外側に同名の変数があっても読めず  <code>ReferenceError</code> になる。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-js"> <code>const x = 1;
-{
-  try {
-    console.log(x);
-  } catch (e) {
-    console.log(`${e.name}: ${e.message}`);
-  }
-  const x = 2;
-}
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>ReferenceError: Cannot access 'x' before initialization
-</code></pre>
-</div>
-
- <blockquote>
- <p>
-The variables are created when their containing Environment Record is instantiated but may not be accessed in any way until the variable’s LexicalBinding is evaluated.
-</p>
-
- <p>
- <a href="https://262.ecma-international.org/16.0/#sec-let-and-const-declarations">ECMAScript 2025 Language Specification 14.3.1</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-orgf017148" class="outline-2">
- <h2 id="orgf017148"> <a href="#orgf017148">関連</a></h2>
- <div class="outline-text-2" id="text-orgf017148">
- <p>
-なし。
-</p>
-</div>
-</div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T205646--kdoc-680-constは宣言より前では外側に同名の変数があっても読めない__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T205646--kdoc-680-constは宣言より前では外側に同名の変数があっても読めない__permanent.html</id>
-  <updated>2026-10-18T12:01:00+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261018T115449--kdoc-700-defsubstで定義した関数はバイトコンパイルで呼び出し元に展開される__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T115449--kdoc-700-defsubstで定義した関数はバイトコンパイルで呼び出し元に展開される__permanent.html</id>
+  <updated>2026-10-18T13:25:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 698: コンテナは名前空間で分離したプロセスにすぎない</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orge0fa9d3" class="outline-2">
- <h2 id="orge0fa9d3"> <a href="#orge0fa9d3">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge0fa9d3">
+ <div id="outline-container-org6d3093a" class="outline-2">
+ <h2 id="org6d3093a"> <a href="#org6d3093a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6d3093a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -1037,9 +1147,9 @@ The variables are created when their containing Environment Record is instantiat
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orge435afc" class="outline-2">
- <h2 id="orge435afc"> <a href="#orge435afc">概要</a></h2>
- <div class="outline-text-2" id="text-orge435afc">
+ <div id="outline-container-org6baaff5" class="outline-2">
+ <h2 id="org6baaff5"> <a href="#org6baaff5">概要</a></h2>
+ <div class="outline-text-2" id="text-org6baaff5">
  <p>
 コンテナの正体は、名前空間でホストから分離したプロセスである。  <code>unshare</code> で名前空間を1つ作るだけでも、その一部を体験できる。UTS名前空間を分けたシェルの中でホスト名を変えても、ホスト側のホスト名は変わらない。
 </p>
@@ -1083,9 +1193,9 @@ MANWIDTH=80 man 1 unshare | grep -A6 -E '^ +-r, --map-root-user'
 </div>
 </div>
 </div>
- <div id="outline-container-org97a5266" class="outline-2">
- <h2 id="org97a5266"> <a href="#org97a5266">関連</a></h2>
- <div class="outline-text-2" id="text-org97a5266">
+ <div id="outline-container-org501cb4a" class="outline-2">
+ <h2 id="org501cb4a"> <a href="#org501cb4a">関連</a></h2>
+ <div class="outline-text-2" id="text-org501cb4a">
  <ul class="org-ul"> <li>補足:  <a href="20240605T211653--kdoc-186-コンテナ実行環境の設定ファイルを見る__permanent.html#ID-20240605T211653">KDOC 186: コンテナ実行環境の設定ファイルを見る</a>。設定ファイルに並ぶ名前空間の1つを、手で作ってみたもの</li>
  <li>補足:  <a href="20261018T104854--kdoc-697-『linux-container-book』__book.html#ID-20261018T104854">KDOC 697: 『Linux Container Book』</a>。名前空間の仕組みと歴史(Mount Namespace、setnsとdocker exec)</li>
 </ul></div>
@@ -1093,16 +1203,16 @@ MANWIDTH=80 man 1 unshare | grep -A6 -E '^ +-r, --map-root-user'
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T104855--kdoc-698-コンテナは名前空間で分離したプロセスにすぎない__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261018T104855--kdoc-698-コンテナは名前空間で分離したプロセスにすぎない__permanent.html</id>
-  <updated>2026-10-18T12:00:00+09:00</updated>
+  <updated>2026-10-18T13:25:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 692: モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる</title>
+  <title>KDOC 693: RailsのBooleanのcastは文字列の&quot;0&quot;や&quot;f&quot;もfalseにする</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgeec466e" class="outline-2">
- <h2 id="orgeec466e"> <a href="#orgeec466e">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgeec466e">
+ <div id="outline-container-org54fcd2e" class="outline-2">
+ <h2 id="org54fcd2e"> <a href="#org54fcd2e">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org54fcd2e">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -1111,9 +1221,75 @@ MANWIDTH=80 man 1 unshare | grep -A6 -E '^ +-r, --map-root-user'
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org5131151" class="outline-2">
- <h2 id="org5131151"> <a href="#org5131151">概要</a></h2>
- <div class="outline-text-2" id="text-org5131151">
+ <div id="outline-container-orgcc55367" class="outline-2">
+ <h2 id="orgcc55367"> <a href="#orgcc55367">概要</a></h2>
+ <div class="outline-text-2" id="text-orgcc55367">
+ <p>
+Rubyでは  <code>false</code> と  <code>nil</code> 以外はすべて真なので、文字列の  <code>&quot;false&quot;</code> も真になる。
+</p>
+
+ <p>
+Railsの  <code>ActiveModel::Type::Boolean</code> は、フォームやDBから文字列で来た真偽値を変換する。booleanのカラムに代入した値は、Active Recordがこの型を使って自動的に変換するので、ふだんは自分で  <code>cast</code> を呼ばない。決まった一覧にある値(  <code>&quot;false&quot;</code> ・  <code>&quot;0&quot;</code> ・  <code>&quot;f&quot;</code> ・  <code>&quot;off&quot;</code> など)を  <code>false</code> にし、空文字列を  <code>nil</code> にし、一覧にない値はすべて  <code>true</code> にする。そのため  <code>&quot;no&quot;</code> は  <code>true</code> になる。一覧には  <code>&quot;false&quot;</code> と  <code>&quot;FALSE&quot;</code> はあるが  <code>&quot;False&quot;</code> はないので、  <code>&quot;False&quot;</code> も  <code>true</code> になる。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>Rails 8.1.4 の ActiveModel::Type::Boolean</label> <pre class="src src-git-permalink"> <code>https://github.com/rails/rails/blob/c3466ea00d7121798e3aa3144ffdf7174b81d8cb/activemodel/lib/active_model/type/boolean.rb#L10-L25
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-ruby"> <code># - &lt;tt&gt;&quot;false&quot;&lt;/tt&gt;, &lt;tt&gt;&quot;f&quot;&lt;/tt&gt;, &lt;tt&gt;&quot;0&quot;&lt;/tt&gt;, +0+ or any other value in
+#   +FALSE_VALUES+ will be coerced to +false+.
+# - Empty strings are coerced to +nil+.
+# - All other values will be coerced to +true+.
+class Boolean &lt; Value
+  include Helpers::Immutable
+  FALSE_VALUES = [
+    false, 0,
+    &quot;0&quot;, :&quot;0&quot;,
+    &quot;f&quot;, :f,
+    &quot;F&quot;, :F,
+    &quot;false&quot;, :false,
+    &quot;FALSE&quot;, :FALSE,
+    &quot;off&quot;, :off,
+    &quot;OFF&quot;, :OFF,
+  ].to_set.freeze
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org281d99a" class="outline-2">
+ <h2 id="org281d99a"> <a href="#org281d99a">関連</a></h2>
+ <div class="outline-text-2" id="text-org281d99a">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T010041--kdoc-693-railsのbooleanのcastは文字列の0やfもfalseにする__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T010041--kdoc-693-railsのbooleanのcastは文字列の0やfもfalseにする__permanent.html</id>
+  <updated>2026-10-18T13:25:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 692: モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org32ac070" class="outline-2">
+ <h2 id="org32ac070"> <a href="#org32ac070">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org32ac070">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org18fccf7" class="outline-2">
+ <h2 id="org18fccf7"> <a href="#org18fccf7">概要</a></h2>
+ <div class="outline-text-2" id="text-org18fccf7">
  <p>
 Railsでは、  <code>Rails.application.eager_load!</code> でモデルをすべて読み込めば、  <code>ApplicationRecord.subclasses</code> でApplicationRecordを直接継承するモデルを列挙できる。これを使うと、モデルごとに用意しておくべきものの作り忘れを検査するrakeタスクを書ける。
 </p>
@@ -1153,9 +1329,9 @@ eager loadingはconfig.eager_loadフラグで制御します。これはproducti
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org97a6fa2" class="outline-2">
- <h2 id="org97a6fa2"> <a href="#org97a6fa2">関連</a></h2>
- <div class="outline-text-2" id="text-org97a6fa2">
+ <div id="outline-container-org33efd5c" class="outline-2">
+ <h2 id="org33efd5c"> <a href="#org33efd5c">関連</a></h2>
+ <div class="outline-text-2" id="text-org33efd5c">
  <p>
 なし。
 </p>
@@ -1164,16 +1340,16 @@ eager loadingはconfig.eager_loadフラグで制御します。これはproducti
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T005622--kdoc-692-モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261018T005622--kdoc-692-モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる__permanent.html</id>
-  <updated>2026-10-18T12:00:00+09:00</updated>
+  <updated>2026-10-18T13:25:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 689: Railsのネストしたtransactionでは内側のActiveRecord::Rollbackが無視される</title>
+  <title>KDOC 691: Railsではカラム名やテーブル名の変更をアプリとDBの2段階に分けられる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgc7302e3" class="outline-2">
- <h2 id="orgc7302e3"> <a href="#orgc7302e3">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgc7302e3">
+ <div id="outline-container-org7567716" class="outline-2">
+ <h2 id="org7567716"> <a href="#org7567716">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7567716">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
@@ -1182,9 +1358,70 @@ eager loadingはconfig.eager_loadフラグで制御します。これはproducti
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org464eac4" class="outline-2">
- <h2 id="org464eac4"> <a href="#org464eac4">概要</a></h2>
- <div class="outline-text-2" id="text-org464eac4">
+ <div id="outline-container-orgc7418cb" class="outline-2">
+ <h2 id="orgc7418cb"> <a href="#orgc7418cb">概要</a></h2>
+ <div class="outline-text-2" id="text-orgc7418cb">
+ <p>
+Railsでは、モデルから見える名前とデータベースの名前をずらせる。これを使うと、カラム名やテーブル名の変更を2回のリリースに分けられる。
+</p>
+
+ <ol class="org-ol"> <li>エイリアスを足し、コードを新しい名前へ移す</li>
+ <li>データベースの名前を変え、エイリアスを消す</li>
+</ol> <p>
+エイリアスは、カラムなら  <code>alias_attribute :new_name, :old_name</code> 、テーブルならモデルのクラス名を新しくして  <code>self.table_name = &quot;old_table&quot;</code> とする。量の多いコードの書き換えと、戻しにくいデータベースの変更を別々のリリースにできる。
+。
+</p>
+ <blockquote>
+ <p>
+Allows you to make aliases for attributes.
+</p>
+
+ <p>
+ <a href="https://api.rubyonrails.org/v8.1.4/classes/ActiveModel/AttributeMethods/ClassMethods.html">ActiveModel::AttributeMethods::ClassMethods#alias_attribute (Rails 8.1.4)</a>
+</p>
+</blockquote>
+
+ <blockquote>
+ <p>
+Sets the table name explicitly.
+</p>
+
+ <p>
+ <a href="https://api.rubyonrails.org/v8.1.4/classes/ActiveRecord/ModelSchema/ClassMethods.html">ActiveRecord::ModelSchema::ClassMethods#table_name= (Rails 8.1.4)</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org006f1bb" class="outline-2">
+ <h2 id="org006f1bb"> <a href="#org006f1bb">関連</a></h2>
+ <div class="outline-text-2" id="text-org006f1bb">
+ <ul class="org-ul"> <li>補足:  <a href="20260529T091134--kdoc-593-安全なマイグレーション手法をチームに導入する__permanent.html#ID-20260529T091134">KDOC 593: 安全なマイグレーション手法をチームに導入する</a>。Expand and Contractの、名前を変えるときの具体策</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T002720--kdoc-691-railsではカラム名やテーブル名の変更をアプリとdbの2段階に分けられる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T002720--kdoc-691-railsではカラム名やテーブル名の変更をアプリとdbの2段階に分けられる__permanent.html</id>
+  <updated>2026-10-18T13:25:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 689: Railsのネストしたtransactionでは内側のActiveRecord::Rollbackが無視される</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgc3b6cea" class="outline-2">
+ <h2 id="orgc3b6cea"> <a href="#orgc3b6cea">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgc3b6cea">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orge37a81e" class="outline-2">
+ <h2 id="orge37a81e"> <a href="#orge37a81e">概要</a></h2>
+ <div class="outline-text-2" id="text-orge37a81e">
  <p>
 Railsで  <code>transaction</code> をネストすると、既定では内側のブロックは外側のトランザクションに合流する。内側で  <code>raise ActiveRecord::Rollback</code> してもROLLBACKは発行されず、外側はそのままコミットされる。  <code>ActiveRecord::Rollback</code> は  <code>transaction</code> ブロックが受け止めて外へ投げ直さないので、外側には届かない。ほかの例外は外側まで伝わり、外側ごとロールバックされる。
 </p>
@@ -1220,227 +1457,15 @@ Active Record emulates nested transactions by using savepoints.
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org1552461" class="outline-2">
- <h2 id="org1552461"> <a href="#org1552461">関連</a></h2>
- <div class="outline-text-2" id="text-org1552461">
+ <div id="outline-container-org08be97d" class="outline-2">
+ <h2 id="org08be97d"> <a href="#org08be97d">関連</a></h2>
+ <div class="outline-text-2" id="text-org08be97d">
  <ul class="org-ul"> <li>前提:  <a href="20250210T224551--kdoc-334-トランザクションはネストできない__permanent.html#ID-20250210T224551">KDOC 334: トランザクションはネストできない</a>。ORMがネストをSAVEPOINTで真似ていること</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261018T002717--kdoc-689-railsのネストしたtransactionでは内側のactiverecordrollbackが無視される__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261018T002717--kdoc-689-railsのネストしたtransactionでは内側のactiverecordrollbackが無視される__permanent.html</id>
-  <updated>2026-10-18T12:00:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 683: pgrepはプロセス名の先頭15文字しか照合しない</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org8653ada" class="outline-2">
- <h2 id="org8653ada"> <a href="#org8653ada">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org8653ada">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orgabbb3d5" class="outline-2">
- <h2 id="orgabbb3d5"> <a href="#orgabbb3d5">概要</a></h2>
- <div class="outline-text-2" id="text-orgabbb3d5">
- <p>
- <code>pgrep</code> が照合するプロセス名は、  <code>/proc/PID/stat</code> にある先頭15文字だけである。それより長い名前の実行ファイルは、フルネームでは見つからない。  <code>-f</code> を付けると、  <code>/proc/PID/cmdline</code> のコマンドライン全体と照合する。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-shell"> <code>pgrep -V
-MANWIDTH=80 man 1 pgrep | grep -A2 'The process name used for matching'
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>pgrep from procps-ng 4.0.4
-     The process name used for matching is limited to the 15 characters present
-     in  the  output of /proc/pid/stat.  Use the -f option to match against the
-     complete command line, /proc/pid/cmdline. Threads may not  have  the  same
-</code></pre>
-</div>
-
- <p>
-15文字なのは、カーネルがプロセス名を終端のNULを含めて16バイト( <code>TASK_COMM_LEN</code>)に切り詰めて持つからである。切り詰めはバイト単位なので、UTF-8の日本語の名前は5文字になり、文字の途中で切れることもある。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-shell"> <code>MANWIDTH=80 man 5 proc_pid_comm | tail -1
-MANWIDTH=80 man 5 proc_pid_comm | grep -A2 -E 'Strings +longer'
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>Linux man-pages 6.7                2023-08-15                  proc_pid_comm(5)
-            /proc/self/task/tid/comm.   Strings  longer than TASK_COMM_LEN (16)
-            characters (including the terminating null byte) are silently trun‐
-            cated.
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-shell"> <code>dir=$(mktemp -d)
-cp /usr/bin/sleep &quot;$dir/abcdefghijklmnopqrst&quot;
-&quot;$dir/abcdefghijklmnopqrst&quot; 10 &amp; pid=$!
-sleep 0.2
-echo &quot;comm: $(cat /proc/$pid/comm)&quot;
-for args in &quot;-x abcdefghijklmnopqrst&quot; &quot;-x abcdefghijklmno&quot; &quot;-f abcdefghijklmnopqrst&quot;; do
-  pgrep $args &gt;/dev/null &amp;&amp; r=一致 || r=不一致
-  echo &quot;pgrep $args: $r&quot;
-done
-kill $pid; rm -rf &quot;$dir&quot;
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>comm: abcdefghijklmno
-pgrep -x abcdefghijklmnopqrst: 不一致
-pgrep -x abcdefghijklmno: 一致
-pgrep -f abcdefghijklmnopqrst: 一致
-</code></pre>
-</div>
-</div>
-</div>
- <div id="outline-container-orgd80fe9c" class="outline-2">
- <h2 id="orgd80fe9c"> <a href="#orgd80fe9c">関連</a></h2>
- <div class="outline-text-2" id="text-orgd80fe9c">
- <ul class="org-ul"> <li>前提:  <a href="20240317T101828--kdoc-125-procのマニュアルを調べる__permanent.html#ID-20240317T101828">KDOC 125: /procのマニュアルを調べる</a>。psやpgrepは /proc を情報源にしている</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T213818--kdoc-683-pgrepはプロセス名の先頭15文字しか照合しない__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T213818--kdoc-683-pgrepはプロセス名の先頭15文字しか照合しない__permanent.html</id>
-  <updated>2026-10-18T12:00:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 682: 『Reactハンズオンラーニング』</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orga962353" class="outline-2">
- <h2 id="orga962353"> <a href="#orga962353">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga962353">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org13b7f31" class="outline-2">
- <h2 id="org13b7f31"> <a href="#org13b7f31">概要</a></h2>
- <div class="outline-text-2" id="text-org13b7f31">
- <p>
- <a href="https://www.oreilly.co.jp/books/9784873119380/">『Reactハンズオンラーニング 第2版』</a>は、Reactと、その前提になるJavaScriptの関数型プログラミングを解説する本である。
-</p>
-</div>
-</div>
- <div id="outline-container-org3ba0b8e" class="outline-2">
- <h2 id="org3ba0b8e"> <a href="#org3ba0b8e">メモ</a></h2>
- <div class="outline-text-2" id="text-org3ba0b8e">
- <ul class="org-ul"> <li>関数型プログラミングは、宣言型プログラミングの一部である。宣言型は「何をするか」を書き、命令型は「どのようにするか」の手順を書く(p39)</li>
- <li>再帰は、非同期処理と組み合わせたときや、データ構造を探索するときに役立つ</li>
- <li>引数を1つ受け取って関数を返す関数にすると、一部の引数を固定した関数を作れる(カリー化)。たとえばログの先頭にユーザー名を付ける関数を作れる</li>
- <li> <code>reduce</code> は配列を単一の値に変換する</li>
- <li> <code>export default</code> でエクスポートすると、インポート側は好きな名前で受け取れる</li>
- <li> <code>async</code> 関数では、非同期処理を  <code>await</code> で同期処理のように書ける。エラーは  <code>try</code> /  <code>catch</code> で扱う</li>
- <li> <code>fetch</code> はPromiseを返すだけで、結果は  <code>then</code> でつないで受け取る</li>
-</ul></div>
-</div>
- <div id="outline-container-org6a0b8df" class="outline-2">
- <h2 id="org6a0b8df"> <a href="#org6a0b8df">関連</a></h2>
- <div class="outline-text-2" id="text-org6a0b8df">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T205648--kdoc-682-『reactハンズオンラーニング』__book.html"/>
-  <id>https://kijimad.github.io/roam/20261017T205648--kdoc-682-『reactハンズオンラーニング』__book.html</id>
-  <updated>2026-10-18T12:00:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 679: 『コーディングを支える技術』</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org20775a3" class="outline-2">
- <h2 id="org20775a3"> <a href="#org20775a3">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org20775a3">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org0e60a00" class="outline-2">
- <h2 id="org0e60a00"> <a href="#org0e60a00">概要</a></h2>
- <div class="outline-text-2" id="text-org0e60a00">
- <p>
- <a href="https://gihyo.jp/dp/ebook/2014/978-4-7741-7029-9">『コーディングを支える技術』</a>は、プログラミング言語の各概念がなぜ存在するかを解説する本である。
-</p>
-</div>
-</div>
- <div id="outline-container-orgd56e6a1" class="outline-2">
- <h2 id="orgd56e6a1"> <a href="#orgd56e6a1">メモ</a></h2>
- <div class="outline-text-2" id="text-orgd56e6a1">
- <ul class="org-ul"> <li>特定の言語やツールなどの知識は、変化が早くすぐに陳腐化する。意識して「変化しにくい知識」を学ばなければ、学んだことが価値を失う</li>
- <li>学び方の3つの柱
- <ul class="org-ul"> <li>比較から学ぶ</li>
- <li>歴史から学ぶ</li>
- <li>作ることで学ぶ</li>
-</ul></li>
- <li>失敗を伝える方法は大きく分けて2通りある
- <ul class="org-ul"> <li>返り値で伝える</li>
- <li>失敗したらジャンプする
- <ul class="org-ul"> <li>例外処理</li>
-</ul></li>
-</ul></li>
-</ul> <blockquote>
- <p>
-たとえば作者本人が書いたドキュメントやソースが一番詳しいでしょう。しかし「難しい」「量が多い」「英語なので読めない」と口実を付けて、誰かの書いたやさしい解説を探したりしてしまいがちです。それは「オリジナルの肉は大きく
-て硬いから」といって、安全なのか傷んでいるのかもわからない、誰かの作ったひき肉を食べるのと同じです。気持ちはわかります。筆者も膨大な情報を前にして心が折れそうになることはあります。そんなときに使える戦略が3つあります。それは「必要なところからかじる」「おおまかにつかんで徐々に詳細化する」「端から順番に写経する」の3つです。
-</p>
-</blockquote>
-
- <ul class="org-ul"> <li>C言語の文字列は「文字列が始まるメモリ上の位置」だけを持っている。長さの情報を持っていないので、そこからどこまでが文字列かわからない</li>
- <li>文字列の終わりを、NUL文字を使って表現する。C言語のコード中では\0と表現する</li>
-</ul> <blockquote>
- <p>
-クラスなんて「そう書けたほうが楽だから」という理由で作られた約束事にすぎないのです。物理法則や宇宙の真理ではなく、人間が決めた約束事なのです。ならば、どうしてそういう約束を決めたか言語設計者の意図を考えるのが理解の近道なのではないでしょうか？
-</p>
-</blockquote>
-
- <ul class="org-ul"> <li>クロージャという特殊な構文があるわけではない。関数を関数の中で定義でき、ネストできる静的スコープがあり、関数を戻り値で返したり変数に代入できる言語では、単に関数をネストするだけで状態を持った関数を作れる</li>
- <li>クラスには、2つの相反する役割がある
- <ul class="org-ul"> <li>インスタンスを作るためのもの – このためには、完結した、必要なものを全部持った、大きなクラスである必要がある</li>
- <li>再利用の単位 – 機能ごとの、余計なものを持っていない、小さなクラスである必要がある</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org82be08e" class="outline-2">
- <h2 id="org82be08e"> <a href="#org82be08e">関連</a></h2>
- <div class="outline-text-2" id="text-org82be08e">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T200715--kdoc-679-『コーディングを支える技術』__book.html"/>
-  <id>https://kijimad.github.io/roam/20261017T200715--kdoc-679-『コーディングを支える技術』__book.html</id>
-  <updated>2026-10-18T12:00:00+09:00</updated>
+  <updated>2026-10-18T13:25:00+09:00</updated>
 </entry>
 </feed>
