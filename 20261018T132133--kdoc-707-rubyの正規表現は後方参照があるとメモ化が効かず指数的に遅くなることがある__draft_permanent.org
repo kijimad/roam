@@ -1,0 +1,127 @@
+:properties:
+:ID: 20261018T132133
+:end:
+#+title:      KDOC 707: Rubyの正規表現は後方参照があるとメモ化が効かず指数的に遅くなることがある
+#+date:       [2026-10-18 Sun 13:21]
+#+filetags:   :draft:permanent:
+#+identifier: 20261018T132133
+
+#+begin_comment
+(kd/denote-kdoc-rename)
+(kd/denote-format)
+
+====ポリシー。
+1ファイル1アイデア。
+1ファイルで内容を完結させる。
+常にほかのエントリとリンクする。
+自分の言葉を使う。
+参考文献を残しておく。
+文献メモの場合は、感想と混ぜないこと。1つのアイデアに反する
+ツェッテルカステンの議論に寄与するか。それで本を書けと言われて書けるか
+頭のなかやツェッテルカステンにある問いとどのようにかかわっているか
+エントリ間の接続を発見したら、接続エントリを追加する。カード間にあるリンクの関係を説明するカード。
+アイデアがまとまったらアウトラインエントリを作成する。リンクをまとめたエントリ。
+エントリを削除しない。古いカードのどこが悪いかを説明する新しいカードへのリンクを追加する。
+恐れずにカードを追加する。無意味の可能性があっても追加しておくことが重要。
+個人の感想・意思表明ではない。事実や書籍情報に基づいている
+
+====永久保存メモのルール。
+自分の言葉で書く。
+後から読み返して理解できる。
+他のメモと関連付ける。
+ひとつのメモにひとつのことだけを書く。
+メモの内容は1枚で完結させる。
+論文の中に組み込み、公表できるレベルである。
+
+====水準を満たす価値があるか。
+その情報がどういった文脈で使えるか。
+どの程度重要な情報か。
+そのページのどこが本当に必要な部分なのか。
+公表できるレベルの洞察を得られるか
+
+====フロー。
+1. 「走り書きメモ」「文献メモ」を書く
+2. 1日1回既存のメモを見て、自分自身の研究、思考、興味にどのように関係してくるかを見る
+3. 追加すべきものだけ追加する
+
+#+end_comment
+
+* この文書のステータス
+- 作成
+  - [ ] <署名>
+# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+- レビュー
+  - [ ] <署名>
+# (progn (kill-line -1) (insert (format "  - [X] %s 貴島" (format-time-string "%Y-%m-%d"))))
+
+# チェックリスト ================
+# 関連をつけた。
+# タイトルがフォーマット通りにつけられている。
+# 内容をブラウザに表示して読んだ(作成とレビューのチェックは同時にしない)。
+# 文脈なく読めるのを確認した。
+# おばあちゃんに説明できる。
+# いらない見出しを削除した。
+# タグを適切にした。
+# すべてのコメントを削除した。
+* 概要
+# 本文(見出しも設定する)
+
+正規表現は、パターンと入力によってはバックトラックが爆発し、入力の長さに対して指数的に遅くなる。信頼できない入力を食わせるとサービス停止(ReDoS)になりうる。Ruby 3.2からは多くのパターンがメモ化で線形時間になったが、後方参照を含むパターンなどは対象外で、 ~Regexp.linear_time?~ で確かめられる。対象外のパターンには ~Regexp.timeout~ で上限を付ける。
+
+#+begin_src ruby :results output
+  puts "後方参照なし: #{Regexp.linear_time?(/\A(a|a)*\z/)}、後方参照あり: #{Regexp.linear_time?(/\A(a|a)*\1\z/)}"
+  [20, 22, 24].each do |n|
+    t = Time.now
+    /\A(a|a)*\1\z/.match?("a" * n + "b")
+    printf("後方参照あり、%d文字: %.3f秒\n", n, Time.now - t)
+  end
+#+end_src
+
+#+RESULTS:
+#+begin_src
+後方参照なし: true、後方参照あり: false
+後方参照あり、20文字: 0.030秒
+後方参照あり、22文字: 0.108秒
+後方参照あり、24文字: 0.445秒
+#+end_src
+
+2文字増えるたびに時間は約4倍になる。30文字の入力1つで数十秒止まる計算である。 ~Regexp.timeout~ を付けておけば、そこで打ち切れる。
+
+#+begin_src ruby :results output
+  Regexp.timeout = 1.0
+  t = Time.now
+  begin
+    /\A(a|a)*\1\z/.match?("a" * 30 + "b")
+  rescue Regexp::TimeoutError => e
+    printf("後方参照あり、30文字: %.1f秒で %s\n", Time.now - t, e.class)
+  end
+#+end_src
+
+#+RESULTS:
+#+begin_src
+後方参照あり、30文字: 1.0秒で Regexp::TimeoutError
+#+end_src
+
+#+begin_quote
+Returns true if matching against re can be done in linear time to the input string.
+
+[[https://docs.ruby-lang.org/en/3.4/Regexp.html#method-c-linear_time-3F][Regexp.linear_time? - Ruby 3.4]]
+#+end_quote
+
+#+begin_quote
+The cache-based optimization is introduced. Many (but not all) Regexp matching is now in linear time, which will prevent regular expression denial of service (ReDoS) vulnerability.
+
+[[https://docs.ruby-lang.org/en/3.4/NEWS/NEWS-3_2_0_md.html][NEWS for Ruby 3.2.0]] (Regexp)
+#+end_quote
+
+#+begin_quote
+When either a regexp source or a target string comes from untrusted input, malicious values could become a denial-of-service attack; to prevent such an attack, it is wise to set a timeout.
+
+[[https://docs.ruby-lang.org/en/3.4/Regexp.html#class-Regexp-label-Timeouts][Regexp (Timeouts) - Ruby 3.4]]
+#+end_quote
+
+* 関連
+# 関連するエントリ。書いているファイルから見て、なぜ関連させたか書く。意味のあるつながりを意識的につくる。
+# [引用、整合性、どう説明できるか、矛盾、補っているか、以前聞いたこと、対立、修正、補足、付け加え、組み合わせ、疑問]
+
+なし。

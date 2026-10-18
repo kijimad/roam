@@ -1,0 +1,47 @@
+:properties:
+:ID: 20261018T132136
+:end:
+#+title:      KDOC 709: Rubyのcase/whenは===で比べる
+#+date:       [2026-10-18 Sun 13:21]
+#+filetags:   :permanent:
+#+identifier: 20261018T132136
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Rubyの ~case~ / ~when~ は、 ~when~ の側の ~===~ で比べる。 ~===~ はクラスごとに意味が違う。クラスなら「そのクラスのインスタンスか」、範囲なら「範囲に入っているか」、正規表現なら「マッチするか」になる。そのため ~when String~ や ~when 1..5~ や ~when /\A1/~ が書ける。
+
+#+begin_quote
+The patterns are matched using the ~===~ method which is aliased to ~==~ on Object. Other classes must override it to give meaningful behavior.
+
+Here the string ~"12345"~ is compared with ~/^1/~ by calling ~/^1/ === "12345"~ which returns true.
+
+[[https://docs.ruby-lang.org/en/3.4/syntax/control_expressions_rdoc.html#label-case+Expression][control expressions (case Expression) - Ruby 3.4]]
+#+end_quote
+
+#+begin_src ruby :results output
+  [3, "12345", "abc"].each do |x|
+    kind = case x
+           when 1..5 then "1..5 の範囲"
+           when /\A1/ then "1で始まる"
+           when String then "String"
+           end
+    puts "#{x.inspect}: #{kind}"
+  end
+#+end_src
+
+#+RESULTS:
+#+begin_src
+3: 1..5 の範囲
+"12345": 1で始まる
+"abc": String
+#+end_src
+
+* 関連
+
+なし。

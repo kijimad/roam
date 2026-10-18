@@ -1,0 +1,46 @@
+:properties:
+:ID: 20261018T132135
+:end:
+#+title:      KDOC 708: Rubyのlambdaは引数の数を検査するがprocはしない
+#+date:       [2026-10-18 Sun 13:21]
+#+filetags:   :permanent:
+#+identifier: 20261018T132135
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Rubyの ~lambda~ と ~proc~ はどちらもProcクラスのオブジェクトだが、引数の扱いが違う。 ~lambda~ はメソッドと同じく引数の数を検査し、合わないと ~ArgumentError~ になる。 ~proc~ は余った引数を捨て、足りない引数を ~nil~ にして動く。
+
+#+begin_quote
+In lambdas, arguments are treated in the same way as in methods: strict, with ArgumentError for mismatching argument number, and no additional argument processing; Regular procs accept arguments more generously: missing arguments are filled with nil, single Array arguments are deconstructed if the proc has multiple arguments, and there is no error raised on extra arguments.
+
+[[https://docs.ruby-lang.org/en/3.4/Proc.html#class-Proc-label-Lambda+and+non-lambda+semantics][Proc (Lambda and non-lambda semantics) - Ruby 3.4]]
+#+end_quote
+
+#+begin_src ruby :results output
+  l = lambda { |a, b| [a, b] }
+  pr = proc { |a, b| [a, b] }
+  puts "クラス: #{l.class} / #{pr.class}"
+  puts "proc に1つ: #{pr.call(1).inspect}、3つ: #{pr.call(1, 2, 3).inspect}"
+  begin
+    l.call(1)
+  rescue ArgumentError => e
+    puts "lambda に1つ: #{e.class}"
+  end
+#+end_src
+
+#+RESULTS:
+#+begin_src
+クラス: Proc / Proc
+proc に1つ: [1, nil]、3つ: [1, 2]
+lambda に1つ: ArgumentError
+#+end_src
+
+* 関連
+
+なし。

@@ -1,0 +1,38 @@
+:properties:
+:ID: 20261018T132132
+:end:
+#+title:      KDOC 706: RubyのDate同士の引き算はRationalを返す
+#+date:       [2026-10-18 Sun 13:21]
+#+filetags:   :permanent:
+#+identifier: 20261018T132132
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+RubyでDate同士を引くと、日数が整数ではなく有理数(Rational)で返る。表示すると ~(1/1)~ のようになる。整数の日数が欲しいときは ~to_i~ する。
+
+#+begin_quote
+If the other is a date object, returns a Rational whose value is the difference between the two dates in days.
+
+[[https://docs.ruby-lang.org/en/3.4/Date.html#method-i-2D][Date#- - Ruby 3.4]]
+#+end_quote
+
+#+begin_src ruby :results output
+  require 'date'
+  d = Date.new(2024, 1, 2) - Date.new(2024, 1, 1)
+  puts "そのまま: #{d.inspect}、クラス: #{d.class}、to_i: #{d.to_i}"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+そのまま: (1/1)、クラス: Rational、to_i: 1
+#+end_src
+
+* 関連
+
+なし。
