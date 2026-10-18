@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-18 日 16:55 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 713: gofmtはバッファ付きチャネルで同時に開くファイルの数を制限する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 713: gofmtはバッファ付きチャネルで同時に開くファイルの数を制限する</h1>
+<div id="outline-container-org9e64d0a" class="outline-2">
+<h2 id="org9e64d0a"><a href="#org9e64d0a">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org9e64d0a">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org41429fb" class="outline-2">
+<h2 id="org41429fb"><a href="#org41429fb">概要</a></h2>
+<div class="outline-text-2" id="text-org41429fb">
+<p>
+gofmtは、バッファ付きチャネルをセマフォとして使い、同時に開くファイルの数を200までに制限している。ファイルを開く前にチャネルへ値を送り、閉じたら受け取る。バッファが埋まっていると送信がブロックするので、201個目のファイルは、どれかが閉じるまで開かれない。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink"><code>https://github.com/golang/go/blob/e3336a22ad3f0a90bd252c95d8b5544e02674205/src/cmd/gofmt/gofmt.go#L61-L69
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-go"><code>// fdSem guards the number of concurrently-open file descriptors.
+//
+// For now, this is arbitrarily set to 200, based on the observation that many
+// platforms default to a kernel limit of 256. Ideally, perhaps we should derive
+// it from rlimit on platforms that support that system call.
+//
+// File descriptors opened from outside of this package are not tracked,
+// so this limit may be approximate.
+var fdSem = make(chan bool, 200)
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink"><code>https://github.com/golang/go/blob/e3336a22ad3f0a90bd252c95d8b5544e02674205/src/cmd/gofmt/gofmt.go#L302-L319
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-go"><code>// readFile reads the contents of filename, described by info.
+// If in is non-nil, readFile reads directly from it.
+// Otherwise, readFile opens and reads the file itself,
+// with the number of concurrently-open files limited by fdSem.
+func readFile(filename string, info fs.FileInfo, in io.Reader) ([]byte, error) {
+	if in == nil {
+		fdSem &lt;- true
+		var err error
+		f, err := os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		in = f
+		defer func() {
+			f.Close()
+			&lt;-fdSem
+		}()
+	}
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org3a0af39" class="outline-2">
+<h2 id="org3a0af39"><a href="#org3a0af39">関連</a></h2>
+<div class="outline-text-2" id="text-org3a0af39">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

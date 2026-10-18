@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-18 日 16:55 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 710: Go 1.21までのforのループ変数はループ全体で1つだった</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 710: Go 1.21までのforのループ変数はループ全体で1つだった</h1>
+<div id="outline-container-org1507542" class="outline-2">
+<h2 id="org1507542"><a href="#org1507542">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1507542">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgd879dc5" class="outline-2">
+<h2 id="orgd879dc5"><a href="#orgd879dc5">概要</a></h2>
+<div class="outline-text-2" id="text-orgd879dc5">
+<p>
+言語の版がGo 1.21までは、 <code>for</code> のループ変数はループ全体で1つだった。ループの中で作ったクロージャは同じ変数を参照するので、あとで実行するとループを抜けたあとの値が見える。Go 1.22からは、反復ごとに別の変数が作られる。
+</p>
+
+<p>
+コンパイラに <code>-lang=go1.21</code> を渡すと、Go 1.21の言語仕様でコンパイルされる。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><code>go doc cmd/compile | grep -A2 -E '^\s+-lang'
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>-lang version
+	Set language version to compile, as in -lang=go1.12.
+	Default is current version.
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-go"><code>package main
+
+import "fmt"
+
+func main() {
+	var prints []func()
+	for i := 0; i &lt; 3; i++ {
+		prints = append(prints, func() { fmt.Print(i, " ") })
+	}
+	for _, p := range prints {
+		p()
+	}
+}
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>3 3 3
+</code></pre>
+</div>
+
+<p>
+Go 1.22以降の言語仕様だと、反復ごとの値が見える。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-go"><code>package main
+
+import "fmt"
+
+func main() {
+	var prints []func()
+	for i := 0; i &lt; 3; i++ {
+		prints = append(prints, func() { fmt.Print(i, " ") })
+	}
+	for _, p := range prints {
+		p()
+	}
+}
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>0 1 2
+</code></pre>
+</div>
+
+<p>
+Go 1.26 での言語仕様は、反復ごとに別の変数を宣言すると書いている。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><code>go version
+sed -n '/^Each iteration has its own separate declared variable/,/^&lt;\/p&gt;/p' "$(go env GOROOT)/doc/go_spec.html"
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>go version go1.26.7 linux/amd64
+Each iteration has its own separate declared variable (or variables)
+[&lt;a href="#Go_1.22"&gt;Go 1.22&lt;/a&gt;].
+The variable used by the first iteration is declared by the init statement.
+The variable used by each subsequent iteration is declared implicitly before
+executing the post statement and initialized to the value of the previous
+iteration's variable at that moment.
+&lt;/p&gt;
+</code></pre>
+</div>
+
+<ul class="org-ul">
+<li><a href="https://go.dev/ref/spec#For_clause">The Go Programming Language Specification</a></li>
+<li><a href="https://go.dev/doc/go1.22#language">Go 1.22 Release Notes</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgae10c96" class="outline-2">
+<h2 id="orgae10c96"><a href="#orgae10c96">関連</a></h2>
+<div class="outline-text-2" id="text-orgae10c96">
+<ul class="org-ul">
+<li>引用: <a href="20251016T010331--kdoc-474-『go言語による並行処理』__book.html#ID-20251016T010331">KDOC 474: 『Go言語による並行処理』</a>。ゴルーチンの中のクロージャがループ変数を共有する例が載っている</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
