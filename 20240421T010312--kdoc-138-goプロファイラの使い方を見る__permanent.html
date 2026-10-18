@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-18 日 23:06 -->
+<!-- 2026-10-18 日 23:40 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 138: Goプロファイラの使い方を見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 138: Goプロファイラの使い方を見る</h1>
-<div id="outline-container-org779e029" class="outline-2">
-<h2 id="org779e029"><a href="#org779e029">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org779e029">
+<div id="outline-container-org6e1d002" class="outline-2">
+<h2 id="org6e1d002"><a href="#org6e1d002">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org6e1d002">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,32 +37,32 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org0bb2134" class="outline-2">
-<h2 id="org0bb2134"><a href="#org0bb2134">概要</a></h2>
-<div class="outline-text-2" id="text-org0bb2134">
+<div id="outline-container-orgc9c4105" class="outline-2">
+<h2 id="orgc9c4105"><a href="#orgc9c4105">概要</a></h2>
+<div class="outline-text-2" id="text-orgc9c4105">
 <p>
 Goのプロファイラ、 <code>pprof</code> を使う手順を書く。
 </p>
 </div>
 </div>
-<div id="outline-container-orgea2885f" class="outline-2">
-<h2 id="orgea2885f"><a href="#orgea2885f">背景</a></h2>
-<div class="outline-text-2" id="text-orgea2885f">
+<div id="outline-container-orgc6ac1cc" class="outline-2">
+<h2 id="orgc6ac1cc"><a href="#orgc6ac1cc">背景</a></h2>
+<div class="outline-text-2" id="text-orgc6ac1cc">
 <p>
 Goを使ってゲーム開発する過程で、いつのまにかメモリリークしていたのを発見した。原因を探るために、プロファイラを使って原因箇所を特定できた。強力な調査方法なので、いつでも使えるようにしておく。
 </p>
 </div>
 </div>
-<div id="outline-container-orgde82c03" class="outline-2">
-<h2 id="orgde82c03"><a href="#orgde82c03">手順</a></h2>
-<div class="outline-text-2" id="text-orgde82c03">
+<div id="outline-container-org96d5ce2" class="outline-2">
+<h2 id="org96d5ce2"><a href="#org96d5ce2">手順</a></h2>
+<div class="outline-text-2" id="text-org96d5ce2">
 <p>
 <code>pprof</code> の起動や取得方法にはいくつかの組み合わせがある。組み合わせる自由度が高いのはいいが、ややとっつきづらい。もっともシンプルに見える組み合わせだけを書く。
 </p>
 </div>
-<div id="outline-container-org70e6639" class="outline-3">
-<h3 id="org70e6639"><a href="#org70e6639">1. コードにプロファイラを埋め込む</a></h3>
-<div class="outline-text-3" id="text-org70e6639">
+<div id="outline-container-org8de6c16" class="outline-3">
+<h3 id="org8de6c16"><a href="#org8de6c16">1. コードにプロファイラを埋め込む</a></h3>
+<div class="outline-text-3" id="text-org8de6c16">
 <p>
 無名インポートすることで、デフォルトサーバにプロファイラのエンドポイントが追加される。
 </p>
@@ -78,9 +78,9 @@ func main() {
 </div>
 </div>
 </div>
-<div id="outline-container-org3921c46" class="outline-3">
-<h3 id="org3921c46"><a href="#org3921c46">2. 実行する</a></h3>
-<div class="outline-text-3" id="text-org3921c46">
+<div id="outline-container-org4fa0a4e" class="outline-3">
+<h3 id="org4fa0a4e"><a href="#org4fa0a4e">2. 実行する</a></h3>
+<div class="outline-text-3" id="text-org4fa0a4e">
 <p>
 埋め込んだコードをコンパイルして実行すると、↓のようなパスにアクセスしてプロファイルを取得できるようになる。
 </p>
@@ -120,9 +120,9 @@ http://localhost:6060/debug/pprof/threadcreate?debug=1
 </div>
 </div>
 </div>
-<div id="outline-container-orgd186cab" class="outline-3">
-<h3 id="orgd186cab"><a href="#orgd186cab">3. プロファイルを収集する</a></h3>
-<div class="outline-text-3" id="text-orgd186cab">
+<div id="outline-container-orge6492b5" class="outline-3">
+<h3 id="orge6492b5"><a href="#orge6492b5">3. プロファイルを収集する</a></h3>
+<div class="outline-text-3" id="text-orge6492b5">
 <p>
 生のプロファイルは人が見るものではない。 <code>pprof</code> の収集コマンドを実行して可視化する。よくわからないポイントだが、起動中のコマンドと同じバイナリが必要。このバイナリからコード位置などの情報を取得しているのだろうか。
 </p>
@@ -157,9 +157,9 @@ Entering interactive mode (type "help" for commands, "o" for options)
 </p>
 </div>
 </div>
-<div id="outline-container-org2d05498" class="outline-3">
-<h3 id="org2d05498"><a href="#org2d05498">4. プロファイルを見る</a></h3>
-<div class="outline-text-3" id="text-org2d05498">
+<div id="outline-container-orga19c46d" class="outline-3">
+<h3 id="orga19c46d"><a href="#orga19c46d">4. プロファイルを見る</a></h3>
+<div class="outline-text-3" id="text-orga19c46d">
 <p>
 <code>pprof</code> プロンプトが出ている状態で、コマンドを実行して結果を得る。
 </p>
@@ -188,9 +188,9 @@ Showing top 10 nodes out of 236
 </div>
 </div>
 </div>
-<div id="outline-container-orgcfb151d" class="outline-2">
-<h2 id="orgcfb151d"><a href="#orgcfb151d">関連</a></h2>
-<div class="outline-text-2" id="text-orgcfb151d">
+<div id="outline-container-orge779030" class="outline-2">
+<h2 id="orge779030"><a href="#orge779030">関連</a></h2>
+<div class="outline-text-2" id="text-orge779030">
 <ul class="org-ul">
 <li>類推: <a href="20240420T224401--kdoc-137-簡単にプロセスの使用メモリを確認する__permanent.html#ID-20240420T224401">KDOC 137: 簡単にプロセスの使用メモリを確認する</a>。でメモリリークしていることをざっくり調べた。プロファイラでさらに原因を絞る</li>
 <li>動機: <a href="20231128T074518--kdoc-59-ecsを使ってrpgを作る__project.html#ID-20231128T074518">KDOC 59: ECSを使ってRPGを作る</a>。の過程で調べるのに使った</li>
