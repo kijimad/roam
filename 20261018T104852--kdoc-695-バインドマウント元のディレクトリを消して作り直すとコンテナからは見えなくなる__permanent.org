@@ -1,0 +1,45 @@
+:properties:
+:ID: 20261018T104852
+:end:
+#+title:      KDOC 695: バインドマウント元のディレクトリを消して作り直すとコンテナからは見えなくなる
+#+date:       [2026-10-18 Sun 10:48]
+#+filetags:   :permanent:
+#+identifier: 20261018T104852
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+バインドマウントは、パスではなく、マウントした時点のディレクトリそのものを別の場所に見せる。ホスト側でそのディレクトリを消して同じ名前で作り直しても、コンテナは消された古いディレクトリを見続けるので、中身は消えたままに見える。コンテナを再起動すると、新しいディレクトリがマウントし直される。
+
+#+begin_src shell :results output
+  dir=$(mktemp -d); mkdir "$dir/src"; echo old > "$dir/src/a"
+  docker run -d --rm --name bm -v "$dir/src":/mnt busybox sleep 60 >/dev/null
+  echo "マウント直後: $(docker exec bm cat /mnt/a 2>&1)"
+  rm -rf "$dir/src"; mkdir "$dir/src"; echo new > "$dir/src/a"
+  echo "作り直した後: $(docker exec bm cat /mnt/a 2>&1)"
+  docker restart bm >/dev/null
+  echo "再起動した後: $(docker exec bm cat /mnt/a 2>&1)"
+  docker rm -f bm >/dev/null; rm -rf "$dir"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+マウント直後: old
+作り直した後: cat: can't open '/mnt/a': No such file or directory
+再起動した後: new
+#+end_src
+
+#+begin_quote
+A bind mount makes a file or a directory subtree visible at another point within the single directory hierarchy.
+
+[[https://man7.org/linux/man-pages/man2/mount.2.html][mount(2) - Linux manual page]] (Creating a bind mount)
+#+end_quote
+
+* 関連
+
+なし。

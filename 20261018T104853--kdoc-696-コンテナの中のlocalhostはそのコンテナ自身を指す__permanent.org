@@ -1,0 +1,69 @@
+:properties:
+:ID: 20261018T104853
+:end:
+#+title:      KDOC 696: コンテナの中のlocalhostはそのコンテナ自身を指す
+#+date:       [2026-10-18 Sun 10:48]
+#+filetags:   :permanent:
+#+identifier: 20261018T104853
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+既定のブリッジネットワークでは、コンテナはそれぞれ自分のネットワークを持つので、コンテナの中の ~localhost~ (127.0.0.1)はそのコンテナ自身を指す。そのため、次の2つがよく起きる。
+
+| 起きること                                                                     | 対策                        |
+|-------------------------------------------------------------------------------+----------------------------|
+| コンテナの中のサーバが127.0.0.1で待ち受けると、ポートを公開してもホストマシンから届かない | 0.0.0.0で待ち受ける          |
+| 別のコンテナのRedisなどに127.0.0.1でつなごうとすると、自分自身につながって失敗する      | Composeではサービス名でつなぐ |
+
+#+begin_quote
+Each container for a service joins the default network and is both reachable by other containers on that network, and discoverable by its service name.
+
+[[https://docs.docker.com/compose/how-tos/networking/][Networking in Compose | Docker Docs]]
+#+end_quote
+
+0.0.0.0でよいのは、公開したポートへの通信がコンテナのループバック(127.0.0.1)ではなく、コンテナのネットワークの口( ~eth0~ 。172.17.0.xなど)へ転送されてくるからである。127.0.0.1で待ち受けたサーバはループバックに来た通信しか受け取らない。0.0.0.0はすべての口で待ち受ける指定なので、 ~eth0~ に来た通信も受け取れる。
+
+#+begin_src shell :results output
+  MANWIDTH=80 man 7 ip | tail -1
+  MANWIDTH=80 man 7 ip | grep -A1 -E 'When +INADDR_ANY +is +specified'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+Linux man-pages 6.7                2024-03-17                             ip(7)
+     pair.   When  INADDR_ANY is specified in the bind call, the socket will be
+     bound to all local interfaces.  When listen(2) is  called  on  an  unbound
+#+end_src
+
+試す。
+
+#+begin_src shell :results output
+  for addr in 127.0.0.1 0.0.0.0; do
+    docker run -d --rm --name lh -p 18080:8080 busybox httpd -f -p "$addr:8080" >/dev/null
+    sleep 1
+    ip=$(docker exec lh ip -4 -o addr show eth0 | awk '{print $4}' | cut -d/ -f1)
+    for url in "localhost:18080" "$ip:8080"; do
+      if curl -s -o /dev/null --max-time 2 "$url"; then r=応答あり; else r=応答なし; fi
+      echo "$addr で待ち受け、$url へ: $r"
+    done
+    docker rm -f lh >/dev/null
+  done
+#+end_src
+
+#+RESULTS:
+#+begin_src
+127.0.0.1 で待ち受け、localhost:18080 へ: 応答なし
+127.0.0.1 で待ち受け、172.17.0.4:8080 へ: 応答なし
+0.0.0.0 で待ち受け、localhost:18080 へ: 応答あり
+0.0.0.0 で待ち受け、172.17.0.4:8080 へ: 応答あり
+#+end_src
+
+* 関連
+
+なし。

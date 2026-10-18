@@ -1,0 +1,56 @@
+:properties:
+:ID: 20261018T104855
+:end:
+#+title:      KDOC 698: コンテナは名前空間で分離したプロセスにすぎない
+#+date:       [2026-10-18 Sun 10:48]
+#+filetags:   :permanent:
+#+identifier: 20261018T104855
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+コンテナの正体は、名前空間でホストから分離したプロセスである。 ~unshare~ で名前空間を1つ作るだけでも、その一部を体験できる。UTS名前空間を分けたシェルの中でホスト名を変えても、ホスト側のホスト名は変わらない。
+
+#+begin_src shell :results output
+  unshare -r -u sh -c 'hostname newhost; echo "中: $(hostname)"'
+  echo "外: $(hostname)"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+中: newhost
+外: blue-Machine
+#+end_src
+
+~-u~ がUTS名前空間(ホスト名)を分ける。 ~-r~ はユーザー名前空間も作って自分をrootに見せるので、sudoなしで実行できる。本物のコンテナは、これにマウント・PID・ネットワークなどの名前空間を重ねている。
+
+#+begin_src shell :results output
+  unshare --version
+  MANWIDTH=80 man 1 unshare | grep -A2 -E '^ +-u, --uts'
+  MANWIDTH=80 man 1 unshare | grep -A6 -E '^ +-r, --map-root-user'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+unshare from util-linux 2.39.3
+     -u, --uts[=file]
+         Create a new UTS namespace. If file is specified, then  the  namespace
+         is made persistent by creating a bind mount at file.
+     -r, --map-root-user
+         Run  the  program  only after the current effective user and group IDs
+         have been mapped to the superuser UID and GID  in  the  newly  created
+         user  namespace. This makes it possible to conveniently gain capabili‐
+         ties needed to manage various aspects of the newly created  namespaces
+         (such  as  configuring interfaces in the network namespace or mounting
+         filesystems in the mount namespace) even when run unprivileged.  As  a
+#+end_src
+
+* 関連
+
+- 補足: [[id:20240605T211653][KDOC 186: コンテナ実行環境の設定ファイルを見る]]。設定ファイルに並ぶ名前空間の1つを、手で作ってみたもの
+- 補足: [[id:20261018T104854][KDOC 697: 『Linux Container Book』]]。名前空間の仕組みと歴史(Mount Namespace、setnsとdocker exec)

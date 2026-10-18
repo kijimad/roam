@@ -16,17 +16,22 @@
 
 ~useradd -m~ や ~adduser~ でユーザを作ると、ホームディレクトリに ~/etc/skel~ の中身がコピーされる。新しいユーザに最初から置いておきたい設定ファイルは、 ~/etc/skel~ に入れておけばよい。
 
-#+begin_quote
-The skeleton directory, which contains files and directories to be copied in the user's home directory, when the home directory is created by useradd.
+#+begin_src shell :results output
+  dpkg-query -W -f='${Package} ${Version}\n' passwd adduser
+  MANWIDTH=80 man 8 useradd | grep -A2 'The skeleton directory, which'
+  MANWIDTH=80 man 5 adduser.conf | grep -A1 -E '^ +SKEL +The'
+#+end_src
 
-useradd(8)
-#+end_quote
-
-#+begin_quote
-SKEL   The directory from which skeletal user configuration files will be copied.  Defaults to /etc/skel.
-
-adduser.conf(5)
-#+end_quote
+#+RESULTS:
+#+begin_src
+adduser 3.137ubuntu1
+passwd 1:4.13+dfsg1-4ubuntu3.2
+         The skeleton directory, which contains files  and  directories  to  be
+         copied  in  the user's home directory, when the home directory is cre‐
+         ated by useradd.
+     SKEL   The  directory from which skeletal user configuration files will be
+            copied.  Defaults to /etc/skel.
+#+end_src
 
 確認する。
 

@@ -16,19 +16,33 @@
 
 ~pgrep~ が照合するプロセス名は、 ~/proc/PID/stat~ にある先頭15文字だけである。それより長い名前の実行ファイルは、フルネームでは見つからない。 ~-f~ を付けると、 ~/proc/PID/cmdline~ のコマンドライン全体と照合する。
 
-#+begin_quote
-The process name used for matching is limited to the 15 characters present in the output of /proc/pid/stat.  Use the -f option to match against the complete command line, /proc/pid/cmdline.
+#+begin_src shell :results output
+  pgrep -V
+  MANWIDTH=80 man 1 pgrep | grep -A2 'The process name used for matching'
+#+end_src
 
-pgrep(1)
-#+end_quote
+#+RESULTS:
+#+begin_src
+pgrep from procps-ng 4.0.4
+     The process name used for matching is limited to the 15 characters present
+     in  the  output of /proc/pid/stat.  Use the -f option to match against the
+     complete command line, /proc/pid/cmdline. Threads may not  have  the  same
+#+end_src
 
 15文字なのは、カーネルがプロセス名を終端のNULを含めて16バイト(~TASK_COMM_LEN~)に切り詰めて持つからである。切り詰めはバイト単位なので、UTF-8の日本語の名前は5文字になり、文字の途中で切れることもある。
 
-#+begin_quote
-Strings longer than TASK_COMM_LEN (16) characters (including the terminating null byte) are silently truncated.
+#+begin_src shell :results output
+  MANWIDTH=80 man 5 proc_pid_comm | tail -1
+  MANWIDTH=80 man 5 proc_pid_comm | grep -A2 -E 'Strings +longer'
+#+end_src
 
-proc_pid_comm(5)
-#+end_quote
+#+RESULTS:
+#+begin_src
+Linux man-pages 6.7                2023-08-15                  proc_pid_comm(5)
+            /proc/self/task/tid/comm.   Strings  longer than TASK_COMM_LEN (16)
+            characters (including the terminating null byte) are silently trun‐
+            cated.
+#+end_src
 
 #+begin_src shell :results output
   dir=$(mktemp -d)
