@@ -1,0 +1,73 @@
+:properties:
+:ID: 20261018T132133
+:end:
+#+title:      KDOC 707: Rubyの正規表現は後方参照があるとメモ化が効かず指数的に遅くなることがある
+#+date:       [2026-10-18 Sun 13:21]
+#+filetags:   :permanent:
+#+identifier: 20261018T132133
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-19 貴島
+- レビュー
+  - [X] 2026-10-19 貴島
+
+* 概要
+
+正規表現は、パターンと入力によってはバックトラックが爆発し、入力の長さに対して指数的に遅くなる。信頼できない入力を食わせるとサービス停止(ReDoS)になりうる。Ruby 3.2からは多くのパターンがメモ化で線形時間になったが、後方参照を含むパターンなどは対象外で、 ~Regexp.linear_time?~ で確かめられる。対象外のパターンには ~Regexp.timeout~ で上限を付ける。
+
+#+begin_src ruby :results output
+  puts "後方参照なし: #{Regexp.linear_time?(/\A(a|a)*\z/)}、後方参照あり: #{Regexp.linear_time?(/\A(a|a)*\1\z/)}"
+  [20, 22, 24].each do |n|
+    t = Time.now
+    /\A(a|a)*\1\z/.match?("a" * n + "b")
+    printf("後方参照あり、%d文字: %.3f秒\n", n, Time.now - t)
+  end
+#+end_src
+
+#+RESULTS:
+#+begin_src
+後方参照なし: true、後方参照あり: false
+後方参照あり、20文字: 0.030秒
+後方参照あり、22文字: 0.108秒
+後方参照あり、24文字: 0.445秒
+#+end_src
+
+2文字増えるたびに時間は約4倍になる。30文字の入力1つで数十秒止まる計算である。 ~Regexp.timeout~ を付けておけば、そこで打ち切れる。
+
+#+begin_src ruby :results output
+  Regexp.timeout = 1.0
+  t = Time.now
+  begin
+    /\A(a|a)*\1\z/.match?("a" * 30 + "b")
+  rescue Regexp::TimeoutError => e
+    printf("後方参照あり、30文字: %.1f秒で %s\n", Time.now - t, e.class)
+  end
+#+end_src
+
+#+RESULTS:
+#+begin_src
+後方参照あり、30文字: 1.0秒で Regexp::TimeoutError
+#+end_src
+
+#+begin_quote
+Returns true if matching against re can be done in linear time to the input string.
+
+[[https://docs.ruby-lang.org/en/3.4/Regexp.html#method-c-linear_time-3F][Regexp.linear_time? - Ruby 3.4]]
+#+end_quote
+
+#+begin_quote
+The cache-based optimization is introduced. Many (but not all) Regexp matching is now in linear time, which will prevent regular expression denial of service (ReDoS) vulnerability.
+
+[[https://docs.ruby-lang.org/en/3.4/NEWS/NEWS-3_2_0_md.html][NEWS for Ruby 3.2.0]] (Regexp)
+#+end_quote
+
+#+begin_quote
+When either a regexp source or a target string comes from untrusted input, malicious values could become a denial-of-service attack; to prevent such an attack, it is wise to set a timeout.
+
+[[https://docs.ruby-lang.org/en/3.4/Regexp.html#class-Regexp-label-Timeouts][Regexp (Timeouts) - Ruby 3.4]]
+#+end_quote
+
+* 関連
+
+なし。
