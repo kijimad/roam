@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-19 月 00:59 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<div id="outline-container-org92f1e27" class="outline-2">
+<h2 id="org92f1e27"><a href="#org92f1e27">EmacSQL</a></h2>
+<div class="outline-text-2" id="text-org92f1e27">
+<p>
+EmacSQL is a high-level Emacs Lisp front-end for SQLite.
+</p>
+
+<p>
+PostgreSQL and MySQL are also supported, but use of these connectors
+is not recommended.
+</p>
+
+<p>
+Any <a href="https://nullprogram.com/blog/2013/12/30/#almost_everything_prints_readably">readable lisp value</a> can be stored as a value in EmacSQL, including
+numbers, strings, symbols, lists, vectors, and closures. EmacSQL has
+no concept of &ldquo;TEXT&rdquo; values; it&rsquo;s all just Lisp objects. The Lisp
+object <code>nil</code> corresponds 1:1 with <code>NULL</code> in the database.
+</p>
+
+<p>
+Requires Emacs 28 or later.
+</p>
+</div>
+<div id="outline-container-orgbafa5f4" class="outline-4">
+<h4 id="orgbafa5f4"><a href="#orgbafa5f4">FAQ</a></h4>
+<div class="outline-text-4" id="text-orgbafa5f4">
+</div>
+<ul class="org-ul">
+<li><a id="org96c54ed"></a><a href="#org96c54ed">Why are all values stored as strings?</a><br>
+<div class="outline-text-5" id="text-org96c54ed">
+<p>
+EmacSQL is not intended to interact with arbitrary databases, but to
+be an ACID-compliant database for Emacs extensions.  This means that
+EmacSQL cannot be used with a regular SQL database used by other
+non-Emacs clients.
+</p>
+
+<p>
+All database values must be s-expressions. When EmacSQL stores a
+value — string, symbol, cons, etc. — it is printed and written to
+the database in its printed form. Strings are wrapped in quotes
+and escaped as necessary. That means &ldquo;bare&rdquo; symbols in the database
+generally look like strings. The only exception is <code>nil</code>, which is
+stored as <code>NULL</code>.
+</p>
+</div>
+</li>
+<li><a id="org5e0885f"></a><a href="#org5e0885f">Will EmacSQL ever support arbitrary databases?</a><br>
+<div class="outline-text-5" id="text-org5e0885f">
+<p>
+The author of EmacSQL <a href="https://github.com/magit/emacsql/issues/35#issuecomment-346352439">mistake</a> that it was probably a design mistake to
+restrict it to Emacs by storing only printed values, and that it would
+be a lot more useful if it just handled primitive database types.
+</p>
+
+<p>
+However, EmacSQL is in maintenance mode and there are no plans to
+make any fundamental changes, not least because they would break all
+existing packages and databases that rely on the current EmacSQL
+behavior.
+</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="outline-container-orgb3fa1b8" class="outline-4">
+<h4 id="orgb3fa1b8"><a href="#orgb3fa1b8">Windows Issues</a></h4>
+<div class="outline-text-4" id="text-orgb3fa1b8">
+<p>
+Emacs <code>start-process-shell-command</code> function is not supported on
+Windows. Since both <code>emacsql-mysql</code> and <code>emacsql-psql</code> rely on this
+function, neither of these connection types are supported on Windows.
+</p>
+</div>
+</div>
+<div id="outline-container-orgede6cbc" class="outline-3">
+<h3 id="orgede6cbc"><a href="#orgede6cbc">Example Usage</a></h3>
+<div class="outline-text-3" id="text-orgede6cbc">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>(defvar db (emacsql-sqlite-open "~/company.db"))
+
+;; Create a table. Table and column identifiers are symbols.
+(emacsql db [:create-table people ([name id salary])])
+
+;; Or optionally provide column constraints.
+(emacsql db [:create-table people
+             ([name (id integer :primary-key) (salary float)])])
+
+;; Insert some data:
+(emacsql db [:insert :into people
+             :values (["Jeff" 1000 60000.0] ["Susan" 1001 64000.0])])
+
+;; Query the database for results:
+(emacsql db [:select [name id]
+             :from people
+             :where (&gt; salary 62000)])
+;; =&gt; (("Susan" 1001))
+
+;; Queries can be templates, using $1, $2, etc.:
+(emacsql db [:select [name id]
+             :from people
+             :where (&gt; salary $s1)]
+         50000)
+;; =&gt; (("Jeff" 1000) ("Susan" 1001))
+</code></pre>
+</div>
+
+<p>
+When editing these prepared SQL s-expression statements,
+the <code>M-x emacsql-show-last-sql</code> command (think <code>eval-last-sexp</code>) is useful
+for seeing what the actual SQL expression will become when compiled.
+</p>
+</div>
+</div>
+<div id="outline-container-org41dff1f" class="outline-3">
+<h3 id="org41dff1f"><a href="#org41dff1f">Schema</a></h3>
+<div class="outline-text-3" id="text-org41dff1f">
+<p>
+A table schema is a list whose first element is a vector of column
+specifications. The rest of the list specifies table constraints. A
+column identifier is a symbol and a column&rsquo;s specification can either
+be just this symbol or it can include constraints as a list. Because
+EmacSQL stores entire Lisp objects as values, the only relevant (and
+allowed) types are <code>integer</code>, <code>float</code>, and <code>object</code> (default).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>([(&lt;column&gt;) ...] (&lt;table-constraint&gt; ...) ...])
+</code></pre>
+</div>
+
+<p>
+Dashes in identifiers are converted into underscores when compiled
+into SQL. This allows for Lisp-style identifiers to be used in SQL.
+Constraints follow the compilation rules below.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>;; No constraints schema with four columns:
+([name id building room])
+
+;; Add some column constraints:
+([(name :unique) (id integer :primary-key) building room])
+
+;; Add some table constraints:
+([(name :unique) (id integer :primary-key) building room]
+ (:unique [building room])
+ (:check (&gt; id 0)))
+</code></pre>
+</div>
+
+<p>
+Here&rsquo;s an example using foreign keys.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>;; "subjects" table schema
+([(id integer :primary-key) subject])
+
+;; "tag" table references subjects
+([(subject-id integer) tag]
+ (:foreign-key [subject-id] :references subjects [id]
+               :on-delete :cascade))
+</code></pre>
+</div>
+
+<p>
+Foreign key constraints are enabled by default in EmacSQL.
+</p>
+</div>
+</div>
+<div id="outline-container-org294cac2" class="outline-3">
+<h3 id="org294cac2"><a href="#org294cac2">Operators</a></h3>
+<div class="outline-text-3" id="text-org294cac2">
+<p>
+Expressions are written Lisp-style, with the operator first. If it
+looks like an operator EmacSQL treats it like an operator. However,
+several operators are special.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>&lt;=    &gt;=    funcall    quote
+</code></pre>
+</div>
+
+<p>
+The <code>&lt;=</code> and <code>&gt;=</code> operators accept 2 or 3 operands, transforming into
+a SQL <code>_ BETWEEN _ AND _</code> operator as appropriate.
+</p>
+
+<p>
+For function-like &ldquo;operators&rdquo; like <code>count</code> and <code>max</code> use the <code>funcall</code>
+&ldquo;operator.&rdquo;
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[:select (funcall max age) :from people]
+</code></pre>
+</div>
+
+<p>
+With <code>glob</code> and <code>like</code> SQL operators keep in mind that they&rsquo;re
+matching the <b>printed</b> representations of these values, even if the
+value is a string.
+</p>
+
+<p>
+The <code>||</code> concatenation operator is unsupported because concatenating
+printed representations breaks an important constraint: all values must
+remain readable within SQLite.
+</p>
+</div>
+</div>
+<div id="outline-container-org999b768" class="outline-3">
+<h3 id="org999b768"><a href="#org999b768">Quoting</a></h3>
+<div class="outline-text-3" id="text-org999b768">
+<p>
+Inside expressions, EmacSQL cannot tell the difference between symbol
+literals and column references. If you&rsquo;re talking about the symbol
+itself, just quote it as you would in normal Elisp. Note that this
+does not &ldquo;escape&rdquo; <code>$tn</code> parameter symbols.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>(emacsql db [... :where (= category 'hiking)])
+</code></pre>
+</div>
+
+<p>
+Quoting a string makes EmacSQL handle it as a &ldquo;raw string.&rdquo; These raw
+strings are not printed when being assembled into a query. These are
+intended for use in special circumstances like filenames (<code>ATTACH</code>) or
+pattern matching (<code>LIKE</code>). It is vital that raw strings are not
+returned as results.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>(emacsql db [... :where (like name '"%foo%")])
+(emacsql db [:attach '"/path/to/foo.db" :as foo])
+</code></pre>
+</div>
+
+<p>
+Since template parameters include their type they never need to be
+quoted.
+</p>
+</div>
+</div>
+<div id="outline-container-org9a4fa30" class="outline-3">
+<h3 id="org9a4fa30"><a href="#org9a4fa30">Prepared Statements</a></h3>
+<div class="outline-text-3" id="text-org9a4fa30">
+<p>
+The database is interacted with via prepared SQL s-expression
+statements. You shouldn&rsquo;t normally be concatenating strings on your
+own. (And it leaves out any possibility of a SQL injection!) See the
+&ldquo;Usage&rdquo; section above for examples. A statement is a vector of
+keywords and other Lisp object.
+</p>
+
+<p>
+Prepared EmacSQL s-expression statements are compiled into SQL
+statements. The statement compiler is memorized so that using the same
+statement multiple times is fast. To assist in this, the statement can
+act as a template &ndash; using <code>$i1</code>, <code>$s2</code>, etc. &ndash; working like the
+Elisp <code>format</code> function.
+</p>
+</div>
+<div id="outline-container-org0077788" class="outline-4">
+<h4 id="org0077788"><a href="#org0077788">Compilation Rules</a></h4>
+<div class="outline-text-4" id="text-org0077788">
+<p>
+Rather than the typical uppercase SQL keywords, keywords in a prepared
+EmacSQL statement are literally just that: Lisp keywords. EmacSQL only
+understands a very small amount of SQL&rsquo;s syntax. The compiler follows
+some simple rules to convert an s-expression into SQL.
+</p>
+</div>
+<ul class="org-ul">
+<li><a id="org7f07089"></a><a href="#org7f07089">All prepared statements are vectors.</a><br>
+<div class="outline-text-5" id="text-org7f07089">
+<p>
+A prepared s-expression statement is a vector beginning with a keyword
+followed by a series of keywords and special values. This includes
+most kinds of sub-queries.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[:select ... :from ...]
+[:select tag :from tags
+ :where (in tag [:select ...])]
+</code></pre>
+</div>
+</div>
+</li>
+<li><a id="org7a986d5"></a><a href="#org7a986d5">Keywords are split and capitalized.</a><br>
+<div class="outline-text-5" id="text-org7a986d5">
+<p>
+Dashes are converted into spaces and the keyword gets capitalized. For
+example, <code>:if-not-exists</code> becomes <code>IF NOT EXISTS</code>. How you choose to
+combine keywords is up to your personal taste (e.g., <code>:drop :table</code> vs.
+<code>:drop-table</code>).
+</p>
+</div>
+</li>
+<li><a id="orgb8f1269"></a><a href="#orgb8f1269">Standalone symbols are identifiers.</a><br>
+<div class="outline-text-5" id="text-orgb8f1269">
+<p>
+EmacSQL doesn&rsquo;t know what symbols refer to identifiers and what
+symbols should be treated as values. Use quotes to mark a symbol as a
+value. For example, <code>people</code> here will be treated as an identifier.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[:insert-into people :values ...]
+</code></pre>
+</div>
+</div>
+</li>
+<li><a id="org8b52b01"></a><a href="#org8b52b01">Row-oriented information is always represented as vectors.</a><br>
+<div class="outline-text-5" id="text-org8b52b01">
+<p>
+This includes rows being inserted, and sets of columns in a query. If
+you&rsquo;re talking about a row-like thing then put it in a vector.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[:select [id name] :from people]
+</code></pre>
+</div>
+
+<p>
+Note that <code>*</code> is actually a SQL keyword, so don&rsquo;t put it in a vector.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[:select * :from ...]
+</code></pre>
+</div>
+</div>
+</li>
+<li><a id="orgf54160c"></a><a href="#orgf54160c">Lists are treated as expressions.</a><br>
+<div class="outline-text-5" id="text-orgf54160c">
+<p>
+This is true even within row-oriented vectors.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[... :where (= name "Bob")]
+[:select [(/ seconds 60) count] :from ...]
+</code></pre>
+</div>
+
+<p>
+Some things that are traditionally keywords &ndash; particularly those that
+are mixed in with expressions &ndash; have been converted into operators
+(<code>AS</code>, <code>ASC</code>, <code>DESC</code>).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[... :order-by [(asc b), (desc a)]]   ; "ORDER BY b ASC, a DESC"
+[:select p:name :from (as people p)]  ; "SELECT p.name FROM people AS p"
+</code></pre>
+</div>
+</div>
+</li>
+<li><a id="org905ae1e"></a><a href="#org905ae1e">The <code>:values</code> keyword is special.</a><br>
+<div class="outline-text-5" id="text-org905ae1e">
+<p>
+What follows <code>:values</code> is always treated like a vector or list of
+vectors. Normally this sort of thing would appear to be a column
+reference.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[... :values [1 2 3]]
+[... :values ([1 2 3] [4 5 6])]  ; insert multiple rows
+</code></pre>
+</div>
+</div>
+</li>
+<li><a id="org77e64e5"></a><a href="#org77e64e5">A list whose first element is a vector is a table schema.</a><br>
+<div class="outline-text-5" id="text-org77e64e5">
+<p>
+This is to distinguish schemata from everything else. With the
+exception of what follows <code>:values</code>, nothing else is shaped like this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>[:create-table people ([(id :primary-key) name])]
+</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div id="outline-container-orge637d4d" class="outline-4">
+<h4 id="orge637d4d"><a href="#orge637d4d">Templates</a></h4>
+<div class="outline-text-4" id="text-orge637d4d">
+<p>
+To make statement compilation faster, and to avoid making you build up
+statements dynamically, you can insert <code>$tn</code> parameters in place of
+identifiers and values. These refer to the argument&rsquo;s type and its
+argument position after the statement in the <code>emacsql</code> function,
+one-indexed.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>(emacsql db [:select * :from $i1 :where (&gt; salary $s2)] 'employees 50000)
+
+(emacsql db [:select * :from employees :where (like name $r1)] "%Smith%")
+</code></pre>
+</div>
+
+<p>
+The letter before the number is the type.
+</p>
+
+<ul class="org-ul">
+<li><code>i</code> : identifier</li>
+<li><code>s</code> : scalar</li>
+<li><code>v</code> : vector (or multiple vectors)</li>
+<li><code>r</code> : raw, unprinted strings</li>
+<li><code>S</code> : schema</li>
+</ul>
+
+<p>
+When combined with <code>:values</code>, the vector type can refer to lists of
+rows.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>(emacsql db [:insert-into favorite-characters :values $v1]
+            '([0 "Calvin"] [1 "Hobbes"] [3 "Susie"]))
+</code></pre>
+</div>
+
+<p>
+This is why rows must be vectors and not lists.
+</p>
+</div>
+</div>
+<div id="outline-container-orgadb7172" class="outline-4">
+<h4 id="orgadb7172"><a href="#orgadb7172">Ignored Features</a></h4>
+<div class="outline-text-4" id="text-orgadb7172">
+<p>
+EmacSQL doesn&rsquo;t cover all of SQLite&rsquo;s features. Here are a list of
+things that aren&rsquo;t supported, and probably will never be.
+</p>
+
+<ul class="org-ul">
+<li>Collating. SQLite has three built-in collation functions: BINARY
+(default), NOCASE, and RTRIM. EmacSQL values never have right-hand
+whitespace, so RTRIM won&rsquo;t be of any use. NOCASE is broken
+(ASCII-only) and there&rsquo;s little reason to use it.</li>
+
+<li>Text manipulation functions. Like collating this is incompatible
+with EmacSQL s-expression storage.</li>
+
+<li>Date and time. These are incompatible with the printed values
+stored by EmacSQL and therefore have little use.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-org1598ac5" class="outline-3">
+<h3 id="org1598ac5"><a href="#org1598ac5">Limitations</a></h3>
+<div class="outline-text-3" id="text-org1598ac5">
+<p>
+EmacSQL is <b>not</b> intended to play well with other programs accessing
+the SQLite database. Non-numeric values are stored encoded as
+s-expressions TEXT values. This avoids ambiguities in parsing output
+from the command line and allows for storage of Emacs richer data
+types. This is an efficient, ACID-compliant database specifically for
+Emacs.
+</p>
+</div>
+</div>
+<div id="outline-container-orgdb54e09" class="outline-3">
+<h3 id="orgdb54e09"><a href="#orgdb54e09">Emacs Lisp Indentation Annoyance</a></h3>
+<div class="outline-text-3" id="text-orgdb54e09">
+<p>
+By default, <code>emacs-lisp-mode</code> indents vectors as if they were regular
+function calls.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>;; Ugly indentation!
+(emacsql db [:select *
+                     :from people
+                     :where (&gt; age 60)])
+</code></pre>
+</div>
+
+<p>
+Calling the function <code>emacsql-fix-vector-indentation</code> (interactive)
+advises the major mode to fix this annoyance.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><code>;; Such indent!
+(emacsql db [:select *
+             :from people
+             :where (&gt; age 60)])
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdefdf87" class="outline-3">
+<h3 id="orgdefdf87"><a href="#orgdefdf87">Contributing and Extending</a></h3>
+<div class="outline-text-3" id="text-orgdefdf87">
+<p>
+To run the test suite, clone the <code>pg</code> and <code>sqlite3</code> packages into
+sibling directories. The Makefile will automatically put these paths on
+the Emacs load path (override <code>LDFLAGS</code> if your situation is different).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell-script"><code>git clone https://github.com/emarsden/pg-el ../pg
+git clone https://github.com/pekingduck/emacs-sqlite3-api ../sqlite3
+</code></pre>
+</div>
+
+<p>
+Or set <code>LOAD_PATH</code> to point at these packages elsewhere:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell-script"><code>make LOAD_PATH='-L path/to/pg -L path/to/sqlite3'
+</code></pre>
+</div>
+
+<p>
+Then invoke make:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell-script"><code>make test
+</code></pre>
+</div>
+
+<p>
+If the environment variable <code>PGDATABASE</code> is present then the unit
+tests will also be run with PostgreSQL (emacsql-psql). Provide
+<code>PGHOST</code>, <code>PGPORT</code>, and <code>PGUSER</code> if needed. If <code>PGUSER</code> is provided,
+the pg.el back-end (emacsql-pg) will also be tested.
+</p>
+
+<p>
+If the environment variable <code>MYSQL_DBNAME</code> is present then the unit
+tests will also be run with MySQL in the named database. Note that
+this is not an official MySQL variable, just something made up for
+EmacSQL.
+</p>
+</div>
+<div id="outline-container-orgeb8df04" class="outline-4">
+<h4 id="orgeb8df04"><a href="#orgeb8df04">Creating a New Front-end</a></h4>
+<div class="outline-text-4" id="text-orgeb8df04">
+<p>
+EmacSQL uses EIEIO so that interactions with a connection occur
+through generic functions. You need to define a new class that
+inherits from <code>emacsql-connection</code>.
+</p>
+
+<ul class="org-ul">
+<li>Implement <code>emacsql-send-message</code>, <code>emacsql-waiting-p</code>,
+<code>emacsql-parse</code>, and <code>emacsql-close</code>.</li>
+<li>Provide a constructor that initializes the connection and calls
+<code>emacsql-register</code> (for automatic connection cleanup).</li>
+<li>Provide <code>emacsql-types</code> if needed (hint: use a class-allocated slot).</li>
+<li>Ensure that you properly read NULL as nil (hint: ask your back-end
+to print it that way).</li>
+<li>Register all reserved words with <code>emacsql-register-reserved</code>.</li>
+<li>Preferably provide <code>emacsql-reconnect</code> if possible.</li>
+<li>Set the default isolation level to <i>serializable</i>.</li>
+<li>Enable autocommit mode by default.</li>
+<li>Prefer ANSI syntax (value escapes, identifier escapes, etc.).</li>
+<li>Enable foreign key constraints by default.</li>
+</ul>
+
+<p>
+The goal of the autocommit, isolation, parsing, and foreign key
+configuration settings is to normalize the interface as much as
+possible. The connection&rsquo;s user should have the option to be agnostic
+about which back-end is actually in use.
+</p>
+
+<p>
+The provided implementations should serve as useful examples. If your
+back-end outputs data in a clean, standard way you may be able to use
+the emacsql-protocol-mixin class to do most of the work.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org1b05644" class="outline-3">
+<h3 id="org1b05644"><a href="#org1b05644">See Also</a></h3>
+<div class="outline-text-3" id="text-org1b05644">
+<ul class="org-ul">
+<li><a href="https://www.sqlite.org/docs.html">SQLite Documentation</a></li>
+</ul>
+
+<br><br>
+<a href="https://github.com/magit/emacsql/actions/workflows/compile.yml"><img alt="Compile" src="https://github.com/magit/emacsql/actions/workflows/compile.yml/badge.svg"/></a>
+<a href="https://github.com/magit/emacsql/actions/workflows/test.yml"><img alt="Test" src="https://github.com/magit/emacsql/actions/workflows/test.yml/badge.svg"/></a>
+<a href="https://snapshots.melpa.org/#/emacsql"><img alt="MELPA Snapshots" src="https://snapshots.melpa.org/packages/emacsql-badge.svg"/></a>
+<a href="https://releases.melpa.org/#/emacsql"><img alt="MELPA Releases" src="https://releases.melpa.org/packages/emacsql-badge.svg"/></a>
+<a href="https://elpa.nongnu.org/nongnu/emacsql.html"><img alt="NonGNU ELPA" src="https://emacsair.me/assets/badges/nongnu-elpa.svg"/></a>
+<a href="https://emacsair.me/human"><img alt="human made" src="https://emacsair.me/assets/badges/human.svg"/></a>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
