@@ -40,7 +40,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 親の span の中で子の span を作る。
 
 #+caption: 親と子の span を1つずつ作る
-#+begin_src shell :results output verbatim :wrap example :noweb no-export
+#+begin_src shell :results output verbatim :noweb no-export
   <<setup>>
   mkdir -p trace
   cat > trace/main.go <<'GO'
@@ -71,7 +71,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 #+end_src
 
 #+RESULTS:
-#+begin_example
+#+begin_src
 {
 	"Name": "child",
 	"SpanContext": {
@@ -218,7 +218,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 		"Attributes": null
 	}
 }
-#+end_example
+#+end_src
 
 - 子の Parent.SpanID が親の SpanID と同じで、TraceID も同じである。これで1つのトレースの中の親子を表現している
 - 親の Parent.SpanID はすべて 0 で、根の span である
@@ -229,7 +229,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 カウンタに 1、2、3 を足す。
 
 #+caption: カウンタに3回足す
-#+begin_src shell :results output verbatim :wrap example :noweb no-export
+#+begin_src shell :results output verbatim :noweb no-export
   <<setup>>
   mkdir -p metric
   cat > metric/main.go <<'GO'
@@ -259,7 +259,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 #+end_src
 
 #+RESULTS:
-#+begin_example
+#+begin_src
 {
 	"Resource": [
 		{
@@ -321,7 +321,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 		}
 	]
 }
-#+end_example
+#+end_src
 
 - 3回の Add が、値 6 に集計された
 
@@ -330,7 +330,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 ログを1件書く。
 
 #+caption: ログを1件書く
-#+begin_src shell :results output verbatim :wrap example :noweb no-export
+#+begin_src shell :results output verbatim :noweb no-export
   <<setup>>
   mkdir -p log
   cat > log/main.go <<'GO'
@@ -362,7 +362,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 #+end_src
 
 #+RESULTS:
-#+begin_example
+#+begin_src
 {
 	"Timestamp": "0001-01-01T00:00:00Z",
 	"ObservedTimestamp": "2026-10-15T09:50:59.139404628+09:00",
@@ -414,7 +414,7 @@ OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれい�
 	},
 	"DroppedAttributes": 0
 }
-#+end_example
+#+end_src
 
 - ~Scope~ にロガーに渡した文字列が入っている
 
