@@ -1,0 +1,64 @@
+:properties:
+:ID: 20261018T141333
+:end:
+#+title:      KDOC 713: gofmtはバッファ付きチャネルで同時に開くファイルの数を制限する
+#+date:       [2026-10-18 Sun 14:13]
+#+filetags:   :permanent:
+#+identifier: 20261018T141333
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+gofmtは、バッファ付きチャネルをセマフォとして使い、同時に開くファイルの数を200までに制限している。ファイルを開く前にチャネルへ値を送り、閉じたら受け取る。バッファが埋まっていると送信がブロックするので、201個目のファイルは、どれかが閉じるまで開かれない。
+
+#+begin_src git-permalink :wrap src go
+https://github.com/golang/go/blob/e3336a22ad3f0a90bd252c95d8b5544e02674205/src/cmd/gofmt/gofmt.go#L61-L69
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// fdSem guards the number of concurrently-open file descriptors.
+//
+// For now, this is arbitrarily set to 200, based on the observation that many
+// platforms default to a kernel limit of 256. Ideally, perhaps we should derive
+// it from rlimit on platforms that support that system call.
+//
+// File descriptors opened from outside of this package are not tracked,
+// so this limit may be approximate.
+var fdSem = make(chan bool, 200)
+#+end_src
+
+#+begin_src git-permalink :wrap src go
+https://github.com/golang/go/blob/e3336a22ad3f0a90bd252c95d8b5544e02674205/src/cmd/gofmt/gofmt.go#L302-L319
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// readFile reads the contents of filename, described by info.
+// If in is non-nil, readFile reads directly from it.
+// Otherwise, readFile opens and reads the file itself,
+// with the number of concurrently-open files limited by fdSem.
+func readFile(filename string, info fs.FileInfo, in io.Reader) ([]byte, error) {
+	if in == nil {
+		fdSem <- true
+		var err error
+		f, err := os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		in = f
+		defer func() {
+			f.Close()
+			<-fdSem
+		}()
+	}
+#+end_src
+
+* 関連
+
+なし。

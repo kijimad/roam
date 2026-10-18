@@ -1,0 +1,73 @@
+:properties:
+:ID: 20261018T141331
+:end:
+#+title:      KDOC 711: Goのインターフェース同士の比較は実行時にpanicすることがある
+#+date:       [2026-10-18 Sun 14:13]
+#+filetags:   :permanent:
+#+identifier: 20261018T141331
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Goのインターフェース同士の ~==~ は、コンパイルが通っても実行時にpanicすることがある。2つの値の動的型が同じで、その型が比較できない型(スライス、マップ、関数など)のときである。動的型が違えば、比較できない型でもpanicせずfalseになる。
+
+#+begin_src go
+  package main
+
+  import "fmt"
+
+  func eq(a, b any) (result string) {
+  	defer func() {
+  		if r := recover(); r != nil {
+  			result = fmt.Sprint("panic: ", r)
+  		}
+  	}()
+  	return fmt.Sprint(a == b)
+  }
+
+  func main() {
+  	fmt.Println("int同士:", eq(1, 1))
+  	fmt.Println("スライスとint:", eq([]int{1}, 1))
+  	fmt.Println("スライス同士:", eq([]int{1}, []int{1}))
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+int同士: true
+スライスとint: false
+スライス同士: panic: runtime error: comparing uncomparable type []int
+#+end_src
+
+言語仕様の該当箇所を示す。
+
+#+begin_src shell :results output
+  go version
+  grep -A2 'Interface types that are not type parameters are comparable' "$(go env GOROOT)/doc/go_spec.html"
+  sed -n '/^A comparison of two interface values with identical dynamic types/,/^<\/p>/p' "$(go env GOROOT)/doc/go_spec.html"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+go version go1.26.7 linux/amd64
+	Interface types that are not type parameters are comparable.
+	Two interface values are equal if they have <a href="#Type_identity">identical</a> dynamic types
+	and equal dynamic values or if both have value <code>nil</code>.
+A comparison of two interface values with identical dynamic types
+causes a <a href="#Run_time_panics">run-time panic</a> if that type
+is not comparable.  This behavior applies not only to direct interface
+value comparisons but also when comparing arrays of interface values
+or structs with interface-valued fields.
+</p>
+#+end_src
+
+- [[https://go.dev/ref/spec#Comparison_operators][The Go Programming Language Specification]]
+
+* 関連
+
+- 補足: [[id:20240210T220439][KDOC 86: errors.Is()の比較ロジックを見る]]。 ~errors.Is~ は、比較できる型か確かめてから ~==~ で比べている

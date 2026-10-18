@@ -1,0 +1,100 @@
+:properties:
+:ID: 20261018T141330
+:end:
+#+title:      KDOC 710: Go 1.21までのforのループ変数はループ全体で1つだった
+#+date:       [2026-10-18 Sun 14:13]
+#+filetags:   :permanent:
+#+identifier: 20261018T141330
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+言語の版がGo 1.21までは、 ~for~ のループ変数はループ全体で1つだった。ループの中で作ったクロージャは同じ変数を参照するので、あとで実行するとループを抜けたあとの値が見える。Go 1.22からは、反復ごとに別の変数が作られる。
+
+コンパイラに ~-lang=go1.21~ を渡すと、Go 1.21の言語仕様でコンパイルされる。
+
+#+begin_src shell :results output
+  go doc cmd/compile | grep -A2 -E '^\s+-lang'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+    -lang version
+    	Set language version to compile, as in -lang=go1.12.
+    	Default is current version.
+#+end_src
+
+#+begin_src go :flags "-gcflags=-lang=go1.21"
+  package main
+
+  import "fmt"
+
+  func main() {
+  	var prints []func()
+  	for i := 0; i < 3; i++ {
+  		prints = append(prints, func() { fmt.Print(i, " ") })
+  	}
+  	for _, p := range prints {
+  		p()
+  	}
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+3 3 3
+#+end_src
+
+Go 1.22以降の言語仕様だと、反復ごとの値が見える。
+
+#+begin_src go
+  package main
+
+  import "fmt"
+
+  func main() {
+  	var prints []func()
+  	for i := 0; i < 3; i++ {
+  		prints = append(prints, func() { fmt.Print(i, " ") })
+  	}
+  	for _, p := range prints {
+  		p()
+  	}
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+0 1 2
+#+end_src
+
+Go 1.26 での言語仕様は、反復ごとに別の変数を宣言すると書いている。
+
+#+begin_src shell :results output
+  go version
+  sed -n '/^Each iteration has its own separate declared variable/,/^<\/p>/p' "$(go env GOROOT)/doc/go_spec.html"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+go version go1.26.7 linux/amd64
+Each iteration has its own separate declared variable (or variables)
+[<a href="#Go_1.22">Go 1.22</a>].
+The variable used by the first iteration is declared by the init statement.
+The variable used by each subsequent iteration is declared implicitly before
+executing the post statement and initialized to the value of the previous
+iteration's variable at that moment.
+</p>
+#+end_src
+
+- [[https://go.dev/ref/spec#For_clause][The Go Programming Language Specification]]
+- [[https://go.dev/doc/go1.22#language][Go 1.22 Release Notes]]
+
+* 関連
+
+- 引用: [[id:20251016T010331][KDOC 474: 『Go言語による並行処理』]]。ゴルーチンの中のクロージャがループ変数を共有する例が載っている

@@ -1,0 +1,70 @@
+:properties:
+:ID: 20261018T141332
+:end:
+#+title:      KDOC 712: Goのjson.Unmarshalは構造体にないキーを黙って捨てる
+#+date:       [2026-10-18 Sun 14:13]
+#+filetags:   :permanent:
+#+identifier: 20261018T141332
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Goの ~json.Unmarshal~ は、JSONに構造体のフィールドと対応しないキーがあっても、エラーにせず黙って捨てる。キーの綴りを間違えても気づけない。検知したいときは ~json.Decoder~ の ~DisallowUnknownFields~ を使う。
+
+#+begin_src go
+  package main
+
+  import (
+  	"bytes"
+  	"encoding/json"
+  	"fmt"
+  )
+
+  type User struct {
+  	Name string
+  }
+
+  func main() {
+  	data := []byte(`{"Name": "a", "Age": 20}`)
+
+  	var u1 User
+  	err := json.Unmarshal(data, &u1)
+  	fmt.Printf("Unmarshal: %+v, err: %v\n", u1, err)
+
+  	var u2 User
+  	dec := json.NewDecoder(bytes.NewReader(data))
+  	dec.DisallowUnknownFields()
+  	err = dec.Decode(&u2)
+  	fmt.Printf("DisallowUnknownFields: %+v, err: %v\n", u2, err)
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+Unmarshal: {Name:a}, err: <nil>
+DisallowUnknownFields: {Name:a}, err: json: unknown field "Age"
+#+end_src
+
+#+begin_src shell :results output
+  go version
+  go doc encoding/json | grep -A2 'unknown keys in the JSON object'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+go version go1.26.7 linux/amd64
+  - When parsing a JSON object into a Go struct, unknown keys in the JSON object
+    are ignored (unless a Decoder is used and Decoder.DisallowUnknownFields has
+    been called).
+#+end_src
+
+- [[https://pkg.go.dev/encoding/json][json package - encoding/json - Go Packages]]
+
+* 関連
+
+- 補足: [[id:20250902T215029][KDOC 444: デコード時の未知のキー混入を防ぐ]]。未知のキーを検証するべき理由と、TOMLで検証する方法を書いている
