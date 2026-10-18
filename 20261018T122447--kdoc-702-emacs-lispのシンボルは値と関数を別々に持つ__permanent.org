@@ -1,0 +1,51 @@
+:properties:
+:ID: 20261018T122447
+:end:
+#+title:      KDOC 702: Emacs Lispのシンボルは値と関数を別々に持つ
+#+date:       [2026-10-18 Sun 12:24]
+#+filetags:   :permanent:
+#+identifier: 20261018T122447
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Emacs Lispのシンボルは、変数としての値を入れる値セルと、関数を入れる関数セルを別々に持つ。そのため同じ名前で、 ~setq~ で値を、 ~defun~ で関数を両方定義できる。関数そのものには名前がなく、関数セルに関数を持つシンボルが関数の名前になる。 ~defun~ はシンボルの関数セルに関数を入れているだけである。
+
+#+begin_src shell :results output
+  etc=$(emacs -Q --batch --eval '(princ data-directory)')
+  info -f "$etc/../../../info/elisp.info.gz" -n 'Symbol Components' -o - | sed -n '35,36p' | sed 's/  \*Note$//'
+  echo
+  info -f "$etc/../../../info/elisp.info.gz" -n 'Function Names' -o - | sed -n '6,10p'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+   The value cell holds a symbol's value as a variable, which is what
+you get if the symbol itself is evaluated as a Lisp expression.
+
+A symbol can serve as the name of a function.  This happens when the
+symbol's “function cell” (*note Symbol Components::) contains a function
+object (e.g., a lambda expression).  Then the symbol itself becomes a
+valid, callable function, equivalent to the function object in its
+function cell.
+#+end_src
+
+#+begin_src emacs-lisp
+  (setq kd-foo 1)
+  (defun kd-foo () 2)
+  (format "変数として: %S、関数として: %S" kd-foo (kd-foo))
+#+end_src
+
+#+RESULTS:
+#+begin_src
+変数として: 1、関数として: 2
+#+end_src
+
+* 関連
+
+なし。

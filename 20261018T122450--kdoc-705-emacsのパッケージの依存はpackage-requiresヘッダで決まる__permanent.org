@@ -1,0 +1,63 @@
+:properties:
+:ID: 20261018T122450
+:end:
+#+title:      KDOC 705: Emacsのパッケージの依存はPackage-Requiresヘッダで決まる
+#+date:       [2026-10-18 Sun 12:24]
+#+filetags:   :permanent:
+#+identifier: 20261018T122450
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Emacsのパッケージが依存するパッケージは、 ~require~ ではなく、ファイル先頭のコメント ~;; Package-Requires:~ で決まる。package.elはこのヘッダを読んで、依存をダウンロードし、依存がそろっているときだけパッケージを有効にする。 ~require~ は読み込むだけで、インストールはしない。
+
+#+begin_src shell :results output
+  etc=$(emacs -Q --batch --eval '(princ data-directory)')
+  info -f "$etc/../../../info/elisp.info.gz" -n 'Library Headers' -o - | sed -n '110,116p'
+  echo
+  info -f "$etc/../../../info/elisp.info.gz" -n 'Named Features' -o - | sed -n '106,112p' | sed 's/  If FILENAME is not supplied.*//'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+‘Package-Requires’
+     If this exists, it names packages on which the current package
+     depends for proper operation.  *Note Packaging Basics::.  This is
+     used by the package manager both at download time (to ensure that a
+     complete set of packages is downloaded) and at activation time (to
+     ensure that a package is only activated if all its dependencies
+     have been).
+
+ -- Function: require feature &optional filename noerror
+     This function checks whether FEATURE is present in the current
+     Emacs session (using ‘(featurep FEATURE)’; see below).  The
+     argument FEATURE must be a symbol.
+
+     If the feature is not present, then ‘require’ loads FILENAME with
+     ‘load’.
+#+end_src
+
+#+begin_src emacs-lisp
+  (require 'package)
+  (with-temp-buffer
+    (insert ";;; foo.el --- test -*- lexical-binding: t -*-\n"
+            ";; Version: 1.0\n"
+            ";; Package-Requires: ((emacs \"25.1\") (dash \"2.0\"))\n"
+            ";;; Code:\n(provide 'foo)\n;;; foo.el ends here\n")
+    (emacs-lisp-mode)
+    (format "package.elが読んだ依存: %S" (package-desc-reqs (package-buffer-info))))
+#+end_src
+
+#+RESULTS:
+#+begin_src
+package.elが読んだ依存: ((emacs (25 1)) (dash (2 0)))
+#+end_src
+
+* 関連
+
+なし。

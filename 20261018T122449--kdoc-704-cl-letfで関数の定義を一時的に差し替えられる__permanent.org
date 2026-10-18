@@ -1,0 +1,72 @@
+:properties:
+:ID: 20261018T122449
+:end:
+#+title:      KDOC 704: cl-letfで関数の定義を一時的に差し替えられる
+#+date:       [2026-10-18 Sun 12:24]
+#+filetags:   :permanent:
+#+identifier: 20261018T122449
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Emacs Lispの ~cl-letf~ は、 ~let~ と同じように値を一時的に置き換えて、終わったら元に戻す。変数だけでなく ~(symbol-function 'princ)~ のような場所も置き換えられる。テストで関数をモックへ差し替えるのに使える。
+
+#+begin_src shell :results output
+  etc=$(emacs -Q --batch --eval '(princ data-directory)')
+  info -f "$etc/../../../info/cl.info.gz" -n 'Modify Macros' -o - | sed -n '54,61p'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+ -- Macro: cl-letf (bindings...) forms...
+     This macro is analogous to ‘let’, but for generalized variables
+     rather than just symbols.  Each BINDING should be of the form
+     ‘(PLACE VALUE)’; the original contents of the PLACEs are saved, the
+     VALUEs are stored in them, and then the body FORMs are executed.
+     Afterwards, the PLACES are set back to their original saved
+     contents.  This cleanup happens even if the FORMs exit irregularly
+     due to a ‘throw’ or an error.
+#+end_src
+
+#+begin_src shell :results output
+  emacs -Q --batch --eval "(require 'cl-lib)" --eval "
+    (progn
+      (defun kd-hello () (princ \"hi\"))
+      (let ((orig (symbol-function 'princ)))
+        (princ (format \"差し替え中の出力: %S、終わったあと元に戻ったか: %S\"
+                       (with-temp-buffer
+                         (cl-letf (((symbol-function 'princ) #'insert))
+                           (kd-hello))
+                         (buffer-string))
+                       (eq orig (symbol-function 'princ))))))"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+差し替え中の出力: "hi"、終わったあと元に戻ったか: t
+#+end_src
+
+ただし、 ~car~ のようにバイトコンパイルで専用の命令になる関数は、コンパイル済みの呼び出し元では差し替えが効かない。呼び出しが命令に置き換わっていて、関数セルを見に行かないからである。
+
+#+begin_src shell :results output
+  emacs -Q --batch --eval "(require 'cl-lib)" --eval "
+    (let ((compiled (byte-compile (lambda () (car (list 1 2)))))
+          (interpreted (lambda () (car (list 1 2)))))
+      (cl-letf (((symbol-function 'car) (lambda (_) :mocked)))
+        (princ (format \"コンパイル済み: %S、インタプリタ: %S\"
+                       (funcall compiled) (funcall interpreted)))))"
+#+end_src
+
+#+RESULTS:
+#+begin_src
+コンパイル済み: 1、インタプリタ: :mocked
+#+end_src
+
+* 関連
+
+- 補足: [[id:20261018T115449][KDOC 700: defsubstで定義した関数はバイトコンパイルで呼び出し元に展開される]]。同じく、バイトコンパイルで呼び出しが消えると、関数を定義し直しても効かない

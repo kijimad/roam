@@ -1,0 +1,61 @@
+:properties:
+:ID: 20261018T122448
+:end:
+#+title:      KDOC 703: Emacs Lispのinteractiveの指定は対話的に呼んだときだけ引数を埋める
+#+date:       [2026-10-18 Sun 12:24]
+#+filetags:   :permanent:
+#+identifier: 20261018T122448
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Emacs Lispのコマンドは、 ~interactive~ の指定にしたがって引数を集める。ただしそれが効くのは、 ~M-x~ やキー、 ~call-interactively~ で対話的に呼んだときだけである。ふつうの関数としてLispから呼ぶときは、呼んだ側が引数を渡す必要がある。そのため ~M-x~ では動くコマンドも、直接呼ぶと引数の不足でエラーになる。
+
+#+begin_src shell :results output
+  etc=$(emacs -Q --batch --eval '(princ data-directory)')
+  info -f "$etc/../../../info/elisp.info.gz" -n 'Using Interactive' -o - | sed -n '10,19p'
+  echo
+  info -f "$etc/../../../info/elisp.info.gz" -n 'Interactive Call' -o - | sed -n '37,40p'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+ -- Special Form: interactive &optional arg-descriptor &rest modes
+     This special form declares that a function is a command, and that
+     it may therefore be called interactively (via ‘M-x’ or by entering
+     a key sequence bound to it).  The argument ARG-DESCRIPTOR declares
+     how to compute the arguments to the command when the command is
+     called interactively.
+
+     A command may be called from Lisp programs like any other function,
+     but then the caller supplies the arguments and ARG-DESCRIPTOR has
+     no effect.
+
+ -- Function: call-interactively command &optional record-flag keys
+     This function calls the interactively callable function COMMAND,
+     providing arguments according to its interactive calling
+     specifications.  It returns whatever COMMAND returns.
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun kd-greet (name)
+    (interactive "sName: ")
+    (format "hello %s" name))
+  (format "直接呼ぶと: %S、対話的に呼ぶときに使う指定: %S"
+          (condition-case e (kd-greet) (error (car e)))
+          (interactive-form 'kd-greet))
+#+end_src
+
+#+RESULTS:
+#+begin_src
+直接呼ぶと: wrong-number-of-arguments、対話的に呼ぶときに使う指定: (interactive "sName: ")
+#+end_src
+
+* 関連
+
+なし。
