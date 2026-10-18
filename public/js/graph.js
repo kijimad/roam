@@ -145,6 +145,9 @@ try {
     graph.cameraPosition({ x: 0, y: 0, z: 900 });
 
     // 主役の名前の注記。線は場面の中に描いてノードと同じ粗さにし、名前は読めるよう HTML で重ねる
+    // 本文の縁取り (site.css の --outline) は 16px の字に合わせた太さなので、小さい名前には 1px の縁だけを付け、右下の影は付けない
+    const OUTLINE = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]]
+        .map(([x, y]) => `${x}px ${y}px 0 #000`).join(", ");
     const title = (() => {
         const measure = document.createElement("canvas").getContext("2d");
         let current = null;
@@ -155,7 +158,8 @@ try {
             el.style.cssText = "width: 0; height: 0; pointer-events: none; backface-visibility: hidden;";
             const text = document.createElement("div");
             text.style.cssText = `position: absolute; left: ${bend}px; top: ${-bend}px; transform: translateY(-100%);
-                white-space: nowrap; padding: 0 8px 4px 4px; font: 20px "Izumi16", monospace; line-height: 1.4; color: ${GOLD};`;
+                white-space: nowrap; padding: 0 8px 4px 4px; font: 12px "Izumi16", monospace; line-height: 1.4; color: ${GOLD};
+                text-shadow: ${OUTLINE};`;
             text.textContent = nameOf(n);
             el.append(text);
 
@@ -164,7 +168,7 @@ try {
             obj.lookAt(from);
 
             // CSS は下向きが正、場面は上向きが正なので y の符号が逆になる
-            measure.font = '20px "Izumi16"';
+            measure.font = '12px "Izumi16"';
             const end = bend + measure.measureText(text.textContent).width + 12;
             const points = [new THREE.Vector3(edge, edge, 0), new THREE.Vector3(bend, bend, 0), new THREE.Vector3(end, bend, 0)];
             const line = new THREE.Line(
@@ -210,15 +214,14 @@ try {
         };
     })();
 
-    // ツアー: 3本以上つながるノードをランダムに訪ね、照らして待つ → 移動 → 主役のまわりを水平に回る → 静止
+    // ツアー: 3本以上つながるノードをランダムに訪ね、照らして待つ → 移動 → 名前を出してゆっくり回る
     const candidates = data.nodes.filter(n => neighbors.get(n.id).size > 3);
+    const WAIT = 1, TRAVEL = 2.5, HOLD = 5, RADIUS = 300, HEIGHT = 80, SPIN = 0.08;
     const UP = new THREE.Vector3(0, 1, 0);
-    const WAIT = 1, TRAVEL = 2.5, MOVE = 6, HOLD = 1.5, RADIUS = 300, HEIGHT = 80;
     const positionOf = n => new THREE.Vector3(n.x, n.y, n.z);
-    // 見る点からの位置 offset を、UP のまわりに sweep × p だけ回す。p は撮影の進み(0→1)
-    const pose = (sh, p) => {
-        const look = sh.look ?? positionOf(sh.node);
-        return { eye: sh.offset.clone().applyAxisAngle(UP, sh.sweep * p).add(look), look };
+    const pose = sh => {
+        const look = positionOf(sh.node);
+        return { eye: sh.offset.clone().add(look), look };
     };
 
     let shot = null;
@@ -229,7 +232,6 @@ try {
         shot = {
             node,
             offset: new THREE.Vector3(RADIUS * Math.cos(a), HEIGHT, RADIUS * Math.sin(a)),
-            sweep: 1,
             start: t + WAIT * 1000,
             travel: TRAVEL,
             fromEye: camera.position.clone(),
@@ -259,30 +261,35 @@ try {
         if (data.nodes[0].x === undefined) return;
         if (!shot) startShot(t);
         // 手で動かした後は、決めてあった構図へ戻らず今の視点から続ける。
-        // 着く前なら主役への移動をやり直し、着いた後なら見ていた点のまわりを回る
+        // 着く前なら主役への移動をやり直し、着いた後ならその視点から回り直す
         if (paused) {
             paused = false;
             Object.assign(shot, { start: t }, shot.arrived
-                ? { travel: 0, sweep: 0.8, look: controls.target.clone(), offset: camera.position.clone().sub(controls.target) }
+                ? { travel: 0, last: t }
                 : { fromEye: camera.position.clone(), fromLook: controls.target.clone() });
         }
-        if ((t - shot.start) / 1000 > shot.travel + MOVE + HOLD) startShot(t);
+        if ((t - shot.start) / 1000 > shot.travel + HOLD) startShot(t);
         const e = (t - shot.start) / 1000;
         if (e < 0) return;
+        // 着いた後は今の視点から注視点のまわりを水平に回る。手で動かした後もそこから続く
+        if (shot.arrived) {
+            const dt = Math.min((t - shot.last) / 1000, 0.1);
+            camera.position.sub(controls.target).applyAxisAngle(UP, SPIN * dt).add(controls.target);
+            shot.last = t;
+            return;
+        }
 
+        const { eye, look } = pose(shot);
         if (e < shot.travel) {
             const q = ease(e / shot.travel);
-            const start = pose(shot, 0);
-            camera.position.lerpVectors(shot.fromEye, start.eye, q);
-            controls.target.lerpVectors(shot.fromLook, start.look, q);
+            camera.position.lerpVectors(shot.fromEye, eye, q);
+            controls.target.lerpVectors(shot.fromLook, look, q);
         } else {
-            const { eye, look } = pose(shot, ease(Math.min(1, (e - shot.travel) / MOVE)));
             camera.position.copy(eye);
             controls.target.copy(look);
-            if (!shot.arrived) {
-                shot.arrived = true;
-                title.show(shot.node, camera.position);
-            }
+            shot.arrived = true;
+            shot.last = t;
+            title.show(shot.node, camera.position);
         }
     };
 
