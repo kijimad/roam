@@ -2458,73 +2458,73 @@ go-callvis -nostd -group type -focus golang.org/x/tools/internal/imports ./cmd/g
 FileSet。
 
 #+caption: FileSet定義
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/19e923182e590ae6568c2c714f20f32512aeb3e3/src/go/token/position.go#L426-L431
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 type FileSet struct {
 	mutex sync.RWMutex         // protects the file set
 	base  int                  // base offset for the next file
 	files []*File              // list of files in the order added to the set
 	last  atomic.Pointer[File] // cache of last file looked up
 }
-#+end_results
+#+end_src
 
 #+caption: 使われ方。なぜファイル名などと一緒にFileSetが必要なのだろうか
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/tools/blob/1261a24ceb1867ea7439eda244e53e7ace4ad777/internal/imports/imports.go#L182
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 	file, err := parser.ParseFile(fset, filename, src, parserMode)
-#+end_results
+#+end_src
 
 *** メモ
 
 #+caption: main関数を含むか判定する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/tools/blob/1261a24ceb1867ea7439eda244e53e7ace4ad777/internal/imports/imports.go#L254
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 func containsMainFunc(file *ast.File) bool {
-#+end_results
+#+end_src
 
 #+caption: 引数がないと標準入力から受け取る。なのでデバッグ時にファイル(ディレクトリ)を指定する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/tools/blob/1261a24ceb1867ea7439eda244e53e7ace4ad777/cmd/goimports/goimports.go#L271-L276
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 	if len(paths) == 0 {
 		if err := processFile("<standard input>", os.Stdin, os.Stdout, fromStdin); err != nil {
 			report(err)
 		}
 		return
 	}
-#+end_results
+#+end_src
 
 #+caption: parseにブレークする用
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/tools/blob/1261a24ceb1867ea7439eda244e53e7ace4ad777/internal/imports/imports.go#L176
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 func parse(fset *token.FileSet, filename string, src []byte, parserMode parser.Mode, fragment bool) (*ast.File, func(orig, src []byte) []byte, error) {
-#+end_results
+#+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/tools/blob/1261a24ceb1867ea7439eda244e53e7ace4ad777/internal/imports/fix.go#L152-L186
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 func collectReferences(f *ast.File) References {
 	refs := References{}
 
@@ -2560,20 +2560,20 @@ func collectReferences(f *ast.File) References {
 	ast.Walk(visitor, f)
 	return refs
 }
-#+end_results
+#+end_src
 
 #+caption: 標準ライブラリのシグネチャ一覧
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/tools/blob/1261a24ceb1867ea7439eda244e53e7ace4ad777/internal/stdlib/manifest.go#L9
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 var PackageSymbols = map[string][]Symbol{
-#+end_results
+#+end_src
 
 #+caption: リゾルバを選択する(ifに入らなければModuleResolver)
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/tools/blob/1261a24ceb1867ea7439eda244e53e7ace4ad777/internal/imports/fix.go#L1026-L1043
 #+end_src
 
@@ -3168,12 +3168,12 @@ CLOSED: [2026-05-09 Sat 14:52]
 #+end_src
 
 #+caption: 複数形、こんなもので大丈夫なのか
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/gorm/blob/f4aa43544632181c095eb31bdae29ab0dd65339c/model.go#L126-L132
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 	pluralMap := map[string]string{"ch": "ches", "ss": "sses", "sh": "shes", "day": "days", "y": "ies", "x": "xes", "s?": "s"}
 	for key, value := range pluralMap {
 		reg := regexp.MustCompile(key + "$")
@@ -3181,20 +3181,20 @@ https://github.com/kd-collective/gorm/blob/f4aa43544632181c095eb31bdae29ab0dd653
 			return reg.ReplaceAllString(str, value), err
 		}
 	}
-#+end_results
+#+end_src
 
 #+caption: フィールド名をスネークケースにしてカラム名にしている
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/gorm/blob/2a20e551ed0df2956ca6328cd928039c7942d350/do.go#L230-L233
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 			field := dest.FieldByName(snakeToUpperCamel(value))
 			if field.IsValid() {
 				values = append(values, dest.FieldByName(snakeToUpperCamel(value)).Addr().Interface())
 			}
-#+end_results
+#+end_src
 
 *** 教訓
 - まずAPIを考えて空の関数として列挙する

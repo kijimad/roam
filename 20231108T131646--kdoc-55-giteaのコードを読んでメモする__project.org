@@ -21,24 +21,24 @@ CLOSED: [2024-11-11 Mon 12:55]
 
 コンパイルしている部分。タスク名が動的になっていてわかりにくい。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src makefile
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/Makefile#L788-L789
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src makefile
 $(EXECUTABLE): $(GO_SOURCES) $(TAGS_PREREQ)
 	CGO_CFLAGS="$(CGO_CFLAGS)" $(GO) build $(GOFLAGS) $(EXTRA_GOFLAGS) -tags '$(TAGS)' -ldflags '-s -w $(LDFLAGS)' -o $@
 #+end_src
 
 ** routerを起動している部分
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/cmd/web.go#L211
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	webRoutes := routers.NormalRoutes()
 #+end_src
 
@@ -47,24 +47,24 @@ https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/
 setting packageにまとめられている。パッケージで変数化されている。
 
 #+caption: database
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/0999721c7b4d124c1f14bbd067acdcf767542abb/modules/setting/database.go#L27-L28
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	// Database holds the database settings
 	Database = struct {
 #+end_src
 
 変数はグローバル変数にしつつ↑、セットはパッケージ内の関数でやる。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/modules/setting/database.go#L59-L65
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func loadDBSetting(rootCfg ConfigProvider) {
 	sec := rootCfg.Section("database")
 	Database.Type = DatabaseType(sec.Key("DB_TYPE").String())
@@ -78,12 +78,12 @@ func loadDBSetting(rootCfg ConfigProvider) {
 
 routerでのDBの初期化は↓でやっている。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/engine.go#L132-L133
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // InitEngine initializes the xorm.Engine and sets it as db.DefaultContext
 func InitEngine(ctx context.Context) error {
 #+end_src
@@ -91,23 +91,23 @@ func InitEngine(ctx context.Context) error {
 InitEngineの中でデータベースを初期化する。
 
 #+caption: InitEngine(ctx context.Context) error 内で実行する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
  https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/engine.go#L134
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	xormEngine, err := newXORMEngine()
 #+end_src
 
 InitEngineの中でSetDefaultEngine()して初期化したデータベースをDefaultContextに設定する。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/engine.go#L153-L160
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // SetDefaultEngine sets the default engine for db
 func SetDefaultEngine(ctx context.Context, eng *xorm.Engine) {
 	x = eng
@@ -120,12 +120,12 @@ func SetDefaultEngine(ctx context.Context, eng *xorm.Engine) {
 
 セットできているかの確認文。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/routers/init.go#L136
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	mustInitCtx(ctx, common.InitDBEngine)
 #+end_src
 
@@ -133,12 +133,12 @@ https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/
 
 設定している部分。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/engine.go#L153-L160
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // SetDefaultEngine sets the default engine for db
 func SetDefaultEngine(ctx context.Context, eng *xorm.Engine) {
 	x = eng
@@ -156,12 +156,12 @@ func SetDefaultEngine(ctx context.Context, eng *xorm.Engine) {
 DBのデータなどはcontext.APIContextで伝達している。APIContextにはBaseが埋め込まれている。
 
 #+caption: APIContextの定義
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/modules/context/api.go#L28-L43
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // APIContext is a specific context for API service
 type APIContext struct {
 	,*Base
@@ -183,12 +183,12 @@ type APIContext struct {
 Baseにはcontext.Contextが埋め込まれている。
 
 #+caption: Baseの定義
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/modules/context/base.go#L31-L44
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 type Base struct {
 	originCtx     context.Context
 	contextValues []contextValuePair
@@ -205,12 +205,12 @@ type Base struct {
 }
 #+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/modules/context/api.go#L213-L223
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // APIContexter returns apicontext as middleware
 func APIContexter() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -226,12 +226,12 @@ func APIContexter() func(http.Handler) http.Handler {
 
 ** contextからdbインスタンスを取り出す
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/admin/task.go#L56
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	has, err := db.GetEngine(ctx).ID(task.RepoID).Get(&repo)
 #+end_src
 
@@ -239,12 +239,12 @@ https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/
 
 DBのためだけにありそう。defaultContextが入るのはこれ。contextを構造体に埋め込むのはよくないとされている。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/context.go#L29-L34
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // Context represents a db context
 type Context struct {
 	context.Context
@@ -254,12 +254,12 @@ type Context struct {
 #+end_src
 
 #+caption: クエリを走らせるためのcontext
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/context.go#L14-L16
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // DefaultContext is the default context to run xorm queries in
 // will be overwritten by Init with HammerContext
 var DefaultContext context.Context
@@ -269,12 +269,12 @@ context.Contextはインターフェースなので、DefaultContextにはdb.Con
 
 このDBコンテキストは、Engine()を実装しているのでEnginedインターフェースを満たす。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/context.go#L67-L90
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // Engined structs provide an Engine
 type Engined interface {
 	Engine() Engine
@@ -301,12 +301,12 @@ func getEngine(ctx context.Context) Engine {
 }
 #+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/context.go#L49-L52
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // Engine returns db engine
 func (ctx *Context) Engine() Engine {
 	return ctx.e
@@ -318,12 +318,12 @@ func (ctx *Context) Engine() Engine {
 xormのオブジェクト作成はxorm.NewEngine()で行う。
 
 #+caption: func newXORMEngine() (*xorm.Engine, error) で実行している
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/db/engine.go#L107
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 		engine, err = xorm.NewEngine("postgresschema", connStr)
 #+end_src
 
@@ -333,12 +333,12 @@ https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/
 
 最初にunittest.PrepareTestDatabase()する。この中でDefaultContextに対してクエリが実行されている。そのあとDefaultContextを直に取得して実行する。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/actions/runner_token_test.go#L16-L18
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	assert.NoError(t, unittest.PrepareTestDatabase())
 	token := unittest.AssertExistsAndLoadBean(t, &ActionRunnerToken{ID: 3})
 	expectedToken, err := GetLatestRunnerToken(db.DefaultContext, 1, 0)
@@ -349,12 +349,12 @@ dbはcontextのvalueで持つべきじゃないらしい。リクエストスコ
 ** APIコンテキストはどうやって生成しているか
 
 #+caption: リクエスト時の普通のcontextから、APIContextを生成している部分
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/modules/context/api.go#L213-L243
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // APIContexter returns apicontext as middleware
 func APIContexter() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -390,12 +390,12 @@ func APIContexter() func(http.Handler) http.Handler {
 
 ミドルウェアとして登録されている。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/routers/api/v1/api.go#L807
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	m.Use(context.APIContexter())
 #+end_src
 
@@ -407,12 +407,12 @@ DB関係なくないか。どこでセットされているか。
 
 マイグレーションはタスクで行う。あるいは、Webの起動時にも関数が用意されている。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/cmd/migrate.go#L25
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func runMigrate(ctx *cli.Context) error {
 #+end_src
 
@@ -428,12 +428,12 @@ unittest.PrepareTestDatabase() を見るが、そのときにはすでにDefault
 各test packageにあるtest_main.goにある、TestMain関数内でunittest.MainTest()している。MainTest内でDBを初期化してる。テスト時に必ず実行される。
 
 #+caption: 初期化している
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
   https://github.com/go-gitea/gitea/blob/8ef169a173c24e5ab57de8d6638bb6786e378a3d/models/unittest/testdb.go#L73
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func MainTest(m *testing.M, testOpts ...*TestOptions) {
 #+end_src
 

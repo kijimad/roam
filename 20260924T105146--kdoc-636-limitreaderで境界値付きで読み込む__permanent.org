@@ -25,12 +25,12 @@ io.Copy に生データを渡すと全部コピーするため目的を達成で
 1. LimitReader でデータを限定して読み取り、 io.Copy に渡す
 2. 続きの1バイトを読み込んで存在確認する。読み込めれば超過で、エラーとする。LimitReader はサイズ超過時に特にエラーは出さないので、それだけでは続きがあったうえで強制的に切り出したのか、既定サイズより下できちんと取り出せたのか判定できないため
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/io/io.go#L463-L470
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // A LimitedReader reads from R but limits the amount of
 // data returned to just N bytes. Each call to Read
 // updates N to reflect the new amount remaining.
@@ -43,12 +43,12 @@ type LimitedReader struct {
 
 実際のコード。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/opentelemetry-go/blob/40679e672e46abde92cea3f59ec6f66b38e4abc2/internal/shared/otlp/response.go.tmpl#L17-L31
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func CopyResponseBody(dst io.Writer, src io.Reader, maxSize int64) error {
 	if _, err := io.Copy(dst, io.LimitReader(src, maxSize)); err != nil {
 		return err

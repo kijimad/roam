@@ -256,12 +256,12 @@ main.main.stkobj SRODATA static size=24
 コードを見てみる。↓constの宣言部分を処理する部分を見る。constはカッコを使ってグループで宣言でき、そのグループごとにループを回す。その1回分の処理が以下だ。グループごとにforループからとったindexがあって、enumの初期値に基づいてiotaの値がどうなるか計算している。だからiotaを1はじまりとかにできるわけだ。
 
 #+caption: func (check *Checker) declStmt(list []syntax.Decl) から
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L757-L765
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 		case *syntax.ConstDecl:
 			top := len(check.delayed)
 
@@ -276,12 +276,12 @@ https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1
 ↓そして、作成したローカル変数iotaでconstを初期化する。対応した初期化式が与えられていれば、そちらで上書きする。
 
 #+caption: func (check *Checker) declStmt(list []syntax.Decl) から
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L781-L791
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 			for i, name := range s.NameList {
 				obj := NewConst(name.Pos(), pkg, name.Value, nil, iota)
 				lhs[i] = obj
@@ -298,12 +298,12 @@ https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1
 ↓初期化式initを評価して、その結果を ~x~ に設定する。 ~x~ を使って、constの値を設定、初期化する。iotaキーワードが使われていれば初期化式initはnilのはずなので、評価が行われず ~x~ は変化しない。
 
 #+caption: func (check *Checker) constDecl(obj *Const, typ, init syntax.Expr, inherited bool) から
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/decl.go#L400-L413
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	var x operand
 	if init != nil {
 		if inherited {
@@ -323,24 +323,24 @@ https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1
 ↓ ~x~ の値を使って値をセットする。
 
 #+caption: func (check *Checker) initConst(lhs *Const, x *operand) から
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/assignments.go#L132
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	lhs.val = x.val
 #+end_src
 
 ↓ちなみにCheckerは、型チェックの状態を保持する構造体である。
 
 #+caption: Checkerは型チェッカーである
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/types2/check.go#L91-L93
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // A Checker maintains the state of the type checker.
 // It must be created with NewChecker.
 type Checker struct {

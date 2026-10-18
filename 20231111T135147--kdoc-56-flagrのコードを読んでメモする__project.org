@@ -20,24 +20,24 @@ CLOSED: [2024-11-11 Mon 12:55]
 
 グローバル変数にdb取得関数がある。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/handler/handler.go#L20
 #+end_src
 
 #+RESULTS:
-#+begin_yes
+#+begin_src go
 var getDB = entity.GetDB
-#+end_yes
+#+end_src
 
 変数の中身となる関数。
 
 #+caption: GetDB() *gorm.DB
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/entity/db.go#L68-L84
 #+end_src
 
 #+RESULTS:
-#+begin_example
+#+begin_src go
 // GetDB gets the db singleton
 func GetDB() *gorm.DB {
 	singletonOnce.Do(func() {
@@ -55,19 +55,19 @@ func GetDB() *gorm.DB {
 
 	return singletonDB
 }
-#+end_example
+#+end_src
 
 * データベース分岐部分
 
 データベース分岐している箇所。
 
 #+caption: connectDB() (db *gorm.DB, err error)
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/pkg/entity/db.go#L44-L64
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 	err = retry.Do(
 		func() error {
 			switch config.Config.DBDriver {
@@ -89,18 +89,18 @@ https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547
 		retry.Attempts(config.Config.DBConnectionRetryAttempts),
 		retry.Delay(config.Config.DBConnectionRetryDelay),
 	)
-#+end_results
+#+end_src
 
 * 各データベースによる結合テスト
 
 sqlite, mysql, postgresによる結合テストをしている。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src shell
 https://github.com/openflagr/flagr/blob/fcc74ae8cb690c52ed202b157d198d8fa290d547/integration_tests/test.sh#L396-L405
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src shell
 start() {
     start_test flagr_with_sqlite
     start_test flagr_with_mysql
@@ -111,7 +111,7 @@ start() {
     # for backward compatibility with checkr/flagr
     start_test checkr_flagr_with_sqlite
 }
-#+end_results
+#+end_src
 
 * 関連
 

@@ -240,12 +240,12 @@ balanceから参照しやすくする。一長一短だがバランス調整の�
 
 - Propを取得、配置、などで専用関数をまとめて配置してわかりやすくする
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kijimaD/ruins/blob/305f34bd82cae90fa0d0274862836e7703c7b9f4/internal/activity/pickup.go#L167
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func (pa *PickupActivity) collectProp(actor ecs.Entity, world w.World, propEntity ecs.Entity) error {
 #+end_src
 
@@ -2071,12 +2071,12 @@ CLOCK: [2024-05-06 Mon 10:06]--[2024-05-06 Mon 10:31] =>  0:25
   - とりあえずタイル。どのタイルにいるか取得する
   - オブジェクトでイベントが発生する場合もある(エンカウント)
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kijimaD/ruins/blob/c633001385e79d4ecb783f7fd89ba306730fc3c4/lib/resources/move.go#L70-L74
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 		if oneFrontTile.Contains(TileWarpEscape) {
 			gameResources := world.Resources.Game.(*Game)
 			gameResources.StateEvent = StateEventWarpEscape
@@ -2086,12 +2086,12 @@ https://github.com/kijimaD/ruins/blob/c633001385e79d4ecb783f7fd89ba306730fc3c4/l
 
 field stateの Updateにて。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kijimaD/ruins/blob/c633001385e79d4ecb783f7fd89ba306730fc3c4/lib/states/field.go#L45-L50
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	gameResources := world.Resources.Game.(*resources.Game)
 	switch gameResources.StateEvent {
 	case resources.StateEventWarpEscape:
@@ -2105,12 +2105,12 @@ https://github.com/kijimaD/ruins/blob/c633001385e79d4ecb783f7fd89ba306730fc3c4/l
 - Componentに保存するだけだと、1つだけその座標のタイルを取れない。全部ループして探す必要がある
 - Tileは複数階層が存在しうるので、タイル座標だけでは一意に定まるわけではない
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/game.go#L157
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	grid, levelComponentList := utils.Try2(gloader.LoadLevel(gameResources.Package, levelNum, gridLayout.Width, gridLayout.Height, &gameSpriteSheet))
 #+end_src
 
@@ -2125,12 +2125,12 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 #+end_src
 
 #+caption: gridの初期化
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L315
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	gameGrid := utils.Try(gutils.NewVec2d(gridHeight, gridWidth, tiles))
 #+end_src
 
@@ -2182,12 +2182,12 @@ CLOCK: [2024-05-19 Sun 14:25]--[2024-05-19 Sun 14:50] =>  0:25
 CLOCK: [2024-05-19 Sun 12:50]--[2024-05-19 Sun 13:15] =>  0:25
 CLOCK: [2024-05-19 Sun 12:24]--[2024-05-19 Sun 12:49] =>  0:25
 :END:
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/rect.rs#L4-L9
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src rust
 pub struct Rect {
     pub x1: i32,
     pub x2: i32,
@@ -2196,12 +2196,12 @@ pub struct Rect {
 }
 #+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/utils/vec2d.go#L5-L9
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 type Vec2d[T any] struct {
 	NRows int
 	NCols int
@@ -2209,12 +2209,12 @@ type Vec2d[T any] struct {
 }
 #+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map/mod.rs#L14-L26
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src rust
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,
@@ -2230,12 +2230,12 @@ pub struct Map {
 }
 #+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map_builders/mod.rs#L66-L75
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src rust
 pub struct BuilderMap {
     pub spawn_list: Vec<(usize, String)>,
     pub map: Map,
@@ -2252,12 +2252,12 @@ pub struct BuilderMap {
 - 生成したタイルマップは、配置するときエンティティ化する
   - 例: 壁タイルは BlockPass, SpriteRender, GridElement コンポーネントを持つEntityとなる
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map_builders/mod.rs#L89-L93
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src rust
 pub struct BuilderChain {
     starter: Option<Box<dyn InitialMapBuilder>>,
     builders: Vec<Box<dyn MetaMapBuilder>>,
@@ -2306,22 +2306,22 @@ CLOCK: [2024-05-19 Sun 20:31]--[2024-05-19 Sun 20:57] =>  0:26
 - 参考実装がどういう流れで使っているかよくわからないな
 
 #+caption: level_builderで階層によって使うbuilderを決めている
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map_builders/mod.rs#L290
 #+end_src
 
 #+RESULTS:
-#+begin_src go
+#+begin_src rust
 pub fn level_builder(
 #+end_src
 
 #+caption: 決定したbuilderを呼び出している箇所
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map/dungeon.rs#L33-L36
 #+end_src
 
 #+RESULTS:
-#+begin_src go
+#+begin_src rust
 fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
     let mut rng = ecs.write_resource::<rltk::RandomNumberGenerator>();
     let mut builder = level_builder(new_depth, &mut rng, 80, 50);
@@ -2331,12 +2331,12 @@ fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
 - rooms とか corridor をどうやってタイルにしているか
 
 #+caption: draw系でやっている
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map_builders/common.rs#L105
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src rust
 pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) -> Vec<usize> {
 #+end_src
 
@@ -2344,24 +2344,24 @@ pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) -> Vec<u
 - NewLevel を消して、 builderに置き換えればいいのかな
 
 #+caption: 部屋ビルダー
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map_builders/room_draw.rs#L11
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src rust
 impl RoomDrawer {
 #+end_src
 
 - 廊下がけっこう大変な件
   - 部屋ごとの距離を求めて、最短距離を結ぶ
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src rust
 https://github.com/kijimaD/digger_rs/blob/5804eb99182f3f21b733a7d0d0e34ca610b286c6/src/map_builders/rooms_corridors_lines.rs#L20
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src rust
     fn corridors(&mut self, _rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
 #+end_src
 ** DONE 廊下を追加する

@@ -25,12 +25,12 @@ gameを作るけど最後までうまくいった試しがない。人のコー�
 
 タイルの上にあるものはスプライトとしているよう。[fn:1]
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L23-L30
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 const (
 	exteriorSpriteNumber = 0
 	wallSpriteNumber     = 1
@@ -45,12 +45,12 @@ const (
 
 タイルに対する操作一覧。論理演算で判断しているな。Set関数では自身を書き換える。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L54-L84
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // Tile is a game tile
 type Tile uint8
 
@@ -89,24 +89,24 @@ func (t *Tile) Remove(other Tile) {
 タイルはファイルから読み込んでいるようだ。よくわからない。タイルの縦×横の集合体がグリッドだ。
 
 #+caption: func normalizeLevel(lines []string) ([][]byte, error)
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L165
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	grid := make([][]byte, len(lines))
 #+end_src
 
 コンポーネントを追加している↓。
 
 #+caption: func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet)
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/level.go#L319-L327
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet *ec.SpriteSheet, line, col int) {
 	componentList.Engine = append(componentList.Engine, loader.EngineComponentList{
 		SpriteRender: &ec.SpriteRender{SpriteSheet: gameSpriteSheet, SpriteNumber: floorSpriteNumber},
@@ -122,12 +122,12 @@ func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteShee
 
 コンポーネントの種類の定義↓。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/loader/lib.go#L13-L19
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 type gameComponentList struct {
 	GridElement *gc.GridElement
 	Player      *gc.Player
@@ -139,12 +139,12 @@ type gameComponentList struct {
 
 保持している構造体↓。コンポーネントを入れる。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/components/lib.go#L5-L12
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // Components contains references to all game components
 type Components struct {
 	GridElement *ecs.SliceComponent
@@ -160,12 +160,12 @@ type Components struct {
 アクションが定数として表現されている。アクションmapのキーとして利用する。
 
 #+caption: 定数
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/controls.go#L3-L7
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 const (
 	// MoveUpAction is the action for moving up
 	MoveUpAction = "MoveUp"
@@ -176,18 +176,18 @@ const (
 アクションを初期化している部分(ライブラリ)↓。TOMLファイルから読み取って設定するよう。
 
 #+caption: func LoadControls(controlsConfigPath string, axes []string, actions []string) (resources.Controls, resources.InputHandler)
-#+begin_src git-permalink
+#+begin_src go
 	inputHandler.Actions = make(map[string]bool)
 #+end_src
 
 TOMLファイル。対応関係がわかりやすい。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src toml
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/config/controls.toml#L1-L6
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src toml
 [controls.actions.MoveUp]
 combinations = [[{ key = "Up" }]]
 once = true
@@ -209,12 +209,12 @@ combinations = [[{ key = "ShiftLeft" }, { key = "Up" }], [{ key = "ShiftRight" }
 
 prefabが具体的にどういうことをするのかわからない。メニュー画面それぞれを保持しているぽい。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/prefab.go#L5-L13
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // MenuPrefabs contains menu prefabs
 type MenuPrefabs struct {
 	MainMenu          loader.EntityComponentList
@@ -231,12 +231,12 @@ type MenuPrefabs struct {
 UIもコンポーネントである。↓UIコンポーネントを書き換えて表示する。
 
 #+caption: UIコンポーネント更新
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/pause_menu.go#L123-L137
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	// Update text components
 	world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 		text := world.Components.Engine.Text.Get(entity).(*ec.Text)
@@ -256,12 +256,12 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 
 ↓コンポーネントはTOMLで定義されているようだ。各メニューごとにファイルがあるな。translationは配置する座標だな。なぜこの単語が使われているのかわからない。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src toml
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/assets/metadata/entities/ui/main_menu.toml#L27-L34
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src toml
 [entity.components.Text]
 id = "cursor_view_highscores"
 text = "\u25ba"
@@ -281,12 +281,12 @@ translation = { x = 40, y = 400 }
 ↓メニューコンポーネントそれぞれで、マウスが上にあるかを判定する。
 
 #+caption: func updateMenu(menu menu, world w.World) states.Transition {
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L41-L46
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	// Handle mouse events only if mouse is moved or clicked
 	x, y := ebiten.CursorPosition()
 	if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
@@ -298,24 +298,24 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 ↓コンポーネントのクエリ。レンダーできる、変形可能、マウスが反応可能、といった性質を持つものを対象にする。
 
 #+caption: func updateMenu(menu menu, world w.World) states.Transition {
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L47
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 			if world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform, world.Components.Engine.MouseReactive).Visit(
 #+end_src
 
 ↓コンポーネントを特定して、stateの ~selection~ (選択中の項目)を変える。クリックされていた場合は、遷移する。
 
 #+caption: func updateMenu(menu menu, world w.World) states.Transition {
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L48-L59
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 				func(index int) (skip bool) {
 					mouseReactive := world.Components.Engine.MouseReactive.Get(ecs.Entity(index)).(*ec.MouseReactive)
 					if mouseReactive.ID == id && mouseReactive.Hovered {
@@ -334,22 +334,22 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 
 ↓グリッドを置き換えるシステムがある。グリッドは座標を持つことを示す。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_transform.go#L16-L17
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // GridTransformSystem sets transform for grid elements
 func GridTransformSystem(world w.World) {
 #+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_transform.go#L20
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	world.Manager.Join(gameComponents.GridElement, world.Components.Engine.SpriteRender, world.Components.Engine.Transform).Visit(ecs.Visit(func(entity ecs.Entity) {
 #+end_src
 
@@ -364,12 +364,12 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 ↓タイルの中からプレイヤー、箱を探す。
 
 #+caption: プレイヤー、箱を探す
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_update.go#L18-L25
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	for iTile, tile := range gameResources.Level.Grid.Data {
 		switch {
 		case tile.Contains(resources.TilePlayer):
@@ -383,12 +383,12 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 プレイヤーコンポーネント、箱コンポーネントのgridElementを更新する。
 
 #+caption: コンポーネントによって分岐
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/grid_update.go#L33-L47
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	world.Manager.Join(gameComponents.GridElement).Visit(ecs.Visit(func(entity ecs.Entity) {
 		switch {
 		case entity.HasComponent(gameComponents.Player):
@@ -413,12 +413,12 @@ GridElementと同様に、タイルの状態をエンティティに反映する
 ↓箱の数、正しく配置されている箱の数をカウントする。
 
 #+caption: func InfoSystem(world w.World, solutionMode bool) {}
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/info.go#L21-L29
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	for _, tile := range gameResources.Level.Grid.Data {
 		if tile.Contains(resources.TileBox) {
 			boxCount += 1
@@ -432,12 +432,12 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 
 ↓テキストコンポーネントを更新する。IDで分岐する。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/info.go#L31-L51
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	// Set text info
 	world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 		text := world.Components.Engine.Text.Get(entity).(*ec.Text)
@@ -472,12 +472,12 @@ type Resources struct {
 
 ↓ゲームリソース。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/game.go#L128-L135
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // Game contains game resources
 type Game struct {
 	StateEvent StateEvent
@@ -496,12 +496,12 @@ type Game struct {
 
 ↓タイルの状態一覧。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/resources/game.go#L105-L112
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // List of game tiles
 const (
 	TilePlayer = gloader.TilePlayer
@@ -516,12 +516,12 @@ const (
 
 stateによって適用systemが異なる。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/gameplay.go#L65-L72
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func (st *GameplayState) Update(world w.World) states.Transition {
 	g.SwitchLevelSystem(world)
 	g.UndoSystem(world)
@@ -536,23 +536,23 @@ func (st *GameplayState) Update(world w.World) states.Transition {
 
 ↓systemではこうしている。シンプルにリソースの値に応じてMove()を呼んでいる。ボタン押下に応じて、Actionsがセットされてるはず。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/move.go#L9-L11
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // MoveSystem moves player
 func MoveSystem(world w.World) {
 	moveUpAction := world.Resources.InputHandler.Actions[resources.MoveUpAction]
 #+end_src
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/move.go#L21-L23
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	switch {
 	case moveUpAction || moveUpFastAction:
 		resources.Move(world, resources.MovementUp)
@@ -573,12 +573,12 @@ type InputHandler struct {
 ↓このように、キーボード押下時Actionsにセットする。
 
 #+caption: func (st *LevelCompleteState) Update(world w.World) states.Transition {}
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/level_complete_menu.go#L121-L123
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			world.Resources.InputHandler.Actions[resources.RestartAction] = true
 		}
@@ -587,22 +587,22 @@ https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470
 ↓そのあとsystemで処理する。
 
 #+caption: func SwitchLevelSystem(world w.World) bool {}
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/switch_level.go#L17
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	restartAction := world.Resources.InputHandler.Actions[resources.RestartAction]
 #+end_src
 
 #+caption: func SwitchLevelSystem(world w.World) bool {}
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/systems/switch_level.go#L25-L28
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	case restartAction:
 		gameResources.Level.Movements = []resources.MovementType{}
 		gameResources.Level.Modified = true
@@ -630,12 +630,12 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 
 ↓複数あるメニューは、このように抽象化されている。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/lib/states/menu.go#L16-L22
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 type menu interface {
 	getSelection() int
 	setSelection(selection int)
@@ -656,12 +656,12 @@ type menu interface {
 - stateMachineの内でSystemを実行している。どのステートでも描画する
 
 #+caption: stateが描画している部分
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf188429ea/states/lib.go#L98-L103
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // Draw draws the screen after a state update
 func (sm *StateMachine) Draw(world w.World, screen *ebiten.Image) {
 	// Run drawing systems
@@ -673,12 +673,12 @@ func (sm *StateMachine) Draw(world w.World, screen *ebiten.Image) {
 ↓呼び出されているRenderSpriteSystemの抜粋。
 
 #+caption: コンポーネントを描画する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/goecsengine/blob/be27b724d4c8f46b9d31959fe91c4ecf188429ea/systems/sprite/render.go#L21-L25
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 // RenderSpriteSystem draws images.
 // Images are drawn in ascending order of depth.
 // Images with higher depth are thus drawn above images with lower depth.
@@ -697,12 +697,12 @@ func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
 
 真っ黒な画像をスプライト画像として登録して、フェードアウトとしている。スプライトをファイルで読み込むほかに、こういったこともできる。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/x-hgg-x/sokoban-go/blob/e9d204aeebe393d730fb4bdcb060d249f1470485/main.go#L73-L75
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	textureImage := ebiten.NewImage(minGameWidth, minGameHeight)
 	textureImage.Fill(color.RGBA{A: 120})
 	spriteSheets["fadeOut"] = ec.SpriteSheet{Texture: ec.Texture{Image: textureImage}, Sprites: []ec.Sprite{{Width: minGameWidth, Height: minGameHeight}}}

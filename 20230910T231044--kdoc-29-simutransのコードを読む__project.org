@@ -74,32 +74,33 @@ CLOCK: [2023-09-30 Sat 12:16]--[2023-09-30 Sat 12:41] =>  0:25
 - 2回クリックのクラスがある
 
 #+caption: 線路建設は2回クリックが必要。開始と終点
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/kd-collective/simutrans/blob/bf0bd099857494ed35a5b6e210ae02eba2cdfe36/src/simutrans/tool/simmenu.h#L374-L378
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src c
 /**
- * Class for tools needing two clicks (e.g. building ways).
- * Dragging is also possible.
- */
+ ,* Class for tools needing two clicks (e.g. building ways).
+ ,* Dragging is also possible.
+ ,*/
 class two_click_tool_t : public tool_t {
-#+end_results
+#+end_src
 
 #+caption: 経路探索
-#+begin_src git-permalink  https://github.com/kd-collective/simutrans/blob/bf0bd099857494ed35a5b6e210ae02eba2cdfe36/src/simutrans/world/simcity.cc#L485-L490
+#+begin_src git-permalink :wrap src cpp
+https://github.com/kd-collective/simutrans/blob/bf0bd099857494ed35a5b6e210ae02eba2cdfe36/src/simutrans/world/simcity.cc#L485-L490
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src cpp
 /**
- * Search a free place for a monument building
- * Im Gegensatz zum building_placefinder_t werden Strassen auf den Raendern
- * toleriert.
- */
+ ,* Search a free place for a monument building
+ ,* Im Gegensatz zum building_placefinder_t werden Strassen auf den Raendern
+ ,* toleriert.
+ ,*/
 class monument_placefinder_t : public placefinder_t {
-#+end_results
+#+end_src
 
 - ~get_tile_list~ でそのタイルの一覧を取っているようだ
 - レベルを取得する方法
@@ -110,12 +111,12 @@ class monument_placefinder_t : public placefinder_t {
 - 座標のほかに、町の家リストがある
 
 #+caption: 家リストから消す
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src cpp
 https://github.com/kd-collective/simutrans/blob/bf0bd099857494ed35a5b6e210ae02eba2cdfe36/src/simutrans/world/simcity.cc#L611-L617
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src cpp
 // this function removes houses from the city house list
 void stadt_t::remove_gebaeude_from_stadt(gebaeude_t* gb)
 {
@@ -123,19 +124,19 @@ void stadt_t::remove_gebaeude_from_stadt(gebaeude_t* gb)
 	gb->set_stadt(NULL);
 	recalc_city_size();
 }
-#+end_results
+#+end_src
 
 - 重み付けしたベクタ。要素をソートするのに役立つ
   - ~weighted_vector_tpl~
   - 各要素が重みを保持している
 
 #+caption: 重みを考慮してランダムに選択する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src cpp
 https://github.com/kd-collective/simutrans/blob/bf0bd099857494ed35a5b6e210ae02eba2cdfe36/src/simutrans/world/simcity.cc#L739-L753
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src cpp
 stadt_t::factory_entry_t* stadt_t::factory_set_t::get_random_entry()
 {
 	if(  total_remaining>0  ) {
@@ -151,36 +152,36 @@ stadt_t::factory_entry_t* stadt_t::factory_set_t::get_random_entry()
 	}
 	return NULL;
 }
-#+end_results
+#+end_src
 
 - entriesはイベントキューみたいな感じなのかな。各建物に対する操作を保持して、処理する
 
 #+caption: タイルから削除する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src cpp
 https://github.com/kd-collective/simutrans/blob/bf0bd099857494ed35a5b6e210ae02eba2cdfe36/src/simutrans/tool/simtool.cc#L431-L434
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src cpp
 /* delete things from a tile
- * citycars and pedestrian first and then go up to queue to more important objects
- */
+ ,* citycars and pedestrian first and then go up to queue to more important objects
+ ,*/
 bool tool_remover_t::tool_remover_intern(player_t *player, koord3d pos, sint8 type, const char *&msg)
-#+end_results
+#+end_src
 
 - 三次元座標はいい感じに抽象化されている
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/kd-collective/simutrans/blob/bf0bd099857494ed35a5b6e210ae02eba2cdfe36/src/simutrans/dataobj/koord3d.h#L16-L19
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src c
 /**
- * 3D Coordinates
- */
+ ,* 3D Coordinates
+ ,*/
 class koord3d
-#+end_results
+#+end_src
 
 * 関連
 

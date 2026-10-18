@@ -55,36 +55,36 @@ file does not exist
 ↓ここで、ErrNotExistはエラー変数である。
 
 #+caption: ErrNotExist
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/io/fs/fs.go#L146
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	ErrNotExist   = errNotExist()   // "file does not exist"
 #+end_src
 
 ↓さらに辿る。
 
 #+caption: 実態はoserror
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/io/fs/fs.go#L153
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 func errNotExist() error   { return oserror.ErrNotExist }
 #+end_src
 
 ↓ようやく定義にたどり着く。
 
 #+caption: internal packageのoserrorでの定義
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/internal/oserror/errors.go#L12-L16
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 var (
 	ErrInvalid    = errors.New("invalid argument")
 	ErrPermission = errors.New("permission denied")
@@ -94,12 +94,12 @@ var (
 
 errors.New()が返す構造体*errors.errorStringはUnwrap()、Is()を実装していないから、エラーチェーンを辿ることはない。単純にerrors.New()で作られたエラー変数自体を「比較」していることになる。比較ロジックはなんだろうか。実装を見る。
 
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/b8ac61e6e64c92f23d8cf868a92a70d13e20a124/src/errors/wrap.go#L55
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 		if targetComparable && err == target {
 #+end_src
 

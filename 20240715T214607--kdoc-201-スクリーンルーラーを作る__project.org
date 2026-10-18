@@ -75,36 +75,36 @@ CLOCK: [2024-07-13 Sat 11:17]--[2024-07-13 Sat 11:42] =>  0:25
 #+end_src
 
 #+caption: ウィンドウを動かしている部分
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/swillner/highlight-pointer/blob/32bf4c60696a4764e8060574ca3031f4fb4ca20d/highlight-pointer.c#L353-L357
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src c
                         } else if (highlight_visible) {
                             get_pointer_position(&x, &y);
                             XMoveWindow(dpy, win, x - total_radius - 1, y - total_radius - 1);
                             /* unfortunately, this causes increase of the X server's cpu usage */
                         }
-#+end_results
+#+end_src
 
 #+caption: ここで背景を透明にしている。ないとハイライトまわりが白くなる
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/swillner/highlight-pointer/blob/32bf4c60696a4764e8060574ca3031f4fb4ca20d/highlight-pointer.c#L155
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src c
 static void set_window_mask() {
-#+end_results
+#+end_src
 
 #+caption: カーソルを描画している
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/swillner/highlight-pointer/blob/32bf4c60696a4764e8060574ca3031f4fb4ca20d/highlight-pointer.c#L245-L253
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src c
 static void redraw() {
     XSetForeground(dpy, gc, button_pressed ? pressed_color.pixel : released_color.pixel);
     if (options.outline) {
@@ -114,15 +114,15 @@ static void redraw() {
         XFillArc(dpy, win, gc, options.outline, options.outline, 2 * options.radius + 1, 2 * options.radius + 1, 0, 360 * 64);
     }
 }
-#+end_results
+#+end_src
 
 #+caption: これがないと枠すら表示されない。移動したときのイベントで何か処理をしているのか
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/swillner/highlight-pointer/blob/32bf4c60696a4764e8060574ca3031f4fb4ca20d/highlight-pointer.c#L130-L146
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src c
 static int init_events() {
     XIEventMask events;
     unsigned char mask[(XI_LASTEVENT + 7) / 8];
@@ -140,17 +140,17 @@ static int init_events() {
 
     return 0;
 }
-#+end_results
+#+end_src
 
 - イベントマスクとは、特定のイベントが発生したときに通知を受け取るための機構。一般的に、イベントマスクはビットマスクとして表現され、各ビットが特定のイベントタイプに対応している
 
 #+caption: ここをコメントアウトするとカーソルが何も表示されなくなる。カーソルのある点で描画しているのはこいつか
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/swillner/highlight-pointer/blob/32bf4c60696a4764e8060574ca3031f4fb4ca20d/highlight-pointer.c#L115-L123
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src c
 static void show_highlight() {
     int x, y;
     int total_radius = options.radius + options.outline;
@@ -160,12 +160,12 @@ static void show_highlight() {
     redraw();
     highlight_visible = 1;
 }
-#+end_results
+#+end_src
 
 - 新しく作成されるウィンドウはウィンドウマネージャによって制御されず、直接画面に表示される
 
 #+caption: クセのあるシグネチャ
-#+begin_src git-permalink
+#+begin_src go
 func (w *Window) Create(parent xproto.Window, x, y, width, height,
 	valueMask int, valueList ...uint32) {
 #+end_src

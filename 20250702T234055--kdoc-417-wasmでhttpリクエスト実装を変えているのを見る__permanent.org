@@ -21,22 +21,22 @@ WASMはセキュリティのために、ブラウザのサンドボックス化�
 なので、WASM上のリクエストの実装は変えられている。通常のGoの実装が、ソケット通信によってリクエストを送信するのとは異なる。実際に観察してみる。
 
 #+caption: ビルドタグを確認する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/net/http/roundtrip_js.go#L5
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 //go:build js && wasm
 #+end_src
 
 #+caption: RoundTripメソッド内でJSを呼び出している
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/net/http/roundtrip_js.go#L129
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src go
 	fetchPromise := js.Global().Call("fetch", req.URL.String(), opt)
 #+end_src
 

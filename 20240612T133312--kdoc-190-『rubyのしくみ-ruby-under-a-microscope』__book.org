@@ -238,7 +238,7 @@ local table (size: 4, argc: 1 [opts: 0, rest: -1, post: 0, block: -1, kw: 1@0, k
   - RubyはRubyを使って ~insns.def~ を処理し、 ~vm.inc~ というCソースコードを生成する。そして生成したCソースコードとあわせて、まずは小さなminirubyというコマンドをビルドし、これを用いて大きなRubyコマンドを作っていく
 
 #+caption: YARV命令putself
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/kd-collective/ruby/blob/dd04def10f22296c9a98b4d796c100b9ad4e2388/insns.def#L348-L356
 #+end_src
 
@@ -406,12 +406,12 @@ Value of $& in the top-level scope: dog
 #+end_src
 
 #+caption: ソースコードから特殊変数の一覧を確認する
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
   https://github.com/kd-collective/ruby/blob/dd04def10f22296c9a98b4d796c100b9ad4e2388/parse.y#L9572-L9587
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src c
       case '~':		/* $~: match-data */
       case '*':		/* $*: argv */
       case '$':		/* $$: pid */
@@ -708,12 +708,12 @@ adding instance variable number 20  0.026045   0.003476   0.029521 (  0.029833)
 [[file:images/20240707-prepend.drawio.svg]]
 
 #+caption: Rubyがモジュールをコピーしている箇所
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src c
 https://github.com/kd-collective/ruby/blob/dd04def10f22296c9a98b4d796c100b9ad4e2388/class.c#L1137-L1160
 #+end_src
 
 #+RESULTS:
-#+begin_src
+#+begin_src c
 VALUE
 rb_include_class_new(VALUE module, VALUE super)
 {

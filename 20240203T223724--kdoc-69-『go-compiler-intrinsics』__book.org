@@ -34,12 +34,12 @@ CLOCK: [2024-02-03 Sat 22:48]--[2024-02-03 Sat 23:13] =>  0:25
   - 暗号とか圧縮分野
 
 #+caption: 組み込み関数
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/math/bits/bits.go#L116-L122
 #+end_src
 
 #+RESULTS:
-#+begin_results go
+#+begin_src go
 // OnesCount returns the number of one bits ("population count") in x.
 func OnesCount(x uint) int {
 	if UintSize == 32 {
@@ -47,21 +47,21 @@ func OnesCount(x uint) int {
 	}
 	return OnesCount64(uint64(x))
 }
-#+end_results
+#+end_src
 
 - OnesCount組み込み関数を使ったとき発行されるアセンブラを見ると、POPCNT命令があるのを確認できる。これがCPUネイティブの命令である
 - CMPB命令で、CPUがPOPCNT命令をネイティブサポートしているか事前チェックしている
 
 #+caption: アトミックインクリメント
-#+begin_src git-permalink
+#+begin_src git-permalink :wrap src go
 https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/sync/atomic/type.go#L87-L88
 #+end_src
 
 #+RESULTS:
-#+begin_results
+#+begin_src go
 // Add atomically adds delta to x and returns the new value.
 func (x *Int32) Add(delta int32) (new int32) { return AddInt32(&x.v, delta) }
-#+end_results
+#+end_src
 
 - CPUのアトミックインクリメントは、競合を回避するために設計された操作。同じ変数を同時にインクリメントしようとしても正確にインクリメントできる。CPUの命令セットで用意されているため安全かつコストを少なく操作できる
 - アトミックカウンタのコードを書くとLOCK命令が発行されることを確認できる
