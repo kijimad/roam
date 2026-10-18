@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-18 日 21:36 -->
+<!-- 2026-10-18 日 21:55 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 648: select の case に優先度をつけるには default 付き select を優先度順に重ねる</h1>
-<div id="outline-container-orgfec79e0" class="outline-2">
-<h2 id="orgfec79e0"><a href="#orgfec79e0">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgfec79e0">
+<div id="outline-container-orgb70bb4e" class="outline-2">
+<h2 id="orgb70bb4e"><a href="#orgb70bb4e">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgb70bb4e">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgceca3d3" class="outline-2">
-<h2 id="orgceca3d3"><a href="#orgceca3d3">概要</a></h2>
-<div class="outline-text-2" id="text-orgceca3d3">
+<div id="outline-container-org23f2b67" class="outline-2">
+<h2 id="org23f2b67"><a href="#org23f2b67">概要</a></h2>
+<div class="outline-text-2" id="text-org23f2b67">
 <p>
 Go の <code>select</code> では、複数の case が同時に進行できるときランダムに選ばれる。なので例えばシャットダウン用とキュー追加用の両方のチャネルに値が届いていると、どちらを処理するかはランダムになる。キュー追加をせずシャットダウンの後処理だけをやるなど、一貫させたほうがよいこともある。その場合、優先したい <code>case</code> だけを <code>default</code> 付きの <code>select</code> で先に確かめ、なければ全部の <code>case</code> を並べた <code>select</code> で待つ。
 </p>
@@ -54,7 +54,7 @@ Go の <code>select</code> では、複数の case が同時に進行できる�
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>for {
+<pre class="src src-go"><code>for {
 	// Probe shutdown by itself first. This makes an already queued terminal
 	// request win over every other ready case. Closing done before replying
 	// also means a successful Shutdown response observes a stopped worker.
@@ -106,9 +106,9 @@ Go の <code>select</code> では、複数の case が同時に進行できる�
 </div>
 </div>
 </div>
-<div id="outline-container-org12af987" class="outline-2">
-<h2 id="org12af987"><a href="#org12af987">関連</a></h2>
-<div class="outline-text-2" id="text-org12af987">
+<div id="outline-container-org1f947bd" class="outline-2">
+<h2 id="org1f947bd"><a href="#org1f947bd">関連</a></h2>
+<div class="outline-text-2" id="text-org1f947bd">
 <ul class="org-ul">
 <li>前提: <a href="20261005T223831--kdoc-647-select-は複数の-case-が同時に実行できる状態だとランダムに選ぶ__permanent.html#ID-20261005T223831">KDOC 647: select は複数の case が同時に実行できる状態だとランダムに選ぶ</a></li>
 </ul>

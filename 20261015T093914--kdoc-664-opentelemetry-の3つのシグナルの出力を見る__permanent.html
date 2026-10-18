@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-18 日 21:36 -->
+<!-- 2026-10-18 日 21:55 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 664: OpenTelemetry の3つのシグナルの出力を見る</h1>
-<div id="outline-container-org4d59d87" class="outline-2">
-<h2 id="org4d59d87"><a href="#org4d59d87">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org4d59d87">
+<div id="outline-container-org35cc095" class="outline-2">
+<h2 id="org35cc095"><a href="#org35cc095">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org35cc095">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,15 +37,15 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc3ab05a" class="outline-2">
-<h2 id="orgc3ab05a"><a href="#orgc3ab05a">概要</a></h2>
-<div class="outline-text-2" id="text-orgc3ab05a">
+<div id="outline-container-org4ec0fcd" class="outline-2">
+<h2 id="org4ec0fcd"><a href="#org4ec0fcd">概要</a></h2>
+<div class="outline-text-2" id="text-org4ec0fcd">
 <p>
 OpenTelemetry の3つのシグナル(trace、metric、log)を、それぞれいちばん小さい例で出力して見る。どれも標準出力の exporter で JSON を書き出し、整形して出力をそのまま見る。
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>3つの例で使う共通部分</label><pre class="src src-shell" id="org4dcf77f"><code># 例ごとに一時ディレクトリを作り、終わったら消す
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>3つの例で使う共通部分</label><pre class="src src-shell" id="org9b8b10a"><code># 例ごとに一時ディレクトリを作り、終わったら消す
 dir=$(mktemp -d)
 trap 'rm -rf "$dir"' EXIT
 cd "$dir"
@@ -62,9 +62,9 @@ go get \
 </code></pre>
 </div>
 </div>
-<div id="outline-container-orgf0e7c04" class="outline-3">
-<h3 id="orgf0e7c04"><a href="#orgf0e7c04">trace</a></h3>
-<div class="outline-text-3" id="text-orgf0e7c04">
+<div id="outline-container-org73cc896" class="outline-3">
+<h3 id="org73cc896"><a href="#org73cc896">trace</a></h3>
+<div class="outline-text-3" id="text-org73cc896">
 <p>
 親の span の中で子の span を作る。
 </p>
@@ -100,8 +100,8 @@ go run ./trace
 </code></pre>
 </div>
 
-<pre class="example" id="org7dfe35d">
-{
+<div class="org-src-container">
+<pre class="src src-nil"><code>{
 	"Name": "child",
 	"SpanContext": {
 		"TraceID": "23fc88efba48028dd9d7717ccb8a1b61",
@@ -247,7 +247,8 @@ go run ./trace
 		"Attributes": null
 	}
 }
-</pre>
+</code></pre>
+</div>
 
 <ul class="org-ul">
 <li>子の Parent.SpanID が親の SpanID と同じで、TraceID も同じである。これで1つのトレースの中の親子を表現している</li>
@@ -256,9 +257,9 @@ go run ./trace
 </ul>
 </div>
 </div>
-<div id="outline-container-org5e191a9" class="outline-3">
-<h3 id="org5e191a9"><a href="#org5e191a9">metric</a></h3>
-<div class="outline-text-3" id="text-org5e191a9">
+<div id="outline-container-org1c3176c" class="outline-3">
+<h3 id="org1c3176c"><a href="#org1c3176c">metric</a></h3>
+<div class="outline-text-3" id="text-org1c3176c">
 <p>
 カウンタに 1、2、3 を足す。
 </p>
@@ -293,8 +294,8 @@ go run ./metric
 </code></pre>
 </div>
 
-<pre class="example" id="orgd17364d">
-{
+<div class="org-src-container">
+<pre class="src src-nil"><code>{
 	"Resource": [
 		{
 			"Key": "service.name",
@@ -355,16 +356,17 @@ go run ./metric
 		}
 	]
 }
-</pre>
+</code></pre>
+</div>
 
 <ul class="org-ul">
 <li>3回の Add が、値 6 に集計された</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgebcb6c7" class="outline-3">
-<h3 id="orgebcb6c7"><a href="#orgebcb6c7">log</a></h3>
-<div class="outline-text-3" id="text-orgebcb6c7">
+<div id="outline-container-org5c3f935" class="outline-3">
+<h3 id="org5c3f935"><a href="#org5c3f935">log</a></h3>
+<div class="outline-text-3" id="text-org5c3f935">
 <p>
 ログを1件書く。
 </p>
@@ -401,8 +403,8 @@ go run ./log
 </code></pre>
 </div>
 
-<pre class="example" id="org9e08ce3">
-{
+<div class="org-src-container">
+<pre class="src src-nil"><code>{
 	"Timestamp": "0001-01-01T00:00:00Z",
 	"ObservedTimestamp": "2026-10-15T09:50:59.139404628+09:00",
 	"Severity": 9,
@@ -453,7 +455,8 @@ go run ./log
 	},
 	"DroppedAttributes": 0
 }
-</pre>
+</code></pre>
+</div>
 
 <ul class="org-ul">
 <li><code>Scope</code> にロガーに渡した文字列が入っている</li>
@@ -461,9 +464,9 @@ go run ./log
 </div>
 </div>
 </div>
-<div id="outline-container-orge29f993" class="outline-2">
-<h2 id="orge29f993"><a href="#orge29f993">関連</a></h2>
-<div class="outline-text-2" id="text-orge29f993">
+<div id="outline-container-orgc44d718" class="outline-2">
+<h2 id="orgc44d718"><a href="#orgc44d718">関連</a></h2>
+<div class="outline-text-2" id="text-orgc44d718">
 <ul class="org-ul">
 <li>類似: <a href="20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html#ID-20261014T220427">KDOC 663: リングキューの動作を試す</a>。ただしこの例の log は SimpleProcessor なのでキューは通らない</li>
 </ul>

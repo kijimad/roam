@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-18 日 21:36 -->
+<!-- 2026-10-18 日 21:55 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 57: sokoban-goを読む</title>
@@ -22,17 +22,17 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 57: sokoban-goを読む</h1>
-<div id="outline-container-orgfd0a8c8" class="outline-2">
-<h2 id="orgfd0a8c8"><a href="#orgfd0a8c8"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-orgfd0a8c8">
+<div id="outline-container-org93d65c5" class="outline-2">
+<h2 id="org93d65c5"><a href="#org93d65c5"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-org93d65c5">
 <p>
 プロジェクトは終了である。
 </p>
 </div>
 </div>
-<div id="outline-container-org7f4b6cf" class="outline-2">
-<h2 id="org7f4b6cf"><a href="#org7f4b6cf">概要</a></h2>
-<div class="outline-text-2" id="text-org7f4b6cf">
+<div id="outline-container-orgead3684" class="outline-2">
+<h2 id="orgead3684"><a href="#orgead3684">概要</a></h2>
+<div class="outline-text-2" id="text-orgead3684">
 <p>
 gameを作るけど最後までうまくいった試しがない。人のコードを見る。
 </p>
@@ -46,9 +46,9 @@ gameを作るけど最後までうまくいった試しがない。人のコー�
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc7651f0" class="outline-2">
-<h2 id="orgc7651f0"><a href="#orgc7651f0">タイル - スプライト</a></h2>
-<div class="outline-text-2" id="text-orgc7651f0">
+<div id="outline-container-org71efb16" class="outline-2">
+<h2 id="org71efb16"><a href="#org71efb16">タイル - スプライト</a></h2>
+<div class="outline-text-2" id="text-org71efb16">
 <p>
 タイルの上にあるものはスプライトとしているよう。<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>
 </p>
@@ -59,7 +59,7 @@ gameを作るけど最後までうまくいった試しがない。人のコー�
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>const (
+<pre class="src src-go"><code>const (
 	exteriorSpriteNumber = 0
 	wallSpriteNumber     = 1
 	floorSpriteNumber    = 2
@@ -71,9 +71,9 @@ gameを作るけど最後までうまくいった試しがない。人のコー�
 </div>
 </div>
 </div>
-<div id="outline-container-orge1ead12" class="outline-2">
-<h2 id="orge1ead12"><a href="#orge1ead12">タイルに対する操作</a></h2>
-<div class="outline-text-2" id="text-orge1ead12">
+<div id="outline-container-orge94cd21" class="outline-2">
+<h2 id="orge94cd21"><a href="#orge94cd21">タイルに対する操作</a></h2>
+<div class="outline-text-2" id="text-orge94cd21">
 <p>
 タイルに対する操作一覧。論理演算で判断しているな。Set関数では自身を書き換える。
 </p>
@@ -84,7 +84,7 @@ gameを作るけど最後までうまくいった試しがない。人のコー�
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// Tile is a game tile
+<pre class="src src-go"><code>// Tile is a game tile
 type Tile uint8
 
 // List of game tiles
@@ -119,9 +119,9 @@ func (t *Tile) Remove(other Tile) {
 </div>
 </div>
 </div>
-<div id="outline-container-org532b6d0" class="outline-2">
-<h2 id="org532b6d0"><a href="#org532b6d0">読み込み</a></h2>
-<div class="outline-text-2" id="text-org532b6d0">
+<div id="outline-container-org8597fce" class="outline-2">
+<h2 id="org8597fce"><a href="#org8597fce">読み込み</a></h2>
+<div class="outline-text-2" id="text-org8597fce">
 <p>
 タイルはファイルから読み込んでいるようだ。よくわからない。タイルの縦×横の集合体がグリッドだ。
 </p>
@@ -132,7 +132,7 @@ func (t *Tile) Remove(other Tile) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>grid := make([][]byte, len(lines))
+<pre class="src src-go"><code>grid := make([][]byte, len(lines))
 </code></pre>
 </div>
 
@@ -146,7 +146,7 @@ func (t *Tile) Remove(other Tile) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet *ec.SpriteSheet, line, col int) {
+<pre class="src src-go"><code>func createFloorEntity(componentList *loader.EntityComponentList, gameSpriteSheet *ec.SpriteSheet, line, col int) {
 	componentList.Engine = append(componentList.Engine, loader.EngineComponentList{
 		SpriteRender: &amp;ec.SpriteRender{SpriteSheet: gameSpriteSheet, SpriteNumber: floorSpriteNumber},
 		Transform:    &amp;ec.Transform{},
@@ -159,9 +159,9 @@ func (t *Tile) Remove(other Tile) {
 </div>
 </div>
 </div>
-<div id="outline-container-org119518e" class="outline-2">
-<h2 id="org119518e"><a href="#org119518e">コンポーネントの定義</a></h2>
-<div class="outline-text-2" id="text-org119518e">
+<div id="outline-container-org1ac0a69" class="outline-2">
+<h2 id="org1ac0a69"><a href="#org1ac0a69">コンポーネントの定義</a></h2>
+<div class="outline-text-2" id="text-org1ac0a69">
 <p>
 コンポーネントの種類の定義↓。
 </p>
@@ -172,7 +172,7 @@ func (t *Tile) Remove(other Tile) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>type gameComponentList struct {
+<pre class="src src-go"><code>type gameComponentList struct {
 	GridElement *gc.GridElement
 	Player      *gc.Player
 	Box         *gc.Box
@@ -192,7 +192,7 @@ func (t *Tile) Remove(other Tile) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// Components contains references to all game components
+<pre class="src src-go"><code>// Components contains references to all game components
 type Components struct {
 	GridElement *ecs.SliceComponent
 	Player      *ecs.NullComponent
@@ -204,9 +204,9 @@ type Components struct {
 </div>
 </div>
 </div>
-<div id="outline-container-orge20e4f7" class="outline-2">
-<h2 id="orge20e4f7"><a href="#orge20e4f7">resources</a></h2>
-<div class="outline-text-2" id="text-orge20e4f7">
+<div id="outline-container-orgb717a68" class="outline-2">
+<h2 id="orgb717a68"><a href="#orgb717a68">resources</a></h2>
+<div class="outline-text-2" id="text-orgb717a68">
 <p>
 アクションが定数として表現されている。アクションmapのキーとして利用する。
 </p>
@@ -217,7 +217,7 @@ type Components struct {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>const (
+<pre class="src src-go"><code>const (
 	// MoveUpAction is the action for moving up
 	MoveUpAction = "MoveUp"
 	// MoveUpFastAction is the action for moving up fast
@@ -230,7 +230,7 @@ type Components struct {
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 4: </span>func LoadControls(controlsConfigPath string, axes []string, actions []string) (resources.Controls, resources.InputHandler)</label><pre class="src src-git-permalink"><code>inputHandler.Actions = make(map[string]bool)
+<label class="org-src-name"><span class="listing-number">Listing 4: </span>func LoadControls(controlsConfigPath string, axes []string, actions []string) (resources.Controls, resources.InputHandler)</label><pre class="src src-go"><code>inputHandler.Actions = make(map[string]bool)
 </code></pre>
 </div>
 
@@ -244,7 +244,7 @@ TOMLファイル。対応関係がわかりやすい。
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>[controls.actions.MoveUp]
+<pre class="src src-toml"><code>[controls.actions.MoveUp]
 combinations = [[{ key = "Up" }]]
 once = true
 
@@ -264,9 +264,9 @@ combinations = [[{ key = "ShiftLeft" }, { key = "Up" }], [{ key = "ShiftRight" }
 </div>
 </div>
 </div>
-<div id="outline-container-orgc29d1e2" class="outline-2">
-<h2 id="orgc29d1e2"><a href="#orgc29d1e2">prefab</a></h2>
-<div class="outline-text-2" id="text-orgc29d1e2">
+<div id="outline-container-orge0d1afa" class="outline-2">
+<h2 id="orge0d1afa"><a href="#orge0d1afa">prefab</a></h2>
+<div class="outline-text-2" id="text-orge0d1afa">
 <p>
 prefabが具体的にどういうことをするのかわからない。メニュー画面それぞれを保持しているぽい。
 </p>
@@ -277,7 +277,7 @@ prefabが具体的にどういうことをするのかわからない。メニ�
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// MenuPrefabs contains menu prefabs
+<pre class="src src-go"><code>// MenuPrefabs contains menu prefabs
 type MenuPrefabs struct {
 	MainMenu          loader.EntityComponentList
 	ChoosePackageMenu loader.EntityComponentList
@@ -290,9 +290,9 @@ type MenuPrefabs struct {
 </div>
 </div>
 </div>
-<div id="outline-container-orga7ebcb4" class="outline-2">
-<h2 id="orga7ebcb4"><a href="#orga7ebcb4">UI更新</a></h2>
-<div class="outline-text-2" id="text-orga7ebcb4">
+<div id="outline-container-org0fed4f2" class="outline-2">
+<h2 id="org0fed4f2"><a href="#org0fed4f2">UI更新</a></h2>
+<div class="outline-text-2" id="text-org0fed4f2">
 <p>
 UIもコンポーネントである。↓UIコンポーネントを書き換えて表示する。
 </p>
@@ -303,7 +303,7 @@ UIもコンポーネントである。↓UIコンポーネントを書き換え�
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// Update text components
+<pre class="src src-go"><code>// Update text components
 world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 	text := world.Components.Engine.Text.Get(entity).(*ec.Text)
 
@@ -331,7 +331,7 @@ world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITrans
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>[entity.components.Text]
+<pre class="src src-toml"><code>[entity.components.Text]
 id = "cursor_view_highscores"
 text = "\u25ba"
 font_face = { font = "hack", options.size = 60.0 }
@@ -351,9 +351,9 @@ translation = { x = 40, y = 400 }
 </p>
 </div>
 </div>
-<div id="outline-container-org4500007" class="outline-2">
-<h2 id="org4500007"><a href="#org4500007">メニューコンポーネントのマウスオーバーイベント</a></h2>
-<div class="outline-text-2" id="text-org4500007">
+<div id="outline-container-org48f87b0" class="outline-2">
+<h2 id="org48f87b0"><a href="#org48f87b0">メニューコンポーネントのマウスオーバーイベント</a></h2>
+<div class="outline-text-2" id="text-org48f87b0">
 <p>
 ↓メニューコンポーネントそれぞれで、マウスが上にあるかを判定する。
 </p>
@@ -364,7 +364,7 @@ translation = { x = 40, y = 400 }
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// Handle mouse events only if mouse is moved or clicked
+<pre class="src src-go"><code>// Handle mouse events only if mouse is moved or clicked
 x, y := ebiten.CursorPosition()
 if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 	menuLastCursorPosition = m.VectorInt2{X: x, Y: y}
@@ -383,7 +383,7 @@ if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.I
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>if world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform, world.Components.Engine.MouseReactive).Visit(
+<pre class="src src-go"><code>if world.Manager.Join(world.Components.Engine.SpriteRender, world.Components.Engine.Transform, world.Components.Engine.MouseReactive).Visit(
 </code></pre>
 </div>
 
@@ -397,7 +397,7 @@ if x != menuLastCursorPosition.X || y != menuLastCursorPosition.Y || inpututil.I
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>func(index int) (skip bool) {
+<pre class="src src-go"><code>func(index int) (skip bool) {
 	mouseReactive := world.Components.Engine.MouseReactive.Get(ecs.Entity(index)).(*ec.MouseReactive)
 	if mouseReactive.ID == id &amp;&amp; mouseReactive.Hovered {
 		menu.setSelection(iElem)
@@ -413,9 +413,9 @@ return transition
 </div>
 </div>
 </div>
-<div id="outline-container-org020393c" class="outline-2">
-<h2 id="org020393c"><a href="#org020393c">GridElementとは何か</a></h2>
-<div class="outline-text-2" id="text-org020393c">
+<div id="outline-container-orgdb4b724" class="outline-2">
+<h2 id="orgdb4b724"><a href="#orgdb4b724">GridElementとは何か</a></h2>
+<div class="outline-text-2" id="text-orgdb4b724">
 <p>
 ↓グリッドを置き換えるシステムがある。グリッドは座標を持つことを示す。
 </p>
@@ -426,7 +426,7 @@ return transition
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// GridTransformSystem sets transform for grid elements
+<pre class="src src-go"><code>// GridTransformSystem sets transform for grid elements
 func GridTransformSystem(world w.World) {
 </code></pre>
 </div>
@@ -437,7 +437,7 @@ func GridTransformSystem(world w.World) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>world.Manager.Join(gameComponents.GridElement, world.Components.Engine.SpriteRender, world.Components.Engine.Transform).Visit(ecs.Visit(func(entity ecs.Entity) {
+<pre class="src src-go"><code>world.Manager.Join(gameComponents.GridElement, world.Components.Engine.SpriteRender, world.Components.Engine.Transform).Visit(ecs.Visit(func(entity ecs.Entity) {
 </code></pre>
 </div>
 
@@ -465,7 +465,7 @@ func GridTransformSystem(world w.World) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>for iTile, tile := range gameResources.Level.Grid.Data {
+<pre class="src src-go"><code>for iTile, tile := range gameResources.Level.Grid.Data {
 	switch {
 	case tile.Contains(resources.TilePlayer):
 		playerIndex = iTile
@@ -486,7 +486,7 @@ func GridTransformSystem(world w.World) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>world.Manager.Join(gameComponents.GridElement).Visit(ecs.Visit(func(entity ecs.Entity) {
+<pre class="src src-go"><code>world.Manager.Join(gameComponents.GridElement).Visit(ecs.Visit(func(entity ecs.Entity) {
 	switch {
 	case entity.HasComponent(gameComponents.Player):
 		gridElement := gameComponents.GridElement.Get(entity).(*gc.GridElement)
@@ -505,9 +505,9 @@ func GridTransformSystem(world w.World) {
 </div>
 </div>
 </div>
-<div id="outline-container-org841a850" class="outline-2">
-<h2 id="org841a850"><a href="#org841a850">InfoSystemとは何か</a></h2>
-<div class="outline-text-2" id="text-org841a850">
+<div id="outline-container-orgbf1781d" class="outline-2">
+<h2 id="orgbf1781d"><a href="#orgbf1781d">InfoSystemとは何か</a></h2>
+<div class="outline-text-2" id="text-orgbf1781d">
 <p>
 GridElementと同様に、タイルの状態をエンティティに反映する。今回はUIエンティティ。
 </p>
@@ -522,7 +522,7 @@ GridElementと同様に、タイルの状態をエンティティに反映する
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>for _, tile := range gameResources.Level.Grid.Data {
+<pre class="src src-go"><code>for _, tile := range gameResources.Level.Grid.Data {
 	if tile.Contains(resources.TileBox) {
 		boxCount += 1
 
@@ -544,7 +544,7 @@ GridElementと同様に、タイルの状態をエンティティに反映する
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// Set text info
+<pre class="src src-go"><code>// Set text info
 world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITransform).Visit(ecs.Visit(func(entity ecs.Entity) {
 	text := world.Components.Engine.Text.Get(entity).(*ec.Text)
 
@@ -569,9 +569,9 @@ world.Manager.Join(world.Components.Engine.Text, world.Components.Engine.UITrans
 </div>
 </div>
 </div>
-<div id="outline-container-orgee81101" class="outline-2">
-<h2 id="orgee81101"><a href="#orgee81101">Resourceとは何か</a></h2>
-<div class="outline-text-2" id="text-orgee81101">
+<div id="outline-container-org582bd69" class="outline-2">
+<h2 id="org582bd69"><a href="#org582bd69">Resourceとは何か</a></h2>
+<div class="outline-text-2" id="text-org582bd69">
 <p>
 ECS用語におけるリソースとは何か。エンティティに関係ないデータのこと。マップデータとかかな。
 </p>
@@ -592,7 +592,7 @@ type Resources struct {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// Game contains game resources
+<pre class="src src-go"><code>// Game contains game resources
 type Game struct {
 	StateEvent StateEvent
 	Package    PackageData
@@ -610,9 +610,9 @@ type Game struct {
 </dl>
 </div>
 </div>
-<div id="outline-container-orgeab2910" class="outline-2">
-<h2 id="orgeab2910"><a href="#orgeab2910">タイル</a></h2>
-<div class="outline-text-2" id="text-orgeab2910">
+<div id="outline-container-org242f6a1" class="outline-2">
+<h2 id="org242f6a1"><a href="#org242f6a1">タイル</a></h2>
+<div class="outline-text-2" id="text-org242f6a1">
 <p>
 ↓タイルの状態一覧。
 </p>
@@ -623,7 +623,7 @@ type Game struct {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// List of game tiles
+<pre class="src src-go"><code>// List of game tiles
 const (
 	TilePlayer = gloader.TilePlayer
 	TileBox    = gloader.TileBox
@@ -635,9 +635,9 @@ const (
 </div>
 </div>
 </div>
-<div id="outline-container-orgf8682dc" class="outline-2">
-<h2 id="orgf8682dc"><a href="#orgf8682dc">stateとsystemの関係</a></h2>
-<div class="outline-text-2" id="text-orgf8682dc">
+<div id="outline-container-org085e42f" class="outline-2">
+<h2 id="org085e42f"><a href="#org085e42f">stateとsystemの関係</a></h2>
+<div class="outline-text-2" id="text-org085e42f">
 <p>
 stateによって適用systemが異なる。
 </p>
@@ -648,7 +648,7 @@ stateによって適用systemが異なる。
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>func (st *GameplayState) Update(world w.World) states.Transition {
+<pre class="src src-go"><code>func (st *GameplayState) Update(world w.World) states.Transition {
 	g.SwitchLevelSystem(world)
 	g.UndoSystem(world)
 	g.MoveSystem(world)
@@ -660,9 +660,9 @@ stateによって適用systemが異なる。
 </div>
 </div>
 </div>
-<div id="outline-container-orga33f9a7" class="outline-2">
-<h2 id="orga33f9a7"><a href="#orga33f9a7">移動はどうやっているか</a></h2>
-<div class="outline-text-2" id="text-orga33f9a7">
+<div id="outline-container-orgcda8568" class="outline-2">
+<h2 id="orgcda8568"><a href="#orgcda8568">移動はどうやっているか</a></h2>
+<div class="outline-text-2" id="text-orgcda8568">
 <p>
 ↓systemではこうしている。シンプルにリソースの値に応じてMove()を呼んでいる。ボタン押下に応じて、Actionsがセットされてるはず。
 </p>
@@ -673,7 +673,7 @@ stateによって適用systemが異なる。
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// MoveSystem moves player
+<pre class="src src-go"><code>// MoveSystem moves player
 func MoveSystem(world w.World) {
 	moveUpAction := world.Resources.InputHandler.Actions[resources.MoveUpAction]
 </code></pre>
@@ -685,7 +685,7 @@ func MoveSystem(world w.World) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>switch {
+<pre class="src src-go"><code>switch {
 case moveUpAction || moveUpFastAction:
 	resources.Move(world, resources.MovementUp)
 </code></pre>
@@ -716,7 +716,7 @@ type InputHandler struct {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+<pre class="src src-go"><code>if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	world.Resources.InputHandler.Actions[resources.RestartAction] = true
 }
 </code></pre>
@@ -732,7 +732,7 @@ type InputHandler struct {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>restartAction := world.Resources.InputHandler.Actions[resources.RestartAction]
+<pre class="src src-go"><code>restartAction := world.Resources.InputHandler.Actions[resources.RestartAction]
 </code></pre>
 </div>
 
@@ -742,7 +742,7 @@ type InputHandler struct {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>case restartAction:
+<pre class="src src-go"><code>case restartAction:
 	gameResources.Level.Movements = []resources.MovementType{}
 	gameResources.Level.Modified = true
 	newLevel = gameResources.Level.CurrentNum
@@ -750,9 +750,9 @@ type InputHandler struct {
 </div>
 </div>
 </div>
-<div id="outline-container-org9bb5b0e" class="outline-2">
-<h2 id="org9bb5b0e"><a href="#org9bb5b0e">InputHandlerのリセットはどこでやっているか</a></h2>
-<div class="outline-text-2" id="text-org9bb5b0e">
+<div id="outline-container-org0252836" class="outline-2">
+<h2 id="org0252836"><a href="#org0252836">InputHandlerのリセットはどこでやっているか</a></h2>
+<div class="outline-text-2" id="text-org0252836">
 <p>
 world.Resources.InputHandlerはさまざまなところで使われている。これはボタンの押下状態に応じて値が変わるように見える。リセットが必要だが、どこでやっているか。
 </p>
@@ -777,9 +777,9 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 </p>
 </div>
 </div>
-<div id="outline-container-org276f709" class="outline-2">
-<h2 id="org276f709"><a href="#org276f709">メニューの抽象化</a></h2>
-<div class="outline-text-2" id="text-org276f709">
+<div id="outline-container-org80c20e6" class="outline-2">
+<h2 id="org80c20e6"><a href="#org80c20e6">メニューの抽象化</a></h2>
+<div class="outline-text-2" id="text-org80c20e6">
 <p>
 ↓複数あるメニューは、このように抽象化されている。
 </p>
@@ -790,7 +790,7 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>type menu interface {
+<pre class="src src-go"><code>type menu interface {
 	getSelection() int
 	setSelection(selection int)
 	confirmSelection(world w.World) states.Transition
@@ -801,9 +801,9 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 </div>
 </div>
 </div>
-<div id="outline-container-org15c7c7e" class="outline-2">
-<h2 id="org15c7c7e"><a href="#org15c7c7e">どうやって描画しているか</a></h2>
-<div class="outline-text-2" id="text-org15c7c7e">
+<div id="outline-container-org1985b81" class="outline-2">
+<h2 id="org1985b81"><a href="#org1985b81">どうやって描画しているか</a></h2>
+<div class="outline-text-2" id="text-org1985b81">
 <ul class="org-ul">
 <li>読み込み時にコンポーネントを初期化する
 <ul class="org-ul">
@@ -822,7 +822,7 @@ world.Resources.InputHandlerはさまざまなところで使われている。�
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// Draw draws the screen after a state update
+<pre class="src src-go"><code>// Draw draws the screen after a state update
 func (sm *StateMachine) Draw(world w.World, screen *ebiten.Image) {
 	// Run drawing systems
 	s.RenderSpriteSystem(world, screen)
@@ -841,7 +841,7 @@ func (sm *StateMachine) Draw(world w.World, screen *ebiten.Image) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>// RenderSpriteSystem draws images.
+<pre class="src src-go"><code>// RenderSpriteSystem draws images.
 // Images are drawn in ascending order of depth.
 // Images with higher depth are thus drawn above images with lower depth.
 func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
@@ -850,9 +850,9 @@ func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
 </div>
 </div>
 </div>
-<div id="outline-container-org6cd196f" class="outline-2">
-<h2 id="org6cd196f"><a href="#org6cd196f">StateMachineがどういう感じになっているか</a></h2>
-<div class="outline-text-2" id="text-org6cd196f">
+<div id="outline-container-org1e85776" class="outline-2">
+<h2 id="org1e85776"><a href="#org1e85776">StateMachineがどういう感じになっているか</a></h2>
+<div class="outline-text-2" id="text-org1e85776">
 <p>
 ステートのスタック構造を持っているが、これはどういう感じで推移するか。
 </p>
@@ -863,9 +863,9 @@ func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
 </ul>
 </div>
 </div>
-<div id="outline-container-org716eab3" class="outline-2">
-<h2 id="org716eab3"><a href="#org716eab3">スプライトを動的に追加する</a></h2>
-<div class="outline-text-2" id="text-org716eab3">
+<div id="outline-container-org104fd02" class="outline-2">
+<h2 id="org104fd02"><a href="#org104fd02">スプライトを動的に追加する</a></h2>
+<div class="outline-text-2" id="text-org104fd02">
 <p>
 真っ黒な画像をスプライト画像として登録して、フェードアウトとしている。スプライトをファイルで読み込むほかに、こういったこともできる。
 </p>
@@ -876,53 +876,53 @@ func RenderSpriteSystem(world w.World, screen *ebiten.Image) {
 </div>
 
 <div class="org-src-container">
-<pre class="src src-nil"><code>textureImage := ebiten.NewImage(minGameWidth, minGameHeight)
+<pre class="src src-go"><code>textureImage := ebiten.NewImage(minGameWidth, minGameHeight)
 textureImage.Fill(color.RGBA{A: 120})
 spriteSheets["fadeOut"] = ec.SpriteSheet{Texture: ec.Texture{Image: textureImage}, Sprites: []ec.Sprite{{Width: minGameWidth, Height: minGameHeight}}}
 </code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org6158c81" class="outline-2">
-<h2 id="org6158c81"><a href="#org6158c81">stateとentity</a></h2>
-<div class="outline-text-2" id="text-org6158c81">
+<div id="outline-container-org5c57979" class="outline-2">
+<h2 id="org5c57979"><a href="#org5c57979">stateとentity</a></h2>
+<div class="outline-text-2" id="text-org5c57979">
 <p>
 stateごとでファイルからentityを生成し直している。そこから、systemでいろいろentityを操作している。
 </p>
 </div>
 </div>
-<div id="outline-container-org421ee81" class="outline-2">
-<h2 id="org421ee81"><a href="#org421ee81">Tasks</a></h2>
-<div class="outline-text-2" id="text-org421ee81">
+<div id="outline-container-org388bd81" class="outline-2">
+<h2 id="org388bd81"><a href="#org388bd81">Tasks</a></h2>
+<div class="outline-text-2" id="text-org388bd81">
 <p>
 なし。
 </p>
 </div>
 </div>
-<div id="outline-container-orgc03c01d" class="outline-2">
-<h2 id="orgc03c01d"><a href="#orgc03c01d">Archives</a></h2>
-<div class="outline-text-2" id="text-orgc03c01d">
+<div id="outline-container-orgf32a37f" class="outline-2">
+<h2 id="orgf32a37f"><a href="#orgf32a37f">Archives</a></h2>
+<div class="outline-text-2" id="text-orgf32a37f">
 </div>
-<div id="outline-container-org31bbad5" class="outline-3">
-<h3 id="org31bbad5"><a href="#org31bbad5"><span class="done DONE">DONE</span> 読む</a></h3>
-<div class="outline-text-3" id="text-org31bbad5">
+<div id="outline-container-org244a4d0" class="outline-3">
+<h3 id="org244a4d0"><a href="#org244a4d0"><span class="done DONE">DONE</span> 読む</a></h3>
+<div class="outline-text-3" id="text-org244a4d0">
 <p>
 コードを読む。
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org07ebaba" class="outline-2">
-<h2 id="org07ebaba"><a href="#org07ebaba">関連</a></h2>
-<div class="outline-text-2" id="text-org07ebaba">
+<div id="outline-container-org208568c" class="outline-2">
+<h2 id="org208568c"><a href="#org208568c">関連</a></h2>
+<div class="outline-text-2" id="text-org208568c">
 <ul class="org-ul">
 <li>動機: <a href="20230909T204817--kdoc-28-交通シミュレーションゲームを作る__project.html#ID-20230909T204817">KDOC 28: 交通シミュレーションゲームを作る</a>。で挫折したので先人のコードを読んでみることにした</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org9cfb794" class="outline-2">
-<h2 id="org9cfb794"><a href="#org9cfb794">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org9cfb794">
+<div id="outline-container-org1f80db6" class="outline-2">
+<h2 id="org1f80db6"><a href="#org1f80db6">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org1f80db6">
 <ul class="org-ul">
 <li><a href="./20231128T074518--kdoc-59-ecsを使ってrpgを作る__project.html">KDOC 59: ECSを使ってRPGを作る</a></li>
 </ul>

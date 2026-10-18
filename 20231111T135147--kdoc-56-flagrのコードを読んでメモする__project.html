@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-18 日 21:35 -->
+<!-- 2026-10-18 日 21:54 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 56: flagrのコードを読んでメモする</title>
@@ -22,25 +22,25 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 56: flagrのコードを読んでメモする</h1>
-<div id="outline-container-orgbcc3705" class="outline-2">
-<h2 id="orgbcc3705"><a href="#orgbcc3705"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
-<div class="outline-text-2" id="text-orgbcc3705">
+<div id="outline-container-org816d3f3" class="outline-2">
+<h2 id="org816d3f3"><a href="#org816d3f3"><span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
+<div class="outline-text-2" id="text-org816d3f3">
 <p>
 プロジェクトは終了である。
 </p>
 </div>
 </div>
-<div id="outline-container-orge6278f8" class="outline-2">
-<h2 id="orge6278f8"><a href="#orge6278f8">概要</a></h2>
-<div class="outline-text-2" id="text-orge6278f8">
+<div id="outline-container-orge9f39fc" class="outline-2">
+<h2 id="orge9f39fc"><a href="#orge9f39fc">概要</a></h2>
+<div class="outline-text-2" id="text-orge9f39fc">
 <p>
 <a href="https://github.com/openflagr/flagr">openflagr/flagr</a>を読んだメモ。バックエンドはGoで書かれている。
 </p>
 </div>
 </div>
-<div id="outline-container-orga4c0645" class="outline-2">
-<h2 id="orga4c0645"><a href="#orga4c0645">DB初期化部分</a></h2>
-<div class="outline-text-2" id="text-orga4c0645">
+<div id="outline-container-org2921ba9" class="outline-2">
+<h2 id="org2921ba9"><a href="#org2921ba9">DB初期化部分</a></h2>
+<div class="outline-text-2" id="text-org2921ba9">
 <p>
 グローバル変数にdb取得関数がある。
 </p>
@@ -50,11 +50,9 @@
 </code></pre>
 </div>
 
-<div class="yes" id="org5093247">
-<p>
-var getDB = entity.GetDB
-</p>
-
+<div class="org-src-container">
+<pre class="src src-go"><code>var getDB = entity.GetDB
+</code></pre>
 </div>
 
 <p>
@@ -66,8 +64,8 @@ var getDB = entity.GetDB
 </code></pre>
 </div>
 
-<pre class="example" id="org4491d35">
-// GetDB gets the db singleton
+<div class="org-src-container">
+<pre class="src src-go"><code>// GetDB gets the db singleton
 func GetDB() *gorm.DB {
 	singletonOnce.Do(func() {
 		db, err := connectDB()
@@ -84,12 +82,13 @@ func GetDB() *gorm.DB {
 
 	return singletonDB
 }
-</pre>
+</code></pre>
 </div>
 </div>
-<div id="outline-container-org22fa9a2" class="outline-2">
-<h2 id="org22fa9a2"><a href="#org22fa9a2">データベース分岐部分</a></h2>
-<div class="outline-text-2" id="text-org22fa9a2">
+</div>
+<div id="outline-container-org6409258" class="outline-2">
+<h2 id="org6409258"><a href="#org6409258">データベース分岐部分</a></h2>
+<div class="outline-text-2" id="text-org6409258">
 <p>
 データベース分岐している箇所。
 </p>
@@ -99,20 +98,19 @@ func GetDB() *gorm.DB {
 </code></pre>
 </div>
 
-<div class="results" id="org5091df9">
-<p>
-err = retry.Do(
+<div class="org-src-container">
+<pre class="src src-go"><code>err = retry.Do(
 	func() error {
 		switch config.Config.DBDriver {
-			case &ldquo;postgres&rdquo;:
+			case "postgres":
 				db, err = gorm.Open(postgres.Open(config.Config.DBConnectionStr), &amp;gorm.Config{
 					Logger: logger,
 				})
-			case &ldquo;sqlite3&rdquo;:
+			case "sqlite3":
 				db, err = gorm.Open(sqlite.Open(config.Config.DBConnectionStr), &amp;gorm.Config{
 					Logger: logger,
 				})
-			case &ldquo;mysql&rdquo;:
+			case "mysql":
 				db, err = gorm.Open(mysql.Open(config.Config.DBConnectionStr), &amp;gorm.Config{
 					Logger: logger,
 				})
@@ -122,14 +120,13 @@ err = retry.Do(
 	retry.Attempts(config.Config.DBConnectionRetryAttempts),
 	retry.Delay(config.Config.DBConnectionRetryDelay),
 )
-</p>
-
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org2b593d1" class="outline-2">
-<h2 id="org2b593d1"><a href="#org2b593d1">各データベースによる結合テスト</a></h2>
-<div class="outline-text-2" id="text-org2b593d1">
+<div id="outline-container-org0a38eb3" class="outline-2">
+<h2 id="org0a38eb3"><a href="#org0a38eb3">各データベースによる結合テスト</a></h2>
+<div class="outline-text-2" id="text-org0a38eb3">
 <p>
 sqlite, mysql, postgresによる結合テストをしている。
 </p>
@@ -139,27 +136,24 @@ sqlite, mysql, postgresによる結合テストをしている。
 </code></pre>
 </div>
 
-<div class="results" id="org205a72f">
-<p>
-start() {
+<div class="org-src-container">
+<pre class="src src-shell"><code>start() {
     start_test flagr_with_sqlite
     start_test flagr_with_mysql
     start_test flagr_with_mysql8
     start_test flagr_with_postgres9
     start_test flagr_with_postgres13
-</p>
 
-<p>
+    # for backward compatibility with checkr/flagr
     start_test checkr_flagr_with_sqlite
 }
-</p>
-
+</code></pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org7c5c78a" class="outline-2">
-<h2 id="org7c5c78a"><a href="#org7c5c78a">関連</a></h2>
-<div class="outline-text-2" id="text-org7c5c78a">
+<div id="outline-container-org427350b" class="outline-2">
+<h2 id="org427350b"><a href="#org427350b">関連</a></h2>
+<div class="outline-text-2" id="text-org427350b">
 <ul class="org-ul">
 <li>疑問: 設計の短所を書く</li>
 </ul>
