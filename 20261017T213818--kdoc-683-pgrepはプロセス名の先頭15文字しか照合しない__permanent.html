@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-18 日 00:11 -->
+<!-- 2026-10-18 日 11:48 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 683: pgrepはプロセス名の先頭15文字しか照合しない</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 683: pgrepはプロセス名の先頭15文字しか照合しない</h1>
-<div id="outline-container-org2bd9df0" class="outline-2">
-<h2 id="org2bd9df0"><a href="#org2bd9df0">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org2bd9df0">
+<div id="outline-container-orgcb15cbd" class="outline-2">
+<h2 id="orgcb15cbd"><a href="#orgcb15cbd">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgcb15cbd">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,36 +37,44 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org5e1c417" class="outline-2">
-<h2 id="org5e1c417"><a href="#org5e1c417">概要</a></h2>
-<div class="outline-text-2" id="text-org5e1c417">
+<div id="outline-container-orgafb7ceb" class="outline-2">
+<h2 id="orgafb7ceb"><a href="#orgafb7ceb">概要</a></h2>
+<div class="outline-text-2" id="text-orgafb7ceb">
 <p>
 <code>pgrep</code> が照合するプロセス名は、 <code>/proc/PID/stat</code> にある先頭15文字だけである。それより長い名前の実行ファイルは、フルネームでは見つからない。 <code>-f</code> を付けると、 <code>/proc/PID/cmdline</code> のコマンドライン全体と照合する。
 </p>
 
-<blockquote>
-<p>
-The process name used for matching is limited to the 15 characters present in the output of /proc/pid/stat.  Use the -f option to match against the complete command line, /proc/pid/cmdline.
-</p>
+<div class="org-src-container">
+<pre class="src src-shell"><code>pgrep -V
+MANWIDTH=80 man 1 pgrep | grep -A2 'The process name used for matching'
+</code></pre>
+</div>
 
-<p>
-pgrep(1)
-</p>
-</blockquote>
+<div class="org-src-container">
+<pre class="src src-nil"><code>pgrep from procps-ng 4.0.4
+     The process name used for matching is limited to the 15 characters present
+     in  the  output of /proc/pid/stat.  Use the -f option to match against the
+     complete command line, /proc/pid/cmdline. Threads may not  have  the  same
+</code></pre>
+</div>
 
 <p>
 15文字なのは、カーネルがプロセス名を終端のNULを含めて16バイト(<code>TASK_COMM_LEN</code>)に切り詰めて持つからである。切り詰めはバイト単位なので、UTF-8の日本語の名前は5文字になり、文字の途中で切れることもある。
 </p>
 
-<blockquote>
-<p>
-Strings longer than TASK_COMM_LEN (16) characters (including the terminating null byte) are silently truncated.
-</p>
+<div class="org-src-container">
+<pre class="src src-shell"><code>MANWIDTH=80 man 5 proc_pid_comm | tail -1
+MANWIDTH=80 man 5 proc_pid_comm | grep -A2 -E 'Strings +longer'
+</code></pre>
+</div>
 
-<p>
-proc_pid_comm(5)
-</p>
-</blockquote>
+<div class="org-src-container">
+<pre class="src src-nil"><code>Linux man-pages 6.7                2023-08-15                  proc_pid_comm(5)
+            /proc/self/task/tid/comm.   Strings  longer than TASK_COMM_LEN (16)
+            characters (including the terminating null byte) are silently trun‐
+            cated.
+</code></pre>
+</div>
 
 <div class="org-src-container">
 <pre class="src src-shell"><code>dir=$(mktemp -d)
@@ -91,9 +99,9 @@ pgrep -f abcdefghijklmnopqrst: 一致
 </div>
 </div>
 </div>
-<div id="outline-container-org01fc8c1" class="outline-2">
-<h2 id="org01fc8c1"><a href="#org01fc8c1">関連</a></h2>
-<div class="outline-text-2" id="text-org01fc8c1">
+<div id="outline-container-org487302a" class="outline-2">
+<h2 id="org487302a"><a href="#org487302a">関連</a></h2>
+<div class="outline-text-2" id="text-org487302a">
 <ul class="org-ul">
 <li>前提: <a href="20240317T101828--kdoc-125-procのマニュアルを調べる__permanent.html#ID-20240317T101828">KDOC 125: /procのマニュアルを調べる</a>。psやpgrepは /proc を情報源にしている</li>
 </ul>

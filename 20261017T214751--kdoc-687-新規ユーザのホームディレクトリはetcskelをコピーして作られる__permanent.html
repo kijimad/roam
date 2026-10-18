@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-18 日 00:13 -->
+<!-- 2026-10-18 日 11:50 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 687: 新規ユーザのホームディレクトリは/etc/skelをコピーして作られる</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 687: 新規ユーザのホームディレクトリは/etc/skelをコピーして作られる</h1>
-<div id="outline-container-org956a261" class="outline-2">
-<h2 id="org956a261"><a href="#org956a261">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org956a261">
+<div id="outline-container-org8bb3680" class="outline-2">
+<h2 id="org8bb3680"><a href="#org8bb3680">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org8bb3680">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,32 +37,30 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org23b4ef6" class="outline-2">
-<h2 id="org23b4ef6"><a href="#org23b4ef6">概要</a></h2>
-<div class="outline-text-2" id="text-org23b4ef6">
+<div id="outline-container-org5466fdc" class="outline-2">
+<h2 id="org5466fdc"><a href="#org5466fdc">概要</a></h2>
+<div class="outline-text-2" id="text-org5466fdc">
 <p>
 <code>useradd -m</code> や <code>adduser</code> でユーザを作ると、ホームディレクトリに <code>/etc/skel</code> の中身がコピーされる。新しいユーザに最初から置いておきたい設定ファイルは、 <code>/etc/skel</code> に入れておけばよい。
 </p>
 
-<blockquote>
-<p>
-The skeleton directory, which contains files and directories to be copied in the user&rsquo;s home directory, when the home directory is created by useradd.
-</p>
+<div class="org-src-container">
+<pre class="src src-shell"><code>dpkg-query -W -f='${Package} ${Version}\n' passwd adduser
+MANWIDTH=80 man 8 useradd | grep -A2 'The skeleton directory, which'
+MANWIDTH=80 man 5 adduser.conf | grep -A1 -E '^ +SKEL +The'
+</code></pre>
+</div>
 
-<p>
-useradd(8)
-</p>
-</blockquote>
-
-<blockquote>
-<p>
-SKEL   The directory from which skeletal user configuration files will be copied.  Defaults to /etc/skel.
-</p>
-
-<p>
-adduser.conf(5)
-</p>
-</blockquote>
+<div class="org-src-container">
+<pre class="src src-nil"><code>adduser 3.137ubuntu1
+passwd 1:4.13+dfsg1-4ubuntu3.2
+         The skeleton directory, which contains files  and  directories  to  be
+         copied  in  the user's home directory, when the home directory is cre‐
+         ated by useradd.
+     SKEL   The  directory from which skeletal user configuration files will be
+            copied.  Defaults to /etc/skel.
+</code></pre>
+</div>
 
 <p>
 確認する。
@@ -85,9 +83,9 @@ adduser.conf(5)
 </div>
 </div>
 </div>
-<div id="outline-container-org279db51" class="outline-2">
-<h2 id="org279db51"><a href="#org279db51">関連</a></h2>
-<div class="outline-text-2" id="text-org279db51">
+<div id="outline-container-orga8023b5" class="outline-2">
+<h2 id="orga8023b5"><a href="#orga8023b5">関連</a></h2>
+<div class="outline-text-2" id="text-orga8023b5">
 <p>
 なし。
 </p>

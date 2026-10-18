@@ -5,80 +5,224 @@
 <link href="https://kijimad.github.io/roam"/>
 <link href="https://kijimad.github.io/roam/atom.xml" rel="self"/>
 <id>https://kijimad.github.io/roam/atom.xml</id>
-<updated>2026-10-18T00:13:21+09:00</updated>
+<updated>2026-10-18T11:50:11+09:00</updated>
 <entry>
-  <title>KDOC 688: i386はIntel 80386の型番に由来する</title>
+  <title>KDOC 696: コンテナの中のlocalhostはそのコンテナ自身を指す</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgf4c8f06" class="outline-2">
- <h2 id="orgf4c8f06"> <a href="#orgf4c8f06">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgf4c8f06">
+ <div id="outline-container-org10768de" class="outline-2">
+ <h2 id="org10768de"> <a href="#org10768de">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org10768de">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org0e3ffda" class="outline-2">
- <h2 id="org0e3ffda"> <a href="#org0e3ffda">概要</a></h2>
- <div class="outline-text-2" id="text-org0e3ffda">
+ <div id="outline-container-org566e802" class="outline-2">
+ <h2 id="org566e802"> <a href="#org566e802">概要</a></h2>
+ <div class="outline-text-2" id="text-org566e802">
  <p>
-i386は、Linuxなどで32ビットx86を指すアーキテクチャ名である。謎に見えていたが、i386はIntel 80386の型番に由来する。Linuxが生まれたころは、CPUを型番で呼んでいたという。
+既定のブリッジネットワークでは、コンテナはそれぞれ自分のネットワークを持つので、コンテナの中の  <code>localhost</code> (127.0.0.1)はそのコンテナ自身を指す。そのため、次の2つがよく起きる。
 </p>
 
- <blockquote>
+ <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-left"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">起きること</th>
+ <th scope="col" class="org-left">対策</th>
+</tr></thead> <tbody> <tr> <td class="org-left">コンテナの中のサーバが127.0.0.1で待ち受けると、ポートを公開してもホストマシンから届かない</td>
+ <td class="org-left">0.0.0.0で待ち受ける</td>
+</tr> <tr> <td class="org-left">別のコンテナのRedisなどに127.0.0.1でつなごうとすると、自分自身につながって失敗する</td>
+ <td class="org-left">Composeではサービス名でつなぐ</td>
+</tr></tbody></table> <blockquote>
  <p>
-i386とは、CPUの種類を指しています。「アーキテクチャ」と呼び変えてもいいでしょう。
+Each container for a service joins the default network and is both reachable by other containers on that network, and discoverable by its service name.
 </p>
 
  <p>
-Linuxが産声を上げた頃はCPUは重要なパーツではありますが一部品でしかなく、型番で呼ばれるものでした。
-</p>
-
- <p>
-i386のiは、インテル(Intel)のiです。インテルが最初に生み出した4004から続くCPUの系譜の中で、386（80386）は初めて32ビットを取り扱えるようになったCPUです。
-</p>
-
- <p>
- <a href="https://linuc.org/study/knowledge/332/">i386って何？ - LinuC</a>
+ <a href="https://docs.docker.com/compose/how-tos/networking/">Networking in Compose | Docker Docs</a>
 </p>
 </blockquote>
 
- <blockquote>
  <p>
-Intel 80386（またはi386）はインテルの32ビットマイクロプロセッサ (CPU) である。1985年10月に発表され、x86アーキテクチャを32ビットに拡張し、レジスタを強化した。
+0.0.0.0でよいのは、公開したポートへの通信がコンテナのループバック(127.0.0.1)ではなく、コンテナのネットワークの口(  <code>eth0</code> 。172.17.0.xなど)へ転送されてくるからである。127.0.0.1で待ち受けたサーバはループバックに来た通信しか受け取らない。0.0.0.0はすべての口で待ち受ける指定なので、  <code>eth0</code> に来た通信も受け取れる。
 </p>
 
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>MANWIDTH=80 man 7 ip | tail -1
+MANWIDTH=80 man 7 ip | grep -A1 -E 'When +INADDR_ANY +is +specified'
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>Linux man-pages 6.7                2024-03-17                             ip(7)
+     pair.   When  INADDR_ANY is specified in the bind call, the socket will be
+     bound to all local interfaces.  When listen(2) is  called  on  an  unbound
+</code></pre>
+</div>
+
  <p>
- <a href="https://ja.wikipedia.org/wiki/Intel_80386">Intel 80386 - Wikipedia</a>
+試す。
 </p>
-</blockquote>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>for addr in 127.0.0.1 0.0.0.0; do
+  docker run -d --rm --name lh -p 18080:8080 busybox httpd -f -p &quot;$addr:8080&quot; &gt;/dev/null
+  sleep 1
+  ip=$(docker exec lh ip -4 -o addr show eth0 | awk '{print $4}' | cut -d/ -f1)
+  for url in &quot;localhost:18080&quot; &quot;$ip:8080&quot;; do
+    if curl -s -o /dev/null --max-time 2 &quot;$url&quot;; then r=応答あり; else r=応答なし; fi
+    echo &quot;$addr で待ち受け、$url へ: $r&quot;
+  done
+  docker rm -f lh &gt;/dev/null
+done
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>127.0.0.1 で待ち受け、localhost:18080 へ: 応答なし
+127.0.0.1 で待ち受け、172.17.0.4:8080 へ: 応答なし
+0.0.0.0 で待ち受け、localhost:18080 へ: 応答あり
+0.0.0.0 で待ち受け、172.17.0.4:8080 へ: 応答あり
+</code></pre>
 </div>
 </div>
- <div id="outline-container-org1b3aeec" class="outline-2">
- <h2 id="org1b3aeec"> <a href="#org1b3aeec">関連</a></h2>
- <div class="outline-text-2" id="text-org1b3aeec">
+</div>
+ <div id="outline-container-orgee1f3df" class="outline-2">
+ <h2 id="orgee1f3df"> <a href="#orgee1f3df">関連</a></h2>
+ <div class="outline-text-2" id="text-orgee1f3df">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T214752--kdoc-688-i386はintel-80386の型番に由来する__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T214752--kdoc-688-i386はintel-80386の型番に由来する__permanent.html</id>
-  <updated>2026-10-18T00:13:00+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261018T104853--kdoc-696-コンテナの中のlocalhostはそのコンテナ自身を指す__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T104853--kdoc-696-コンテナの中のlocalhostはそのコンテナ自身を指す__permanent.html</id>
+  <updated>2026-10-18T11:50:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 694: rails consoleの–sandboxは終了時にデータベースの変更をロールバックする</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org6b06bf3" class="outline-2">
+ <h2 id="org6b06bf3"> <a href="#org6b06bf3">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org6b06bf3">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgef7ce9c" class="outline-2">
+ <h2 id="orgef7ce9c"> <a href="#orgef7ce9c">概要</a></h2>
+ <div class="outline-text-2" id="text-orgef7ce9c">
+ <p>
+ <code>rails console --sandbox</code> (短くは  <code>-s</code> )で起動すると、コンソールでのデータベース操作がすべてトランザクションに包まれ、終了するとロールバックされる。データベースを壊さずにコードを試せる。
+</p>
+
+ <blockquote>
+ <p>
+sandboxモードでは、すべてのデータベース操作がトランザクションでラップされ、コンソールを終了するとロールバックします。
+</p>
+
+ <p>
+ <a href="https://railsguides.jp/command_line.html">Rails のコマンドラインツール - Railsガイド</a>
+</p>
+</blockquote>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>Rails 8.1.4 の console コマンドのオプション定義</label> <pre class="src src-git-permalink"> <code>https://github.com/rails/rails/blob/c3466ea00d7121798e3aa3144ffdf7174b81d8cb/railties/lib/rails/commands/console/console_command.rb#L67-L68
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-ruby"> <code>class_option :sandbox, aliases: &quot;-s&quot;, type: :boolean, default: nil,
+  desc: &quot;Rollback database modifications on exit.&quot;
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org3a51b38" class="outline-2">
+ <h2 id="org3a51b38"> <a href="#org3a51b38">関連</a></h2>
+ <div class="outline-text-2" id="text-org3a51b38">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T010042--kdoc-694-rails-consoleの-sandboxは終了時にデータベースの変更をロールバックする__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T010042--kdoc-694-rails-consoleの-sandboxは終了時にデータベースの変更をロールバックする__permanent.html</id>
+  <updated>2026-10-18T11:50:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 690: Railsのモデルのバリデーションは既存のレコードを検査しない</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org745bc6f" class="outline-2">
+ <h2 id="org745bc6f"> <a href="#org745bc6f">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org745bc6f">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgfc99a53" class="outline-2">
+ <h2 id="orgfc99a53"> <a href="#orgfc99a53">概要</a></h2>
+ <div class="outline-text-2" id="text-orgfc99a53">
+ <p>
+Railsのモデルのバリデーションは、  <code>save</code> や  <code>update</code> でデータベースに送る前のオブジェクトにだけ走る。そのため、あとから  <code>presence: true</code> を足しても、すでに  <code>NULL</code> が入っているレコードはそのまま残る。そのレコードは、ほかのカラムを直して保存しようとしてもバリデーションで弾かれ、ふつうの  <code>save</code> や  <code>update</code> では更新できなくなる。
+</p>
+
+ <p>
+既存のレコードまで守るには、  <code>NULL</code> を直してからデータベースに  <code>NOT NULL</code> 制約を付ける。ただし  <code>presence: true</code> は空文字列も弾くが、  <code>NOT NULL</code> は空文字列を通すので、同じ守りにはならない。
+</p>
+
+ <blockquote>
+ <p>
+新規レコードを保存すると、SQLのINSERT操作がデータベースに送信され、既存のレコードを更新すると、SQLのUPDATE操作が送信されます。バリデーションは、これらのコマンドがデータベースに送信される前に実行されるのが普通です。
+</p>
+
+ <p>
+このバリデータの内部では、属性の値がnilや空白（blank: つまり空文字列“”またはホワイトスペースのみで構成される文字列）であることのチェックにObject#blank?メソッドが使われています。
+</p>
+
+ <p>
+ <a href="https://railsguides.jp/active_record_validations.html">Active Record バリデーション - Railsガイド</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-orgac398a2" class="outline-2">
+ <h2 id="orgac398a2"> <a href="#orgac398a2">関連</a></h2>
+ <div class="outline-text-2" id="text-orgac398a2">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T002719--kdoc-690-railsのモデルのバリデーションは既存のレコードを検査しない__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T002719--kdoc-690-railsのモデルのバリデーションは既存のレコードを検査しない__permanent.html</id>
+  <updated>2026-10-18T11:50:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 687: 新規ユーザのホームディレクトリは/etc/skelをコピーして作られる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org956a261" class="outline-2">
- <h2 id="org956a261"> <a href="#org956a261">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org956a261">
+ <div id="outline-container-org8bb3680" class="outline-2">
+ <h2 id="org8bb3680"> <a href="#org8bb3680">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org8bb3680">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -87,32 +231,30 @@ Intel 80386（またはi386）はインテルの32ビットマイクロプロセ
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org23b4ef6" class="outline-2">
- <h2 id="org23b4ef6"> <a href="#org23b4ef6">概要</a></h2>
- <div class="outline-text-2" id="text-org23b4ef6">
+ <div id="outline-container-org5466fdc" class="outline-2">
+ <h2 id="org5466fdc"> <a href="#org5466fdc">概要</a></h2>
+ <div class="outline-text-2" id="text-org5466fdc">
  <p>
  <code>useradd -m</code> や  <code>adduser</code> でユーザを作ると、ホームディレクトリに  <code>/etc/skel</code> の中身がコピーされる。新しいユーザに最初から置いておきたい設定ファイルは、  <code>/etc/skel</code> に入れておけばよい。
 </p>
 
- <blockquote>
- <p>
-The skeleton directory, which contains files and directories to be copied in the user’s home directory, when the home directory is created by useradd.
-</p>
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>dpkg-query -W -f='${Package} ${Version}\n' passwd adduser
+MANWIDTH=80 man 8 useradd | grep -A2 'The skeleton directory, which'
+MANWIDTH=80 man 5 adduser.conf | grep -A1 -E '^ +SKEL +The'
+</code></pre>
+</div>
 
- <p>
-useradd(8)
-</p>
-</blockquote>
-
- <blockquote>
- <p>
-SKEL   The directory from which skeletal user configuration files will be copied.  Defaults to /etc/skel.
-</p>
-
- <p>
-adduser.conf(5)
-</p>
-</blockquote>
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>adduser 3.137ubuntu1
+passwd 1:4.13+dfsg1-4ubuntu3.2
+         The skeleton directory, which contains files  and  directories  to  be
+         copied  in  the user's home directory, when the home directory is cre‐
+         ated by useradd.
+     SKEL   The  directory from which skeletal user configuration files will be
+            copied.  Defaults to /etc/skel.
+</code></pre>
+</div>
 
  <p>
 確認する。
@@ -135,9 +277,9 @@ adduser.conf(5)
 </div>
 </div>
 </div>
- <div id="outline-container-org279db51" class="outline-2">
- <h2 id="org279db51"> <a href="#org279db51">関連</a></h2>
- <div class="outline-text-2" id="text-org279db51">
+ <div id="outline-container-orga8023b5" class="outline-2">
+ <h2 id="orga8023b5"> <a href="#orga8023b5">関連</a></h2>
+ <div class="outline-text-2" id="text-orga8023b5">
  <p>
 なし。
 </p>
@@ -146,16 +288,16 @@ adduser.conf(5)
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T214751--kdoc-687-新規ユーザのホームディレクトリはetcskelをコピーして作られる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261017T214751--kdoc-687-新規ユーザのホームディレクトリはetcskelをコピーして作られる__permanent.html</id>
-  <updated>2026-10-18T00:13:00+09:00</updated>
+  <updated>2026-10-18T11:50:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 684: 『ふつうのLinuxプログラミング』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6c38b3d" class="outline-2">
- <h2 id="org6c38b3d"> <a href="#org6c38b3d">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6c38b3d">
+ <div id="outline-container-org7844472" class="outline-2">
+ <h2 id="org7844472"> <a href="#org7844472">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7844472">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -164,17 +306,17 @@ adduser.conf(5)
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgcf4e730" class="outline-2">
- <h2 id="orgcf4e730"> <a href="#orgcf4e730">概要</a></h2>
- <div class="outline-text-2" id="text-orgcf4e730">
+ <div id="outline-container-org4d379f0" class="outline-2">
+ <h2 id="org4d379f0"> <a href="#org4d379f0">概要</a></h2>
+ <div class="outline-text-2" id="text-org4d379f0">
  <p>
  <a href="https://www.amazon.co.jp/dp/4797386479">『ふつうのLinuxプログラミング 第2版』</a>は、Linuxの仕組みから学ぶシステムプログラミングの本である。
 </p>
 </div>
 </div>
- <div id="outline-container-org1113c0b" class="outline-2">
- <h2 id="org1113c0b"> <a href="#org1113c0b">メモ</a></h2>
- <div class="outline-text-2" id="text-org1113c0b">
+ <div id="outline-container-orga36bee7" class="outline-2">
+ <h2 id="orga36bee7"> <a href="#orga36bee7">メモ</a></h2>
+ <div class="outline-text-2" id="text-orga36bee7">
  <ul class="org-ul"> <li>Linuxはファイルシステムとプロセスとストリームでできている</li>
  <li>Linux上において、活動する主体はユーザではなく、プロセス</li>
  <li>ログイン時にクレデンシャルが作られ、プロセスに渡している</li>
@@ -225,9 +367,9 @@ adduser.conf(5)
  <li>HTTPサーバのしごと: HTTPリクエストをドキュメントルート以下のファイルにマップし、レスポンスとして送り返すこと</li>
 </ul></div>
 </div>
- <div id="outline-container-orgf49679f" class="outline-2">
- <h2 id="orgf49679f"> <a href="#orgf49679f">関連</a></h2>
- <div class="outline-text-2" id="text-orgf49679f">
+ <div id="outline-container-orgd32980b" class="outline-2">
+ <h2 id="orgd32980b"> <a href="#orgd32980b">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd32980b">
  <p>
 なし。
 </p>
@@ -236,81 +378,203 @@ adduser.conf(5)
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T213820--kdoc-684-『ふつうのlinuxプログラミング』__book.html"/>
   <id>https://kijimad.github.io/roam/20261017T213820--kdoc-684-『ふつうのlinuxプログラミング』__book.html</id>
-  <updated>2026-10-18T00:13:00+09:00</updated>
+  <updated>2026-10-18T11:50:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 680: constは宣言より前では外側に同名の変数があっても読めない</title>
+  <title>KDOC 697: 『Linux Container Book』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org959b668" class="outline-2">
- <h2 id="org959b668"> <a href="#org959b668">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org959b668">
+ <div id="outline-container-org07e602e" class="outline-2">
+ <h2 id="org07e602e"> <a href="#org07e602e">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org07e602e">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgb9fb02c" class="outline-2">
- <h2 id="orgb9fb02c"> <a href="#orgb9fb02c">概要</a></h2>
- <div class="outline-text-2" id="text-orgb9fb02c">
+ <div id="outline-container-org56fb0ca" class="outline-2">
+ <h2 id="org56fb0ca"> <a href="#org56fb0ca">概要</a></h2>
+ <div class="outline-text-2" id="text-org56fb0ca">
  <p>
-JavaScriptの  <code>const</code> の宣言はスコープに入った時点で作られ、宣言の行を実行するまでは参照できない(一時的デッドゾーン)。そのため宣言より前では、外側に同名の変数があっても読めず  <code>ReferenceError</code> になる。
+ <a href="https://tatsu-zine.com/books/linux-container-book">『Linux Container Book』</a>は、コンテナを作るLinuxの機能(名前空間など)を解説する本である。
+</p>
+</div>
+</div>
+ <div id="outline-container-org5940d9e" class="outline-2">
+ <h2 id="org5940d9e"> <a href="#org5940d9e">メモ</a></h2>
+ <div class="outline-text-2" id="text-org5940d9e">
+ <ul class="org-ul"> <li> <code>$ sudo mount --bind dir1 dir2</code> みたいに、バインドマウントするコマンドが存在する</li>
+ <li>Namespace(名前空間)はプロセスをグループ化して、コンテナの隔離された空間を作り出す。独立させたいリソースによっていくつかの機能がある</li>
+ <li>Dockerの初期はコンテナ内でコマンドを実行できなかった</li>
+ <li>カーネルでsetnsがすべてのNamespaceに対して動作するようになってから、docker execコマンドが実行できるようになった</li>
+ <li>Mount NamespaceはLinuxカーネルに最初に実装されたNamespace(2002年)
+ <ul class="org-ul"> <li>あるNamespaceごとに異なるマウントポイントの一覧を持てる</li>
+ <li>コンテナ内でマウント操作を行った場合でも、そのマウントはホストOSや他のコンテナから見えないようにできる</li>
+ <li> <code>$ cat /proc/self/mounts</code> でマウント状況を確認できる</li>
+ <li>マウントプロパゲーション
+ <ul class="org-ul"> <li>マウントがほかのディレクトリで反映されるか、反映されないか</li>
+</ul></li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org0db52b6" class="outline-2">
+ <h2 id="org0db52b6"> <a href="#org0db52b6">関連</a></h2>
+ <div class="outline-text-2" id="text-org0db52b6">
+ <p>
+なし。
+</p>
+</div>
+</div>
+ <div id="outline-container-orgf2f83e4" class="outline-2">
+ <h2 id="orgf2f83e4"> <a href="#orgf2f83e4">Backlinks</a></h2>
+ <div class="outline-text-2" id="text-orgf2f83e4">
+ <ul class="org-ul"> <li> <a href="./20261018T104855--kdoc-698-コンテナは名前空間で分離したプロセスにすぎない__permanent.html">KDOC 698: コンテナは名前空間で分離したプロセスにすぎない</a></li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T104854--kdoc-697-『linux-container-book』__book.html"/>
+  <id>https://kijimad.github.io/roam/20261018T104854--kdoc-697-『linux-container-book』__book.html</id>
+  <updated>2026-10-18T11:49:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 695: バインドマウント元のディレクトリを消して作り直すとコンテナからは見えなくなる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org4d64a0c" class="outline-2">
+ <h2 id="org4d64a0c"> <a href="#org4d64a0c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org4d64a0c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org933f0f8" class="outline-2">
+ <h2 id="org933f0f8"> <a href="#org933f0f8">概要</a></h2>
+ <div class="outline-text-2" id="text-org933f0f8">
+ <p>
+バインドマウントは、パスではなく、マウントした時点のディレクトリそのものを別の場所に見せる。ホスト側でそのディレクトリを消して同じ名前で作り直しても、コンテナは消された古いディレクトリを見続けるので、中身は消えたままに見える。コンテナを再起動すると、新しいディレクトリがマウントし直される。
 </p>
 
  <div class="org-src-container">
- <pre class="src src-js"> <code>const x = 1;
-{
-  try {
-    console.log(x);
-  } catch (e) {
-    console.log(`${e.name}: ${e.message}`);
-  }
-  const x = 2;
-}
+ <pre class="src src-shell"> <code>dir=$(mktemp -d); mkdir &quot;$dir/src&quot;; echo old &gt; &quot;$dir/src/a&quot;
+docker run -d --rm --name bm -v &quot;$dir/src&quot;:/mnt busybox sleep 60 &gt;/dev/null
+echo &quot;マウント直後: $(docker exec bm cat /mnt/a 2&gt;&amp;1)&quot;
+rm -rf &quot;$dir/src&quot;; mkdir &quot;$dir/src&quot;; echo new &gt; &quot;$dir/src/a&quot;
+echo &quot;作り直した後: $(docker exec bm cat /mnt/a 2&gt;&amp;1)&quot;
+docker restart bm &gt;/dev/null
+echo &quot;再起動した後: $(docker exec bm cat /mnt/a 2&gt;&amp;1)&quot;
+docker rm -f bm &gt;/dev/null; rm -rf &quot;$dir&quot;
 </code></pre>
 </div>
 
  <div class="org-src-container">
- <pre class="src src-nil"> <code>ReferenceError: Cannot access 'x' before initialization
+ <pre class="src src-nil"> <code>マウント直後: old
+作り直した後: cat: can't open '/mnt/a': No such file or directory
+再起動した後: new
 </code></pre>
 </div>
 
  <blockquote>
  <p>
-The variables are created when their containing Environment Record is instantiated but may not be accessed in any way until the variable’s LexicalBinding is evaluated.
+A bind mount makes a file or a directory subtree visible at another point within the single directory hierarchy.
 </p>
 
  <p>
- <a href="https://262.ecma-international.org/16.0/#sec-let-and-const-declarations">ECMAScript 2025 Language Specification 14.3.1</a>
+ <a href="https://man7.org/linux/man-pages/man2/mount.2.html">mount(2) - Linux manual page</a> (Creating a bind mount)
 </p>
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org4367dc7" class="outline-2">
- <h2 id="org4367dc7"> <a href="#org4367dc7">関連</a></h2>
- <div class="outline-text-2" id="text-org4367dc7">
+ <div id="outline-container-org0b19d03" class="outline-2">
+ <h2 id="org0b19d03"> <a href="#org0b19d03">関連</a></h2>
+ <div class="outline-text-2" id="text-org0b19d03">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T205646--kdoc-680-constは宣言より前では外側に同名の変数があっても読めない__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T205646--kdoc-680-constは宣言より前では外側に同名の変数があっても読めない__permanent.html</id>
-  <updated>2026-10-18T00:13:00+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261018T104852--kdoc-695-バインドマウント元のディレクトリを消して作り直すとコンテナからは見えなくなる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T104852--kdoc-695-バインドマウント元のディレクトリを消して作り直すとコンテナからは見えなくなる__permanent.html</id>
+  <updated>2026-10-18T11:49:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 678: 『Clean Architecture』</title>
+  <title>KDOC 691: Railsではカラム名やテーブル名の変更をアプリとDBの2段階に分けられる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orgb0396c5" class="outline-2">
- <h2 id="orgb0396c5"> <a href="#orgb0396c5">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgb0396c5">
+ <div id="outline-container-org77d7e57" class="outline-2">
+ <h2 id="org77d7e57"> <a href="#org77d7e57">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org77d7e57">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org36d9196" class="outline-2">
+ <h2 id="org36d9196"> <a href="#org36d9196">概要</a></h2>
+ <div class="outline-text-2" id="text-org36d9196">
+ <p>
+Railsでは、モデルから見える名前とデータベースの名前をずらせる。これを使うと、カラム名やテーブル名の変更を2回のリリースに分けられる。
+</p>
+
+ <ol class="org-ol"> <li>エイリアスを足し、コードを新しい名前へ移す</li>
+ <li>データベースの名前を変え、エイリアスを消す</li>
+</ol> <p>
+エイリアスは、カラムなら  <code>alias_attribute :new_name, :old_name</code> 、テーブルならモデルのクラス名を新しくして  <code>self.table_name = &quot;old_table&quot;</code> とする。量の多いコードの書き換えと、戻しにくいデータベースの変更を別々のリリースにできる。
+。
+</p>
+ <blockquote>
+ <p>
+Allows you to make aliases for attributes.
+</p>
+
+ <p>
+ <a href="https://api.rubyonrails.org/v8.1.4/classes/ActiveModel/AttributeMethods/ClassMethods.html">ActiveModel::AttributeMethods::ClassMethods#alias_attribute (Rails 8.1.4)</a>
+</p>
+</blockquote>
+
+ <blockquote>
+ <p>
+Sets the table name explicitly.
+</p>
+
+ <p>
+ <a href="https://api.rubyonrails.org/v8.1.4/classes/ActiveRecord/ModelSchema/ClassMethods.html">ActiveRecord::ModelSchema::ClassMethods#table_name= (Rails 8.1.4)</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-org7fe3299" class="outline-2">
+ <h2 id="org7fe3299"> <a href="#org7fe3299">関連</a></h2>
+ <div class="outline-text-2" id="text-org7fe3299">
+ <ul class="org-ul"> <li>補足:  <a href="20260529T091134--kdoc-593-安全なマイグレーション手法をチームに導入する__permanent.html#ID-20260529T091134">KDOC 593: 安全なマイグレーション手法をチームに導入する</a>。Expand and Contractの、名前を変えるときの具体策</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T002720--kdoc-691-railsではカラム名やテーブル名の変更をアプリとdbの2段階に分けられる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T002720--kdoc-691-railsではカラム名やテーブル名の変更をアプリとdbの2段階に分けられる__permanent.html</id>
+  <updated>2026-10-18T11:49:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 688: i386はIntel 80386の型番に由来する</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org26040ce" class="outline-2">
+ <h2 id="org26040ce"> <a href="#org26040ce">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org26040ce">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -319,354 +583,63 @@ The variables are created when their containing Environment Record is instantiat
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orge3a6b43" class="outline-2">
- <h2 id="orge3a6b43"> <a href="#orge3a6b43">概要</a></h2>
- <div class="outline-text-2" id="text-orge3a6b43">
+ <div id="outline-container-org52a32b6" class="outline-2">
+ <h2 id="org52a32b6"> <a href="#org52a32b6">概要</a></h2>
+ <div class="outline-text-2" id="text-org52a32b6">
  <p>
- <a href="https://tatsu-zine.com/books/clean-architecture">『Clean Architecture 達人に学ぶソフトウェアの構造と設計』</a>は、コードをどう組み合わせるかというアーキテクチャについての本である。
+i386は、Linuxなどで32ビットx86を指すアーキテクチャ名である。謎に見えていたが、i386はIntel 80386の型番に由来する。Linuxが生まれたころは、CPUを型番で呼んでいたという。
 </p>
+
+ <blockquote>
+ <p>
+i386とは、CPUの種類を指しています。「アーキテクチャ」と呼び変えてもいいでしょう。
+</p>
+
+ <p>
+Linuxが産声を上げた頃はCPUは重要なパーツではありますが一部品でしかなく、型番で呼ばれるものでした。
+</p>
+
+ <p>
+i386のiは、インテル(Intel)のiです。インテルが最初に生み出した4004から続くCPUの系譜の中で、386（80386）は初めて32ビットを取り扱えるようになったCPUです。
+</p>
+
+ <p>
+ <a href="https://linuc.org/study/knowledge/332/">i386って何？ - LinuC</a>
+</p>
+</blockquote>
+
+ <blockquote>
+ <p>
+Intel 80386（またはi386）はインテルの32ビットマイクロプロセッサ (CPU) である。1985年10月に発表され、x86アーキテクチャを32ビットに拡張し、レジスタを強化した。
+</p>
+
+ <p>
+ <a href="https://ja.wikipedia.org/wiki/Intel_80386">Intel 80386 - Wikipedia</a>
+</p>
+</blockquote>
 </div>
 </div>
- <div id="outline-container-orgb5087bf" class="outline-2">
- <h2 id="orgb5087bf"> <a href="#orgb5087bf">メモ</a></h2>
- <div class="outline-text-2" id="text-orgb5087bf">
- <ul class="org-ul"> <li>構造化、関数型、オブジェクト指向…プログラミングパラダイムは、どれも制限を課すものである</li>
- <li>オブジェクト指向のもっとも有益な特徴はポリモーフィズムである。ソースコードの依存関係を実行順序と関係なくできる。ビジネスロジックが最上位にあり、下位にライブラリやデータベースを置き、これらは交換可能である。実行順序とは逆だ</li>
- <li>プラグインアーキテクチャは、上位レベルの方針を含んだモジュールを下位レベルの詳細を含んだモジュールから独立させること。下位レベルの詳細はプラグインモジュールとなり、上位レベルの方針を含んだモジュールとは独立して、デプロイおよび開発することが可能となる</li>
- <li>単一責任原則(SRP)の失敗例: Employeeクラスに、経理、人事部門、データベース管理者の3つの部門の責務が入っているようなとき。
- <ul class="org-ul"> <li>つまり、アクターの異なるコードは分割すべきということ</li>
-</ul></li>
- <li>オープン・クローズドの原則(OCP): ソフトウェアの振る舞いは、既存の成果物を変更せず拡張できるようにすべきである。
- <ul class="org-ul"> <li>ローグライクチュートリアルがまさにそんな感じだった。機能追加で既存の箇所をいじる必要はなく、独立している</li>
- <li>ちょっとした拡張のために大量の書き換えが必要になるようなら、そのソフトウェアシステムのアーキテクトは大失敗への道を突き進んでいる</li>
-</ul></li>
- <li>依存性逆転の法則: ソースコードは具象に依存するべきではない。変化しやすい具象クラスを参照しない、継承しない。重要な部分が、重要でない部分に依存しないように設計すべき</li>
- <li>再利用・リリース等価の原則: 同じタイミングで変更されることが多いクラスはひとつにまとめる</li>
- <li>閉鎖性共通の原則: 同じ理由、同じタイミングで変更されるクラスをコンポーネントにまとめること。変更の理由やタイミングが異なるクラスは、別のコンポーネントに分けること</li>
- <li>全再利用の原則: コンポーネントのユーザに対して、実際には使わないものへの依存を強要してはいけない</li>
- <li>安定依存の原則: 安定度の高い方向に依存する</li>
- <li>安定度・抽象度等価の原則: コンポーネントの抽象度は、その安定度と同程度でなければならない。安定度の高いコンポーネントは抽象度も高くあるべき</li>
- <li>優れたアーキテクトは、方針と詳細を慎重に区別して、方針が詳細を把握することなく、決して依存することがないように、両者を切り離す</li>
- <li>アーキテクチャがサポートしなければいけないこと:
- <ul class="org-ul"> <li>システムのユースケース</li>
- <li>システムの運用</li>
- <li>システムの開発</li>
- <li>システムのデプロイ</li>
-</ul></li>
- <li>注文入力システムに注文を追加するユースケースは、注文を削除するユースケースと比べると、明らかに異なる頻度と理由で変更される</li>
- <li>優れたアーキテクトは、システムの詳細の決定を従属的かつ遅延可能なものにする</li>
-</ul></div>
-</div>
- <div id="outline-container-orgd538e33" class="outline-2">
- <h2 id="orgd538e33"> <a href="#orgd538e33">関連</a></h2>
- <div class="outline-text-2" id="text-orgd538e33">
+ <div id="outline-container-org7b363f4" class="outline-2">
+ <h2 id="org7b363f4"> <a href="#org7b363f4">関連</a></h2>
+ <div class="outline-text-2" id="text-org7b363f4">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T200714--kdoc-678-『clean-architecture』__book.html"/>
-  <id>https://kijimad.github.io/roam/20261017T200714--kdoc-678-『clean-architecture』__book.html</id>
-  <updated>2026-10-18T00:13:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 674: 『まずはアパート一棟、買いなさい！』</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org4b91309" class="outline-2">
- <h2 id="org4b91309"> <a href="#org4b91309">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4b91309">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org1422c33" class="outline-2">
- <h2 id="org1422c33"> <a href="#org1422c33">概要</a></h2>
- <div class="outline-text-2" id="text-org1422c33">
- <p>
- <a href="https://www.amazon.co.jp/dp/B098B13K3X">『まずはアパート一棟、買いなさい！』</a>は、不動産投資の入門本である。最初に地方の築古木造アパートを1棟購入することを主張している。
-</p>
-</div>
-</div>
- <div id="outline-container-org4adf220" class="outline-2">
- <h2 id="org4adf220"> <a href="#org4adf220">メモ</a></h2>
- <div class="outline-text-2" id="text-org4adf220">
- <ul class="org-ul"> <li>物件価格1500万円で表面利回り13%が目安。実質利回りは8パーセント程度になる</li>
- <li>木造建築はあとからどうとでも補強や修繕が可能</li>
- <li>鉄骨や鉄筋コンクリートの方が、ボロ物件の場合は怖い</li>
- <li>建物の傾きはどうしようもない。現地調査では水平器を持っていく</li>
- <li>湿気が多い場所は避ける</li>
- <li>物件に惚れてはいけない</li>
- <li>慣れてないと、ここまで手間暇かけたんだからと、事業とは関係ない感情で買ってしまいがち</li>
- <li>大がかりなリフォームでは賃料の15ヶ月分が上限、など基準を決めておく</li>
- <li>ダイノックフィルム</li>
- <li>リフォームは必ず相見積もりをとる</li>
- <li>もし可能であれば、1部屋のリフォームを自分で手がけてみること</li>
- <li>お願いしたい業者がいたら、相見積もりで出た1番安い値段を伝えてこの値段でできるか交渉してみる</li>
- <li>リフォーム業者に聞いてみること
- <ul class="org-ul"> <li>仕事の年数</li>
- <li>どんな案件が多いか</li>
- <li>築古のリノベーションの経験はあるか</li>
- <li>手掛けた現場や写真</li>
-</ul></li>
- <li>差し入れしつつ現場を見に行く</li>
- <li>経費
- <ul class="org-ul"> <li>固定資産税・都市計画税・事業税</li>
- <li> <code>宅地建物取引業者</code> への仲介手数料や広告費</li>
- <li>原状回復を含めた修理費やリフォーム費</li>
- <li>大規模修繕費</li>
- <li>給排水、電気、ガス設備</li>
- <li>火災保険料、地震保険料</li>
- <li>定期清掃費</li>
- <li>消火用設備等の法定点検や報告、メンテナンス</li>
-</ul></li>
- <li>資産性が高くても狙い通りに「現金化=売却」するのは難しい</li>
- <li>売買の仲介業者に聞くことリスト
- <ul class="org-ul"> <li>所有者の売却理由</li>
- <li>問い合わせがあったり、買いたい人は現れたりしているか</li>
- <li>買い手希望者の反響</li>
- <li>ライフラインについて(公営水道/井戸/本下水道/浄化槽/汲み取り式/プロパン/高架水槽/揚水ポンプ/加圧式)</li>
- <li>設備の詳細
- <ul class="org-ul"> <li>洋式トイレ</li>
- <li>洗濯機置場</li>
- <li>追い焚き</li>
-</ul></li>
- <li>空室のリフォーム状況</li>
- <li>土地の実勢価格、路線価</li>
- <li>建ぺい率/容積率</li>
- <li>都市計画の区域区分と用途地域の種類</li>
- <li>法令上の制限(都市計画法、建築基準法、  <code>土地区画整理法</code> 、景観法など)</li>
- <li>重要事項の告知義務はあるか</li>
- <li> <code>大規模修繕履歴</code> (いつ外壁塗装や屋上防水をしたか)</li>
- <li>土地の地目(宅地、畑、田、山林)と過去の利用状況</li>
- <li>駐車場の数、近隣の月極駐車場の相場と空き状況、自転車置き場あるか。充足率</li>
- <li>バス停までの距離と便数</li>
- <li>建物はハウスメーカーの規格か、それとも在来工務店の建築か</li>
- <li>価格交渉の余地はあるか</li>
- <li> <code>固定資産税評価額</code> や固定資産税と都市計画税の税額について</li>
- <li>平坦地か傾斜地か、擁壁はあるか、崖地は迫ってないか、日照はどうか</li>
- <li>隣地とのもめごとの有無、境界は確認できる状況か</li>
- <li>ハザードマップのエリア内か。自然災害の履歴</li>
- <li>地中埋設物はあるか。可能性も含めて</li>
- <li>「周知の  <code>埋設文化財包蔵地</code> 」ではないか。区域外でも隣接していないか</li>
- <li>アスベストの使用状況</li>
- <li>建物の状態。外壁や基礎にクラックはあるか、雨漏りはあるか</li>
- <li>レントロール(契約期間や賃料、空室状況など)</li>
-</ul></li>
- <li>さらに踏み込んで聞くことリスト
- <ul class="org-ul"> <li>売主の背景</li>
- <li> <code>建築確認通知書</code> 、検査済証はあるか</li>
- <li>建物が建築基準法などの法令を遵守しているか</li>
- <li>土壌汚染はないか</li>
- <li>手付金の額やローン条項(融資不可のときの契約解除)の受け入れなど</li>
- <li>配置図、建物図面、現況平面図、公図、地積測量図はあるか</li>
- <li>登記簿謄本( <code>全部事項証明書</code>)はあるか</li>
- <li>固定資産税や都市計画税の評価証明書、納税通知書の確認</li>
- <li>新築時のパンフレットや募集リーフレットはあるか</li>
- <li>建物竣工図はあるか。配管・配線の記録は改修に役立つ</li>
- <li>越境物の有無。隣地による敷地内埋設管の利用があるか</li>
- <li>電気の状況。キュービクル  <code>式高圧受電設備</code> があれば詳細も</li>
- <li>プロパンガスの場合、  <code>設備貸与証明書</code> (償却期間)など</li>
- <li>都市ガス調査回答書はあるか。埋設ガス管の把握に役立つ</li>
- <li>受水槽や浄化槽の点検や清掃履歴、費用</li>
- <li> <code>簡易専用水道検査結果書</code> はあるか。10㎡を超える受水槽/年1回</li>
- <li> <code>消防用設備等点検結果報告書</code> ・実施報告書・費用</li>
- <li>各世帯に  <code>住宅用火災警報器</code> は設置してあるか</li>
- <li>修繕記録はあるか。エアコンや給湯器の交換履歴など</li>
- <li>テレビ共聴方式(アンテナ・ケーブル)や維持費など</li>
- <li>インターネット回線は導入済みか</li>
- <li>屋根の修理は必要か。防水対策は緊急に必要か</li>
- <li>管理形態は何か。自主管理、管理委託、サブリース</li>
- <li>管理会社による定期清掃、点検報告書はあるか</li>
- <li>自治会費の制度があれば、詳細など</li>
- <li>過去の事故、事件、トラブル、クレームの履歴</li>
- <li>ペット可ならその規約</li>
- <li>店舗、事務所利用があれば規約と利用実態(火災保険料に影響)</li>
- <li>滞納者、不良入居者、反社会的勢力の有無</li>
- <li>家賃保証会社、  <code>家賃収納代行会社</code> の利用はしているか</li>
- <li>管理会社への委託内容(管理料など)、管理会社の変更に必要な手続きなど</li>
- <li>長期修繕計画はあるか</li>
- <li>各世帯の  <code>借家人賠償責任保険</code> の加入状況。更新はされているか</li>
- <li>物件のランニングコストについて</li>
- <li>敷金(保証金)の引き継ぎ方について</li>
-</ul></li>
- <li>現地調査のチェックリスト
- <ul class="org-ul"> <li>駐車場は何台分か、タイヤ止めはあるか、表層の状態はどうか</li>
- <li>駐車場の台数は増やせるか。電柱、植栽、塀の移設や撤去を検討する</li>
- <li>基礎に大きなヒビはないか</li>
- <li>共用廊下の天井の状態。垂れ下がっていないかなど</li>
- <li>窓やひさしなどに痛みがないか</li>
- <li>手すりやバルコニーの状態</li>
- <li>階段は良好か。踏み板の強度、サビ、揺れ具合、劣化、破損</li>
- <li>屋根の種類。瓦、スレート、金属、コンクリート</li>
- <li>アンテナの位置と状態</li>
- <li>プロパンガス会社、ボンベ置き場</li>
- <li>面格子はあるか。防犯対策</li>
- <li>敷地の土の部分を確認。除草剤の散布範囲</li>
- <li>給湯器の製造元や年式</li>
- <li>浄化槽や汚水タンクの位置と状態</li>
- <li>共用灯の位置と数量</li>
- <li>外壁の状態。クラック、浮き、継ぎ目の劣化</li>
- <li>建物や敷地の苔/カビの有無。水はけや日当たりを確認する</li>
- <li>境界の確認。杭、標、金属鋲など</li>
- <li>バイク、自転車置き場の位置と状態</li>
- <li>エアコン室外機の位置と状態</li>
- <li>敷地内の放置物。放置車両、古タイヤ、粗大ゴミ</li>
- <li>高圧受電設備の位置と状態</li>
- <li>露出配管の位置、用途、状態</li>
- <li>井戸ポンプ、高架水槽、揚水ポンプ、加圧タンク、受水槽の位置と状態</li>
- <li>エレベーターの位置と状態</li>
- <li>郵便ポストのデザインや機能。宅配ボックスを検討する</li>
- <li>防犯カメラやオートロック機能の位置と状態</li>
- <li>門、塀、フェンスのコンディション</li>
- <li>全体の印象</li>
- <li>臭気の確認。カビ、畜産場の臭気</li>
- <li>バス停や駅までの実際の距離。時刻表</li>
- <li>生活利便施設や競合物件の確認。競合物件の数、入居状況など</li>
- <li>敷地内に電力柱や電信柱はあるか。番号を確認する</li>
- <li>ゴミステーションの位置と状態</li>
- <li>擁壁は役所で検査済証を確認</li>
- <li>近くに鉄塔、高架道路、高架線路、鉄道、幹線道路はあるか。日照/騒音/汚染/安全性など</li>
- <li>周辺の電柱、門扉、ブロック塀に傾きはあるか</li>
- <li>建具の開閉はスムーズか。戸車、敷居滑り、ヒンジの不具合や鴨居の下がりはないか</li>
- <li>床鳴りはしないか。元押入れだったクローゼットは床強度を確認</li>
- <li>掃き出し窓まわりの床の状態</li>
- <li>エアコン、キッチン、洗面台、便座、換気扇、照明器具の機能や状態</li>
- <li>浴室鏡の状態。ウロコ汚れや劣化など</li>
- <li>シャワーヘッド・ホース、蛇口、パッキン、コマ、選択水栓金具の状態</li>
- <li>洗濯機の排水トラップや防水パンの位置と状態</li>
- <li>ドアノブ、取っ手、タオルハンガー、カーテンレールの状態</li>
- <li>窓ガラスとゴム部分、窓の木枠、網戸と押さえゴム、襖、障子の状態</li>
- <li>鍵やクレセント錠の状態</li>
- <li>雨漏り跡はないか</li>
- <li>壁、天井、床面、畳の状態</li>
- <li>大幅な間取り変更や和室の洋室化をイメージ</li>
- <li>設備の状態と検討事項。Wi-Fi、モニターフォン、電子ロック</li>
- <li>契約アンペア数。低い・古いものは改善を検討する</li>
-</ul></li>
- <li>現地の不動産業者に電話で聞くことリスト
- <ul class="org-ul"> <li>単身者とファミリー向けのどちらが人気か</li>
- <li>駐車場ニーズはあるか。月極の相場や空き情報について</li>
- <li>電車やバス停の利便性について</li>
- <li>人気のリフォームメニューと概算費用はあるか</li>
- <li>賃貸が見込める施設、大学、工場と状況はどうか</li>
- <li>土地柄や入居者ニーズ(満足度の高い条件や設備)はあるか</li>
- <li>各間取りの家賃相場はどうか</li>
- <li>敷金、礼金、フリーレント、広告費の相場はどうか</li>
- <li>ズバリ空き室を早く埋める方法はあるか</li>
- <li>災害ハザードエリアについて</li>
- <li>このエリアでの購入を勧めるか、勧めないか。アドバイスなど</li>
-</ul></li>
- <li>管理会社に聞くことリスト
- <ul class="org-ul"> <li>インターネットでの募集方法について。サイト名など</li>
- <li>店頭ではどのような募集を行っているか</li>
- <li>現地で募集幕、看板、のぼり等は出しているか</li>
- <li>地域情報誌やフリーペーパーの募集(と反響)はあるか</li>
- <li>内見の案内やその結果の報告はあるか</li>
- <li>モデルルーム化など、空室を埋めるメニューはあるか</li>
- <li>家賃保証会社は利用しているか</li>
- <li> <code>連帯保証人制度</code> は採用しているか</li>
- <li>定期借家契約は導入しているか</li>
- <li> <code>借家人賠償責任保険</code> の内容と加入状況など</li>
- <li>賃料明細の発行や家賃振込のスケジュールはどうか</li>
- <li>滞納の督促マニュアルはあるか</li>
- <li>入居時の鍵交換は、入居者負担(特約付帯)か</li>
- <li>退去清掃費は、入居者負担(特約付帯)か</li>
- <li>原状回復のマニュアルはあるか</li>
- <li>定期巡回/報告はあるか。定期清掃の費用はどれくらいか</li>
- <li>契約外の駐車、駐輪、放置車両への対処法はあるか</li>
- <li>掲示板は管理するか。内容の確認や更新など</li>
- <li>浄化槽メンテナンスの頻度と料金はどうか</li>
- <li>受水槽、高架水槽の清掃頻度と料金はどうか</li>
- <li>地下水(井戸)の水質検査の料金(年1回)はどうか</li>
- <li>エレベータがあれば定期点検、消耗品交換の取次、料金はどうか</li>
- <li> <code>消防用設備等法定点検</code> (半年ごと)の料金はどうか</li>
- <li>営業時間外のクレーム対応方法はどうか</li>
- <li>管理対応の記録は社内で共有する仕組みか</li>
- <li>原状回復を含めたリフォームをオーナー側で手配できるか</li>
- <li>オーナー手配の工事の立ち会い、報告は可能か。立ち会い費用はどうか</li>
- <li>管理委託の契約期間は何年か</li>
- <li>借家人が契約内容に違反した場合、文書により催告をして何日以内に違反状況が回復、または回復のための行動を開始しない場合は無条件で契約解除となるか</li>
- <li>管理手数料はいくるか</li>
- <li>オーナーに事後報告とする金額の上限はどうか</li>
- <li>オーナーが入居者を連れてくることは可能か。手順やかかる費用はどうか</li>
- <li>業歴、管理棟数、戸数、社員数、管理物件の入居率について</li>
- <li>賃貸仲介、売買仲介、開発と分譲のうち、主な業務は何か</li>
- <li>管理物件の敷金、礼金、広告費、フリーレントの相場はどうか</li>
- <li>共用灯の交換費用はどうか。点灯管の交換や処分費を含む</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org86f79bd" class="outline-2">
- <h2 id="org86f79bd"> <a href="#org86f79bd">関連</a></h2>
- <div class="outline-text-2" id="text-org86f79bd">
- <ul class="org-ul"> <li>対立:  <a href="20260121T094643--kdoc-534-『不動産投資1年目の教科書』__book.html#ID-20260121T094643">KDOC 534: 『不動産投資1年目の教科書』</a>。規模のアプローチが「規模が大きいほど安定」。この本は「まず小さく1棟」</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T184540--kdoc-674-『まずはアパート一棟、買いなさい！』__book.html"/>
-  <id>https://kijimad.github.io/roam/20261017T184540--kdoc-674-『まずはアパート一棟、買いなさい！』__book.html</id>
-  <updated>2026-10-18T00:13:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 673: ASCIIのDELが0x7Fなのは紙テープの穴をすべて開けて文字を消したから</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orgce99d1b" class="outline-2">
- <h2 id="orgce99d1b"> <a href="#orgce99d1b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orgce99d1b">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org9600dcf" class="outline-2">
- <h2 id="org9600dcf"> <a href="#org9600dcf">概要</a></h2>
- <div class="outline-text-2" id="text-org9600dcf">
- <p>
-ASCII の DEL(削除)の文字コードが 0x7F、つまり7ビットがすべて1なのは、紙テープで文字を消すためだったという。紙テープは1文字を穴の有無で表す。間違えて穴を開けた文字は、穴を塞げないが、残りの穴もすべて開ければ「すべて1」になる。この全部が1の文字は無視する、と決めておけば、間違えた文字を消したことにできる。
-</p>
-
- <blockquote>
- <p>
-If a character was punched erroneously, punching out all seven bits caused this position to be ignored or deleted.
-</p>
-
- <p>
- <a href="https://en.wikipedia.org/wiki/Delete_character">Delete character - Wikipedia</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org76dbc64" class="outline-2">
- <h2 id="org76dbc64"> <a href="#org76dbc64">関連</a></h2>
- <div class="outline-text-2" id="text-org76dbc64">
- <ul class="org-ul"> <li>類推:  <a href="20261017T181305--kdoc-672-asciiの英大文字と英小文字は1ビットだけ違う__permanent.html#ID-20261017T181305">KDOC 672: ASCIIの英大文字と英小文字は1ビットだけ違う</a>。同様に当時のハードウェアの都合で決まったこと</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T181306--kdoc-673-asciiのdelが0x7fなのは紙テープの穴をすべて開けて文字を消したから__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T181306--kdoc-673-asciiのdelが0x7fなのは紙テープの穴をすべて開けて文字を消したから__permanent.html</id>
-  <updated>2026-10-18T00:13:00+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261017T214752--kdoc-688-i386はintel-80386の型番に由来する__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261017T214752--kdoc-688-i386はintel-80386の型番に由来する__permanent.html</id>
+  <updated>2026-10-18T11:49:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 686: ELFヘッダを見る</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org91a22f3" class="outline-2">
- <h2 id="org91a22f3"> <a href="#org91a22f3">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org91a22f3">
+ <div id="outline-container-org91649f9" class="outline-2">
+ <h2 id="org91649f9"> <a href="#org91649f9">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org91649f9">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -675,9 +648,9 @@ If a character was punched erroneously, punching out all seven bits caused this 
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org15e72db" class="outline-2">
- <h2 id="org15e72db"> <a href="#org15e72db">概要</a></h2>
- <div class="outline-text-2" id="text-org15e72db">
+ <div id="outline-container-org6e2dbc0" class="outline-2">
+ <h2 id="org6e2dbc0"> <a href="#org6e2dbc0">概要</a></h2>
+ <div class="outline-text-2" id="text-org6e2dbc0">
  <p>
 ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64バイトで、構造体  <code>Elf64_Ehdr</code> のフィールドが順に並んでいる(elf(5))。生のバイトを見て、  <code>readelf -h</code> の表示と照らし合わせる。
 </p>
@@ -770,25 +743,25 @@ ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64�
 </div>
 </div>
 </div>
- <div id="outline-container-orgc2c43d4" class="outline-2">
- <h2 id="orgc2c43d4"> <a href="#orgc2c43d4">関連</a></h2>
- <div class="outline-text-2" id="text-orgc2c43d4">
+ <div id="outline-container-org6b422ad" class="outline-2">
+ <h2 id="org6b422ad"> <a href="#org6b422ad">関連</a></h2>
+ <div class="outline-text-2" id="text-org6b422ad">
  <ul class="org-ul"> <li>補足:  <a href="20240529T002323--kdoc-179-『ハローhello-world-osと標準ライブラリのシゴトとしくみ』__book.html#ID-20240529T002323">KDOC 179: 『ハロー“Hello, World” OSと標準ライブラリのシゴトとしくみ』</a>。readelfでELFを読む例が出てくる</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T214011--kdoc-686-elfヘッダを見る__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261017T214011--kdoc-686-elfヘッダを見る__permanent.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
+  <updated>2026-10-18T11:49:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 685: 『低レベルプログラミング』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org4728749" class="outline-2">
- <h2 id="org4728749"> <a href="#org4728749">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org4728749">
+ <div id="outline-container-org3682e0a" class="outline-2">
+ <h2 id="org3682e0a"> <a href="#org3682e0a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org3682e0a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -800,17 +773,17 @@ ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64�
 </p>
 </div>
 </div>
- <div id="outline-container-orgdfc088f" class="outline-2">
- <h2 id="orgdfc088f"> <a href="#orgdfc088f">概要</a></h2>
- <div class="outline-text-2" id="text-orgdfc088f">
+ <div id="outline-container-orgea80e5c" class="outline-2">
+ <h2 id="orgea80e5c"> <a href="#orgea80e5c">概要</a></h2>
+ <div class="outline-text-2" id="text-orgea80e5c">
  <p>
  <a href="https://www.shoeisha.co.jp/book/detail/9784798155036">『低レベルプログラミング』</a>は、アセンブリ言語とCから、コンピュータの低レベルな仕組みを解説する本である。
 </p>
 </div>
 </div>
- <div id="outline-container-org4053319" class="outline-2">
- <h2 id="org4053319"> <a href="#org4053319">メモ</a></h2>
- <div class="outline-text-2" id="text-org4053319">
+ <div id="outline-container-org13cf8ac" class="outline-2">
+ <h2 id="org13cf8ac"> <a href="#org13cf8ac">メモ</a></h2>
+ <div class="outline-text-2" id="text-org13cf8ac">
  <ul class="org-ul"> <li>フォン・ノイマンのモデルの問題点
  <ul class="org-ul"> <li>インタラクティブでない</li>
  <li>マルチタスクに適してない</li>
@@ -829,9 +802,9 @@ ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgd739bf0" class="outline-2">
- <h2 id="orgd739bf0"> <a href="#orgd739bf0">関連</a></h2>
- <div class="outline-text-2" id="text-orgd739bf0">
+ <div id="outline-container-orgb028589" class="outline-2">
+ <h2 id="orgb028589"> <a href="#orgb028589">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb028589">
  <p>
 なし。
 </p>
@@ -840,65 +813,16 @@ ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64�
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T213821--kdoc-685-『低レベルプログラミング』__book.html"/>
   <id>https://kijimad.github.io/roam/20261017T213821--kdoc-685-『低レベルプログラミング』__book.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 682: 『Reactハンズオンラーニング』</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-orge8ecf16" class="outline-2">
- <h2 id="orge8ecf16"> <a href="#orge8ecf16">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orge8ecf16">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org82e3ccc" class="outline-2">
- <h2 id="org82e3ccc"> <a href="#org82e3ccc">概要</a></h2>
- <div class="outline-text-2" id="text-org82e3ccc">
- <p>
- <a href="https://www.oreilly.co.jp/books/9784873119380/">『Reactハンズオンラーニング 第2版』</a>は、Reactと、その前提になるJavaScriptの関数型プログラミングを解説する本である。
-</p>
-</div>
-</div>
- <div id="outline-container-org3424a6c" class="outline-2">
- <h2 id="org3424a6c"> <a href="#org3424a6c">メモ</a></h2>
- <div class="outline-text-2" id="text-org3424a6c">
- <ul class="org-ul"> <li>関数型プログラミングは、宣言型プログラミングの一部である。宣言型は「何をするか」を書き、命令型は「どのようにするか」の手順を書く(p39)</li>
- <li>再帰は、非同期処理と組み合わせたときや、データ構造を探索するときに役立つ</li>
- <li>引数を1つ受け取って関数を返す関数にすると、一部の引数を固定した関数を作れる(カリー化)。たとえばログの先頭にユーザー名を付ける関数を作れる</li>
- <li> <code>reduce</code> は配列を単一の値に変換する</li>
- <li> <code>export default</code> でエクスポートすると、インポート側は好きな名前で受け取れる</li>
- <li> <code>async</code> 関数では、非同期処理を  <code>await</code> で同期処理のように書ける。エラーは  <code>try</code> /  <code>catch</code> で扱う</li>
- <li> <code>fetch</code> はPromiseを返すだけで、結果は  <code>then</code> でつないで受け取る</li>
-</ul></div>
-</div>
- <div id="outline-container-orgf38a932" class="outline-2">
- <h2 id="orgf38a932"> <a href="#orgf38a932">関連</a></h2>
- <div class="outline-text-2" id="text-orgf38a932">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T205648--kdoc-682-『reactハンズオンラーニング』__book.html"/>
-  <id>https://kijimad.github.io/roam/20261017T205648--kdoc-682-『reactハンズオンラーニング』__book.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
+  <updated>2026-10-18T11:49:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 681: JavaScriptのクラスは関数なので定義したあとにプロパティを追加できる</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-orga779033" class="outline-2">
- <h2 id="orga779033"> <a href="#orga779033">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-orga779033">
+ <div id="outline-container-orgfb87d51" class="outline-2">
+ <h2 id="orgfb87d51"> <a href="#orgfb87d51">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgfb87d51">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -907,9 +831,9 @@ ELFファイルの先頭にはELFヘッダがある。64ビットのELFなら64�
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org4a08662" class="outline-2">
- <h2 id="org4a08662"> <a href="#org4a08662">概要</a></h2>
- <div class="outline-text-2" id="text-org4a08662">
+ <div id="outline-container-org8cf199b" class="outline-2">
+ <h2 id="org8cf199b"> <a href="#org8cf199b">概要</a></h2>
+ <div class="outline-text-2" id="text-org8cf199b">
  <p>
 JavaScriptのクラスは特別な関数で、関数はオブジェクトである。そのため、定義したあとのクラスにもふつうのオブジェクトと同じようにプロパティを追加できる。追加したプロパティはクラス自身に付き、  <code>static</code> で定義したものと同じくインスタンスからは見えない。
 </p>
@@ -953,9 +877,9 @@ If val has a  <code>[[Call]]</code> internal slot, return “function”.
 </blockquote>
 </div>
 </div>
- <div id="outline-container-org9b142b1" class="outline-2">
- <h2 id="org9b142b1"> <a href="#org9b142b1">関連</a></h2>
- <div class="outline-text-2" id="text-org9b142b1">
+ <div id="outline-container-org230bc31" class="outline-2">
+ <h2 id="org230bc31"> <a href="#org230bc31">関連</a></h2>
+ <div class="outline-text-2" id="text-org230bc31">
  <p>
 なし。
 </p>
@@ -964,16 +888,16 @@ If val has a  <code>[[Call]]</code> internal slot, return “function”.
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T205647--kdoc-681-javascriptのクラスは関数なので定義したあとにプロパティを追加できる__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261017T205647--kdoc-681-javascriptのクラスは関数なので定義したあとにプロパティを追加できる__permanent.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
+  <updated>2026-10-18T11:49:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 676: org-roamのデータベースはorgファイルから作り直せるキャッシュである</title>
+  <title>KDOC 680: constは宣言より前では外側に同名の変数があっても読めない</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org3314703" class="outline-2">
- <h2 id="org3314703"> <a href="#org3314703">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org3314703">
+ <div id="outline-container-org7b75f02" class="outline-2">
+ <h2 id="org7b75f02"> <a href="#org7b75f02">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7b75f02">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -982,1547 +906,339 @@ If val has a  <code>[[Call]]</code> internal slot, return “function”.
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orga745e7e" class="outline-2">
- <h2 id="orga745e7e"> <a href="#orga745e7e">概要</a></h2>
- <div class="outline-text-2" id="text-orga745e7e">
+ <div id="outline-container-orgad2089c" class="outline-2">
+ <h2 id="orgad2089c"> <a href="#orgad2089c">概要</a></h2>
+ <div class="outline-text-2" id="text-orgad2089c">
  <p>
-org-roamは、ノードやリンクの情報をSQLiteに保存する。ただし正となるのはorgファイルのほうで、データベースはファイルから作り直せるキャッシュにすぎない。
+JavaScriptの  <code>const</code> の宣言はスコープに入った時点で作られ、宣言の行を実行するまでは参照できない(一時的デッドゾーン)。そのため宣言より前では、外側に同名の変数があっても読めず  <code>ReferenceError</code> になる。
 </p>
+
+ <div class="org-src-container">
+ <pre class="src src-js"> <code>const x = 1;
+{
+  try {
+    console.log(x);
+  } catch (e) {
+    console.log(`${e.name}: ${e.message}`);
+  }
+  const x = 2;
+}
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>ReferenceError: Cannot access 'x' before initialization
+</code></pre>
+</div>
 
  <blockquote>
  <p>
-Org-roam’s capabilities stem from its aggressive caching: it crawls all files within org-roam-directory, and maintains a cache of all links and nodes.
+The variables are created when their containing Environment Record is instantiated but may not be accessed in any way until the variable’s LexicalBinding is evaluated.
 </p>
 
  <p>
- <a href="https://www.orgroam.com/manual.html">Org-roam User Manual</a>
+ <a href="https://262.ecma-international.org/16.0/#sec-let-and-const-declarations">ECMAScript 2025 Language Specification 14.3.1</a>
 </p>
 </blockquote>
-
- <p>
- <code>org-roam-db-sync</code> は、内容のハッシュがデータベースの記録と違うファイルだけを処理し直す。  <code>org-roam-db-autosync-mode</code> を有効にした時点でこれを実行し、以降はEmacsでの変更をそのつど反映する。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>内容のハッシュを比べて、変わったファイルを集める</label> <pre class="src src-git-permalink"> <code>https://github.com/kd-collective/org-roam/blob/abe63b436035049923ae96639b9b856697047779/org-roam-db.el#L624-L629
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-emacs-lisp"> <code>(dolist (file org-roam-files)
-  (let ((contents-hash (org-roam-db--file-hash file)))
-    (unless (string= (gethash file current-files)
-                     contents-hash)
-      (push file modified-files)))
-  (remhash file current-files))
-</code></pre>
-</div>
-
- <p>
-そのため、データベースがおかしくなったら  <code>C-u M-x org-roam-db-sync</code> で作り直せばよい。
-</p>
 </div>
 </div>
- <div id="outline-container-orgfeb3f88" class="outline-2">
- <h2 id="orgfeb3f88"> <a href="#orgfeb3f88">関連</a></h2>
- <div class="outline-text-2" id="text-orgfeb3f88">
+ <div id="outline-container-org889a8f0" class="outline-2">
+ <h2 id="org889a8f0"> <a href="#org889a8f0">関連</a></h2>
+ <div class="outline-text-2" id="text-org889a8f0">
  <p>
 なし。
 </p>
 </div>
 </div>
- <div id="outline-container-orgd91af71" class="outline-2">
- <h2 id="orgd91af71"> <a href="#orgd91af71">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgd91af71">
- <ul class="org-ul"> <li> <a href="./20240218T162607--kdoc-98-org-roam-node-findでエントリが出なくなったときの直し方__permanent.html">KDOC 98: org-roam-node-findでエントリが出なくなったときの直し方</a></li>
-</ul></div>
-</div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T193612--kdoc-676-org-roamのデータベースはorgファイルから作り直せるキャッシュである__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T193612--kdoc-676-org-roamのデータベースはorgファイルから作り直せるキャッシュである__permanent.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261017T205646--kdoc-680-constは宣言より前では外側に同名の変数があっても読めない__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261017T205646--kdoc-680-constは宣言より前では外側に同名の変数があっても読めない__permanent.html</id>
+  <updated>2026-10-18T11:49:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 675: データサイエンス100本ノックでSQLを練習する</title>
+  <title>KDOC 698: コンテナは名前空間で分離したプロセスにすぎない</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org67a0abe" class="outline-2">
- <h2 id="org67a0abe"> <a href="#org67a0abe">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org67a0abe">
+ <div id="outline-container-org7bb093d" class="outline-2">
+ <h2 id="org7bb093d"> <a href="#org7bb093d">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org7bb093d">
  <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
  <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgebeed25" class="outline-2">
- <h2 id="orgebeed25"> <a href="#orgebeed25"> <span class="done DONE">DONE</span> プロジェクトのステータス</a></h2>
- <div class="outline-text-2" id="text-orgebeed25">
+ <div id="outline-container-orgc57c550" class="outline-2">
+ <h2 id="orgc57c550"> <a href="#orgc57c550">概要</a></h2>
+ <div class="outline-text-2" id="text-orgc57c550">
  <p>
-完了済み。
-</p>
-</div>
-</div>
- <div id="outline-container-orgeeb17fc" class="outline-2">
- <h2 id="orgeeb17fc"> <a href="#orgeeb17fc">概要</a></h2>
- <div class="outline-text-2" id="text-orgeeb17fc">
- <p>
- <a href="https://github.com/The-Japan-DataScientist-Society/100knocks-preprocess">データサイエンス100本ノック（構造化データ加工編）</a>はデータ解析を各種言語(SQL, R, Python)で練習するためのリポジトリ。
-環境構築、データのセットがDockerで簡単に準備できる。
-標準はJupyter Notebookを使うようになっているが、使いにくいのでorg-modeを使用してSQLを書く。
-</p>
-</div>
-</div>
- <div id="outline-container-orgfecd812" class="outline-2">
- <h2 id="orgfecd812"> <a href="#orgfecd812">環境構築</a></h2>
- <div class="outline-text-2" id="text-orgfecd812">
- <p>
-Emacs / org-modeで実行できるようにする。
+コンテナの正体は、名前空間でホストから分離したプロセスである。  <code>unshare</code> で名前空間を1つ作るだけでも、その一部を体験できる。UTS名前空間を分けたシェルの中でホスト名を変えても、ホスト側のホスト名は変わらない。
 </p>
 
- <ul class="org-ul"> <li>Repository:  <a href="https://github.com/The-Japan-DataScientist-Society/100knocks-preprocess">データサイエンス100本ノック</a></li>
- <li>READMEの通りに  <code>docker-compose</code> を実行する。</li>
- <li>標準のJupyter Notebookで問題なくアクセスできることを確認する。</li>
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>unshare -r -u sh -c 'hostname newhost; echo &quot;中: $(hostname)&quot;'
+echo &quot;外: $(hostname)&quot;
+</code></pre>
+</div>
 
- <li>init.elに追加。babelでSQLをロードする。これをしないと実行できない。</li>
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>中: newhost
+外: blue-Machine
+</code></pre>
+</div>
+
+ <p>
+ <code>-u</code> がUTS名前空間(ホスト名)を分ける。  <code>-r</code> はユーザー名前空間も作って自分をrootに見せるので、sudoなしで実行できる。本物のコンテナは、これにマウント・PID・ネットワークなどの名前空間を重ねている。
+</p>
+
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>unshare --version
+MANWIDTH=80 man 1 unshare | grep -A2 -E '^ +-u, --uts'
+MANWIDTH=80 man 1 unshare | grep -A6 -E '^ +-r, --map-root-user'
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>unshare from util-linux 2.39.3
+     -u, --uts[=file]
+         Create a new UTS namespace. If file is specified, then  the  namespace
+         is made persistent by creating a bind mount at file.
+     -r, --map-root-user
+         Run  the  program  only after the current effective user and group IDs
+         have been mapped to the superuser UID and GID  in  the  newly  created
+         user  namespace. This makes it possible to conveniently gain capabili‐
+         ties needed to manage various aspects of the newly created  namespaces
+         (such  as  configuring interfaces in the network namespace or mounting
+         filesystems in the mount namespace) even when run unprivileged.  As  a
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org5cd83e0" class="outline-2">
+ <h2 id="org5cd83e0"> <a href="#org5cd83e0">関連</a></h2>
+ <div class="outline-text-2" id="text-org5cd83e0">
+ <ul class="org-ul"> <li>補足:  <a href="20240605T211653--kdoc-186-コンテナ実行環境の設定ファイルを見る__permanent.html#ID-20240605T211653">KDOC 186: コンテナ実行環境の設定ファイルを見る</a>。設定ファイルに並ぶ名前空間の1つを、手で作ってみたもの</li>
+ <li>補足:  <a href="20261018T104854--kdoc-697-『linux-container-book』__book.html#ID-20261018T104854">KDOC 697: 『Linux Container Book』</a>。名前空間の仕組みと歴史(Mount Namespace、setnsとdocker exec)</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T104855--kdoc-698-コンテナは名前空間で分離したプロセスにすぎない__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T104855--kdoc-698-コンテナは名前空間で分離したプロセスにすぎない__permanent.html</id>
+  <updated>2026-10-18T11:48:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 693: RailsのBooleanのcastは文字列の&quot;0&quot;や&quot;f&quot;もfalseにする</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org458860c" class="outline-2">
+ <h2 id="org458860c"> <a href="#org458860c">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org458860c">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orgbef6bbd" class="outline-2">
+ <h2 id="orgbef6bbd"> <a href="#orgbef6bbd">概要</a></h2>
+ <div class="outline-text-2" id="text-orgbef6bbd">
+ <p>
+Rubyでは  <code>false</code> と  <code>nil</code> 以外はすべて真なので、文字列の  <code>&quot;false&quot;</code> も真になる。
+</p>
+
+ <p>
+Railsの  <code>ActiveModel::Type::Boolean</code> は、フォームやDBから文字列で来た真偽値を変換する。booleanのカラムに代入した値は、Active Recordがこの型を使って自動的に変換するので、ふだんは自分で  <code>cast</code> を呼ばない。決まった一覧にある値(  <code>&quot;false&quot;</code> ・  <code>&quot;0&quot;</code> ・  <code>&quot;f&quot;</code> ・  <code>&quot;off&quot;</code> など)を  <code>false</code> にし、空文字列を  <code>nil</code> にし、一覧にない値はすべて  <code>true</code> にする。そのため  <code>&quot;no&quot;</code> は  <code>true</code> になる。一覧には  <code>&quot;false&quot;</code> と  <code>&quot;FALSE&quot;</code> はあるが  <code>&quot;False&quot;</code> はないので、  <code>&quot;False&quot;</code> も  <code>true</code> になる。
+</p>
+
+ <div class="org-src-container">
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>Rails 8.1.4 の ActiveModel::Type::Boolean</label> <pre class="src src-git-permalink"> <code>https://github.com/rails/rails/blob/c3466ea00d7121798e3aa3144ffdf7174b81d8cb/activemodel/lib/active_model/type/boolean.rb#L10-L25
+</code></pre>
+</div>
+
+ <div class="org-src-container">
+ <pre class="src src-ruby"> <code># - &lt;tt&gt;&quot;false&quot;&lt;/tt&gt;, &lt;tt&gt;&quot;f&quot;&lt;/tt&gt;, &lt;tt&gt;&quot;0&quot;&lt;/tt&gt;, +0+ or any other value in
+#   +FALSE_VALUES+ will be coerced to +false+.
+# - Empty strings are coerced to +nil+.
+# - All other values will be coerced to +true+.
+class Boolean &lt; Value
+  include Helpers::Immutable
+  FALSE_VALUES = [
+    false, 0,
+    &quot;0&quot;, :&quot;0&quot;,
+    &quot;f&quot;, :f,
+    &quot;F&quot;, :F,
+    &quot;false&quot;, :false,
+    &quot;FALSE&quot;, :FALSE,
+    &quot;off&quot;, :off,
+    &quot;OFF&quot;, :OFF,
+  ].to_set.freeze
+</code></pre>
+</div>
+</div>
+</div>
+ <div id="outline-container-org6dfc3aa" class="outline-2">
+ <h2 id="org6dfc3aa"> <a href="#org6dfc3aa">関連</a></h2>
+ <div class="outline-text-2" id="text-org6dfc3aa">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T010041--kdoc-693-railsのbooleanのcastは文字列の0やfもfalseにする__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T010041--kdoc-693-railsのbooleanのcastは文字列の0やfもfalseにする__permanent.html</id>
+  <updated>2026-10-18T11:48:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 692: モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgbfeb76a" class="outline-2">
+ <h2 id="orgbfeb76a"> <a href="#orgbfeb76a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgbfeb76a">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org4f1fa69" class="outline-2">
+ <h2 id="org4f1fa69"> <a href="#org4f1fa69">概要</a></h2>
+ <div class="outline-text-2" id="text-org4f1fa69">
+ <p>
+Railsでは、  <code>Rails.application.eager_load!</code> でモデルをすべて読み込めば、  <code>ApplicationRecord.subclasses</code> でApplicationRecordを直接継承するモデルを列挙できる。これを使うと、モデルごとに用意しておくべきものの作り忘れを検査するrakeタスクを書ける。
+</p>
+
+ <ul class="org-ul"> <li>factoryがないモデル: 各モデルのfactoryで  <code>create</code> してみて、未登録の  <code>KeyError</code> が出たら作り忘れ</li>
+ <li>レコードがないテーブル: seedを流したあとで、  <code>count</code> がゼロのモデルがあればseedの作り忘れ</li>
 </ul> <div class="org-src-container">
- <pre class="src src-emacs-lisp"> <code>(org-babel-do-load-languages
- 'org-babel-load-languages
- '((sql . t)))
-</code></pre>
-</div>
- <ul class="org-ul"> <li> <p>
-実行したいorgファイル見出しにDB接続設定を追加。100本ノックのPostgreSQLのデフォルト設定になっている(READMEに記載されている)。
-</p>
- <div class="org-src-container">
- <pre class="src src-emacs-lisp"> <code>:PROPERTIES:
-  :header-args+: :results table
-  :header-args+: :engine postgresql
-  :header-args+: :dbhost localhost
-  :header-args+: :dbuser postgres
-  :header-args+: :dbpassword postgres12345
-  :header-args+: :database dsdojo_db
-:END:
-</code></pre>
-</div></li>
- <li>コードブロックで  <code>C-c C-c</code> で実行できる。</li>
-</ul> <blockquote>
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT COUNT(1) FROM store CROSS JOIN product;
+ <label class="org-src-name"> <span class="listing-number">Listing 1: </span>レコードがないテーブルを検知するタスク</label> <pre class="src src-ruby"> <code>task lint: :environment do
+  msg = []
+  invalid = false
+
+  Rails.application.eager_load!
+  ApplicationRecord.subclasses.each do |model|
+    msg &lt;&lt; &quot;#{model.name} =&gt; #{model.count}&quot;
+    invalid = true if model.count.zero?
+  end
+
+  puts msg
+
+  raise 'レコードがないテーブルがあります' if invalid
+end
 </code></pre>
 </div>
 
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">count</th>
-</tr></thead> <tbody> <tr> <td class="org-right">531590</td>
-</tr></tbody></table></blockquote>
-</div>
-</div>
- <div id="outline-container-org71eac73" class="outline-2">
- <h2 id="org71eac73"> <a href="#org71eac73">メモ</a></h2>
- <div class="outline-text-2" id="text-org71eac73">
-</div>
- <div id="outline-container-orgf354204" class="outline-3">
- <h3 id="orgf354204"> <a href="#orgf354204">等しい場合は同一順位: RANK</a></h3>
- <div class="outline-text-3" id="text-orgf354204">
- <blockquote>
  <p>
-S-019: レシート明細テーブル（receipt）に対し、1件あたりの売上金額（amount）が高い順にランクを付与し、先頭10件を抽出せよ。項目は顧客ID（customer_id）、売上金額（amount）、付与したランクを表示させること。なお、売上金額（amount）が等しい場合は同一順位を付与するものとする。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT customer_id, amount, RANK() OVER(ORDER BY amount DESC) AS ranking
-FROM receipt
-LIMIT 10
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-right">amount</th>
- <th scope="col" class="org-right">ranking</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS011415000006</td>
- <td class="org-right">10925</td>
- <td class="org-right">1</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">6800</td>
- <td class="org-right">2</td>
-</tr> <tr> <td class="org-left">CS028605000002</td>
- <td class="org-right">5780</td>
- <td class="org-right">3</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">5480</td>
- <td class="org-right">4</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">5480</td>
- <td class="org-right">4</td>
-</tr> <tr> <td class="org-left">CS015515000034</td>
- <td class="org-right">5480</td>
- <td class="org-right">4</td>
-</tr> <tr> <td class="org-left">CS021515000089</td>
- <td class="org-right">5440</td>
- <td class="org-right">7</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">5440</td>
- <td class="org-right">7</td>
-</tr> <tr> <td class="org-left">CS020515000102</td>
- <td class="org-right">5280</td>
- <td class="org-right">9</td>
-</tr> <tr> <td class="org-left">CS021515000089</td>
- <td class="org-right">5280</td>
- <td class="org-right">9</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org6c7ce3b" class="outline-3">
- <h3 id="org6c7ce3b"> <a href="#org6c7ce3b">等しい場合でも別順位: ROW_NUMBER</a></h3>
- <div class="outline-text-3" id="text-org6c7ce3b">
- <blockquote>
- <p>
-S-020: レシート明細テーブル（receipt）に対し、1件あたりの売上金額（amount）が高い順にランクを付与し、先頭10件を抽出せよ。項目は顧客ID（customer_id）、売上金額（amount）、付与したランクを表示させること。なお、売上金額（amount）が等しい場合でも別順位を付与すること。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT customer_id, amount, ROW_NUMBER() OVER(ORDER BY amount DESC) AS ranking
-FROM receipt
-LIMIT 10
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-right">amount</th>
- <th scope="col" class="org-right">ranking</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS011415000006</td>
- <td class="org-right">10925</td>
- <td class="org-right">1</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">6800</td>
- <td class="org-right">2</td>
-</tr> <tr> <td class="org-left">CS028605000002</td>
- <td class="org-right">5780</td>
- <td class="org-right">3</td>
-</tr> <tr> <td class="org-left">CS015515000034</td>
- <td class="org-right">5480</td>
- <td class="org-right">4</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">5480</td>
- <td class="org-right">5</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">5480</td>
- <td class="org-right">6</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">5440</td>
- <td class="org-right">7</td>
-</tr> <tr> <td class="org-left">CS021515000089</td>
- <td class="org-right">5440</td>
- <td class="org-right">8</td>
-</tr> <tr> <td class="org-left">ZZ000000000000</td>
- <td class="org-right">5280</td>
- <td class="org-right">9</td>
-</tr> <tr> <td class="org-left">CS009415000038</td>
- <td class="org-right">5280</td>
- <td class="org-right">10</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org4fcb7f5" class="outline-3">
- <h3 id="org4fcb7f5"> <a href="#org4fcb7f5">ユニーク件数</a></h3>
- <div class="outline-text-3" id="text-org4fcb7f5">
- <blockquote>
- <p>
-S-022: レシート明細テーブル（receipt）の顧客ID（customer_id）に対し、ユニーク件数をカウントせよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT count(distinct customer_id) FROM receipt
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">count</th>
-</tr></thead> <tbody> <tr> <td class="org-right">8307</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org06a3ae4" class="outline-3">
- <h3 id="org06a3ae4"> <a href="#org06a3ae4">GROUP BY, 日付でのMAX</a></h3>
- <div class="outline-text-3" id="text-org06a3ae4">
- <blockquote>
- <p>
-S-024: レシート明細テーブル（receipt）に対し、顧客ID（customer_id）ごとに最も新しい売上日（sales_ymd）を求め、10件表示せよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT customer_id, MAX(sales_ymd)
-FROM receipt
-GROUP BY customer_id
-LIMIT 10
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-right">max</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS001311000059</td>
- <td class="org-right">20180211</td>
-</tr> <tr> <td class="org-left">CS004614000122</td>
- <td class="org-right">20181228</td>
-</tr> <tr> <td class="org-left">CS003512000043</td>
- <td class="org-right">20180106</td>
-</tr> <tr> <td class="org-left">CS011615000061</td>
- <td class="org-right">20190503</td>
-</tr> <tr> <td class="org-left">CS029212000033</td>
- <td class="org-right">20180621</td>
-</tr> <tr> <td class="org-left">CS007515000119</td>
- <td class="org-right">20190511</td>
-</tr> <tr> <td class="org-left">CS034515000123</td>
- <td class="org-right">20190708</td>
-</tr> <tr> <td class="org-left">CS004315000058</td>
- <td class="org-right">20170517</td>
-</tr> <tr> <td class="org-left">CS026414000014</td>
- <td class="org-right">20190720</td>
-</tr> <tr> <td class="org-left">CS001615000099</td>
- <td class="org-right">20170729</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org86ccfaf" class="outline-3">
- <h3 id="org86ccfaf"> <a href="#org86ccfaf">集計結果に対する条件: HAVING</a></h3>
- <div class="outline-text-3" id="text-org86ccfaf">
- <blockquote>
- <p>
-S-026: レシート明細テーブル（receipt）に対し、顧客ID（customer_id）ごとに最も新しい売上日（sales_ymd）と古い売上日を求め、両者が異なるデータを10件表示せよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT customer_id, MAX(sales_ymd), MIN(sales_ymd)
-FROM receipt
-GROUP BY customer_id
-HAVING MAX(sales_ymd) != MIN(sales_ymd)
-LIMIT 10
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-right">max</th>
- <th scope="col" class="org-right">min</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS029212000033</td>
- <td class="org-right">20180621</td>
- <td class="org-right">20170318</td>
-</tr> <tr> <td class="org-left">CS007515000119</td>
- <td class="org-right">20190511</td>
- <td class="org-right">20170201</td>
-</tr> <tr> <td class="org-left">CS034515000123</td>
- <td class="org-right">20190708</td>
- <td class="org-right">20170527</td>
-</tr> <tr> <td class="org-left">CS026414000014</td>
- <td class="org-right">20190720</td>
- <td class="org-right">20170718</td>
-</tr> <tr> <td class="org-left">CS010515000082</td>
- <td class="org-right">20181204</td>
- <td class="org-right">20180518</td>
-</tr> <tr> <td class="org-left">CS019315000045</td>
- <td class="org-right">20170920</td>
- <td class="org-right">20170423</td>
-</tr> <tr> <td class="org-left">CS008513000099</td>
- <td class="org-right">20190308</td>
- <td class="org-right">20170722</td>
-</tr> <tr> <td class="org-left">CS007615000070</td>
- <td class="org-right">20191025</td>
- <td class="org-right">20170929</td>
-</tr> <tr> <td class="org-left">CS025415000155</td>
- <td class="org-right">20191026</td>
- <td class="org-right">20170314</td>
-</tr> <tr> <td class="org-left">CS016414000063</td>
- <td class="org-right">20190617</td>
- <td class="org-right">20170109</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org9c96dde" class="outline-3">
- <h3 id="org9c96dde"> <a href="#org9c96dde">中央値: PERCENTILE_CONT</a></h3>
- <div class="outline-text-3" id="text-org9c96dde">
- <blockquote>
- <p>
-S-028: レシート明細テーブル（receipt）に対し、店舗コード（store_cd）ごとに売上金額（amount）の中央値を計算し、降順でTOP5を表示せよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT
-store_cd,
-PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY amount) as amount_50per
-FROM receipt
-GROUP BY store_cd
-ORDER BY amount_50per desc
-LIMIT 5
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">store_cd</th>
- <th scope="col" class="org-right">amount_50per</th>
-</tr></thead> <tbody> <tr> <td class="org-left">S13052</td>
- <td class="org-right">190</td>
-</tr> <tr> <td class="org-left">S14010</td>
- <td class="org-right">188</td>
-</tr> <tr> <td class="org-left">S14050</td>
- <td class="org-right">185</td>
-</tr> <tr> <td class="org-left">S13003</td>
- <td class="org-right">180</td>
-</tr> <tr> <td class="org-left">S13018</td>
- <td class="org-right">180</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-orgcc578af" class="outline-3">
- <h3 id="orgcc578af"> <a href="#orgcc578af">サブクエリ: WITH</a></h3>
- <div class="outline-text-3" id="text-orgcc578af">
- <blockquote>
- <p>
-S-029: レシート明細テーブル（receipt）に対し、店舗コード（store_cd）ごとに商品コード（product_cd）の最頻値を求めよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>WITH product_mode AS (
-    SELECT store_cd,product_cd, COUNT(1) as mode_cnt,
-        RANK() OVER(PARTITION BY store_cd ORDER BY COUNT(1) DESC) AS rnk
-    FROM receipt
-    GROUP BY store_cd,product_cd
-)
-SELECT store_cd,product_cd, mode_cnt
-FROM product_mode
-WHERE rnk = 1
-ORDER BY store_cd,product_cd;
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">store_cd</th>
- <th scope="col" class="org-left">product_cd</th>
- <th scope="col" class="org-right">mode_cnt</th>
-</tr></thead> <tbody> <tr> <td class="org-left">S12007</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">72</td>
-</tr> <tr> <td class="org-left">S12013</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">107</td>
-</tr> <tr> <td class="org-left">S12014</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">65</td>
-</tr> <tr> <td class="org-left">S12029</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">92</td>
-</tr> <tr> <td class="org-left">S12030</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">115</td>
-</tr> <tr> <td class="org-left">S13001</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">67</td>
-</tr> <tr> <td class="org-left">S13002</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">78</td>
-</tr> <tr> <td class="org-left">S13003</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">65</td>
-</tr> <tr> <td class="org-left">S13004</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">88</td>
-</tr> <tr> <td class="org-left">S13005</td>
- <td class="org-left">P040503001</td>
- <td class="org-right">36</td>
-</tr> <tr> <td class="org-left">S13008</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">77</td>
-</tr> <tr> <td class="org-left">S13009</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">64</td>
-</tr> <tr> <td class="org-left">S13015</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">34</td>
-</tr> <tr> <td class="org-left">S13016</td>
- <td class="org-left">P071102001</td>
- <td class="org-right">32</td>
-</tr> <tr> <td class="org-left">S13017</td>
- <td class="org-left">P060101002</td>
- <td class="org-right">31</td>
-</tr> <tr> <td class="org-left">S13018</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">47</td>
-</tr> <tr> <td class="org-left">S13019</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">70</td>
-</tr> <tr> <td class="org-left">S13020</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">79</td>
-</tr> <tr> <td class="org-left">S13031</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">115</td>
-</tr> <tr> <td class="org-left">S13032</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">85</td>
-</tr> <tr> <td class="org-left">S13035</td>
- <td class="org-left">P040503001</td>
- <td class="org-right">39</td>
-</tr> <tr> <td class="org-left">S13037</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">88</td>
-</tr> <tr> <td class="org-left">S13038</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">41</td>
-</tr> <tr> <td class="org-left">S13039</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">36</td>
-</tr> <tr> <td class="org-left">S13041</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">70</td>
-</tr> <tr> <td class="org-left">S13043</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">56</td>
-</tr> <tr> <td class="org-left">S13044</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">96</td>
-</tr> <tr> <td class="org-left">S13051</td>
- <td class="org-left">P050102001</td>
- <td class="org-right">5</td>
-</tr> <tr> <td class="org-left">S13051</td>
- <td class="org-left">P071003001</td>
- <td class="org-right">5</td>
-</tr> <tr> <td class="org-left">S13051</td>
- <td class="org-left">P080804001</td>
- <td class="org-right">5</td>
-</tr> <tr> <td class="org-left">S13052</td>
- <td class="org-left">P050101001</td>
- <td class="org-right">4</td>
-</tr> <tr> <td class="org-left">S14006</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">70</td>
-</tr> <tr> <td class="org-left">S14010</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">68</td>
-</tr> <tr> <td class="org-left">S14011</td>
- <td class="org-left">P060101001</td>
- <td class="org-right">51</td>
-</tr> <tr> <td class="org-left">S14012</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">142</td>
-</tr> <tr> <td class="org-left">S14021</td>
- <td class="org-left">P060101001</td>
- <td class="org-right">30</td>
-</tr> <tr> <td class="org-left">S14022</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">71</td>
-</tr> <tr> <td class="org-left">S14023</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">70</td>
-</tr> <tr> <td class="org-left">S14024</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">96</td>
-</tr> <tr> <td class="org-left">S14025</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">46</td>
-</tr> <tr> <td class="org-left">S14026</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">40</td>
-</tr> <tr> <td class="org-left">S14027</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">152</td>
-</tr> <tr> <td class="org-left">S14028</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">140</td>
-</tr> <tr> <td class="org-left">S14033</td>
- <td class="org-left">P071401001</td>
- <td class="org-right">68</td>
-</tr> <tr> <td class="org-left">S14034</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">71</td>
-</tr> <tr> <td class="org-left">S14036</td>
- <td class="org-left">P040503001</td>
- <td class="org-right">19</td>
-</tr> <tr> <td class="org-left">S14036</td>
- <td class="org-left">P060101001</td>
- <td class="org-right">19</td>
-</tr> <tr> <td class="org-left">S14040</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">80</td>
-</tr> <tr> <td class="org-left">S14042</td>
- <td class="org-left">P050101001</td>
- <td class="org-right">34</td>
-</tr> <tr> <td class="org-left">S14045</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">33</td>
-</tr> <tr> <td class="org-left">S14046</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">71</td>
-</tr> <tr> <td class="org-left">S14047</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">36</td>
-</tr> <tr> <td class="org-left">S14048</td>
- <td class="org-left">P050101001</td>
- <td class="org-right">17</td>
-</tr> <tr> <td class="org-left">S14049</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">55</td>
-</tr> <tr> <td class="org-left">S14050</td>
- <td class="org-left">P060303001</td>
- <td class="org-right">9</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org6a9fe56" class="outline-3">
- <h3 id="org6a9fe56"> <a href="#org6a9fe56">標本分散: VAR_SAMP</a></h3>
- <div class="outline-text-3" id="text-org6a9fe56">
- <blockquote>
- <p>
-S-030: レシート明細テーブル（receipt）に対し、店舗コード（store_cd）ごとに売上金額（amount）の標本分散を計算し、降順でTOP5を表示せよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT store_cd, var_samp(amount) as vars_amount
-FROM receipt
-GROUP BY store_cd
-ORDER BY vars_amount desc
-LIMIT 5
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">store_cd</th>
- <th scope="col" class="org-right">vars_amount</th>
-</tr></thead> <tbody> <tr> <td class="org-left">S13052</td>
- <td class="org-right">441863.252526233968</td>
-</tr> <tr> <td class="org-left">S14011</td>
- <td class="org-right">306442.242431568709</td>
-</tr> <tr> <td class="org-left">S14034</td>
- <td class="org-right">297068.392740060738</td>
-</tr> <tr> <td class="org-left">S13001</td>
- <td class="org-right">295558.842617712478</td>
-</tr> <tr> <td class="org-left">S13015</td>
- <td class="org-right">295427.197085853584</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-orgb3aac2d" class="outline-3">
- <h3 id="orgb3aac2d"> <a href="#orgb3aac2d">標本標準偏差: STDDEV_SAMP</a></h3>
- <div class="outline-text-3" id="text-orgb3aac2d">
- <blockquote>
- <p>
-S-031: レシート明細テーブル（receipt）に対し、店舗コード（store_cd）ごとに売上金額（amount）の標本標準偏差を計算し、降順でTOP5を表示せよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT store_cd, stddev_samp(amount) as stds_amount
-FROM receipt
-GROUP BY store_cd
-ORDER BY stds_amount desc
-LIMIT 5
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">store_cd</th>
- <th scope="col" class="org-right">stds_amount</th>
-</tr></thead> <tbody> <tr> <td class="org-left">S13052</td>
- <td class="org-right">664.727953772244</td>
-</tr> <tr> <td class="org-left">S14011</td>
- <td class="org-right">553.572255836190</td>
-</tr> <tr> <td class="org-left">S14034</td>
- <td class="org-right">545.039808399406</td>
-</tr> <tr> <td class="org-left">S13001</td>
- <td class="org-right">543.653237475610</td>
-</tr> <tr> <td class="org-left">S13015</td>
- <td class="org-right">543.532149082144</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-orga610dc8" class="outline-3">
- <h3 id="orga610dc8"> <a href="#orga610dc8">%刻み: PERCENTILE_CONT</a></h3>
- <div class="outline-text-3" id="text-orga610dc8">
- <blockquote>
- <p>
-S-032: レシート明細テーブル（receipt）の売上金額（amount）について、25％刻みでパーセンタイル値を求めよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT
-    PERCENTILE_CONT(0.25) WITHIN GROUP(ORDER BY amount) as amount_25per,
-    PERCENTILE_CONT(0.50) WITHIN GROUP(ORDER BY amount) as amount_50per,
-    PERCENTILE_CONT(0.75) WITHIN GROUP(ORDER BY amount) as amount_75per,
-    PERCENTILE_CONT(1.0) WITHIN GROUP(ORDER BY amount) as amount_100per
-FROM receipt
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col> <col class="org-right"></col> <col class="org-right"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">amount_25per</th>
- <th scope="col" class="org-right">amount_50per</th>
- <th scope="col" class="org-right">amount_75per</th>
- <th scope="col" class="org-right">amount_100per</th>
-</tr></thead> <tbody> <tr> <td class="org-right">102</td>
- <td class="org-right">170</td>
- <td class="org-right">288</td>
- <td class="org-right">10925</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org8b3bfc8" class="outline-3">
- <h3 id="org8b3bfc8"> <a href="#org8b3bfc8">サブクエリ: WITH</a></h3>
- <div class="outline-text-3" id="text-org8b3bfc8">
- <blockquote>
- <p>
-S-034: レシート明細テーブル（receipt）に対し、顧客ID（customer_id）ごとに売上金額（amount）を合計して全顧客の平均を求めよ。ただし、顧客IDが“Z”から始まるのものは非会員を表すため、除外して計算すること。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>WITH customer_amount AS (
-    SELECT customer_id, SUM(amount) AS sum_amount
-    FROM receipt
-    WHERE customer_id not like 'Z%'
-    GROUP BY customer_id
-)
-SELECT AVG(sum_amount) from customer_amount
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">avg</th>
-</tr></thead> <tbody> <tr> <td class="org-right">2547.7422345292559595</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org955e5d0" class="outline-3">
- <h3 id="org955e5d0"> <a href="#org955e5d0">WHEREの条件に集約関数を使う</a></h3>
- <div class="outline-text-3" id="text-org955e5d0">
- <blockquote>
- <p>
-S-035: レシート明細テーブル（receipt）に対し、顧客ID（customer_id）ごとに売上金額（amount）を合計して全顧客の平均を求め、平均以上に買い物をしている顧客を抽出せよ。ただし、顧客IDが“Z”から始まるのものは非会員を表すため、除外して計算すること。なお、データは10件だけ表示させれば良い。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>WITH customer_amount AS (
-    SELECT customer_id, SUM(amount) AS sum_amount
-    FROM receipt
-    WHERE customer_id not like 'Z%'
-    GROUP BY customer_id
-)
-SELECT customer_id, sum_amount
-FROM customer_amount
-WHERE sum_amount &gt;= (SELECT AVG(sum_amount) from customer_amount)
-limit 10
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-right">sum_amount</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS029212000033</td>
- <td class="org-right">3604</td>
-</tr> <tr> <td class="org-left">CS007515000119</td>
- <td class="org-right">7157</td>
-</tr> <tr> <td class="org-left">CS034515000123</td>
- <td class="org-right">3699</td>
-</tr> <tr> <td class="org-left">CS026414000014</td>
- <td class="org-right">6671</td>
-</tr> <tr> <td class="org-left">CS007615000070</td>
- <td class="org-right">2975</td>
-</tr> <tr> <td class="org-left">CS016414000063</td>
- <td class="org-right">6207</td>
-</tr> <tr> <td class="org-left">CS012514000018</td>
- <td class="org-right">2562</td>
-</tr> <tr> <td class="org-left">CS029515000142</td>
- <td class="org-right">3420</td>
-</tr> <tr> <td class="org-left">CS015215000021</td>
- <td class="org-right">3090</td>
-</tr> <tr> <td class="org-left">CS039814000011</td>
- <td class="org-right">8031</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org87dfb3e" class="outline-3">
- <h3 id="org87dfb3e"> <a href="#org87dfb3e">結合のスマートな書き方</a></h3>
- <div class="outline-text-3" id="text-org87dfb3e">
- <blockquote>
- <p>
-S-036: レシート明細テーブル（receipt）と店舗テーブル（store）を内部結合し、レシート明細テーブルの全項目と店舗テーブルの店舗名（store_name）を10件表示させよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT r.*, s.store_name
-FROM receipt r
-JOIN store s
-ON r.store_cd = s.store_cd
-LIMIT 10
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col> <col class="org-right"></col> <col class="org-left"></col> <col class="org-right"></col> <col class="org-right"></col> <col class="org-left"></col> <col class="org-left"></col> <col class="org-right"></col> <col class="org-right"></col> <col class="org-left"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">sales_ymd</th>
- <th scope="col" class="org-right">sales_epoch</th>
- <th scope="col" class="org-left">store_cd</th>
- <th scope="col" class="org-right">receipt_no</th>
- <th scope="col" class="org-right">receipt_sub_no</th>
- <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-left">product_cd</th>
- <th scope="col" class="org-right">quantity</th>
- <th scope="col" class="org-right">amount</th>
- <th scope="col" class="org-left">store_name</th>
-</tr></thead> <tbody> <tr> <td class="org-right">20181103</td>
- <td class="org-right">1541203200</td>
- <td class="org-left">S14006</td>
- <td class="org-right">112</td>
- <td class="org-right">1</td>
- <td class="org-left">CS006214000001</td>
- <td class="org-left">P070305012</td>
- <td class="org-right">1</td>
- <td class="org-right">158</td>
- <td class="org-left">葛が谷店</td>
-</tr> <tr> <td class="org-right">20181118</td>
- <td class="org-right">1542499200</td>
- <td class="org-left">S13008</td>
- <td class="org-right">1132</td>
- <td class="org-right">2</td>
- <td class="org-left">CS008415000097</td>
- <td class="org-left">P070701017</td>
- <td class="org-right">1</td>
- <td class="org-right">81</td>
- <td class="org-left">成城店</td>
-</tr> <tr> <td class="org-right">20170712</td>
- <td class="org-right">1499817600</td>
- <td class="org-left">S14028</td>
- <td class="org-right">1102</td>
- <td class="org-right">1</td>
- <td class="org-left">CS028414000014</td>
- <td class="org-left">P060101005</td>
- <td class="org-right">1</td>
- <td class="org-right">170</td>
- <td class="org-left">二ツ橋店</td>
-</tr> <tr> <td class="org-right">20190205</td>
- <td class="org-right">1549324800</td>
- <td class="org-left">S14042</td>
- <td class="org-right">1132</td>
- <td class="org-right">1</td>
- <td class="org-left">ZZ000000000000</td>
- <td class="org-left">P050301001</td>
- <td class="org-right">1</td>
- <td class="org-right">25</td>
- <td class="org-left">新山下店</td>
-</tr> <tr> <td class="org-right">20180821</td>
- <td class="org-right">1534809600</td>
- <td class="org-left">S14025</td>
- <td class="org-right">1102</td>
- <td class="org-right">2</td>
- <td class="org-left">CS025415000050</td>
- <td class="org-left">P060102007</td>
- <td class="org-right">1</td>
- <td class="org-right">90</td>
- <td class="org-left">大和店</td>
-</tr> <tr> <td class="org-right">20190605</td>
- <td class="org-right">1559692800</td>
- <td class="org-left">S13003</td>
- <td class="org-right">1112</td>
- <td class="org-right">1</td>
- <td class="org-left">CS003515000195</td>
- <td class="org-left">P050102002</td>
- <td class="org-right">1</td>
- <td class="org-right">138</td>
- <td class="org-left">狛江店</td>
-</tr> <tr> <td class="org-right">20181205</td>
- <td class="org-right">1543968000</td>
- <td class="org-left">S14024</td>
- <td class="org-right">1102</td>
- <td class="org-right">2</td>
- <td class="org-left">CS024514000042</td>
- <td class="org-left">P080101005</td>
- <td class="org-right">1</td>
- <td class="org-right">30</td>
- <td class="org-left">三田店</td>
-</tr> <tr> <td class="org-right">20190922</td>
- <td class="org-right">1569110400</td>
- <td class="org-left">S14040</td>
- <td class="org-right">1102</td>
- <td class="org-right">1</td>
- <td class="org-left">CS040415000178</td>
- <td class="org-left">P070501004</td>
- <td class="org-right">1</td>
- <td class="org-right">128</td>
- <td class="org-left">長津田店</td>
-</tr> <tr> <td class="org-right">20170504</td>
- <td class="org-right">1493856000</td>
- <td class="org-left">S13020</td>
- <td class="org-right">1112</td>
- <td class="org-right">2</td>
- <td class="org-left">ZZ000000000000</td>
- <td class="org-left">P071302010</td>
- <td class="org-right">1</td>
- <td class="org-right">770</td>
- <td class="org-left">十条仲原店</td>
-</tr> <tr> <td class="org-right">20191010</td>
- <td class="org-right">1570665600</td>
- <td class="org-left">S14027</td>
- <td class="org-right">1102</td>
- <td class="org-right">1</td>
- <td class="org-left">CS027514000015</td>
- <td class="org-left">P071101003</td>
- <td class="org-right">1</td>
- <td class="org-right">680</td>
- <td class="org-left">南藤沢店</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org7e987e8" class="outline-3">
- <h3 id="org7e987e8"> <a href="#org7e987e8">値がないときのデフォルト値: COALESCE</a></h3>
- <div class="outline-text-3" id="text-org7e987e8">
- <blockquote>
- <p>
-S-038: 顧客テーブル（customer）とレシート明細テーブル（receipt）から、各顧客ごとの売上金額合計を求めよ。ただし、売上実績がない顧客については売上金額を0として表示させること。また、顧客は性別コード（gender_cd）が女性（1）であるものを対象とし、非会員（顧客IDが’Z’から始まるもの）は除外すること。なお、結果は10件だけ表示させれば良い。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>WITH customer_amount AS (
-    SELECT customer_id, SUM(amount) AS sum_amount
-    FROM receipt
-    GROUP BY customer_id
-)
-SELECT c.customer_id, COALESCE(a.sum_amount,0)
-FROM customer c
-LEFT JOIN customer_amount a
-ON c.customer_id = a.customer_id
-WHERE c.gender_cd = '1'
-      and c.customer_id not like 'Z%'
-LIMIT 10
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-right">coalesce</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS021313000114</td>
- <td class="org-right">0</td>
-</tr> <tr> <td class="org-left">CS031415000172</td>
- <td class="org-right">5088</td>
-</tr> <tr> <td class="org-left">CS028811000001</td>
- <td class="org-right">0</td>
-</tr> <tr> <td class="org-left">CS001215000145</td>
- <td class="org-right">875</td>
-</tr> <tr> <td class="org-left">CS015414000103</td>
- <td class="org-right">3122</td>
-</tr> <tr> <td class="org-left">CS033513000180</td>
- <td class="org-right">868</td>
-</tr> <tr> <td class="org-left">CS035614000014</td>
- <td class="org-right">0</td>
-</tr> <tr> <td class="org-left">CS011215000048</td>
- <td class="org-right">3444</td>
-</tr> <tr> <td class="org-left">CS009413000079</td>
- <td class="org-right">0</td>
-</tr> <tr> <td class="org-left">CS040412000191</td>
- <td class="org-right">210</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org0219247" class="outline-3">
- <h3 id="org0219247"> <a href="#org0219247">複数のWITH</a></h3>
- <div class="outline-text-3" id="text-org0219247">
- <blockquote>
- <p>
-S-039: レシート明細テーブル（receipt）から売上日数の多い顧客の上位20件と、売上金額合計の多い顧客の上位20件を抽出し、完全外部結合せよ。ただし、非会員（顧客IDが’Z’から始まるもの）は除外すること。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>WITH customer_days AS (
-    select customer_id, count(distinct sales_ymd) come_days
-    FROM receipt
-    WHERE customer_id NOT LIKE 'Z%'
-    GROUP BY customer_id
-    ORDER BY come_days DESC LIMIT 20
-),
-customer_amount AS (
-    SELECT customer_id, sum(amount) buy_amount
-    FROM receipt
-    WHERE customer_id NOT LIKE 'Z%'
-    GROUP BY customer_id
-    ORDER BY buy_amount DESC LIMIT 20
-)
-SELECT COALESCE(d.customer_id, a.customer_id), d.come_days, a.buy_amount
-FROM customer_days d
-FULL JOIN customer_amount a
-ON d.customer_id = a.customer_id;
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">coalesce</th>
- <th scope="col" class="org-right">come_days</th>
- <th scope="col" class="org-right">buy_amount</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS040214000008</td>
- <td class="org-right">23</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS015415000185</td>
- <td class="org-right">22</td>
- <td class="org-right">20153</td>
-</tr> <tr> <td class="org-left">CS010214000010</td>
- <td class="org-right">22</td>
- <td class="org-right">18585</td>
-</tr> <tr> <td class="org-left">CS028415000007</td>
- <td class="org-right">21</td>
- <td class="org-right">19127</td>
-</tr> <tr> <td class="org-left">CS010214000002</td>
- <td class="org-right">21</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS017415000097</td>
- <td class="org-right">20</td>
- <td class="org-right">23086</td>
-</tr> <tr> <td class="org-left">CS016415000141</td>
- <td class="org-right">20</td>
- <td class="org-right">18372</td>
-</tr> <tr> <td class="org-left">CS021514000045</td>
- <td class="org-right">19</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS022515000226</td>
- <td class="org-right">19</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS031414000051</td>
- <td class="org-right">19</td>
- <td class="org-right">19202</td>
-</tr> <tr> <td class="org-left">CS039414000052</td>
- <td class="org-right">19</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS014214000023</td>
- <td class="org-right">19</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS021515000172</td>
- <td class="org-right">19</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS031414000073</td>
- <td class="org-right">18</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS007515000107</td>
- <td class="org-right">18</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS014415000077</td>
- <td class="org-right">18</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS021515000056</td>
- <td class="org-right">18</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS032415000209</td>
- <td class="org-right">18</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS021515000211</td>
- <td class="org-right">18</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS022515000028</td>
- <td class="org-right">18</td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-left">CS011415000006</td>
- <td class="org-right"> </td>
- <td class="org-right">16094</td>
-</tr> <tr> <td class="org-left">CS016415000101</td>
- <td class="org-right"> </td>
- <td class="org-right">16348</td>
-</tr> <tr> <td class="org-left">CS030415000034</td>
- <td class="org-right"> </td>
- <td class="org-right">15468</td>
-</tr> <tr> <td class="org-left">CS021515000089</td>
- <td class="org-right"> </td>
- <td class="org-right">17580</td>
-</tr> <tr> <td class="org-left">CS034415000047</td>
- <td class="org-right"> </td>
- <td class="org-right">16083</td>
-</tr> <tr> <td class="org-left">CS006515000023</td>
- <td class="org-right"> </td>
- <td class="org-right">18372</td>
-</tr> <tr> <td class="org-left">CS038415000104</td>
- <td class="org-right"> </td>
- <td class="org-right">17847</td>
-</tr> <tr> <td class="org-left">CS015515000034</td>
- <td class="org-right"> </td>
- <td class="org-right">15300</td>
-</tr> <tr> <td class="org-left">CS032414000072</td>
- <td class="org-right"> </td>
- <td class="org-right">16563</td>
-</tr> <tr> <td class="org-left">CS011414000106</td>
- <td class="org-right"> </td>
- <td class="org-right">18338</td>
-</tr> <tr> <td class="org-left">CS001605000009</td>
- <td class="org-right"> </td>
- <td class="org-right">18925</td>
-</tr> <tr> <td class="org-left">CS009414000059</td>
- <td class="org-right"> </td>
- <td class="org-right">15492</td>
-</tr> <tr> <td class="org-left">CS035414000024</td>
- <td class="org-right"> </td>
- <td class="org-right">17615</td>
-</tr> <tr> <td class="org-left">CS007514000094</td>
- <td class="org-right"> </td>
- <td class="org-right">15735</td>
-</tr></tbody></table> <p>
-集計と、表示を分離するイメージ。with句で集計をやり、その結果をメインの句で好きに加工できる。
-</p>
-</div>
-</div>
- <div id="outline-container-org45a3af5" class="outline-3">
- <h3 id="org45a3af5"> <a href="#org45a3af5">直積: CROSS JOIN</a></h3>
- <div class="outline-text-3" id="text-org45a3af5">
- <blockquote>
- <p>
-S-040: 全ての店舗と全ての商品を組み合わせると何件のデータとなるか調査したい。店舗（store）と商品（product）を直積した件数を計算せよ。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT COUNT(1) FROM store CROSS JOIN product;
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">count</th>
-</tr></thead> <tbody> <tr> <td class="org-right">531590</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org4dd5948" class="outline-3">
- <h3 id="org4dd5948"> <a href="#org4dd5948">差分: LAG</a></h3>
- <div class="outline-text-3" id="text-org4dd5948">
- <blockquote>
- <p>
-S-041: レシート明細テーブル（receipt）の売上金額（amount）を日付（sales_ymd）ごとに集計し、前日からの売上金額増減を計算せよ。なお、計算結果は10件表示すればよい。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>WITH sales_amount_by_date AS (
-    SELECT sales_ymd, SUM(amount) as amount FROM receipt
-    GROUP BY sales_ymd
-    ORDER BY sales_ymd
-)
-SELECT sales_ymd, LAG(sales_ymd, 1) OVER(ORDER BY sales_ymd) lag_ymd,
-    amount,
-    LAG(amount, 1) OVER(ORDER BY sales_ymd) as lag_amount,
-    amount - LAG(amount, 1) OVER(ORDER BY sales_ymd) as diff_amount
-FROM sales_amount_by_date
-LIMIT 10;
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col> <col class="org-right"></col> <col class="org-right"></col> <col class="org-right"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">sales_ymd</th>
- <th scope="col" class="org-right">lag_ymd</th>
- <th scope="col" class="org-right">amount</th>
- <th scope="col" class="org-right">lag_amount</th>
- <th scope="col" class="org-right">diff_amount</th>
-</tr></thead> <tbody> <tr> <td class="org-right">20170101</td>
- <td class="org-right"> </td>
- <td class="org-right">33723</td>
- <td class="org-right"> </td>
- <td class="org-right"> </td>
-</tr> <tr> <td class="org-right">20170102</td>
- <td class="org-right">20170101</td>
- <td class="org-right">24165</td>
- <td class="org-right">33723</td>
- <td class="org-right">-9558</td>
-</tr> <tr> <td class="org-right">20170103</td>
- <td class="org-right">20170102</td>
- <td class="org-right">27503</td>
- <td class="org-right">24165</td>
- <td class="org-right">3338</td>
-</tr> <tr> <td class="org-right">20170104</td>
- <td class="org-right">20170103</td>
- <td class="org-right">36165</td>
- <td class="org-right">27503</td>
- <td class="org-right">8662</td>
-</tr> <tr> <td class="org-right">20170105</td>
- <td class="org-right">20170104</td>
- <td class="org-right">37830</td>
- <td class="org-right">36165</td>
- <td class="org-right">1665</td>
-</tr> <tr> <td class="org-right">20170106</td>
- <td class="org-right">20170105</td>
- <td class="org-right">32387</td>
- <td class="org-right">37830</td>
- <td class="org-right">-5443</td>
-</tr> <tr> <td class="org-right">20170107</td>
- <td class="org-right">20170106</td>
- <td class="org-right">23415</td>
- <td class="org-right">32387</td>
- <td class="org-right">-8972</td>
-</tr> <tr> <td class="org-right">20170108</td>
- <td class="org-right">20170107</td>
- <td class="org-right">24737</td>
- <td class="org-right">23415</td>
- <td class="org-right">1322</td>
-</tr> <tr> <td class="org-right">20170109</td>
- <td class="org-right">20170108</td>
- <td class="org-right">26718</td>
- <td class="org-right">24737</td>
- <td class="org-right">1981</td>
-</tr> <tr> <td class="org-right">20170110</td>
- <td class="org-right">20170109</td>
- <td class="org-right">20143</td>
- <td class="org-right">26718</td>
- <td class="org-right">-6575</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org4916da6" class="outline-3">
- <h3 id="org4916da6"> <a href="#org4916da6">複数のJOIN条件</a></h3>
- <div class="outline-text-3" id="text-org4916da6">
- <blockquote>
- <p>
-S-042: レシート明細テーブル（receipt）の売上金額（amount）を日付（sales_ymd）ごとに集計し、各日付のデータに対し、１日前、２日前、３日前のデータを結合せよ。結果は10件表示すればよい。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>WITH sales_amount_by_date AS (
-    SELECT sales_ymd, SUM(amount) as amount FROM receipt
-    GROUP BY sales_ymd
-    ORDER BY sales_ymd
-),
-sales_amount_lag_date AS (
-    SELECT sales_ymd,
-        COALESCE(LAG(sales_ymd, 3) OVER (ORDER BY sales_ymd),
-        MIN(sales_ymd) OVER (PARTITION BY NULL)) as lag_date_3,
-        amount
-    FROM sales_amount_by_date
-)
-SELECT a.sales_ymd, b.sales_ymd as lag_ymd,
-    a.amount as amount, b.amount as lag_amount
-FROM sales_amount_lag_date a
-JOIN sales_amount_lag_date b
-ON b.sales_ymd &gt;= a.lag_date_3
-    and b.sales_ymd &lt; a.sales_ymd
-ORDER BY sales_ymd, lag_ymd
-LIMIT 10;
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-right"></col> <col class="org-right"></col> <col class="org-right"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-right">sales_ymd</th>
- <th scope="col" class="org-right">lag_ymd</th>
- <th scope="col" class="org-right">amount</th>
- <th scope="col" class="org-right">lag_amount</th>
-</tr></thead> <tbody> <tr> <td class="org-right">20170102</td>
- <td class="org-right">20170101</td>
- <td class="org-right">24165</td>
- <td class="org-right">33723</td>
-</tr> <tr> <td class="org-right">20170103</td>
- <td class="org-right">20170101</td>
- <td class="org-right">27503</td>
- <td class="org-right">33723</td>
-</tr> <tr> <td class="org-right">20170103</td>
- <td class="org-right">20170102</td>
- <td class="org-right">27503</td>
- <td class="org-right">24165</td>
-</tr> <tr> <td class="org-right">20170104</td>
- <td class="org-right">20170101</td>
- <td class="org-right">36165</td>
- <td class="org-right">33723</td>
-</tr> <tr> <td class="org-right">20170104</td>
- <td class="org-right">20170102</td>
- <td class="org-right">36165</td>
- <td class="org-right">24165</td>
-</tr> <tr> <td class="org-right">20170104</td>
- <td class="org-right">20170103</td>
- <td class="org-right">36165</td>
- <td class="org-right">27503</td>
-</tr> <tr> <td class="org-right">20170105</td>
- <td class="org-right">20170102</td>
- <td class="org-right">37830</td>
- <td class="org-right">24165</td>
-</tr> <tr> <td class="org-right">20170105</td>
- <td class="org-right">20170103</td>
- <td class="org-right">37830</td>
- <td class="org-right">27503</td>
-</tr> <tr> <td class="org-right">20170105</td>
- <td class="org-right">20170104</td>
- <td class="org-right">37830</td>
- <td class="org-right">36165</td>
-</tr> <tr> <td class="org-right">20170106</td>
- <td class="org-right">20170103</td>
- <td class="org-right">32387</td>
- <td class="org-right">27503</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-org62e7eeb" class="outline-3">
- <h3 id="org62e7eeb"> <a href="#org62e7eeb">日付の変換</a></h3>
- <div class="outline-text-3" id="text-org62e7eeb">
- <blockquote>
- <p>
-S-045: 顧客テーブル（customer）の生年月日（birth_day）は日付型でデータを保有している。これをYYYYMMDD形式の文字列に変換し、顧客ID（customer_id）とともに抽出せよ。データは10件を抽出すれば良い。
-</p>
-</blockquote>
-
- <div class="org-src-container">
- <pre class="src src-sql"> <code>SELECT customer_id, TO_CHAR(birth_day, 'YYYYMMDD') FROM customer LIMIT 10;
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-right"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">customer_id</th>
- <th scope="col" class="org-right">to_char</th>
-</tr></thead> <tbody> <tr> <td class="org-left">CS021313000114</td>
- <td class="org-right">19810429</td>
-</tr> <tr> <td class="org-left">CS037613000071</td>
- <td class="org-right">19520401</td>
-</tr> <tr> <td class="org-left">CS031415000172</td>
- <td class="org-right">19761004</td>
-</tr> <tr> <td class="org-left">CS028811000001</td>
- <td class="org-right">19330327</td>
-</tr> <tr> <td class="org-left">CS001215000145</td>
- <td class="org-right">19950329</td>
-</tr> <tr> <td class="org-left">CS020401000016</td>
- <td class="org-right">19740915</td>
-</tr> <tr> <td class="org-left">CS015414000103</td>
- <td class="org-right">19770809</td>
-</tr> <tr> <td class="org-left">CS029403000008</td>
- <td class="org-right">19730817</td>
-</tr> <tr> <td class="org-left">CS015804000004</td>
- <td class="org-right">19310502</td>
-</tr> <tr> <td class="org-left">CS033513000180</td>
- <td class="org-right">19620711</td>
-</tr></tbody></table></div>
-</div>
- <div id="outline-container-orgee94f9d" class="outline-3">
- <h3 id="orgee94f9d"> <a href="#orgee94f9d">練習用</a></h3>
- <div class="outline-text-3" id="text-orgee94f9d">
- <div class="org-src-container">
- <pre class="src src-sql"> <code>
-</code></pre>
-</div>
-
- <table class="table" data-bs-theme="dark"></table></div>
-</div>
-</div>
- <div id="outline-container-org1c17d0b" class="outline-2">
- <h2 id="org1c17d0b"> <a href="#org1c17d0b">Tasks</a></h2>
- <div class="outline-text-2" id="text-org1c17d0b">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-orgfe18a6f" class="outline-2">
- <h2 id="orgfe18a6f"> <a href="#orgfe18a6f">関連</a></h2>
- <div class="outline-text-2" id="text-orgfe18a6f">
- <ul class="org-ul"> <li>類推:  <a href="20251206T184941--kdoc-495-文芸的にdb動作を検証できるようにする__project.html#ID-20251206T184941">KDOC 495: 文芸的にDB動作を検証できるようにする</a>。同様に org-babel で SQL を実行して結果を残す</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T192228--kdoc-675-データサイエンス100本ノックでsqlを練習する__project.html"/>
-  <id>https://kijimad.github.io/roam/20261017T192228--kdoc-675-データサイエンス100本ノックでsqlを練習する__project.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 672: ASCIIの英大文字と英小文字は1ビットだけ違う</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org6bbf33b" class="outline-2">
- <h2 id="org6bbf33b"> <a href="#org6bbf33b">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6bbf33b">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org2996c4f" class="outline-2">
- <h2 id="org2996c4f"> <a href="#org2996c4f">概要</a></h2>
- <div class="outline-text-2" id="text-org2996c4f">
- <p>
-ASCII の英大文字と英小文字の文字コードは、0x20 のビットだけが違う。大文字と小文字を区別しない照合などを簡単にするため、そうなるように並べてあるという。
+ <code>eager_load!</code> が要るのは、rakeタスクではモデルが使われるまで読み込まれず、読み込まれていないクラスは  <code>subclasses</code> に出てこないからである。
 </p>
 
  <blockquote>
  <p>
-Locating the lowercase letters in sticks 6 and 7 caused the characters to differ in bit pattern from the upper case by a single bit, which simplified case-insensitive character matching and the construction of keyboards and printers.
+eager loadingはconfig.eager_loadフラグで制御します。これはproduction以外のすべての環境でデフォルトで無効になっています。rakeタスクが実行されると、config.eager_loadはconfig.rake_eager_loadで上書きされ、デフォルトではfalseになります。
 </p>
 
  <p>
- <a href="https://en.wikipedia.org/wiki/ASCII">ASCII - Wikipedia</a>
+ <a href="https://railsguides.jp/autoloading_and_reloading_constants.html">定数の自動読み込みと再読み込み - Railsガイド</a>
 </p>
 </blockquote>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>大文字と小文字の文字コードを2進数で並べる</label> <pre class="src src-shell"> <code>for c in A a Z z; do
-  printf '%s 0x%x %s\n' &quot;$c&quot; &quot;'$c&quot; &quot;$(echo &quot;obase=2; $(printf '%d' &quot;'$c&quot;)&quot; | bc)&quot;
-done
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>A 0x41 1000001
-a 0x61 1100001
-Z 0x5a 1011010
-z 0x7a 1111010
-</code></pre>
 </div>
 </div>
-</div>
- <div id="outline-container-org72cc711" class="outline-2">
- <h2 id="org72cc711"> <a href="#org72cc711">関連</a></h2>
- <div class="outline-text-2" id="text-org72cc711">
- <p>
-なし。
-</p>
-</div>
-</div>
- <div id="outline-container-orgab37962" class="outline-2">
- <h2 id="orgab37962"> <a href="#orgab37962">Backlinks</a></h2>
- <div class="outline-text-2" id="text-orgab37962">
- <ul class="org-ul"> <li> <a href="./20250320T102813--kdoc-347-大文字小文字の変換をそらで書く__permanent.html">KDOC 347: 大文字小文字の変換をそらで書く</a></li>
- <li> <a href="./20261017T181306--kdoc-673-asciiのdelが0x7fなのは紙テープの穴をすべて開けて文字を消したから__permanent.html">KDOC 673: ASCIIのDELが0x7Fなのは紙テープの穴をすべて開けて文字を消したから</a></li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T181305--kdoc-672-asciiの英大文字と英小文字は1ビットだけ違う__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T181305--kdoc-672-asciiの英大文字と英小文字は1ビットだけ違う__permanent.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 670: 機能は使えるようにするだけでなく普及させるところまで設計する</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org0f51d4e" class="outline-2">
- <h2 id="org0f51d4e"> <a href="#org0f51d4e">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org0f51d4e">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orge525cac" class="outline-2">
- <h2 id="orge525cac"> <a href="#orge525cac">概要</a></h2>
- <div class="outline-text-2" id="text-orge525cac">
- <p>
-機能の目的は、使えるようにすることではなく、使われることである。だから機能を作るときは、普及させる仕組みまで設計するとよい。機能を作っても普及せず、使われないまま終わるのはよくある失敗である。
-</p>
-
- <p>
-たとえば管理画面に2段階認証機能を追加した場合を考える。目的は設定して使ってもらうことである。普及させる仕組みは、測る・気づかせる・教えるの3つに分けられる。
-</p>
-
- <ul class="org-ul"> <li>測る
- <ul class="org-ul"> <li>どれくらい設定されたかを、メトリクスとして計測する</li>
- <li>管理者が設定状態を一覧で確認できるようにする</li>
-</ul></li>
- <li>気づかせる
- <ul class="org-ul"> <li>ユーザ自身が設定状態を確認できるようにする。設定していないときはアラートを出す</li>
- <li>定期的に未設定者をリマインドして移行をうながす</li>
-</ul></li>
- <li>教える
- <ul class="org-ul"> <li>使用方法のチュートリアルを整備する。たとえば設定した直後にログアウトさせ、2段階認証でのログインを一度体験させる</li>
- <li>読みやすいヘルプドキュメントを整備する。どこまでが任意なのかを書くとすっきりする</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orga380522" class="outline-2">
- <h2 id="orga380522"> <a href="#orga380522">関連</a></h2>
- <div class="outline-text-2" id="text-orga380522">
- <ul class="org-ul"> <li>前提:  <a href="20240509T143103--kdoc-169-『ユーザーストーリーマッピング』__book.html#ID-20240509T143103">KDOC 169: 『ユーザーストーリーマッピング』</a>。欲しいのはソフトウェアではなく、それを使って得られる成果だという。このメモはそれを、機能を作るときの設計に当てはめたもの</li>
- <li>補足:  <a href="https://mtx2s.hatenablog.com/entry/2023/03/27/222358">リリースした新機能や改善の多くに価値がないという調査結果が意味すること - mtx2s’s blog</a>。機能の64%はほとんど使われない</li>
-</ul></div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T164345--kdoc-670-機能は使えるようにするだけでなく普及させるところまで設計する__essay.html"/>
-  <id>https://kijimad.github.io/roam/20261017T164345--kdoc-670-機能は使えるようにするだけでなく普及させるところまで設計する__essay.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 668: 中断して残ったMySQLのトランザクションはスレッドをkillして終わらせる</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org5a55404" class="outline-2">
- <h2 id="org5a55404"> <a href="#org5a55404">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5a55404">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org06bf3a2" class="outline-2">
- <h2 id="org06bf3a2"> <a href="#org06bf3a2">概要</a></h2>
- <div class="outline-text-2" id="text-org06bf3a2">
- <p>
-MySQL で、テストの実行を途中で止めると、次の実行は  <code>Lock wait timeout exceeded</code> で失敗することがある。止めたテストのトランザクションは終わらずに残り、行のロックを持ち続けている。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
-</code></pre>
-</div>
-
- <p>
-ふつうは、クライアントの接続が切れるとセッションが終わり、コミットしていないトランザクションはロールバックされる。
-</p>
-
- <blockquote>
- <p>
-If a session that has autocommit disabled ends without explicitly committing the final transaction, MySQL rolls back that transaction.
-</p>
-
- <p>
- <a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-autocommit-commit-rollback.html">MySQL 8.4 Reference Manual - autocommit, Commit, and Rollback</a>
-</p>
-</blockquote>
-
- <p>
- <code>BEGIN</code> や  <code>START TRANSACTION</code> で始めたトランザクションも、終わるまでは autocommit が無効になっているので、この場合に当てはまる。
-</p>
-
- <blockquote>
- <p>
-With START TRANSACTION, autocommit remains disabled until you end the transaction with COMMIT or ROLLBACK.
-</p>
-
- <p>
- <a href="https://dev.mysql.com/doc/refman/8.4/en/commit.html">MySQL 8.4 Reference Manual - START TRANSACTION, COMMIT, and ROLLBACK Statements</a>
-</p>
-</blockquote>
-
- <p>
-残るのは、セッションが終わっていないときである。テストのプロセスが接続を開いたまま生き残っていたり、重いクエリの実行中で、サーバーがクライアントの切断にまだ気づいていなかったりすると、トランザクションとロックが残る。
-</p>
-
- <p>
-残ったトランザクションは、  <code>information_schema.INNODB_TRX</code> で、それを持っているスレッドの番号と開始時刻を引ける。
-</p>
-
- <blockquote>
- <p>
-The INNODB_TRX table provides information about every transaction currently executing inside InnoDB, including whether the transaction is waiting for a lock, when the transaction started, and the SQL statement the transaction is executing, if any.
-</p>
-
- <p>
- <a href="https://dev.mysql.com/doc/refman/8.4/en/information-schema-innodb-trx-table.html">MySQL 8.4 Reference Manual - The INFORMATION_SCHEMA INNODB_TRX Table</a>
-</p>
-</blockquote>
-
- <p>
-その番号を  <code>KILL</code> に渡して接続を切ると、セッションが終わり、トランザクションはロールバックされる。更新は元に戻り、次回の実行は通るようになる。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>残ったトランザクションを探して終わらせる</label> <pre class="src src-sql"> <code>SELECT trx_mysql_thread_id, trx_started FROM information_schema.INNODB_TRX ORDER BY trx_started;
-KILL 11; -- 上で見つけた trx_mysql_thread_id
-</code></pre>
-</div>
-</div>
-</div>
- <div id="outline-container-orge84838d" class="outline-2">
- <h2 id="orge84838d"> <a href="#orge84838d">関連</a></h2>
- <div class="outline-text-2" id="text-orge84838d">
+ <div id="outline-container-orgb85d117" class="outline-2">
+ <h2 id="orgb85d117"> <a href="#orgb85d117">関連</a></h2>
+ <div class="outline-text-2" id="text-orgb85d117">
  <p>
 なし。
 </p>
 </div>
 </div>
 </div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T095602--kdoc-668-中断して残ったmysqlのトランザクションはスレッドをkillして終わらせる__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T095602--kdoc-668-中断して残ったmysqlのトランザクションはスレッドをkillして終わらせる__permanent.html</id>
-  <updated>2026-10-18T00:12:00+09:00</updated>
+  <link href="https://kijimad.github.io/roam/20261018T005622--kdoc-692-モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T005622--kdoc-692-モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる__permanent.html</id>
+  <updated>2026-10-18T11:48:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 689: Railsのネストしたtransactionでは内側のActiveRecord::Rollbackが無視される</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-orgd4aae64" class="outline-2">
+ <h2 id="orgd4aae64"> <a href="#orgd4aae64">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgd4aae64">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-18 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-orga0e0c21" class="outline-2">
+ <h2 id="orga0e0c21"> <a href="#orga0e0c21">概要</a></h2>
+ <div class="outline-text-2" id="text-orga0e0c21">
+ <p>
+Railsで  <code>transaction</code> をネストすると、既定では内側のブロックは外側のトランザクションに合流する。内側で  <code>raise ActiveRecord::Rollback</code> してもROLLBACKは発行されず、外側はそのままコミットされる。  <code>ActiveRecord::Rollback</code> は  <code>transaction</code> ブロックが受け止めて外へ投げ直さないので、外側には届かない。ほかの例外は外側まで伝わり、外側ごとロールバックされる。
+</p>
+
+ <p>
+内側だけを戻したいときは  <code>requires_new: true</code> を付けると、SAVEPOINTを使ったサブトランザクションになる。
+</p>
+
+ <blockquote>
+ <p>
+One exception is the ActiveRecord::Rollback exception, which will trigger a ROLLBACK when raised, but not be re-raised by the transaction block. Any other exception will be re-raised.
+</p>
+
+ <p>
+transaction calls can be nested. By default, this makes all database statements in the nested transaction block become part of the parent transaction.
+</p>
+
+ <p>
+Reason is the ActiveRecord::Rollback exception in the nested block does not issue a ROLLBACK. Since these exceptions are captured in transaction blocks, the parent block does not see it and the real transaction is committed.
+</p>
+
+ <p>
+In order to get a ROLLBACK for the nested transaction you may ask for a real sub-transaction by passing requires_new: true.
+</p>
+
+ <p>
+Active Record emulates nested transactions by using savepoints.
+</p>
+
+ <p>
+ <a href="https://api.rubyonrails.org/v8.1.4/classes/ActiveRecord/Transactions/ClassMethods.html">ActiveRecord::Transactions::ClassMethods (Rails 8.1.4)</a>
+</p>
+</blockquote>
+</div>
+</div>
+ <div id="outline-container-orgd994961" class="outline-2">
+ <h2 id="orgd994961"> <a href="#orgd994961">関連</a></h2>
+ <div class="outline-text-2" id="text-orgd994961">
+ <ul class="org-ul"> <li>前提:  <a href="20250210T224551--kdoc-334-トランザクションはネストできない__permanent.html#ID-20250210T224551">KDOC 334: トランザクションはネストできない</a>。ORMがネストをSAVEPOINTで真似ていること</li>
+</ul></div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261018T002717--kdoc-689-railsのネストしたtransactionでは内側のactiverecordrollbackが無視される__permanent.html"/>
+  <id>https://kijimad.github.io/roam/20261018T002717--kdoc-689-railsのネストしたtransactionでは内側のactiverecordrollbackが無視される__permanent.html</id>
+  <updated>2026-10-18T11:48:00+09:00</updated>
 </entry>
 <entry>
   <title>KDOC 683: pgrepはプロセス名の先頭15文字しか照合しない</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org2bd9df0" class="outline-2">
- <h2 id="org2bd9df0"> <a href="#org2bd9df0">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2bd9df0">
+ <div id="outline-container-orgcb15cbd" class="outline-2">
+ <h2 id="orgcb15cbd"> <a href="#orgcb15cbd">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-orgcb15cbd">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -2531,36 +1247,44 @@ KILL 11; -- 上で見つけた trx_mysql_thread_id
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org5e1c417" class="outline-2">
- <h2 id="org5e1c417"> <a href="#org5e1c417">概要</a></h2>
- <div class="outline-text-2" id="text-org5e1c417">
+ <div id="outline-container-orgafb7ceb" class="outline-2">
+ <h2 id="orgafb7ceb"> <a href="#orgafb7ceb">概要</a></h2>
+ <div class="outline-text-2" id="text-orgafb7ceb">
  <p>
  <code>pgrep</code> が照合するプロセス名は、  <code>/proc/PID/stat</code> にある先頭15文字だけである。それより長い名前の実行ファイルは、フルネームでは見つからない。  <code>-f</code> を付けると、  <code>/proc/PID/cmdline</code> のコマンドライン全体と照合する。
 </p>
 
- <blockquote>
- <p>
-The process name used for matching is limited to the 15 characters present in the output of /proc/pid/stat.  Use the -f option to match against the complete command line, /proc/pid/cmdline.
-</p>
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>pgrep -V
+MANWIDTH=80 man 1 pgrep | grep -A2 'The process name used for matching'
+</code></pre>
+</div>
 
- <p>
-pgrep(1)
-</p>
-</blockquote>
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>pgrep from procps-ng 4.0.4
+     The process name used for matching is limited to the 15 characters present
+     in  the  output of /proc/pid/stat.  Use the -f option to match against the
+     complete command line, /proc/pid/cmdline. Threads may not  have  the  same
+</code></pre>
+</div>
 
  <p>
 15文字なのは、カーネルがプロセス名を終端のNULを含めて16バイト( <code>TASK_COMM_LEN</code>)に切り詰めて持つからである。切り詰めはバイト単位なので、UTF-8の日本語の名前は5文字になり、文字の途中で切れることもある。
 </p>
 
- <blockquote>
- <p>
-Strings longer than TASK_COMM_LEN (16) characters (including the terminating null byte) are silently truncated.
-</p>
+ <div class="org-src-container">
+ <pre class="src src-shell"> <code>MANWIDTH=80 man 5 proc_pid_comm | tail -1
+MANWIDTH=80 man 5 proc_pid_comm | grep -A2 -E 'Strings +longer'
+</code></pre>
+</div>
 
- <p>
-proc_pid_comm(5)
-</p>
-</blockquote>
+ <div class="org-src-container">
+ <pre class="src src-nil"> <code>Linux man-pages 6.7                2023-08-15                  proc_pid_comm(5)
+            /proc/self/task/tid/comm.   Strings  longer than TASK_COMM_LEN (16)
+            characters (including the terminating null byte) are silently trun‐
+            cated.
+</code></pre>
+</div>
 
  <div class="org-src-container">
  <pre class="src src-shell"> <code>dir=$(mktemp -d)
@@ -2585,25 +1309,25 @@ pgrep -f abcdefghijklmnopqrst: 一致
 </div>
 </div>
 </div>
- <div id="outline-container-org01fc8c1" class="outline-2">
- <h2 id="org01fc8c1"> <a href="#org01fc8c1">関連</a></h2>
- <div class="outline-text-2" id="text-org01fc8c1">
+ <div id="outline-container-org487302a" class="outline-2">
+ <h2 id="org487302a"> <a href="#org487302a">関連</a></h2>
+ <div class="outline-text-2" id="text-org487302a">
  <ul class="org-ul"> <li>前提:  <a href="20240317T101828--kdoc-125-procのマニュアルを調べる__permanent.html#ID-20240317T101828">KDOC 125: /procのマニュアルを調べる</a>。psやpgrepは /proc を情報源にしている</li>
 </ul></div>
 </div>
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T213818--kdoc-683-pgrepはプロセス名の先頭15文字しか照合しない__permanent.html"/>
   <id>https://kijimad.github.io/roam/20261017T213818--kdoc-683-pgrepはプロセス名の先頭15文字しか照合しない__permanent.html</id>
-  <updated>2026-10-18T00:11:00+09:00</updated>
+  <updated>2026-10-18T11:48:00+09:00</updated>
 </entry>
 <entry>
-  <title>KDOC 679: 『コーディングを支える技術』</title>
+  <title>KDOC 682: 『Reactハンズオンラーニング』</title>
   <author><name>kijimaD</name></author>
   <content type="html"><![CDATA[<div id="content" class="content">
 
- <div id="outline-container-org6ae5183" class="outline-2">
- <h2 id="org6ae5183"> <a href="#org6ae5183">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org6ae5183">
+ <div id="outline-container-org911875a" class="outline-2">
+ <h2 id="org911875a"> <a href="#org911875a">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org911875a">
  <ul class="org-ul"> <li>作成
  <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
 </ul></li>
@@ -2612,17 +1336,66 @@ pgrep -f abcdefghijklmnopqrst: 一致
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-orgae7865d" class="outline-2">
- <h2 id="orgae7865d"> <a href="#orgae7865d">概要</a></h2>
- <div class="outline-text-2" id="text-orgae7865d">
+ <div id="outline-container-org93e7502" class="outline-2">
+ <h2 id="org93e7502"> <a href="#org93e7502">概要</a></h2>
+ <div class="outline-text-2" id="text-org93e7502">
+ <p>
+ <a href="https://www.oreilly.co.jp/books/9784873119380/">『Reactハンズオンラーニング 第2版』</a>は、Reactと、その前提になるJavaScriptの関数型プログラミングを解説する本である。
+</p>
+</div>
+</div>
+ <div id="outline-container-org55ff328" class="outline-2">
+ <h2 id="org55ff328"> <a href="#org55ff328">メモ</a></h2>
+ <div class="outline-text-2" id="text-org55ff328">
+ <ul class="org-ul"> <li>関数型プログラミングは、宣言型プログラミングの一部である。宣言型は「何をするか」を書き、命令型は「どのようにするか」の手順を書く(p39)</li>
+ <li>再帰は、非同期処理と組み合わせたときや、データ構造を探索するときに役立つ</li>
+ <li>引数を1つ受け取って関数を返す関数にすると、一部の引数を固定した関数を作れる(カリー化)。たとえばログの先頭にユーザー名を付ける関数を作れる</li>
+ <li> <code>reduce</code> は配列を単一の値に変換する</li>
+ <li> <code>export default</code> でエクスポートすると、インポート側は好きな名前で受け取れる</li>
+ <li> <code>async</code> 関数では、非同期処理を  <code>await</code> で同期処理のように書ける。エラーは  <code>try</code> /  <code>catch</code> で扱う</li>
+ <li> <code>fetch</code> はPromiseを返すだけで、結果は  <code>then</code> でつないで受け取る</li>
+</ul></div>
+</div>
+ <div id="outline-container-orgcec0f3a" class="outline-2">
+ <h2 id="orgcec0f3a"> <a href="#orgcec0f3a">関連</a></h2>
+ <div class="outline-text-2" id="text-orgcec0f3a">
+ <p>
+なし。
+</p>
+</div>
+</div>
+</div>]]></content>
+  <link href="https://kijimad.github.io/roam/20261017T205648--kdoc-682-『reactハンズオンラーニング』__book.html"/>
+  <id>https://kijimad.github.io/roam/20261017T205648--kdoc-682-『reactハンズオンラーニング』__book.html</id>
+  <updated>2026-10-18T11:48:00+09:00</updated>
+</entry>
+<entry>
+  <title>KDOC 679: 『コーディングを支える技術』</title>
+  <author><name>kijimaD</name></author>
+  <content type="html"><![CDATA[<div id="content" class="content">
+
+ <div id="outline-container-org44c1bf8" class="outline-2">
+ <h2 id="org44c1bf8"> <a href="#org44c1bf8">この文書のステータス</a></h2>
+ <div class="outline-text-2" id="text-org44c1bf8">
+ <ul class="org-ul"> <li>作成
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+</ul></li>
+ <li>レビュー
+ <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
+</ul></li>
+</ul></div>
+</div>
+ <div id="outline-container-org8589858" class="outline-2">
+ <h2 id="org8589858"> <a href="#org8589858">概要</a></h2>
+ <div class="outline-text-2" id="text-org8589858">
  <p>
  <a href="https://gihyo.jp/dp/ebook/2014/978-4-7741-7029-9">『コーディングを支える技術』</a>は、プログラミング言語の各概念がなぜ存在するかを解説する本である。
 </p>
 </div>
 </div>
- <div id="outline-container-orgd818ee7" class="outline-2">
- <h2 id="orgd818ee7"> <a href="#orgd818ee7">メモ</a></h2>
- <div class="outline-text-2" id="text-orgd818ee7">
+ <div id="outline-container-org2d76f4a" class="outline-2">
+ <h2 id="org2d76f4a"> <a href="#org2d76f4a">メモ</a></h2>
+ <div class="outline-text-2" id="text-org2d76f4a">
  <ul class="org-ul"> <li>特定の言語やツールなどの知識は、変化が早くすぐに陳腐化する。意識して「変化しにくい知識」を学ばなければ、学んだことが価値を失う</li>
  <li>学び方の3つの柱
  <ul class="org-ul"> <li>比較から学ぶ</li>
@@ -2657,9 +1430,9 @@ pgrep -f abcdefghijklmnopqrst: 一致
 </ul></li>
 </ul></div>
 </div>
- <div id="outline-container-org6ebcbaa" class="outline-2">
- <h2 id="org6ebcbaa"> <a href="#org6ebcbaa">関連</a></h2>
- <div class="outline-text-2" id="text-org6ebcbaa">
+ <div id="outline-container-orge99eb8a" class="outline-2">
+ <h2 id="orge99eb8a"> <a href="#orge99eb8a">関連</a></h2>
+ <div class="outline-text-2" id="text-orge99eb8a">
  <p>
 なし。
 </p>
@@ -2668,204 +1441,6 @@ pgrep -f abcdefghijklmnopqrst: 一致
 </div>]]></content>
   <link href="https://kijimad.github.io/roam/20261017T200715--kdoc-679-『コーディングを支える技術』__book.html"/>
   <id>https://kijimad.github.io/roam/20261017T200715--kdoc-679-『コーディングを支える技術』__book.html</id>
-  <updated>2026-10-18T00:11:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 677: 代入やifが式か文かは言語によって違う</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org2b30c31" class="outline-2">
- <h2 id="org2b30c31"> <a href="#org2b30c31">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org2b30c31">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-orga41860b" class="outline-2">
- <h2 id="orga41860b"> <a href="#orga41860b">概要</a></h2>
- <div class="outline-text-2" id="text-orga41860b">
- <p>
-式は値を生成し、文は生成しない。たとえば  <code>5</code> や  <code>1 + 2</code> は値になるので式である。
-</p>
-
- <blockquote>
- <p>
-文 (statement) はなんらかの動作をして値を返さない命令です。
-式 (expression) は結果値に評価されます。
-</p>
-
- <p>
- <a href="https://doc.rust-jp.rs/book-ja/ch03-03-how-functions-work.html">関数 - The Rust Programming Language 日本語版</a>
-</p>
-</blockquote>
-
- <p>
-どの構文が式になるかは、言語によって変わる。
-</p>
-
- <table class="table" data-bs-theme="dark"> <colgroup> <col class="org-left"></col> <col class="org-left"></col> <col class="org-left"></col></colgroup> <thead> <tr> <th scope="col" class="org-left">言語</th>
- <th scope="col" class="org-left">代入</th>
- <th scope="col" class="org-left"> <code>if</code></th>
-</tr></thead> <tbody> <tr> <td class="org-left">C</td>
- <td class="org-left">式</td>
- <td class="org-left">文</td>
-</tr> <tr> <td class="org-left">Rust</td>
- <td class="org-left">式(値は  <code>()</code> )。  <code>let</code> は文</td>
- <td class="org-left">式</td>
-</tr> <tr> <td class="org-left">Ruby</td>
- <td class="org-left">式</td>
- <td class="org-left">式</td>
-</tr></tbody></table> <p>
-Cの代入は、代入後の値を返す式である。  <code>if</code> は文なので、値として使えない( <a href="https://port70.net/~nsz/c/c11/n1570.html#6.5.16">N1570 6.5.16</a>、 <a href="https://port70.net/~nsz/c/c11/n1570.html#6.8.4">6.8.4</a>)。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-C"> <code>int x, y;
-x = y = 6;
-printf(&quot;%d %d\n&quot;, x, y);
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>6 6
-</code></pre>
-</div>
-
- <p>
- <code>int z = if (1) 1; else 2;</code> のように  <code>if</code> を値として使うと、  <code>expected expression before 'if'</code> というコンパイルエラーになる。
-</p>
-
- <p>
-Rustの代入は式だが、値は常に  <code>()</code> になる( <a href="https://doc.rust-lang.org/reference/expressions/operator-expr.html#assignment-expressions">The Rust Reference: Assignment expressions</a>)。  <code>let</code> は文なので値にならない。  <code>let x = (let y = 6);</code> は  <code>expected expression, found `let` statement</code> というコンパイルエラーになる。
-</p>
-
- <p>
- <code>if</code> は式なので  <code>let</code> の右辺に書ける( <a href="https://doc.rust-jp.rs/book-ja/ch03-05-control-flow.html">制御フロー - The Rust Programming Language 日本語版</a>)。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-rust"> <code>fn main() {
-    let z = if true { 1 } else { 2 };
-    println!(&quot;{z}&quot;);
-}
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>1
-</code></pre>
-</div>
-
- <p>
-Rubyの代入は代入した値を返し、  <code>if</code> などの制御構造も値を返す( <a href="https://docs.ruby-lang.org/en/master/syntax/assignment_rdoc.html">assignment</a>、 <a href="https://docs.ruby-lang.org/en/master/syntax/control_expressions_rdoc.html">control expressions</a>)。
-</p>
-
- <div class="org-src-container">
- <pre class="src src-ruby"> <code>x = y = 6
-p [x, y]
-z = if true then 1 else 2 end
-p z
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>[6, 6]
-1
-</code></pre>
-</div>
-
- <p>
-gcc 13.3.0、rustc 1.97.1、ruby 3.4.9で確かめた。
-</p>
-</div>
-</div>
- <div id="outline-container-orgf2bb729" class="outline-2">
- <h2 id="orgf2bb729"> <a href="#orgf2bb729">関連</a></h2>
- <div class="outline-text-2" id="text-orgf2bb729">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T200713--kdoc-677-代入やifが式か文かは言語によって違う__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T200713--kdoc-677-代入やifが式か文かは言語によって違う__permanent.html</id>
-  <updated>2026-10-18T00:11:00+09:00</updated>
-</entry>
-<entry>
-  <title>KDOC 669: Makeは前提条件のないターゲットと同じ名前のファイルがあるとレシピを実行しない</title>
-  <author><name>kijimaD</name></author>
-  <content type="html"><![CDATA[<div id="content" class="content">
-
- <div id="outline-container-org5f40875" class="outline-2">
- <h2 id="org5f40875"> <a href="#org5f40875">この文書のステータス</a></h2>
- <div class="outline-text-2" id="text-org5f40875">
- <ul class="org-ul"> <li>作成
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
- <li>レビュー
- <ul class="org-ul"> <li class="on"> <input type="checkbox" checked="checked"></input> 2026-10-17 貴島</li>
-</ul></li>
-</ul></div>
-</div>
- <div id="outline-container-org010d8c2" class="outline-2">
- <h2 id="org010d8c2"> <a href="#org010d8c2">概要</a></h2>
- <div class="outline-text-2" id="text-org010d8c2">
- <p>
-Make は、前提条件のないターゲットと同じ名前のファイルがあると、もう作ってあるとみなしてレシピを実行しない。ファイルを作らないターゲットは  <code>.PHONY</code> にすると、同じ名前のファイルがあっても実行する。
-</p>
-
- <div class="org-src-container">
- <label class="org-src-name"> <span class="listing-number">Listing 1: </span>clean ファイルがある状態で、 .PHONY なしとありで make clean する</label> <pre class="src src-shell"> <code>dir=$(mktemp -d); trap 'rm -rf &quot;$dir&quot;' EXIT; cd &quot;$dir&quot;
-touch clean
-printf 'clean:\n\t@echo &quot;clean のレシピを実行した&quot;\n' &gt; Makefile
-echo &quot;== .PHONY なし&quot;
-make clean 2&gt;&amp;1
-printf '.PHONY: clean\nclean:\n\t@echo &quot;clean のレシピを実行した&quot;\n' &gt; Makefile
-echo &quot;== .PHONY あり&quot;
-make clean 2&gt;&amp;1
-</code></pre>
-</div>
-
- <div class="org-src-container">
- <pre class="src src-nil"> <code>== .PHONY なし
-make: 'clean' is up to date.
-== .PHONY あり
-clean のレシピを実行した
-</code></pre>
-</div>
-
- <p>
-前提条件があれば、それがファイルより新しいときに作り直す。前提条件がないと比べる相手がないので、ファイルがあるだけで最新とみなされる。
-</p>
-
- <blockquote>
- <p>
-Since it has no prerequisites, clean would always be considered up to date and its recipe would not be executed. To avoid this problem you can explicitly declare the target to be phony by making it a prerequisite of the special target .PHONY …
-</p>
-
- <p>
- <a href="https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html">GNU make 4.4.1 - 4.6 Phony Targets</a>
-</p>
-</blockquote>
-</div>
-</div>
- <div id="outline-container-org017efd6" class="outline-2">
- <h2 id="org017efd6"> <a href="#org017efd6">関連</a></h2>
- <div class="outline-text-2" id="text-org017efd6">
- <p>
-なし。
-</p>
-</div>
-</div>
-</div>]]></content>
-  <link href="https://kijimad.github.io/roam/20261017T104430--kdoc-669-makeは前提条件のないターゲットと同じ名前のファイルがあるとレシピを実行しない__permanent.html"/>
-  <id>https://kijimad.github.io/roam/20261017T104430--kdoc-669-makeは前提条件のないターゲットと同じ名前のファイルがあるとレシピを実行しない__permanent.html</id>
-  <updated>2026-10-18T00:11:00+09:00</updated>
+  <updated>2026-10-18T11:48:00+09:00</updated>
 </entry>
 </feed>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-18 日 11:49 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 697: 『Linux Container Book』</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 697: 『Linux Container Book』</h1>
+<div id="outline-container-org07e602e" class="outline-2">
+<h2 id="org07e602e"><a href="#org07e602e">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org07e602e">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-18 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org56fb0ca" class="outline-2">
+<h2 id="org56fb0ca"><a href="#org56fb0ca">概要</a></h2>
+<div class="outline-text-2" id="text-org56fb0ca">
+<p>
+<a href="https://tatsu-zine.com/books/linux-container-book">『Linux Container Book』</a>は、コンテナを作るLinuxの機能(名前空間など)を解説する本である。
+</p>
+</div>
+</div>
+<div id="outline-container-org5940d9e" class="outline-2">
+<h2 id="org5940d9e"><a href="#org5940d9e">メモ</a></h2>
+<div class="outline-text-2" id="text-org5940d9e">
+<ul class="org-ul">
+<li><code>$ sudo mount --bind dir1 dir2</code> みたいに、バインドマウントするコマンドが存在する</li>
+<li>Namespace(名前空間)はプロセスをグループ化して、コンテナの隔離された空間を作り出す。独立させたいリソースによっていくつかの機能がある</li>
+<li>Dockerの初期はコンテナ内でコマンドを実行できなかった</li>
+<li>カーネルでsetnsがすべてのNamespaceに対して動作するようになってから、docker execコマンドが実行できるようになった</li>
+<li>Mount NamespaceはLinuxカーネルに最初に実装されたNamespace(2002年)
+<ul class="org-ul">
+<li>あるNamespaceごとに異なるマウントポイントの一覧を持てる</li>
+<li>コンテナ内でマウント操作を行った場合でも、そのマウントはホストOSや他のコンテナから見えないようにできる</li>
+<li><code>$ cat /proc/self/mounts</code> でマウント状況を確認できる</li>
+<li>マウントプロパゲーション
+<ul class="org-ul">
+<li>マウントがほかのディレクトリで反映されるか、反映されないか</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org0db52b6" class="outline-2">
+<h2 id="org0db52b6"><a href="#org0db52b6">関連</a></h2>
+<div class="outline-text-2" id="text-org0db52b6">
+<p>
+なし。
+</p>
+</div>
+</div>
+<div id="outline-container-orgf2f83e4" class="outline-2">
+<h2 id="orgf2f83e4"><a href="#orgf2f83e4">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgf2f83e4">
+<ul class="org-ul">
+<li><a href="./20261018T104855--kdoc-698-コンテナは名前空間で分離したプロセスにすぎない__permanent.html">KDOC 698: コンテナは名前空間で分離したプロセスにすぎない</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
