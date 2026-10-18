@@ -1,6 +1,7 @@
 import ForceGraph3D from "https://cdn.jsdelivr.net/npm/3d-force-graph@1.80.1/+esm";
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.186.1/+esm";
 import { CSS3DRenderer, CSS3DObject } from "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/renderers/CSS3DRenderer.js/+esm";
+import { mergeVertices } from "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/utils/BufferGeometryUtils.js/+esm";
 import { ShaderPass } from "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/postprocessing/ShaderPass.js/+esm";
 
 const band = document.getElementById("main-graph");
@@ -61,9 +62,30 @@ try {
     };
     const colorOf = d => recent(d) ? 0xffd98a : palette[ranked.indexOf(d.communityLabel)] ?? 0x7d7766;
 
+    // 頂点をまとめてから動かさないと面の継ぎ目が裂ける
+    const asteroid = r => {
+        const g = new THREE.IcosahedronGeometry(1, 0);
+        g.deleteAttribute("normal");
+        g.deleteAttribute("uv");
+        const geometry = mergeVertices(g);
+        const stretch = new THREE.Vector3(1, 0.6 + Math.random() * 0.4, 0.7 + Math.random() * 0.5);
+        const position = geometry.getAttribute("position");
+        const v = new THREE.Vector3();
+        for (let i = 0; i < position.count; i++) {
+            v.fromBufferAttribute(position, i)
+                .add(new THREE.Vector3().randomDirection().multiplyScalar(0.2))
+                .normalize()
+                .multiplyScalar(r * (0.65 + Math.random() * 0.5))
+                .multiply(stretch);
+            position.setXYZ(i, v.x, v.y, v.z);
+        }
+        return geometry;
+    };
+
     const mesh = d => {
+        const radius = 4 + 30 * Math.sqrt(d.centrality);
         const m = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(4 + 30 * Math.sqrt(d.centrality), 0),
+            asteroid(radius),
             new THREE.MeshLambertMaterial({
                 color: colorOf(d),
                 flatShading: true,
@@ -73,6 +95,7 @@ try {
         );
         m.material.onBeforeCompile = snapVertex;
         m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+        m.userData.radius = radius;
         return m;
     };
 
@@ -113,6 +136,8 @@ try {
         .cooldownTicks(0)
         .onNodeClick(d => { location.href = "./" + d.lnk + ".html"; })
         .onNodeHover(d => hover(d));
+    // 孤立したノードが反発で遠くへ押し出されないようにする
+    graph.d3Force("charge").distanceMax(200);
 
     const illuminate = () => {
         const f = focused();
@@ -152,7 +177,7 @@ try {
         const measure = document.createElement("canvas").getContext("2d");
         let current = null;
         const make = (n, from) => {
-            const edge = n.__threeObj.geometry.parameters.radius * Math.SQRT1_2;
+            const edge = n.__threeObj.userData.radius * Math.SQRT1_2;
             const bend = edge + 40;
             const el = document.createElement("div");
             el.style.cssText = "width: 0; height: 0; pointer-events: none; backface-visibility: hidden;";
