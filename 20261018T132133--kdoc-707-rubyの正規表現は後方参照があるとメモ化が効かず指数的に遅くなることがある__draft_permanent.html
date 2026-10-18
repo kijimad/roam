@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-18 日 14:07 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 707: Rubyの正規表現は後方参照があるとメモ化が効かず指数的に遅くなることがある</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 707: Rubyの正規表現は後方参照があるとメモ化が効かず指数的に遅くなることがある</h1>
+<div id="outline-container-org7078c45" class="outline-2">
+<h2 id="org7078c45"><a href="#org7078c45">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org7078c45">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+
+<ul class="org-ul">
+<li>レビュー
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org91c6b84" class="outline-2">
+<h2 id="org91c6b84"><a href="#org91c6b84">概要</a></h2>
+<div class="outline-text-2" id="text-org91c6b84">
+<p>
+正規表現は、パターンと入力によってはバックトラックが爆発し、入力の長さに対して指数的に遅くなる。信頼できない入力を食わせるとサービス停止(ReDoS)になりうる。Ruby 3.2からは多くのパターンがメモ化で線形時間になったが、後方参照を含むパターンなどは対象外で、 <code>Regexp.linear_time?</code> で確かめられる。対象外のパターンには <code>Regexp.timeout</code> で上限を付ける。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><code>puts "後方参照なし: #{Regexp.linear_time?(/\A(a|a)*\z/)}、後方参照あり: #{Regexp.linear_time?(/\A(a|a)*\1\z/)}"
+[20, 22, 24].each do |n|
+  t = Time.now
+  /\A(a|a)*\1\z/.match?("a" * n + "b")
+  printf("後方参照あり、%d文字: %.3f秒\n", n, Time.now - t)
+end
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>後方参照なし: true、後方参照あり: false
+後方参照あり、20文字: 0.030秒
+後方参照あり、22文字: 0.108秒
+後方参照あり、24文字: 0.445秒
+</code></pre>
+</div>
+
+<p>
+2文字増えるたびに時間は約4倍になる。30文字の入力1つで数十秒止まる計算である。 <code>Regexp.timeout</code> を付けておけば、そこで打ち切れる。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><code>Regexp.timeout = 1.0
+t = Time.now
+begin
+  /\A(a|a)*\1\z/.match?("a" * 30 + "b")
+rescue Regexp::TimeoutError =&gt; e
+  printf("後方参照あり、30文字: %.1f秒で %s\n", Time.now - t, e.class)
+end
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>後方参照あり、30文字: 1.0秒で Regexp::TimeoutError
+</code></pre>
+</div>
+
+<blockquote>
+<p>
+Returns true if matching against re can be done in linear time to the input string.
+</p>
+
+<p>
+<a href="https://docs.ruby-lang.org/en/3.4/Regexp.html#method-c-linear_time-3F">Regexp.linear_time? - Ruby 3.4</a>
+</p>
+</blockquote>
+
+<blockquote>
+<p>
+The cache-based optimization is introduced. Many (but not all) Regexp matching is now in linear time, which will prevent regular expression denial of service (ReDoS) vulnerability.
+</p>
+
+<p>
+<a href="https://docs.ruby-lang.org/en/3.4/NEWS/NEWS-3_2_0_md.html">NEWS for Ruby 3.2.0</a> (Regexp)
+</p>
+</blockquote>
+
+<blockquote>
+<p>
+When either a regexp source or a target string comes from untrusted input, malicious values could become a denial-of-service attack; to prevent such an attack, it is wise to set a timeout.
+</p>
+
+<p>
+<a href="https://docs.ruby-lang.org/en/3.4/Regexp.html#class-Regexp-label-Timeouts">Regexp (Timeouts) - Ruby 3.4</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-org902bc73" class="outline-2">
+<h2 id="org902bc73"><a href="#org902bc73">関連</a></h2>
+<div class="outline-text-2" id="text-org902bc73">
+<p>
+なし。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
