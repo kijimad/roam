@@ -1,0 +1,36 @@
+:properties:
+:ID: 20261018T115450
+:end:
+#+title:      KDOC 701: Emacsでリージョンが光るのはtransient-mark-modeのおかげ
+#+date:       [2026-10-18 Sun 11:54]
+#+filetags:   :permanent:
+#+identifier: 20261018T115450
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Emacsでマークを置くとリージョンが光るのは、Transient Mark modeが有効だからである。これが既定で有効になったのはEmacs 23.1からである。それより前は既定ではリージョンが画面に出ず、マークの位置を覚えておく必要があった。
+
+#+begin_src shell :results output
+  etc=$(emacs -Q --batch --eval '(princ data-directory)')
+  grep -n -E '^\* Editing Changes in Emacs 23\.1$|Transient Mark mode is now on by default' "$etc/NEWS.23"
+  info -f "$etc/../../../info/emacs.info.gz" -n 'Disabled Transient Mark' -o - | sed -n '13,15p'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+999:* Editing Changes in Emacs 23.1
+1013:*** Transient Mark mode is now on by default.
+   • Setting the mark, with commands like ‘C-<SPC>’ or ‘C-x C-x’, does
+     not highlight the region.  Therefore, you can't tell by looking
+     where the mark is located; you have to remember.
+#+end_src
+
+* 関連
+
+なし。

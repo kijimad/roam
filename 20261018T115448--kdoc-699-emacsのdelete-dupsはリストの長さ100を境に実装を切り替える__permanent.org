@@ -1,0 +1,53 @@
+:properties:
+:ID: 20261018T115448
+:end:
+#+title:      KDOC 699: Emacsのdelete-dupsはリストの長さ100を境に実装を切り替える
+#+date:       [2026-10-18 Sun 11:54]
+#+filetags:   :permanent:
+#+identifier: 20261018T115448
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Emacs Lispでリストから重複を除く ~delete-dups~ は、リストの長さで実装を切り替える。100より長いときはハッシュテーブルに出てきた要素を記録しながら1回なめる。100以下のときは、先頭から1つずつ取り、残りから同じ要素を ~delete~ で消していく。
+
+~delete~ で消すやり方は要素ごとに残り全体をなめるので、手間が長さの2乗で増える。ハッシュテーブルを使うやり方は1回なめるだけで済むが、表を作る手間がかかる。長いリストで遅かったため、100を超えたらハッシュテーブルを使うようにした。100という値の根拠は書かれていない。
+
+#+begin_quote
+When there are more than 100 candidates, use a hash table. This can result in ~500 times speed-up for typical collections of size 5000, like that of `load-library'.
+
+[[https://github.com/emacs-mirror/emacs/commit/1f052a5f26250d726618570a816ddb6fd0cc11a0][lisp/subr.el (delete-dups): Use a hash table (2015-05-06)]]
+#+end_quote
+
+#+caption: Emacs 31.1 の lisp/subr.el
+#+begin_src git-permalink :wrap src emacs-lisp
+https://github.com/emacs-mirror/emacs/blob/a360712c9d272d950d8d8255ef74570f7e90b7d9/lisp/subr.el#L929-L943
+#+end_src
+
+#+RESULTS:
+#+begin_src emacs-lisp
+  (let ((l (length list)))
+    (if (> l 100)
+        (let ((hash (make-hash-table :test #'equal :size l))
+              (tail list) retail)
+          (puthash (car list) t hash)
+          (while (setq retail (cdr tail))
+            (let ((elt (car retail)))
+              (if (gethash elt hash)
+                  (setcdr tail (cdr retail))
+                (puthash elt t hash)
+                (setq tail retail)))))
+      (let ((tail list))
+        (while tail
+          (setcdr tail (delete (car tail) (cdr tail)))
+          (setq tail (cdr tail))))))
+#+end_src
+
+* 関連
+
+なし。

@@ -1,0 +1,54 @@
+:properties:
+:ID: 20261018T115449
+:end:
+#+title:      KDOC 700: defsubstで定義した関数はバイトコンパイルで呼び出し元に展開される
+#+date:       [2026-10-18 Sun 11:54]
+#+filetags:   :permanent:
+#+identifier: 20261018T115449
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Emacs Lispで ~defun~ の代わりに ~defsubst~ で関数を定義すると、その関数を呼ぶコードをバイトコンパイルしたときに、関数の中身が呼び出し元に埋め込まれる。関数呼び出しの手間がなくなる。
+
+#+begin_src shell :results output
+  etc=$(emacs -Q --batch --eval '(princ data-directory)')
+  info -f "$etc/../../../info/elisp.info.gz" -n 'Inline Functions' -o - | sed -n '6,9p;20,22p'
+#+end_src
+
+#+RESULTS:
+#+begin_src
+An “inline function” is a function that works just like an ordinary
+function, except for one thing: when you byte-compile a call to the
+function (*note Byte Compilation::), the function's definition is
+expanded into the caller.
+But it also has disadvantages.  For one thing, it reduces flexibility;
+if you change the definition of the function, calls already inlined
+still use the old definition until you recompile them.
+#+end_src
+
+埋め込まれたことは、呼び出し元をバイトコンパイルしたあとで関数を定義し直すと分かる。 ~(* x 2)~ を ~(* x 3)~ に定義し直してから1を渡すと、 ~defun~ 版は新しい定義を使って3を返す。 ~defsubst~ 版は埋め込まれた古い中身のまま2を返す。
+
+#+begin_src emacs-lisp
+  (defun kd-mul (x) (* x 2))
+  (defsubst kd-mul-inline (x) (* x 2))
+  (let ((f (byte-compile (lambda () (kd-mul 1))))
+        (g (byte-compile (lambda () (kd-mul-inline 1)))))
+    (defun kd-mul (x) (* x 3))
+    (defsubst kd-mul-inline (x) (* x 3))
+    (format "defun版: %d、defsubst版: %d" (funcall f) (funcall g)))
+#+end_src
+
+#+RESULTS:
+#+begin_src
+defun版: 3、defsubst版: 2
+#+end_src
+
+* 関連
+
+なし。
