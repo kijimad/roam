@@ -1,0 +1,50 @@
+:properties:
+:ID: 20261018T005622
+:end:
+#+title:      KDOC 692: モデルを列挙するタスクでfactoryやseedの作り忘れを検知できる
+#+date:       [2026-10-18 Sun 00:56]
+#+filetags:   :permanent:
+#+identifier: 20261018T005622
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Railsでは、 ~Rails.application.eager_load!~ でモデルをすべて読み込めば、 ~ApplicationRecord.subclasses~ でApplicationRecordを直接継承するモデルを列挙できる。これを使うと、モデルごとに用意しておくべきものの作り忘れを検査するrakeタスクを書ける。
+
+- factoryがないモデル: 各モデルのfactoryで ~create~ してみて、未登録の ~KeyError~ が出たら作り忘れ
+- レコードがないテーブル: seedを流したあとで、 ~count~ がゼロのモデルがあればseedの作り忘れ
+
+#+caption: レコードがないテーブルを検知するタスク
+#+begin_src ruby
+  task lint: :environment do
+    msg = []
+    invalid = false
+
+    Rails.application.eager_load!
+    ApplicationRecord.subclasses.each do |model|
+      msg << "#{model.name} => #{model.count}"
+      invalid = true if model.count.zero?
+    end
+
+    puts msg
+
+    raise 'レコードがないテーブルがあります' if invalid
+  end
+#+end_src
+
+~eager_load!~ が要るのは、rakeタスクではモデルが使われるまで読み込まれず、読み込まれていないクラスは ~subclasses~ に出てこないからである。
+
+#+begin_quote
+eager loadingはconfig.eager_loadフラグで制御します。これはproduction以外のすべての環境でデフォルトで無効になっています。rakeタスクが実行されると、config.eager_loadはconfig.rake_eager_loadで上書きされ、デフォルトではfalseになります。
+
+[[https://railsguides.jp/autoloading_and_reloading_constants.html][定数の自動読み込みと再読み込み - Railsガイド]]
+#+end_quote
+
+* 関連
+
+なし。

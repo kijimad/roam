@@ -1,0 +1,48 @@
+:properties:
+:ID: 20261018T010041
+:end:
+#+title:      KDOC 693: RailsのBooleanのcastは文字列の"0"や"f"もfalseにする
+#+date:       [2026-10-18 Sun 01:00]
+#+filetags:   :permanent:
+#+identifier: 20261018T010041
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Rubyでは ~false~ と ~nil~ 以外はすべて真なので、文字列の ~"false"~ も真になる。
+
+Railsの ~ActiveModel::Type::Boolean~ は、フォームやDBから文字列で来た真偽値を変換する。booleanのカラムに代入した値は、Active Recordがこの型を使って自動的に変換するので、ふだんは自分で ~cast~ を呼ばない。決まった一覧にある値( ~"false"~ ・ ~"0"~ ・ ~"f"~ ・ ~"off"~ など)を ~false~ にし、空文字列を ~nil~ にし、一覧にない値はすべて ~true~ にする。そのため ~"no"~ は ~true~ になる。一覧には ~"false"~ と ~"FALSE"~ はあるが ~"False"~ はないので、 ~"False"~ も ~true~ になる。
+
+#+caption: Rails 8.1.4 の ActiveModel::Type::Boolean
+#+begin_src git-permalink :wrap src ruby
+https://github.com/rails/rails/blob/c3466ea00d7121798e3aa3144ffdf7174b81d8cb/activemodel/lib/active_model/type/boolean.rb#L10-L25
+#+end_src
+
+#+RESULTS:
+#+begin_src ruby
+    # - <tt>"false"</tt>, <tt>"f"</tt>, <tt>"0"</tt>, +0+ or any other value in
+    #   +FALSE_VALUES+ will be coerced to +false+.
+    # - Empty strings are coerced to +nil+.
+    # - All other values will be coerced to +true+.
+    class Boolean < Value
+      include Helpers::Immutable
+      FALSE_VALUES = [
+        false, 0,
+        "0", :"0",
+        "f", :f,
+        "F", :F,
+        "false", :false,
+        "FALSE", :FALSE,
+        "off", :off,
+        "OFF", :OFF,
+      ].to_set.freeze
+#+end_src
+
+* 関連
+
+なし。

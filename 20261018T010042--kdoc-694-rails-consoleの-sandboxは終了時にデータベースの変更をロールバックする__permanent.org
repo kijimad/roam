@@ -1,0 +1,38 @@
+:properties:
+:ID: 20261018T010042
+:end:
+#+title:      KDOC 694: rails consoleの--sandboxは終了時にデータベースの変更をロールバックする
+#+date:       [2026-10-18 Sun 01:00]
+#+filetags:   :permanent:
+#+identifier: 20261018T010042
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+~rails console --sandbox~ (短くは ~-s~ )で起動すると、コンソールでのデータベース操作がすべてトランザクションに包まれ、終了するとロールバックされる。データベースを壊さずにコードを試せる。
+
+#+begin_quote
+sandboxモードでは、すべてのデータベース操作がトランザクションでラップされ、コンソールを終了するとロールバックします。
+
+[[https://railsguides.jp/command_line.html][Rails のコマンドラインツール - Railsガイド]]
+#+end_quote
+
+#+caption: Rails 8.1.4 の console コマンドのオプション定義
+#+begin_src git-permalink :wrap src ruby
+https://github.com/rails/rails/blob/c3466ea00d7121798e3aa3144ffdf7174b81d8cb/railties/lib/rails/commands/console/console_command.rb#L67-L68
+#+end_src
+
+#+RESULTS:
+#+begin_src ruby
+      class_option :sandbox, aliases: "-s", type: :boolean, default: nil,
+        desc: "Rollback database modifications on exit."
+#+end_src
+
+* 関連
+
+なし。

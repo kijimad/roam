@@ -1,0 +1,38 @@
+:properties:
+:ID: 20261018T002720
+:end:
+#+title:      KDOC 691: Railsではカラム名やテーブル名の変更をアプリとDBの2段階に分けられる
+#+date:       [2026-10-18 Sun 00:27]
+#+filetags:   :permanent:
+#+identifier: 20261018T002720
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-18 貴島
+- レビュー
+  - [X] 2026-10-18 貴島
+
+* 概要
+
+Railsでは、モデルから見える名前とデータベースの名前をずらせる。これを使うと、カラム名やテーブル名の変更を2回のリリースに分けられる。
+
+1. エイリアスを足し、コードを新しい名前へ移す
+2. データベースの名前を変え、エイリアスを消す
+
+エイリアスは、カラムなら ~alias_attribute :new_name, :old_name~ 、テーブルならモデルのクラス名を新しくして ~self.table_name = "old_table"~ とする。量の多いコードの書き換えと、戻しにくいデータベースの変更を別々のリリースにできる。
+。
+#+begin_quote
+Allows you to make aliases for attributes.
+
+[[https://api.rubyonrails.org/v8.1.4/classes/ActiveModel/AttributeMethods/ClassMethods.html][ActiveModel::AttributeMethods::ClassMethods#alias_attribute (Rails 8.1.4)]]
+#+end_quote
+
+#+begin_quote
+Sets the table name explicitly.
+
+[[https://api.rubyonrails.org/v8.1.4/classes/ActiveRecord/ModelSchema/ClassMethods.html][ActiveRecord::ModelSchema::ClassMethods#table_name= (Rails 8.1.4)]]
+#+end_quote
+
+* 関連
+
+- 補足: [[id:20260529T091134][KDOC 593: 安全なマイグレーション手法をチームに導入する]]。Expand and Contractの、名前を変えるときの具体策
