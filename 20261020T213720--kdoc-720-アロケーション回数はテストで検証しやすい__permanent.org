@@ -1,0 +1,53 @@
+:properties:
+:ID: 20261020T213720
+:end:
+#+title:      KDOC 720: アロケーション回数はテストで検証しやすい
+#+date:       [2026-10-20 Tue 21:37]
+#+filetags:   :permanent:
+#+identifier: 20261020T213720
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-20 貴島
+- レビュー
+  - [X] 2026-10-20 貴島
+
+* 概要
+
+Go の標準ライブラリ testing には、アロケーション回数を計測する関数がある。たとえば opentelemetry-go のテストは、回数が1回以下であることを確かめている。
+
+#+begin_src git-permalink :wrap src go
+https://github.com/kijimad/opentelemetry-go/blob/d36fabe359fbf36bc9abd23de663df10db56cb0d/sdk/log/internal/attrnorm/dedup_test.go#L344-L349
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+	allocs := testing.AllocsPerRun(1000, func() {
+		got, depthLimited, deduplicated = ValueDedupLimitDepth(value, 64)
+	})
+	if allocs > 1 {
+		t.Fatalf("ValueDedupLimitDepth() allocations = %v, want at most 1", allocs)
+	}
+#+end_src
+
+アロケーション回数は実行速度とは違って環境でぶれにくく、テストで固定して検証しやすい。
+
+testing は、1回空回ししてから測り、測る間は GOMAXPROCS を1にして、ぶれの元を除いている。
+
+#+begin_src git-permalink :wrap src go
+https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/testing/allocs.go#L14-L19
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// To compute the number of allocations, the function will first be run once as
+// a warm-up. The average number of allocations over the specified number of
+// runs will then be measured and returned.
+//
+// AllocsPerRun sets [runtime.GOMAXPROCS] to 1 during its measurement and will restore
+// it before returning.
+#+end_src
+
+* 関連
+
+なし。
