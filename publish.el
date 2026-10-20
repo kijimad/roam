@@ -210,6 +210,11 @@
 
        ))
 
+;; 既定の並びはタイトルの辞書順になる。ファイル名は denote の ID(作成日時)で始まるので、ファイル名で並べると作成順になる
+;; 項目は [[file:ファイル名][タイトル]] の文字列なので、そのまま比べればファイル名の順になる
+(defun kd/sitemap-function (title list)
+  (org-publish-sitemap-default title (cons (car list) (sort (cdr list) :key #'car))))
+
 ;; Compile
 (setq org-publish-project-alist
       `(
@@ -234,6 +239,7 @@
 
          :sitemap-title "Sitemap"
          :auto-sitemap t ;; generate sitemap.org automatically
+         :sitemap-function kd/sitemap-function
          :author "kijimaD"
          )))
 
