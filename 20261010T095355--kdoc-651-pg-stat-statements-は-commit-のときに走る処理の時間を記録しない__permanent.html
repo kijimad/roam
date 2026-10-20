@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-20 火 21:48 -->
+<!-- 2026-10-20 火 21:53 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 651: pg_stat_statements は COMMIT のときに走る処理の時間を記録しない</h1>
-<div id="outline-container-org9e2ab44" class="outline-2">
-<h2 id="org9e2ab44"><a href="#org9e2ab44">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org9e2ab44">
+<div id="outline-container-org405079c" class="outline-2">
+<h2 id="org405079c"><a href="#org405079c">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org405079c">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org479c91e" class="outline-2">
-<h2 id="org479c91e"><a href="#org479c91e">概要</a></h2>
-<div class="outline-text-2" id="text-org479c91e">
+<div id="outline-container-orga5e9b4e" class="outline-2">
+<h2 id="orga5e9b4e"><a href="#orga5e9b4e">概要</a></h2>
+<div class="outline-text-2" id="text-orga5e9b4e">
 <p>
 Aurora PostgreSQL の Performance Insights で、COMMIT が DB load(AAS)の多くを占めていたのに、Avg latency は 0 ms だった。実行するクエリ的にも、高頻度の明示的なトランザクション内での書き込みで時間がかかっているように見えた。
 </p>
@@ -53,7 +53,7 @@ COMMIT をわざと遅くして確かめる。遅延制約トリガーは COMMIT
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label><pre class="src src-sql" id="org90c9792"><code>CREATE EXTENSION pg_stat_statements;
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>共通の準備: テーブルと、1秒かかるトリガー関数</label><pre class="src src-sql" id="org6c83bd0"><code>CREATE EXTENSION pg_stat_statements;
 CREATE TABLE t (id int);
 
 -- COMMIT のときに1秒かかる処理を作る
@@ -67,7 +67,7 @@ END $$;
 </div>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label><pre class="src src-sql" id="org7297795"><code>SELECT pg_stat_statements_reset() IS NOT NULL AS reset;
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>共通の計測: COMMIT をはさんだ時間と、pg_stat_statements の記録</label><pre class="src src-sql" id="org8abcf84"><code>SELECT pg_stat_statements_reset() IS NOT NULL AS reset;
 
 BEGIN;
 INSERT INTO t VALUES (1);
@@ -225,18 +225,18 @@ FOR EACH ROW EXECUTE FUNCTION slow_at_commit();
 </p>
 </div>
 </div>
-<div id="outline-container-org90a0485" class="outline-2">
-<h2 id="org90a0485"><a href="#org90a0485">関連</a></h2>
-<div class="outline-text-2" id="text-org90a0485">
+<div id="outline-container-orgf073dec" class="outline-2">
+<h2 id="orgf073dec"><a href="#orgf073dec">関連</a></h2>
+<div class="outline-text-2" id="text-orgf073dec">
 <ul class="org-ul">
 <li>前提: <a href="20261009T215750--kdoc-649-dml-は文の中で記録を作り-commit-は永続化を待つ__permanent.html#ID-20261009T215750">KDOC 649: PostgreSQL の COMMIT は変更の記録が永続化されるのを待つ</a>。コミット処理の中で何を待っているか</li>
 <li>前提: <a href="20261009T231020--kdoc-650-performance-insights-の-sql-統計は-pg-stat-statements-を集計している__permanent.html#ID-20261009T231020">KDOC 650: Performance Insights の SQL 統計は pg_stat_statements を集計している</a></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org08978d3" class="outline-2">
-<h2 id="org08978d3"><a href="#org08978d3">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org08978d3">
+<div id="outline-container-org09634e1" class="outline-2">
+<h2 id="org09634e1"><a href="#org09634e1">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org09634e1">
 <ul class="org-ul">
 <li><a href="./20261010T095759--kdoc-652-明示的なトランザクションと自動コミットで、insert-の時間が-top-sql-のどの文に数えられるかを試す__permanent.html">KDOC 652: 明示的なトランザクションと自動コミットで、INSERT の時間が Top SQL のどの文に数えられるかを試す</a></li>
 </ul>
