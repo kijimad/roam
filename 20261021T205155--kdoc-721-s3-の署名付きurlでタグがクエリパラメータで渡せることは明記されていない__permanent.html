@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-21 水 22:55 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 721: S3 の署名付きURLでタグがクエリパラメータで渡せることは明記されていない</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 721: S3 の署名付きURLでタグがクエリパラメータで渡せることは明記されていない</h1>
+<div id="outline-container-org9b5312d" class="outline-2">
+<h2 id="org9b5312d"><a href="#org9b5312d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org9b5312d">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-21 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-10-21 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgc38810d" class="outline-2">
+<h2 id="orgc38810d"><a href="#orgc38810d">概要</a></h2>
+<div class="outline-text-2" id="text-orgc38810d">
+<p>
+S3 のアップロード用に署名付きURLを AWS SDK for JavaScript v3 で生成する機会があった。オブジェクトにタグをつける必要があったので、 <code>getSignedUrl</code> に渡す <code>PutObjectCommand</code> の <code>Tagging</code> にタグを指定した。生成したURLのクエリパラメータにタグ(<code>x-amz-tagging</code>)が含まれていて、そのURLでアップロードするとタグが付与された状態でオブジェクトをアップロードできた。
+</p>
+
+<pre class="example" id="org1337735">
+https://example.s3.ap-northeast-1.amazonaws.com/file.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&amp;X-Amz-Credential={cred}%2F20260101%2Fap-northeast-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20260101T000000Z&amp;X-Amz-Expires=600&amp;X-Amz-Signature={sig}&amp;X-Amz-SignedHeaders=host&amp;x-amz-checksum-crc32=AAAAAA%3D%3D&amp;x-amz-sdk-checksum-algorithm=CRC32&amp;x-amz-tagging=key%3Dvalue&amp;x-id=PutObject
+</pre>
+
+<p>
+クエリパラメータでタグを受け付けるのは S3 の仕様だと考えていたが、調べても S3 のドキュメントに記載を見つけられなかった。タグは <code>x-amz-tagging</code> リクエストヘッダで指定すると書いてある(<a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html">PutObject</a>、<a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-tagging.html">オブジェクトのタグ付け</a>)。署名付きURLの説明でも、 <code>x-amz-*</code> はヘッダとして署名に含めるものとして書かれていて、クエリパラメータで渡せるとは書かれていない(<a href="https://docs.aws.amazon.com/AmazonS3/latest/developerguide/sigv4-query-string-auth.html">Authenticating Requests: Using Query Parameters</a>)。
+</p>
+
+<p>
+JavaScript の SDK は署名付きURLを作るとき、 <code>x-amz-</code> で始まるヘッダを原則クエリパラメータに移す(<code>moveHeadersToQuery</code>)。S3 はそれを受け付けてタグを付けたが、その動きは S3 の仕様としてドキュメントに明記されていない。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink"><code>https://github.com/smithy-lang/smithy-typescript/blob/67b94cc461a7fea6a4ffe1e4b03a54841af39c21/packages/signature-v4/src/moveHeadersToQuery.ts#L8-L30
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-typescript"><code>export const moveHeadersToQuery = (
+  request: IHttpRequest,
+  options: { unhoistableHeaders?: Set&lt;string&gt;; hoistableHeaders?: Set&lt;string&gt; } = {}
+): IHttpRequest &amp; { query: QueryParameterBag } =&gt; {
+  const { headers, query = {} as QueryParameterBag } = HttpRequest.clone(request);
+  for (const name in headers) {
+    if (!hasOwn(headers, name)) continue;
+    const lname = name.toLowerCase();
+    if (
+      (lname.slice(0, 6) === "x-amz-" &amp;&amp; !options.unhoistableHeaders?.has(lname)) ||
+      options.hoistableHeaders?.has(lname)
+    ) {
+      query[name] = headers[name];
+      delete headers[name];
+    }
+  }
+
+  return {
+    ...request,
+    headers,
+    query,
+  };
+};
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf0fe588" class="outline-2">
+<h2 id="orgf0fe588"><a href="#orgf0fe588">関連</a></h2>
+<div class="outline-text-2" id="text-orgf0fe588">
+<ul class="org-ul">
+<li>経緯: 以前は S3 がクエリパラメータのタグを無視する不具合があった</li>
+<li>対比: S3 用の SDK はサーバー側暗号化のヘッダだけはクエリパラメータに移さない</li>
+<li>具体例: <code>unhoistableHeaders</code> を指定するとタグをヘッダのまま送れる</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

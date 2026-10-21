@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-20 火 22:05 -->
+<!-- 2026-10-21 水 22:54 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 501: インデックスのオーバーヘッドを検証する</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 501: インデックスのオーバーヘッドを検証する</h1>
-<div id="outline-container-org728e397" class="outline-2">
-<h2 id="org728e397"><a href="#org728e397">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org728e397">
+<div id="outline-container-org1560686" class="outline-2">
+<h2 id="org1560686"><a href="#org1560686">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org1560686">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgd956667" class="outline-2">
-<h2 id="orgd956667"><a href="#orgd956667">概要</a></h2>
-<div class="outline-text-2" id="text-orgd956667">
+<div id="outline-container-org6e674c8" class="outline-2">
+<h2 id="org6e674c8"><a href="#org6e674c8">概要</a></h2>
+<div class="outline-text-2" id="text-org6e674c8">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>のOver-Indexingを読んで、インデックスの具体的なオーバヘッドを知った。
 </p>
@@ -56,9 +56,9 @@
 これらをじっさいに試す。
 </p>
 </div>
-<div id="outline-container-org1b040fa" class="outline-3">
-<h3 id="org1b040fa"><a href="#org1b040fa">作成時のディスク容量</a></h3>
-<div class="outline-text-3" id="text-org1b040fa">
+<div id="outline-container-orgbc1c29b" class="outline-3">
+<h3 id="orgbc1c29b"><a href="#orgbc1c29b">作成時のディスク容量</a></h3>
+<div class="outline-text-3" id="text-orgbc1c29b">
 <p>
 レコードを作成して、インデックスのディスク容量を見る。
 </p>
@@ -125,9 +125,9 @@ SELECT pg_size_pretty(pg_relation_size('idx_users_name'));
 </p>
 </div>
 </div>
-<div id="outline-container-orgb8118c5" class="outline-3">
-<h3 id="orgb8118c5"><a href="#orgb8118c5">更新時のコスト</a></h3>
-<div class="outline-text-3" id="text-orgb8118c5">
+<div id="outline-container-orgbc5aa52" class="outline-3">
+<h3 id="orgbc5aa52"><a href="#orgbc5aa52">更新時のコスト</a></h3>
+<div class="outline-text-3" id="text-orgbc5aa52">
 <p>
 インデックスの有無を変えてレコードを更新したときの時間を見る。
 </p>
@@ -226,9 +226,9 @@ UPDATE users SET name = 'def';
 </p>
 </div>
 </div>
-<div id="outline-container-org7f32fe0" class="outline-3">
-<h3 id="org7f32fe0"><a href="#org7f32fe0">計画時間のコスト</a></h3>
-<div class="outline-text-3" id="text-org7f32fe0">
+<div id="outline-container-org35c7b95" class="outline-3">
+<h3 id="org35c7b95"><a href="#org35c7b95">計画時間のコスト</a></h3>
+<div class="outline-text-3" id="text-org35c7b95">
 <div class="org-src-container">
 <pre class="src src-sql"><code>CREATE TABLE users (
     name varchar(255)
@@ -320,9 +320,9 @@ SELECT * FROM users WHERE name = 'WITH_INDEX';
 </p>
 </div>
 </div>
-<div id="outline-container-orgf21b2fb" class="outline-3">
-<h3 id="orgf21b2fb"><a href="#orgf21b2fb">大量インデックスの計画コスト</a></h3>
-<div class="outline-text-3" id="text-orgf21b2fb">
+<div id="outline-container-org9cb2179" class="outline-3">
+<h3 id="org9cb2179"><a href="#org9cb2179">大量インデックスの計画コスト</a></h3>
+<div class="outline-text-3" id="text-org9cb2179">
 <p>
 インデックス増加による計画時間の増加を見る。
 </p>
@@ -523,9 +523,9 @@ SELECT name1 FROM users WHERE name1 = 'xx';
 </ul>
 </div>
 </div>
-<div id="outline-container-org60743c4" class="outline-3">
-<h3 id="org60743c4"><a href="#org60743c4">挿入時のコスト</a></h3>
-<div class="outline-text-3" id="text-org60743c4">
+<div id="outline-container-org68ccd2f" class="outline-3">
+<h3 id="org68ccd2f"><a href="#org68ccd2f">挿入時のコスト</a></h3>
+<div class="outline-text-3" id="text-org68ccd2f">
 <p>
 インデックスの有無を変えてレコードを挿入したときの時間を見る。
 </p>
@@ -625,17 +625,17 @@ Execution Time が 118.892 ms -&gt; 267.930 ms 。
 </div>
 </div>
 </div>
-<div id="outline-container-org268eba9" class="outline-2">
-<h2 id="org268eba9"><a href="#org268eba9">関連</a></h2>
-<div class="outline-text-2" id="text-org268eba9">
+<div id="outline-container-org6575bed" class="outline-2">
+<h2 id="org6575bed"><a href="#org6575bed">関連</a></h2>
+<div class="outline-text-2" id="text-org6575bed">
 <ul class="org-ul">
 <li>疑問: 計画時にオプション評価のコストがかかるというが、どのような状況で問題になるのだろうか。もっと端的に増えていくケースがあるのだろうか。調べた限りだとオーバーヘッドになっているのは確かだが、実行時間の削減量に比べてわずかで、あまり問題となるように見えない</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org8e5d32c" class="outline-2">
-<h2 id="org8e5d32c"><a href="#org8e5d32c">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org8e5d32c">
+<div id="outline-container-orgbce452b" class="outline-2">
+<h2 id="orgbce452b"><a href="#orgbce452b">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgbce452b">
 <ul class="org-ul">
 <li><a href="./20261014T084150--kdoc-662-使われていないインデックスは-pg-stat-user-indexes-で見つけられる__permanent.html">KDOC 662: 使われていないインデックスは pg_stat_user_indexes で見つけられる</a></li>
 </ul>
