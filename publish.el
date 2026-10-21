@@ -216,6 +216,14 @@
   (org-publish-sitemap-default title (cons (car list) (sort (cdr list) :key #'car))))
 
 ;; Compile
+;; index.org と dlinks.org だけはビルド時に実行して、コードを隠し結果だけを出す
+(defun kd/html-publish (plist filename pub-dir)
+  (let* ((babel (seq-some (lambda (f) (file-equal-p filename (expand-file-name f)))
+                          '("index.org" "dlinks.org")))
+         (org-export-use-babel babel)
+         (org-confirm-babel-evaluate (not babel)))
+    (org-html-publish-to-html plist filename pub-dir)))
+
 (setq org-publish-project-alist
       `(
         ("kijima:roam"
@@ -223,7 +231,7 @@
          :base-extension "org"
          :base-directory "./"
          :exclude "NEWS.org" ;; FIXME: can't specify .packages directory...
-         :publishing-function org-html-publish-to-html
+         :publishing-function kd/html-publish
          :publishing-directory "./public"
 
          :html-link-home "/"
@@ -292,7 +300,6 @@
   (let ((org-agenda-files '("./")))
     (find-file "index.org")
     (org-dblock-update t)
-    (org-babel-execute-buffer)
     (save-buffer)))
 
 (defun kd/update-dlinks-table ()
@@ -300,7 +307,6 @@
   (let ((org-agenda-files '("./")))
     (find-file "dlinks.org")
     (org-dblock-update t)
-    (org-babel-execute-buffer)
     (save-buffer)))
 
 (defun kd/denote-batch-rename-in-current-directory ()

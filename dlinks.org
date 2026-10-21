@@ -1474,29 +1474,20 @@
 
 PDFスライド集。
 
-#+HTML_HEAD: <style>.src { display: none; }</style>
 #+caption: PDF一覧
-#+begin_src emacs-lisp :results output :wrap EXPORT html
+#+begin_src emacs-lisp :results output :wrap EXPORT html :exports results
   (require 'cl)
   (setq urls (mapcar #'file-name-nondirectory (directory-files "./pdfs" t "\\.pdf$"))  )
   (loop for x in urls
         do (princ (format "<li><a href='./pdfs/index.html?file=%s'>%s</a></li>\n" x x)))
 #+end_src
 
-#+RESULTS:
-#+begin_EXPORT html
-<li><a href='./pdfs/index.html?file=20250201_slide.pdf'>20250201_slide.pdf</a></li>
-<li><a href='./pdfs/index.html?file=20250214_root.pdf'>20250214_root.pdf</a></li>
-<li><a href='./pdfs/index.html?file=20260101_deck.pdf'>20260101_deck.pdf</a></li>
-<li><a href='./pdfs/index.html?file=20260616_upsert.pdf'>20260616_upsert.pdf</a></li>
-<li><a href='./pdfs/index.html?file=tmpl.pdf'>tmpl.pdf</a></li>
-#+end_EXPORT
 
 * 画像一覧
 評価して、drawio用の空の画像ファイルを追加する。
 
 #+caption: ファイル名フォーマットに沿った画像ファイルを生成する(評価して使う)
-#+begin_src emacs-lisp :results none :eval no
+#+begin_src emacs-lisp :results none :eval no :exports none
   (let* ((date-string (format-time-string "%Y%m%d"))
          (name (read-from-minibuffer "filename? "))
          (format-string (format "images/%s-%s.drawio.svg" date-string name)))
@@ -1506,7 +1497,7 @@ PDFスライド集。
 ファイル名のコピペ用。
 
 #+caption: orgフォーマットのリンク。orgリンクで出力すると変換が重くなるので、HTMLで出力する
-#+begin_src emacs-lisp :results raw :wrap EXPORT html
+#+begin_src emacs-lisp :results raw :wrap EXPORT html :exports results
   (let ((files (directory-files "images" nil "\.\\(png\\|svg\\)")))
     (let (result)
       (dolist (file files)
@@ -1514,53 +1505,11 @@ PDFスライド集。
       (mapconcat 'identity result " </br>\n")))
 #+end_src
 
-#+RESULTS:
-#+begin_EXPORT html
-[[file:images/plan-4cae88c75a42.svg]] </br>
-[[file:images/plan-3de4fc1f58c4.svg]] </br>
-[[file:images/plan-2afc5d2495db.svg]] </br>
-[[file:images/plan-29bbaf34ce5d.svg]] </br>
-[[file:images/20261013-pi-wait-breakdown.svg]] </br>
-[[file:images/20261013-pi-sampling.svg]] </br>
-[[file:images/20241128-kijima.png]] </br>
-[[file:images/20241117-kousei.drawio.svg]] </br>
-[[file:images/20241109-rw.drawio.svg]] </br>
-[[file:images/20241109-pipe.drawio.svg]] </br>
-[[file:images/20240707-prepend.drawio.svg]] </br>
-[[file:images/20240707-include.drawio.svg]] </br>
-[[file:images/20240707-hash.drawio.svg]] </br>
-[[file:images/20240626-rbasic.drawio.svg]] </br>
-[[file:images/20240626-ocm.drawio.svg]] </br>
-[[file:images/20240626-class.drawio.svg]] </br>
-[[file:images/20240623-stack.drawio.svg]] </br>
-[[file:images/20240623-special.drawio.svg]] </br>
-[[file:images/20240623-method.drawio.svg]] </br>
-[[file:images/20240623-local.drawio.svg]] </br>
-[[file:images/20240623-inner.drawio.svg]] </br>
-[[file:images/20240623-dynamic.drawio.svg]] </br>
-[[file:images/20240601-stack.drawio.svg]] </br>
-[[file:images/20240519-art.drawio.svg]] </br>
-[[file:images/20240504-raycast.drawio.svg]] </br>
-[[file:images/20240504-flow.drawio.svg]] </br>
-[[file:images/20240314-linux.drawio.svg]] </br>
-[[file:images/20240219-data.drawio.svg]] </br>
-[[file:images/20240212-data.drawio.svg]] </br>
-[[file:images/20240211-scenario.drawio.svg]] </br>
-[[file:images/20240210-unwrap.drawio.svg]] </br>
-[[file:images/20240209-iframe.drawio.svg]] </br>
-[[file:images/20231015-denote.drawio.svg]] </br>
-[[file:images/20231014-pointer.drawio.svg]] </br>
-[[file:images/20231014-exec.drawio.svg]] </br>
-[[file:images/20230816-tree.drawio.svg]] </br>
-[[file:images/20230527-progress.drawio.svg]] </br>
-[[file:images/20230521-parallel.drawio.svg]] </br>
-[[file:images/20230520-web.drawio.svg]]
-#+end_EXPORT
 
 画像のプレビュー用。
 
 #+caption: 画像をプレビューする
-#+begin_src emacs-lisp :results raw :wrap EXPORT html
+#+begin_src emacs-lisp :results raw :wrap EXPORT html :exports results
   (let ((files (directory-files "images" nil "\.\\(png\\|svg\\)")))
     (let (result)
       (dolist (file files)
@@ -1568,48 +1517,6 @@ PDFスライド集。
       (mapconcat 'identity result "<hr size='5px'>\n")))
 #+end_src
 
-#+RESULTS:
-#+begin_EXPORT html
-<figure><img src='images/plan-4cae88c75a42.svg' width='300px'><figcaption>-- images/plan-4cae88c75a42.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/plan-3de4fc1f58c4.svg' width='300px'><figcaption>-- images/plan-3de4fc1f58c4.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/plan-2afc5d2495db.svg' width='300px'><figcaption>-- images/plan-2afc5d2495db.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/plan-29bbaf34ce5d.svg' width='300px'><figcaption>-- images/plan-29bbaf34ce5d.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20261013-pi-wait-breakdown.svg' width='300px'><figcaption>-- images/20261013-pi-wait-breakdown.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20261013-pi-sampling.svg' width='300px'><figcaption>-- images/20261013-pi-sampling.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20241128-kijima.png' width='300px'><figcaption>-- images/20241128-kijima.png</figcaption></figure><hr size='5px'>
-<figure><img src='images/20241117-kousei.drawio.svg' width='300px'><figcaption>-- images/20241117-kousei.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20241109-rw.drawio.svg' width='300px'><figcaption>-- images/20241109-rw.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20241109-pipe.drawio.svg' width='300px'><figcaption>-- images/20241109-pipe.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240707-prepend.drawio.svg' width='300px'><figcaption>-- images/20240707-prepend.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240707-include.drawio.svg' width='300px'><figcaption>-- images/20240707-include.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240707-hash.drawio.svg' width='300px'><figcaption>-- images/20240707-hash.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240626-rbasic.drawio.svg' width='300px'><figcaption>-- images/20240626-rbasic.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240626-ocm.drawio.svg' width='300px'><figcaption>-- images/20240626-ocm.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240626-class.drawio.svg' width='300px'><figcaption>-- images/20240626-class.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240623-stack.drawio.svg' width='300px'><figcaption>-- images/20240623-stack.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240623-special.drawio.svg' width='300px'><figcaption>-- images/20240623-special.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240623-method.drawio.svg' width='300px'><figcaption>-- images/20240623-method.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240623-local.drawio.svg' width='300px'><figcaption>-- images/20240623-local.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240623-inner.drawio.svg' width='300px'><figcaption>-- images/20240623-inner.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240623-dynamic.drawio.svg' width='300px'><figcaption>-- images/20240623-dynamic.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240601-stack.drawio.svg' width='300px'><figcaption>-- images/20240601-stack.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240519-art.drawio.svg' width='300px'><figcaption>-- images/20240519-art.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240504-raycast.drawio.svg' width='300px'><figcaption>-- images/20240504-raycast.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240504-flow.drawio.svg' width='300px'><figcaption>-- images/20240504-flow.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240314-linux.drawio.svg' width='300px'><figcaption>-- images/20240314-linux.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240219-data.drawio.svg' width='300px'><figcaption>-- images/20240219-data.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240212-data.drawio.svg' width='300px'><figcaption>-- images/20240212-data.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240211-scenario.drawio.svg' width='300px'><figcaption>-- images/20240211-scenario.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240210-unwrap.drawio.svg' width='300px'><figcaption>-- images/20240210-unwrap.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20240209-iframe.drawio.svg' width='300px'><figcaption>-- images/20240209-iframe.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20231015-denote.drawio.svg' width='300px'><figcaption>-- images/20231015-denote.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20231014-pointer.drawio.svg' width='300px'><figcaption>-- images/20231014-pointer.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20231014-exec.drawio.svg' width='300px'><figcaption>-- images/20231014-exec.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20230816-tree.drawio.svg' width='300px'><figcaption>-- images/20230816-tree.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20230527-progress.drawio.svg' width='300px'><figcaption>-- images/20230527-progress.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20230521-parallel.drawio.svg' width='300px'><figcaption>-- images/20230521-parallel.drawio.svg</figcaption></figure><hr size='5px'>
-<figure><img src='images/20230520-web.drawio.svg' width='300px'><figcaption>-- images/20230520-web.drawio.svg</figcaption></figure>
-#+end_EXPORT
 
 * プレビュー用
 
