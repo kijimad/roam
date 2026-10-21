@@ -1,0 +1,63 @@
+:properties:
+:ID: 20261021T205155
+:end:
+#+title:      KDOC 721: S3 の署名付きURLでタグがクエリパラメータで渡せることは明記されていない
+#+date:       [2026-10-21 Wed 20:51]
+#+filetags:   :permanent:
+#+identifier: 20261021T205155
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-21 貴島
+- レビュー
+  - [X] 2026-10-21 貴島
+
+* 概要
+
+S3 のアップロード用に署名付きURLを AWS SDK for JavaScript v3 で生成する機会があった。オブジェクトにタグをつける必要があったので、 =getSignedUrl= に渡す =PutObjectCommand= の =Tagging= にタグを指定した。生成したURLのクエリパラメータにタグ(=x-amz-tagging=)が含まれていて、そのURLでアップロードするとタグが付与された状態でオブジェクトをアップロードできた。
+
+#+caption: 例
+#+begin_example
+https://example.s3.ap-northeast-1.amazonaws.com/file.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential={cred}%2F20260101%2Fap-northeast-1%2Fs3%2Faws4_request&X-Amz-Date=20260101T000000Z&X-Amz-Expires=600&X-Amz-Signature={sig}&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-amz-tagging=key%3Dvalue&x-id=PutObject
+#+end_example
+
+クエリパラメータでタグを受け付けるのは S3 の仕様だと考えていたが、調べても S3 のドキュメントに記載を見つけられなかった。タグは =x-amz-tagging= リクエストヘッダで指定すると書いてある([[https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html][PutObject]]、[[https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-tagging.html][オブジェクトのタグ付け]])。署名付きURLの説明でも、 =x-amz-*= はヘッダとして署名に含めるものとして書かれていて、クエリパラメータで渡せるとは書かれていない([[https://docs.aws.amazon.com/AmazonS3/latest/developerguide/sigv4-query-string-auth.html][Authenticating Requests: Using Query Parameters]])。
+
+JavaScript の SDK は署名付きURLを作るとき、 =x-amz-= で始まるヘッダを原則クエリパラメータに移す(=moveHeadersToQuery=)。S3 はそれを受け付けてタグを付けたが、その動きは S3 の仕様としてドキュメントに明記されていない。
+
+#+begin_src git-permalink :wrap src typescript
+https://github.com/smithy-lang/smithy-typescript/blob/67b94cc461a7fea6a4ffe1e4b03a54841af39c21/packages/signature-v4/src/moveHeadersToQuery.ts#L8-L30
+#+end_src
+
+#+RESULTS:
+#+begin_src typescript
+export const moveHeadersToQuery = (
+  request: IHttpRequest,
+  options: { unhoistableHeaders?: Set<string>; hoistableHeaders?: Set<string> } = {}
+): IHttpRequest & { query: QueryParameterBag } => {
+  const { headers, query = {} as QueryParameterBag } = HttpRequest.clone(request);
+  for (const name in headers) {
+    if (!hasOwn(headers, name)) continue;
+    const lname = name.toLowerCase();
+    if (
+      (lname.slice(0, 6) === "x-amz-" && !options.unhoistableHeaders?.has(lname)) ||
+      options.hoistableHeaders?.has(lname)
+    ) {
+      query[name] = headers[name];
+      delete headers[name];
+    }
+  }
+
+  return {
+    ...request,
+    headers,
+    query,
+  };
+};
+#+end_src
+
+* 関連
+
+- 経緯: 以前は S3 がクエリパラメータのタグを無視する不具合があった
+- 対比: S3 用の SDK はサーバー側暗号化のヘッダだけはクエリパラメータに移さない
+- 具体例: =unhoistableHeaders= を指定するとタグをヘッダのまま送れる
