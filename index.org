@@ -144,97 +144,15 @@
 ↓実際の数字を数える。この数字を目的にすることはなく、単に客観的に把握するためのメトリクスとして使う([[https://ja.wikipedia.org/wiki/%E3%82%AD%E3%83%A3%E3%83%B3%E3%83%99%E3%83%AB%E3%81%AE%E6%B3%95%E5%89%87][キャンベルの法則]]を意識して)。
 
 #+caption: 統計情報。ビルド時に実行される
-#+begin_src bash :results raw :exports results
-  file_changed_count_day() {
-      datestr_past=$1
-      datestr_future=$2
+#+begin_src sh :results raw :exports results :wrap no
+  python3 scripts/stats.py repo
+#+end_src
 
-      count=`git log --diff-filter=A --since="$datestr_past" --until="$datestr_future" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-      printf "%s %s " `date --date "$datestr_past" "+%Y-%m-%d"` $count
-      for (( i = 0; i < $count; i++ )); do
-          printf "%s" "+"
-      done
-      echo
-  }
+↓ツェッテルカステン性を計測する。KDOC同士のリンク(~[[id:…]]~ と ~[[denote:…]]~)だけを数える。
 
-  echo ビルド時刻 `TZ=JST-9 date "+%FT%T"`
-  echo .orgファイル数 `find . -maxdepth 1 -type f -name "*.org" | grep -c "\.org$"`
-  echo .orgファイルサイズ `du -h -c ./*.org | tail -n 1 | sed 's/\ttotal//'`
-  echo 画像ファイル数 `find ./images -type f -name "*.png" -o -name "*.svg" | wc -l`
-  echo 画像ファイルサイズ `du -h -c ./images/* | tail -n 1 | sed 's/\ttotal//'`
-
-  total_multi_count=0
-  total_line_count=0
-
-  for file in ./*.org ; do
-      if [ -f "$file" ]; then
-          multi_count=$(wc -m < "$file") # マルチバイト
-          line_count=$(wc -l < "$file")
-      fi
-      total_multi_count=$((total_multi_count + multi_count))
-      total_line_count=$((total_line_count + line_count))
-  done
-  echo
-  echo 文字数 ${total_multi_count}文字
-  echo 1ページ600文字とすると $((total_multi_count / 600))ページ
-  echo 本1冊300ページとすると $((total_multi_count / 600 / 300))冊
-  echo 本1冊10万文字とすると $((total_multi_count / 100000))冊
-  echo 本1冊2cmとすると $((total_multi_count / 100000 * 2))cm
-  echo
-  echo 行数 ${total_line_count}行
-  echo 60行入るﾃﾞｨｽﾌﾟﾚｲだと $((total_line_count / 60))枚分
-  echo 14インチﾃﾞｨｽﾌﾟﾚｲだと $((total_line_count / 60 * 17 / 100))メートル
-  echo
-  echo "句点の数" `grep -rohE '。' ./*.org | wc -l`
-  echo "読点の数" `grep -rohE '、' ./*.org | wc -l`
-  echo "改行の数" `grep -rohE '\n' ./*.org | wc -l`
-  echo
-  echo "外部リンクの数" `grep -rohE 'https?://' ./*.org | wc -l`
-  echo "内部リンクの数" `grep -rohE '\[\[id:.+?\]' ./*.org | wc -l`
-  echo "見出し1の数" `grep -rohE '^\*\s+[^\s]' ./*.org | wc -l`
-  echo "見出し2の数" `grep -rohE '^\*\*\s+[^\s]' ./*.org | wc -l`
-  echo "見出し3の数" `grep -rohE '^\*\*\*\s+[^\s]' ./*.org | wc -l`
-  echo "リストの数" `grep -rohE '^-\s+[^\s]' ./*.org | wc -l`
-  echo "脚注の数" `grep -rohE '\[fn:.+?\]' ./*.org | wc -l`
-  echo "挿入画像の数" `grep -rohE '^\[\[file:.+?\]\]' ./*.org | wc -l`
-  echo
-  echo "TODOの数" `grep -rohE '^\*.+?\sTODO' ./*.org | wc -l`
-  echo "DONEの数" `grep -rohE '^\*.+?\sDONE' ./*.org | wc -l`
-  echo "WAITの数" `grep -rohE '^\*.+?\sWAIT' ./*.org | wc -l`
-  echo "WIPの数" `grep -rohE '\*.+?\sWIP' ./*.org | wc -l`
-  echo "ステータスの数" `grep -rohE '^\*.+?\s(TODO|DONE|WAIT|WIP)' ./*.org | wc -l`
-  echo
-  echo "KDOCの数" `ls | grep "\-kdoc\-" | wc -l`
-  echo "ドラフトの数" `ls | grep -E "\-kdoc\-.+?_draft" | wc -l`
-  echo "プロジェクトメモの数" `ls | grep -E "\-kdoc\-.+?_project" | wc -l`
-  echo "エッセイの数" `ls | grep -E "\-kdoc\-.+?_essay" | wc -l`
-  echo "永続メモの数" `ls | grep -E "\-kdoc\-.+?_permanent" | wc -l`
-  echo "構造化メモの数" `ls | grep -E "\-kdoc\-.+?_structure" | wc -l`
-  echo "文献メモの数" `ls | grep -E "\-kdoc\-.+?_book" | wc -l`
-  echo "ほかのメモへのリンクがないKDOCの数" `grep -L -E '\[\[(id|denote):' ./*--kdoc-*.org | wc -l`
-  echo
-  echo "コミット数" `git rev-list --count HEAD`
-  echo "最初のｺﾐｯﾄ" `git log --date=iso --date=format:"%Y-%m-%dT%H:%M:%S" --pretty=format:"%ad" --reverse | head -n 1`
-  echo "最新のｺﾐｯﾄ" `git log --date=iso --date=format:"%Y-%m-%dT%H:%M:%S" --pretty=format:"%ad" | head -n 1`
-  echo
-  echo "追加ファイル"
-  echo "2年間" `git log --diff-filter=A --since="2 year ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-  echo "1年間" `git log --diff-filter=A --since="1 year ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-  echo "1ヶ月間" `git log --diff-filter=A --since="1 month ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-  echo "1週間" `git log --diff-filter=A --since="1 week ago" --name-only --pretty=format: | grep -e ".*org" | sort -u | wc -l`
-  file_changed_count_day "1 day ago" "0 day ago"
-  file_changed_count_day "2 days ago" "1 day ago"
-  file_changed_count_day "3 days ago" "2 days ago"
-  file_changed_count_day "4 days ago" "3 days ago"
-  file_changed_count_day "5 days ago" "4 days ago"
-  file_changed_count_day "6 days ago" "5 days ago"
-  file_changed_count_day "7 days ago" "6 days ago"
-  echo
-  echo "MDNの引用数" `grep -rohE 'https://(www\.)?developer\.mozilla\.org' ./*.org | wc -l`
-  echo "RFCの引用数" `grep -rohE 'https://(www\.)?rfc-editor\.org' ./*.org | wc -l`
-  echo "Amazon(日本)の引用数" `grep -rohE 'https://(www\.)?amazon\.co\.jp' ./*.org | wc -l`
-  echo "YouTubeの引用数" `grep -rohE 'https://(www\.)?youtube\.com' ./*.org | wc -l`
-  echo "Wikipediaの引用数" `grep -rohE 'https://(www\.)?(.+)?wikipedia\.org' ./*.org | wc -l`
+#+caption: KDOC同士のつながり。ビルド時に実行される
+#+begin_src sh :results raw :exports results :wrap no
+  python3 scripts/stats.py zettel
 #+end_src
 
 #+caption: Built Emacs version
