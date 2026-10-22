@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-21 水 23:00 -->
+<!-- 2026-10-23 金 00:32 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 86: errors.Is()の比較ロジックを見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 86: errors.Is()の比較ロジックを見る</h1>
-<div id="outline-container-org8ac1995" class="outline-2">
-<h2 id="org8ac1995"><a href="#org8ac1995">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org8ac1995">
+<div id="outline-container-orgc9aed5e" class="outline-2">
+<h2 id="orgc9aed5e"><a href="#orgc9aed5e">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgc9aed5e">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org467fcee" class="outline-2">
-<h2 id="org467fcee"><a href="#org467fcee">概要</a></h2>
-<div class="outline-text-2" id="text-org467fcee">
+<div id="outline-container-org979e434" class="outline-2">
+<h2 id="org979e434"><a href="#org979e434">概要</a></h2>
+<div class="outline-text-2" id="text-org979e434">
 <p>
 Goのerror.Is()は、2つのエラーが一致するかを判定する関数である。
 </p>
@@ -58,9 +58,9 @@ Goのerror.Is()は、2つのエラーが一致するかを判定する関数で�
 </p>
 </div>
 </div>
-<div id="outline-container-org8863662" class="outline-2">
-<h2 id="org8863662"><a href="#org8863662">ユースケースを見る</a></h2>
-<div class="outline-text-2" id="text-org8863662">
+<div id="outline-container-org6c92a3f" class="outline-2">
+<h2 id="org6c92a3f"><a href="#org6c92a3f">ユースケースを見る</a></h2>
+<div class="outline-text-2" id="text-org6c92a3f">
 <p>
 まずIs()の使い方を理解する。<a href="https://pkg.go.dev/errors">errors package</a>のexampleを見る。
 </p>
@@ -150,9 +150,9 @@ errors.New()が返す構造体*errors.errorStringはUnwrap()、Is()を実装し�
 </p>
 </div>
 </div>
-<div id="outline-container-orgb85d6cf" class="outline-2">
-<h2 id="orgb85d6cf"><a href="#orgb85d6cf">比較ロジック</a></h2>
-<div class="outline-text-2" id="text-orgb85d6cf">
+<div id="outline-container-orgc7eed5e" class="outline-2">
+<h2 id="orgc7eed5e"><a href="#orgc7eed5e">比較ロジック</a></h2>
+<div class="outline-text-2" id="text-orgc7eed5e">
 <p>
 動かして調べる。値や、型名の比較ではないことを確認する。
 </p>
@@ -244,9 +244,9 @@ func main() {
 </p>
 </div>
 </div>
-<div id="outline-container-org81c360a" class="outline-2">
-<h2 id="org81c360a"><a href="#org81c360a">まとめ</a></h2>
-<div class="outline-text-2" id="text-org81c360a">
+<div id="outline-container-orgfbacdc7" class="outline-2">
+<h2 id="orgfbacdc7"><a href="#orgfbacdc7">まとめ</a></h2>
+<div class="outline-text-2" id="text-orgfbacdc7">
 <ul class="org-ul">
 <li>errors.Is()はエラーチェーンをたどったり独自の判定ロジックを適用してくれるが、もっともシンプルな例だと単純に <code>==</code> で比較しているだけにすぎない</li>
 <li><code>error</code> はインターフェースであり、よく見るerrors.New()で作られる変数の型はその実装の1つにすぎない</li>
@@ -254,19 +254,36 @@ func main() {
 </ul>
 </div>
 </div>
-<div id="outline-container-org196ffae" class="outline-2">
-<h2 id="org196ffae"><a href="#org196ffae">関連</a></h2>
-<div class="outline-text-2" id="text-org196ffae">
+<div id="outline-container-org7897791" class="outline-2">
+<h2 id="org7897791"><a href="#org7897791">関連</a></h2>
+<div class="outline-text-2" id="text-org7897791">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>同じかどうかを、中身の値で比べるか指し示す先で比べるかの違い</li>
+</ul>
+
+<p>
+関連。
+</p>
+
 <ul class="org-ul">
 <li>補足: <a href="20231103T214003--kdoc-52-goで構造体がインターフェースを実装しているか確認する__permanent.html#ID-20231103T214003">KDOC 52: Goで構造体がインターフェースを実装しているか確認する</a>。サンプルコードでインターフェースを確認するのに使った</li>
+<li>対比: <a href="20231103T214045--kdoc-53-goで独自定義のエラーをconstにする__permanent.html#ID-20231103T214045">KDOC 53: Goで独自定義のエラーをconstにする</a>。指す先でなく値で比較されるエラーの作り方。errors.Newの代わりに、整数の定義型にErrorメソッドを付けてエラーをconstで定義している</li>
+<li>前提: <a href="20240209T005055--kdoc-82-errorsunwrapを読む__permanent.html#ID-20240209T005055">KDOC 82: errors.Unwrapを読む</a>。エラーチェーンをたどる操作の中身。errors.Unwrapが、Unwrapメソッドを実装していれば呼んで一段外すだけの関数であることを読んでいる</li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org3326dbb" class="outline-2">
-<h2 id="org3326dbb"><a href="#org3326dbb">Backlinks</a></h2>
-<div class="outline-text-2" id="text-org3326dbb">
+<div id="outline-container-org9a08052" class="outline-2">
+<h2 id="org9a08052"><a href="#org9a08052">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org9a08052">
 <ul class="org-ul">
 <li><a href="./20240217T002258--kdoc-96-errorsasの使い方__permanent.html">KDOC 96: errors.As()の使い方</a></li>
+<li><a href="./20251223T085835--kdoc-519-goのmapではキーの値が同じでも型情報が違えば別のものとして扱われる__permanent.html">KDOC 519: Goのmapではキーの値が同じでも型情報が違えば別のものとして扱われる</a></li>
+<li><a href="./20260918T210512--kdoc-626-weakmap-のキーは参照で照合する__permanent.html">KDOC 626: WeakMap のキーは参照で照合する</a></li>
+<li><a href="./20261018T132136--kdoc-709-rubyのcasewhenはeqqで比べる__permanent.html">KDOC 709: Rubyのcase/whenはeqqで比べる</a></li>
 <li><a href="./20261018T141331--kdoc-711-goのインターフェース同士の比較は実行時にpanicすることがある__permanent.html">KDOC 711: Goのインターフェース同士の比較は実行時にpanicすることがある</a></li>
 </ul>
 </div>

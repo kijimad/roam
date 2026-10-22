@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-21 水 23:01 -->
+<!-- 2026-10-23 金 00:33 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 721: S3 の署名付きURLでタグがクエリパラメータで渡せることは明記されていない</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 721: S3 の署名付きURLでタグがクエリパラメータで渡せることは明記されていない</h1>
-<div id="outline-container-org54c3b97" class="outline-2">
-<h2 id="org54c3b97"><a href="#org54c3b97">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org54c3b97">
+<div id="outline-container-org34d2f3b" class="outline-2">
+<h2 id="org34d2f3b"><a href="#org34d2f3b">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org34d2f3b">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,14 +37,14 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org4970aa3" class="outline-2">
-<h2 id="org4970aa3"><a href="#org4970aa3">概要</a></h2>
-<div class="outline-text-2" id="text-org4970aa3">
+<div id="outline-container-orge1d4221" class="outline-2">
+<h2 id="orge1d4221"><a href="#orge1d4221">概要</a></h2>
+<div class="outline-text-2" id="text-orge1d4221">
 <p>
 S3 のアップロード用に署名付きURLを AWS SDK for JavaScript v3 で生成する機会があった。オブジェクトにタグをつける必要があったので、 <code>getSignedUrl</code> に渡す <code>PutObjectCommand</code> の <code>Tagging</code> にタグを指定した。生成したURLのクエリパラメータにタグ(<code>x-amz-tagging</code>)が含まれていて、そのURLでアップロードするとタグが付与された状態でオブジェクトをアップロードできた。
 </p>
 
-<pre class="example" id="org5484748">
+<pre class="example" id="orga54c01e">
 https://example.s3.ap-northeast-1.amazonaws.com/file.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&amp;X-Amz-Credential={cred}%2F20260101%2Fap-northeast-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20260101T000000Z&amp;X-Amz-Expires=600&amp;X-Amz-Signature={sig}&amp;X-Amz-SignedHeaders=host&amp;x-amz-checksum-crc32=AAAAAA%3D%3D&amp;x-amz-sdk-checksum-algorithm=CRC32&amp;x-amz-tagging=key%3Dvalue&amp;x-id=PutObject
 </pre>
 
@@ -89,13 +89,30 @@ JavaScript の SDK は署名付きURLを作るとき、 <code>x-amz-</code> で�
 </div>
 </div>
 </div>
-<div id="outline-container-org0622f99" class="outline-2">
-<h2 id="org0622f99"><a href="#org0622f99">関連</a></h2>
-<div class="outline-text-2" id="text-org0622f99">
+<div id="outline-container-org7747fb2" class="outline-2">
+<h2 id="org7747fb2"><a href="#org7747fb2">関連</a></h2>
+<div class="outline-text-2" id="text-org7747fb2">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>動くことと、仕様として保証されていることは別</li>
+<li>間の道具が変換しているので、下の仕組みの仕様には書かれていない</li>
+</ul>
+
+<p>
+関連。
+</p>
+
 <ul class="org-ul">
 <li>経緯: 以前は S3 がクエリパラメータのタグを無視する不具合があった</li>
 <li>対比: S3 用の SDK はサーバー側暗号化のヘッダだけはクエリパラメータに移さない</li>
 <li>具体例: <code>unhoistableHeaders</code> を指定するとタグをヘッダのまま送れる</li>
+<li>対比: ほかのインフラではどうなっているか</li>
+<li>対比: 署名付きURLなのにHTTPヘッダを必要とする例はあるのか</li>
+<li>類推: <a href="20250210T224551--kdoc-334-トランザクションはネストできない__permanent.html#ID-20250210T224551">KDOC 334: トランザクションはネストできない</a>。上の層の道具が、利用者の指定を下の層の別の形に変換して送っている例。こちらは変換先が仕様に書かれていないが、SAVEPOINT は仕様にある</li>
+<li>対比: <a href="20250902T213738--kdoc-436-mapをランダムに散らしている実装はどこにあるか__permanent.html#ID-20250902T213738">KDOC 436: mapをランダムに散らしている実装はどこにあるか?</a>。保証しない性質に利用者が頼らないよう、わざと崩して示す例</li>
 </ul>
 </div>
 </div>

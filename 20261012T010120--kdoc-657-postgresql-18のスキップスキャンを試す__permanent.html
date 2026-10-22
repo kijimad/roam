@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-21 水 23:00 -->
+<!-- 2026-10-23 金 00:32 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 657: PostgreSQL 18のスキップスキャンを試す</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 657: PostgreSQL 18のスキップスキャンを試す</h1>
-<div id="outline-container-org3fd1e32" class="outline-2">
-<h2 id="org3fd1e32"><a href="#org3fd1e32">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org3fd1e32">
+<div id="outline-container-org116e9a1" class="outline-2">
+<h2 id="org116e9a1"><a href="#org116e9a1">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org116e9a1">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orga6aef20" class="outline-2">
-<h2 id="orga6aef20"><a href="#orga6aef20">概要</a></h2>
-<div class="outline-text-2" id="text-orga6aef20">
+<div id="outline-container-org7956224" class="outline-2">
+<h2 id="org7956224"><a href="#org7956224">概要</a></h2>
+<div class="outline-text-2" id="text-org7956224">
 <p>
 PostgreSQL 18 から、複数列の B-tree インデックスで、先頭の列に条件がないとき、先頭の列の値ごとにインデックスを探し直して、関係のない部分を読み飛ばせるようになった(スキップスキャン)。
 </p>
@@ -106,12 +106,26 @@ xの個別値が多い場合、インデックス全体のスキャンが必要�
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org46581de" class="outline-2">
-<h2 id="org46581de"><a href="#org46581de">関連</a></h2>
-<div class="outline-text-2" id="text-org46581de">
+<div id="outline-container-org12a88d5" class="outline-2">
+<h2 id="org12a88d5"><a href="#org12a88d5">関連</a></h2>
+<div class="outline-text-2" id="text-org12a88d5">
 <p>
-なし。
+抽象。
 </p>
+
+<ul class="org-ul">
+<li>先頭の条件がなくても、取りうる値ごとに探し直せば索引を使える</li>
+<li>探し直す回数が多すぎると、全体を順に読むほうが安くなり、索引は使われない</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>前提: <a href="20251207T091742--kdoc-497-複合インデックスの使用条件を試す__permanent.html#ID-20251207T091742">KDOC 497: 複合インデックスの使用条件を試す</a>。複合インデックスが使われるかは、条件に使う列の組み合わせで決まること</li>
+<li>補足: <a href="20260511T090725--kdoc-580-複合インデックスの順番による差を見る__permanent.html#ID-20260511T090725">KDOC 580: 複合インデックスの順番による差を見る</a>。複合インデックスの列の順番が効率を左右すること</li>
+</ul>
 </div>
 </div>
 </div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-21 水 23:01 -->
+<!-- 2026-10-23 金 00:33 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 713: gofmtはバッファ付きチャネルで同時に開くファイルの数を制限する</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 713: gofmtはバッファ付きチャネルで同時に開くファイルの数を制限する</h1>
-<div id="outline-container-org1f603cc" class="outline-2">
-<h2 id="org1f603cc"><a href="#org1f603cc">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org1f603cc">
+<div id="outline-container-org3763fcc" class="outline-2">
+<h2 id="org3763fcc"><a href="#org3763fcc">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org3763fcc">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org77227ee" class="outline-2">
-<h2 id="org77227ee"><a href="#org77227ee">概要</a></h2>
-<div class="outline-text-2" id="text-org77227ee">
+<div id="outline-container-org0493346" class="outline-2">
+<h2 id="org0493346"><a href="#org0493346">概要</a></h2>
+<div class="outline-text-2" id="text-org0493346">
 <p>
 gofmtは、バッファ付きチャネルをセマフォとして使い、同時に開くファイルの数を200までに制限している。ファイルを開く前にチャネルへ値を送り、閉じたら受け取る。バッファが埋まっていると送信がブロックするので、201個目のファイルは、どれかが閉じるまで開かれない。
 </p>
@@ -90,12 +90,28 @@ func readFile(filename string, info fs.FileInfo, in io.Reader) ([]byte, error) {
 </div>
 </div>
 </div>
-<div id="outline-container-orge5e39e3" class="outline-2">
-<h2 id="orge5e39e3"><a href="#orge5e39e3">関連</a></h2>
-<div class="outline-text-2" id="text-orge5e39e3">
+<div id="outline-container-orga58fff2" class="outline-2">
+<h2 id="orga58fff2"><a href="#orga58fff2">関連</a></h2>
+<div class="outline-text-2" id="text-orga58fff2">
 <p>
-なし。
+抽象。
 </p>
+
+<ul class="org-ul">
+<li>容量の限られた入れ物を使って、同時に動く数を制限する</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>疑問: 制限がないとどうなるか</li>
+<li>疑問: Linter によって違いはあるか</li>
+<li>対比: <a href="20241109T135333--kdoc-279-パイプのバッファはいっぱいになるとwriteをブロックする__permanent.html#ID-20241109T135333">KDOC 279: パイプのバッファはいっぱいになるとwriteをブロックする</a>。どちらも満杯で書き込みが待つ。パイプはデータを運ぶが fdSem は中身を使わず空きの数だけ使う</li>
+<li>類似: <a href="20261014T220427--kdoc-663-リングキューの動作を試す__permanent.html#ID-20261014T220427">KDOC 663: リングキューの動作を試す</a>。決まった大きさの入れ物に出し入れする</li>
+<li>類推: <a href="20261013T200753--kdoc-660-performance-insights-で-vcpu-が重要な理由__permanent.html#ID-20261013T200753">KDOC 660: Performance Insights で vCPU が重要な理由</a>。同時に処理できる数に上限があり、超えた分は待たされる例</li>
+</ul>
 </div>
 </div>
 </div>
