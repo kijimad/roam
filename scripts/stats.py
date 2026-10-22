@@ -1,9 +1,4 @@
-"""リポジトリの統計を数え、org の表で出す。index.org の babel から呼ぶ。
-
-使い方: python3 scripts/stats.py repo|zettel
-  repo   ファイル数・文字数・見出し・git の履歴などの統計
-  zettel KDOC 同士のつながり。KDOC 同士の [[id:...]] と [[denote:...]] のリンクだけを数え、自分へのリンクと KDOC 以外へのリンクは除く
-"""
+"""リポジトリの統計を org の表で出す。使い方: stats.py repo|zettel"""
 
 import glob
 import os
@@ -14,9 +9,10 @@ from collections import Counter
 from datetime import datetime, timedelta
 
 LINK_RE = re.compile(r"\[\[(?:id|denote):(\d{8}T\d{6})")
+# denote-links は自動生成の一覧なので数えない
+DBLOCK_RE = re.compile(r"^#\+BEGIN: denote-links.*?^#\+END:", re.M | re.S | re.I)
 TAG_RE = re.compile(r"__(?:draft_)?(\w+)\.org$")
-# 関連の行: "- ラベル: [[id:...][...]]。説明"
-REL_RE = re.compile(r"^-\s*(?:([^:：\[\n]+?)\s*[:：]\s*)?\[\[(?:id|denote):\d{8}T\d{6}\]\[[^]]*\]\](.*)$", re.M)
+REL_RE = re.compile(r"^-\s*(?:([^\[\n:：]+)[:：])?[^\n]*?\[\[(?:id|denote):\d{8}T\d{6}\]\[[^]]*\]\](.*)$", re.M)
 CATEGORY = {"permanent": "永続メモ", "book": "文献メモ", "essay": "エッセイ", "project": "プロジェクトメモ", "structure": "構造化メモ"}
 
 
@@ -29,7 +25,6 @@ def table(header, rows):
 
 
 def components(keys, out):
-    """リンクを向きなしで見て、つながっているまとまりの大きさを返す。"""
     adj = {k: set() for k in keys}
     for k, v in out.items():
         for x in v:
@@ -144,7 +139,7 @@ def repo():
 
 def zettel():
     files = {re.match(r"(\d{8}T\d{6})", f).group(1): f for f in glob.glob("*--kdoc-*.org")}
-    texts = {k: open(f, encoding="utf-8").read() for k, f in files.items()}
+    texts = {k: DBLOCK_RE.sub("", open(f, encoding="utf-8").read()) for k, f in files.items()}
     out = {k: {x for x in LINK_RE.findall(t) if x in files and x != k} for k, t in texts.items()}
     inn = Counter(x for v in out.values() for x in v)
     n = len(files)
@@ -177,13 +172,14 @@ def zettel():
     year_ago = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
     old_links = sum(1 for k, v in out.items() for x in v if x[:8] < year_ago and k[:8] >= year_ago)
     new_links = sum(len(v) for k, v in out.items() if k[:8] >= year_ago)
-    rels = [m for k in files for m in REL_RE.finditer(texts[k].split("* 関連", 1)[-1])]
+    rels = [m for k in files if "* 関連" in texts[k] for m in REL_RE.finditer(re.split(r"(?m)^\* ", texts[k].split("* 関連", 1)[1])[0])]
     described = sum(1 for m in rels if m.group(2).strip(" 。.\t"))
     table(["つながりの形", "値"], [
         ["つながったまとまりの数(孤立を含む)", len(sizes)],
         ["最大のまとまりに入るKDOC", f"{sizes[0]} ({sizes[0] * 100 // n}%)"],
         ["構造化メモからリンクされるKDOC", ratio(k for k in files if k in hubbed)],
         ["関連のリンクのうち説明があるもの", f"{described} / {len(rels)}"],
+        ["古いメモから新しいメモへのリンク(プロジェクト・構造化メモを除く)", sum(1 for k, v in out.items() if tag[k] not in ("project", "structure") for x in v if x > k)],
         ["直近1年のKDOCのリンクのうち1年以上前のメモへのもの", f"{old_links} / {new_links}"],
     ])
 
