@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 182: ブロックサイズを増やすとシステムコールが減って速くなる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 182: ブロックサイズを増やすとシステムコールが減って速くなる</h1>
+<div id="outline-container-org5118df2" class="outline-2">
+<h2 id="org5118df2"><a href="#org5118df2">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org5118df2">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-06-06 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-06-10 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb2a0c8c" class="outline-2">
+<h2 id="orgb2a0c8c"><a href="#orgb2a0c8c">概要</a></h2>
+<div class="outline-text-2" id="text-orgb2a0c8c">
+<p>
+すべてのディスクI/Oは、ブロックごとに処理される。本だけ見てもあまりわからないので、コマンドでミニマルに試して理解を深める。
+</p>
+</div>
+</div>
+<div id="outline-container-org930e653" class="outline-2">
+<h2 id="org930e653"><a href="#org930e653">方法</a></h2>
+<div class="outline-text-2" id="text-org930e653">
+<ul class="org-ul">
+<li><code>dd</code> はファイルをコピーするコマンド。オプションを細かく指定できる</li>
+<li><code>/dev/zero</code> は、0を無限に返す仮想デバイス</li>
+</ul>
+
+<p>
+↓まず、ブロックサイズ1で保存してみる。8秒かかった。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><code>dd bs=1 count=2097152 if=/dev/zero of=tmp
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>2097152+0 records in
+2097152+0 records out
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 8.1858 s, 256 kB/s
+</code></pre>
+</div>
+
+<p>
+↓ブロックサイズ1024にして、コピーしてみる。↑と同じサイズだが、とても早い。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>アラインメントされているブロックサイズ</label><pre class="src src-shell"><code>dd bs=1024 count=2048 if=/dev/zero of=tmp
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>2048+0 records in
+2048+0 records out
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0131229 s, 160 MB/s
+</code></pre>
+</div>
+
+<p>
+↓アラインメントしないバージョン。これで遅くなるはずなのだが、↑とあまり変わらなかった。サイズの問題だろうか。もっと大きなサイズにすると差が見えてくるとか。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>アラインメントしないブロックサイズ</label><pre class="src src-shell"><code>dd bs=1025 count=2048 if=/dev/zero of=tmp
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>2048+0 records in
+2048+0 records out
+2099200 bytes (2.1 MB, 2.0 MiB) copied, 0.0131522 s, 160 MB/s
+</code></pre>
+</div>
+
+<p>
+システムコールの回数を比較する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>システムコールの回数の比較</label><pre class="src src-shell"><code>strace dd bs=1 count=2097152 if=/dev/zero of=tmp 2&gt;&amp;1 | wc -l
+strace dd bs=1024 count=2048 if=/dev/zero of=tmp 2&gt;&amp;1 | wc -l
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>4194377
+4169
+</code></pre>
+</div>
+
+<p>
+というわけで、ブロックサイズを増やすとパフォーマンスが改善するが、それはシステムコール数が減ったからだと考えられる。
+</p>
+</div>
+</div>
+<div id="outline-container-org8f1fc68" class="outline-2">
+<h2 id="org8f1fc68"><a href="#org8f1fc68">関連</a></h2>
+<div class="outline-text-2" id="text-org8f1fc68">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>1回あたりの処理単位が小さすぎると、回数ぶんの固定コストで全体が極端に遅くなる</li>
+<li>理屈で予想した差が、小さな実験では表れないことがある</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>補足: <a href="20240225T174224--kdoc-109-straceで発行システムコールを調べられる__permanent.html#ID-20240225T174224">KDOC 109: straceで発行システムコールを調べられる</a>。straceの使い方</li>
+<li>検証: <a href="20240601T120632--kdoc-181-『linuxシステムプログラミング』__book.html#ID-20240601T120632">KDOC 181: 『Linuxシステムプログラミング』</a>。例を試した</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orga04e5b5" class="outline-2">
+<h2 id="orga04e5b5"><a href="#orga04e5b5">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orga04e5b5">
+<ul class="org-ul">
+<li><a href="./20250618T232434--kdoc-398-gormフックはレシーバーがnilになる可能性がある__permanent.html">KDOC 398: GORMフックはレシーバーがnilになる可能性がある</a></li>
+<li><a href="./20251106T193702--kdoc-485-asepriteのコマンドラインで画像を1枚に結合し対応jsonを作れる__permanent.html">KDOC 485: asepriteのコマンドラインで画像を1枚に結合し対応JSONを作れる</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

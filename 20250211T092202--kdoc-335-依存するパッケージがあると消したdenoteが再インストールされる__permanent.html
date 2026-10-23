@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:10 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 335: 依存するパッケージがあると消したdenoteが再インストールされる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 335: 依存するパッケージがあると消したdenoteが再インストールされる</h1>
+<div id="outline-container-org5f4e800" class="outline-2">
+<h2 id="org5f4e800"><a href="#org5f4e800">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org5f4e800">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-02-11 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-02-17 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org3cf89c7" class="outline-2">
+<h2 id="org3cf89c7"><a href="#org3cf89c7">概要</a></h2>
+<div class="outline-text-2" id="text-org3cf89c7">
+<p>
+Emacsでパッケージのバージョンを固定する必要があった。 <code>use-package</code> でインストールするのをやめて、コミットしておいて直接ファイルを読み込むようにしたかった。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>変更内容</label><pre class="src src-diff"><code>- (use-package denote
+-   :straight (:host github :repo "protesilaos/denote"))
++ (add-to-list 'load-path "~/.emacs.d/vendor/denote-2.0.0")
++ (require 'denote)
+</code></pre>
+</div>
+
+<p>
+が、denoteが復活してしまうことに気づいた。削除してもインストールが走って新しいバージョンが読まれてしまう。
+</p>
+
+<p>
+原因はdenoteに依存しているパッケージがあるからだった。依存元パッケージも自動でインストールされるようだ。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>削除したら復活しなくなった</label><pre class="src src-emacs-lisp"><code>(use-package denote-menu
+  :straight (:host github :repo "namilus/denote-menu"))
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org915d748" class="outline-2">
+<h2 id="org915d748"><a href="#org915d748">関連</a></h2>
+<div class="outline-text-2" id="text-org915d748">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>消したはずのものが、それに依存する別のものによって戻ってくる</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<p>
+なし。
+</p>
+</div>
+</div>
+<div id="outline-container-orga952ab9" class="outline-2">
+<h2 id="orga952ab9"><a href="#orga952ab9">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orga952ab9">
+<ul class="org-ul">
+<li><a href="./20261018T122450--kdoc-705-emacsのパッケージの依存はpackage-requiresヘッダで決まる__permanent.html">KDOC 705: Emacsのパッケージの依存はPackage-Requiresヘッダで決まる</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

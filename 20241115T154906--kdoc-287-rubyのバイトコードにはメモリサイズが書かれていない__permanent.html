@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 287: Rubyのバイトコードにはメモリサイズが書かれていない</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 287: Rubyのバイトコードにはメモリサイズが書かれていない</h1>
+<div id="outline-container-org93e5069" class="outline-2">
+<h2 id="org93e5069"><a href="#org93e5069">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org93e5069">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-11-15 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-11-19 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org8b8c4ff" class="outline-2">
+<h2 id="org8b8c4ff"><a href="#org8b8c4ff">概要</a></h2>
+<div class="outline-text-2" id="text-org8b8c4ff">
+<p>
+仮想マシンの機械語をバイトコードと呼ぶ。バイトコードは抽象的なマシンなので、メモリを番地レベルで考えない。メモリサイズが書かれてないのを実際のバイトコードを見て確認する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Rubyで配列をバイトコードに変換する</label><pre class="src src-ruby"><code>puts RubyVM::InstructionSequence.compile('[1, 2, 3, "a", "b"]').disasm
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>== disasm: #&lt;ISeq:&lt;compiled&gt;@&lt;compiled&gt;:1 (1,0)-(1,19)&gt; (catch: FALSE)
+0000 putobject_INT2FIX_1_                                             (   1)[Li]
+0001 putobject                              2
+0003 putobject                              3
+0005 putstring                              "a"
+0007 putstring                              "b"
+0009 newarray                               5
+0011 leave
+</code></pre>
+</div>
+
+<p>
+単純にスタックに積むことだけが書かれているのを確認できた。
+</p>
+</div>
+</div>
+<div id="outline-container-org2f95596" class="outline-2">
+<h2 id="org2f95596"><a href="#org2f95596">関連</a></h2>
+<div class="outline-text-2" id="text-org2f95596">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>細部を実行する側が引き受ける形式では、命令にデータの大きさを書かずに済む</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>参照: <a href="https://ja.wikipedia.org/wiki/%E3%83%90%E3%82%A4%E3%83%88%E3%82%B3%E3%83%BC%E3%83%89">バイトコード - Wikipedia</a></li>
+<li>動機: <a href="20241104T143835--kdoc-272-バイトコード変換は型情報が必須ではない__permanent.html#ID-20241104T143835">KDOC 272: バイトコード変換は型情報が必須ではない</a>。これを確かめた</li>
+<li>対比: <a href="20241104T093353--kdoc-271-動的型付け言語は型情報がないため機械語に変換しにくい__permanent.html#ID-20241104T093353">KDOC 271: 動的型付け言語は型情報がないため機械語に変換しにくい</a>。機械語の側では、データのサイズを明確に決めないといけないという逆の面</li>
+<li>補足: <a href="20240428T105206--kdoc-144-risc-v-32ビットのcではintとfloatは4バイト、doubleは8バイト、charは1バイト__permanent.html#ID-20240428T105206">KDOC 144: RISC-V 32ビットのCではintとfloatは4バイト、doubleは8バイト、charは1バイト</a>。機械語の層ではデータ型ごとにサイズが具体的に決まっている例</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

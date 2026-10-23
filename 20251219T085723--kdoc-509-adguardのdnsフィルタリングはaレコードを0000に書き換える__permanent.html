@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 509: AdGuardのDNSフィルタリングはAレコードを0.0.0.0に書き換える</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 509: AdGuardのDNSフィルタリングはAレコードを0.0.0.0に書き換える</h1>
+<div id="outline-container-orge1acad1" class="outline-2">
+<h2 id="orge1acad1"><a href="#orge1acad1">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orge1acad1">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-12-20 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-12-20 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orga029454" class="outline-2">
+<h2 id="orga029454"><a href="#orga029454">概要</a></h2>
+<div class="outline-text-2" id="text-orga029454">
+<p>
+AdGuardで、DNSフィルタリングされている様子を見る。
+</p>
+
+<p>
+最初に通常のDNSレスポンスを確認する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>通常のレスポンス</label><pre class="src src-shell"><code>dig google.com
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>
+; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; google.com
+;; global options: +cmd
+;; Got answer:
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 20568
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;google.com.			IN	A
+
+;; ANSWER SECTION:
+google.com.		272	IN	A	172.217.174.110 👈
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Fri Dec 19 23:15:30 JST 2025
+;; MSG SIZE  rcvd: 55
+
+</code></pre>
+</div>
+
+<p>
+次に、フィルタリングされているドメインへのDNSレスポンスを確認する。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>フィルタリング設定しているドメイン。0.0.0.0に書き換えられている</label><pre class="src src-shell"><code>dig x.com
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>
+; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; x.com
+;; global options: +cmd
+;; Got answer:
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 7283
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;x.com.				IN	A
+
+;; ANSWER SECTION:
+x.com.			10	IN	A	0.0.0.0 👈
+
+;; Query time: 112 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Fri Dec 19 08:58:38 JST 2025
+;; MSG SIZE  rcvd: 50
+
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org6762e07" class="outline-2">
+<h2 id="org6762e07"><a href="#org6762e07">関連</a></h2>
+<div class="outline-text-2" id="text-org6762e07">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>問い合わせへの答えを無効な値に差し替えて、利用を止める</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>補足: <a href="20241118T203644--kdoc-295-lanでdnsフィルタリングする流れを見る__permanent.html#ID-20241118T203644">KDOC 295: LANでDNSフィルタリングする流れを見る</a>。を補足する</li>
+<li>追加調査: AdGuardでAレコードを上書きしている箇所を調べる</li>
+<li>補足: <a href="20241115T185022--kdoc-288-dnsフィルタリングで有害コンテンツをブロックする__essay.html#ID-20241115T185022">KDOC 288: DNSフィルタリングで有害コンテンツをブロックする</a>。DNSフィルタリングを使う動機</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orga094e20" class="outline-2">
+<h2 id="orga094e20"><a href="#orga094e20">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orga094e20">
+<ul class="org-ul">
+<li><a href="./20251220T195006--kdoc-512-adguardの強制セーフサーチはcnameでセーフサーチ用サーバに向ける__permanent.html">KDOC 512: AdGuardの強制セーフサーチはCNAMEでセーフサーチ用サーバに向ける</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

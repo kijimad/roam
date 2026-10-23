@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 53: Goの独自エラーはプリミティブ型の定義型にするとconstにできる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 53: Goの独自エラーはプリミティブ型の定義型にするとconstにできる</h1>
+<p>
+Goではプログラマを縛る方法が少なく、開発者を信用し性善説で行く方針になっている。
+</p>
+
+<p>
+constの制約が大きく、例えば独自定義のエラーを定義するとき、以下のように書けない。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>インスタンスや実行するまで値が決まらないものはconstに指定できない</label><pre class="src src-go"><code>const errNotFound = errors.New("not found")
+</code></pre>
+</div>
+
+<p>
+いっぽうvarで定義すると簡単にできる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>varで定義すると簡単にできる</label><pre class="src src-go"><code>var errNotFound = errors.New("not found")
+</code></pre>
+</div>
+
+<p>
+しかしvarなので、書き換えができてしまう。これを、書き換えられないようにするには、というのが本題である。以下のようにする。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>プリミティブ型の定義型を作って、そのインスタンスを入れる</label><pre class="src src-go"><code>// プリミティブ型の定義型を作る
+type errNotFound int
+// メソッドを定義してerrorインターフェースを満たす
+func (e errNotFound) Error() string {
+        return "not found error"
+}
+// インスタンス(プリミティブ型)をconstにする
+const (
+  ErrNotFound errNotFound = 0
+)
+</code></pre>
+</div>
+<div id="outline-container-org58431cb" class="outline-2">
+<h2 id="org58431cb"><a href="#org58431cb">関連</a></h2>
+<div class="outline-text-2" id="text-org58431cb">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>書き換え不可にしたいが制約上そのまま指定できないので、表現を変えて制約に合わせる</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>参照: <a href="https://www.oreilly.co.jp/books/9784873119694/">実用 Go言語</a>で解説されていた</li>
+<li>類似: <a href="20231103T214003--kdoc-52-goは-var-インタフェース名-構造体初期化-で実装を確認できる__permanent.html#ID-20231103T214003">KDOC 52: Goは var _ インタフェース名 = 構造体初期化 で実装を確認できる</a>。コンパイラの型検査を利用して、意図した性質を保たせるGoのイディオム。 <code>var _</code> でインターフェースに代入して、構造体が実装しているかを確かめる方法を見ている</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb3099f7" class="outline-2">
+<h2 id="orgb3099f7"><a href="#orgb3099f7">Backlinks</a></h2>
+<div class="outline-text-2" id="text-orgb3099f7">
+<ul class="org-ul">
+<li><a href="./20240209T005055--kdoc-82-errorsunwrapはunwrapを1回呼ぶだけで単体では役に立たない__permanent.html">KDOC 82: errors.UnwrapはUnwrap()を1回呼ぶだけで単体では役に立たない</a></li>
+<li><a href="./20240210T220439--kdoc-86-errorsisはで比べ、errorsnewのエラーはアドレスで一致する__permanent.html">KDOC 86: errors.Is()は==で比べ、errors.Newのエラーはアドレスで一致する</a></li>
+<li><a href="./20250705T205631--kdoc-419-goのconstはコンパイル時に埋め込まれ、varは参照される__permanent.html">KDOC 419: Goのconstはコンパイル時に埋め込まれ、varは参照される</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

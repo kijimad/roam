@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 450: Goの仕様ではuint・int・uintptrのサイズは実装依存である</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 450: Goの仕様ではuint・int・uintptrのサイズは実装依存である</h1>
+<div id="outline-container-orgc063f1b" class="outline-2">
+<h2 id="orgc063f1b"><a href="#orgc063f1b">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgc063f1b">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-10-17 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-10-22 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org800a110" class="outline-2">
+<h2 id="org800a110"><a href="#org800a110">概要</a></h2>
+<div class="outline-text-2" id="text-org800a110">
+<p>
+同じ型であっても、ビルド対象となるCPUアーキテクチャによってメモリサイズ変動する型がある。Goではどうなっているだろうか。仕様を見る。
+</p>
+
+<p>
+サイズが実装依存の型。
+</p>
+
+<blockquote>
+<p>
+There is also a set of predeclared integer types with implementation-specific sizes:
+uint     either 32 or 64 bits
+int      same size as uint
+uintptr  an unsigned integer large enough to store the uninterpreted bits of a pointer value
+</p>
+
+<p>
+<a href="https://go.dev/ref/spec#Numeric_types">The Go Programming Language Specification - The Go Programming Language</a>
+</p>
+</blockquote>
+
+<p>
+サイズが固定の型。
+</p>
+
+<blockquote>
+<p>
+An integer, floating-point, or complex type represents the set of integer, floating-point, or complex values, respectively. They are collectively called numeric types. The predeclared architecture-independent numeric types are:
+</p>
+
+<p>
+uint8       the set of all unsigned  8-bit integers (0 to 255)
+uint16      the set of all unsigned 16-bit integers (0 to 65535)
+uint32      the set of all unsigned 32-bit integers (0 to 4294967295)
+uint64      the set of all unsigned 64-bit integers (0 to 18446744073709551615)
+(略&hellip;)
+</p>
+
+<p>
+<a href="https://go.dev/ref/spec#Numeric_types">The Go Programming Language Specification - The Go Programming Language</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-org3f96f81" class="outline-2">
+<h2 id="org3f96f81"><a href="#org3f96f81">関連</a></h2>
+<div class="outline-text-2" id="text-org3f96f81">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>同じ名前の型でも、動かす環境で大きさが変わるものと変わらないものがある</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>類推: ほかのプログラミング言語でどうなっているか</li>
+<li>類推: <a href="20250902T225938--kdoc-449-32bitマシンでint64型を使うとどうなるのか__permanent.html#ID-20250902T225938">KDOC 449: 32bitマシンでint64型を使うとどうなるのか?</a>。メモリサイズが違うとどうなるかを見る</li>
+<li>類似: <a href="20240428T105206--kdoc-144-risc-v-32ビットのcではintとfloatは4バイト、doubleは8バイト、charは1バイト__permanent.html#ID-20240428T105206">KDOC 144: RISC-V 32ビットのCではintとfloatは4バイト、doubleは8バイト、charは1バイト</a>。型によって占める大きさが違うことを確かめた例</li>
+<li>補足: <a href="20250703T174843--kdoc-418-32-<<-uint0->>-63-でuintのサイズを定数として判定できる__permanent.html#ID-20250703T174843">KDOC 418: 32 &lt;&lt; (^uint(0) &gt;&gt; 63) でuintのサイズを定数として判定できる</a>。環境で変わる型の大きさを、プログラムの中で判定する方法</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org2a3866f" class="outline-2">
+<h2 id="org2a3866f"><a href="#org2a3866f">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org2a3866f">
+<ul class="org-ul">
+<li><a href="./20250902T230022--kdoc-451-int64は命令セットによってビット長を変えたくない値に使う__permanent.html">KDOC 451: int64は命令セットによってビット長を変えたくない値に使う</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 312: Cではchar同士の演算も汎整数拡張でintとして計算される</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 312: Cではchar同士の演算も汎整数拡張でintとして計算される</h1>
+<div id="outline-container-orgf1cb4bf" class="outline-2">
+<h2 id="orgf1cb4bf"><a href="#orgf1cb4bf">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf1cb4bf">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-11-27 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2024-11-30 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org31ce1c5" class="outline-2">
+<h2 id="org31ce1c5"><a href="#org31ce1c5">概要</a></h2>
+<div class="outline-text-2" id="text-org31ce1c5">
+<p>
+汎整数拡張は、intが元の型のすべての値を表現できる場合はintに変換し、そうでない場合はunsigned intに変換すること。
+</p>
+
+<p>
+確かめる。
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>char*charの結果が200になる。もしcharの範囲で計算していたら127より大きい計算結果を表現できないはずである</label><pre class="src src-C"><code>signed char result1, c1, c2, c3;
+signed int result2;
+c1 = 100;
+c2 = 2;
+result1 = c1 * c2;
+result2 = c1 * c2;
+printf("char: %d\n", result1);
+printf("int: %d\n", result2);
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>char: -56
+int: 200
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdae9cf7" class="outline-2">
+<h2 id="orgdae9cf7"><a href="#orgdae9cf7">関連</a></h2>
+<div class="outline-text-2" id="text-orgdae9cf7">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>途中の計算は自動で広い範囲に広げられ、狭い入れ物に戻すとあふれる</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>類似: <a href="20240428T105206--kdoc-144-risc-v-32ビットのcではintとfloatは4バイト、doubleは8バイト、charは1バイト__permanent.html#ID-20240428T105206">KDOC 144: RISC-V 32ビットのCではintとfloatは4バイト、doubleは8バイト、charは1バイト</a>。型ごとの占有量が、扱える値の範囲の上限を決める例</li>
+<li>動機: <a href="20241117T002732--kdoc-293-『超例解linuxカーネルプログラミング』__book.html#ID-20241117T002732">KDOC 293: 『超例解Linuxカーネルプログラミング』</a>。で知った仕様を確かめた</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org82285da" class="outline-2">
+<h2 id="org82285da"><a href="#org82285da">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org82285da">
+<ul class="org-ul">
+<li><a href="./20260411T142934--kdoc-563-キャリーフラグは桁あふれ、オーバーフローフラグは符号の誤りで立つ__permanent.html">KDOC 563: キャリーフラグは桁あふれ、オーバーフローフラグは符号の誤りで立つ</a></li>
+<li><a href="./20260425T130441--kdoc-572-『typescript実力強化書』__book.html">KDOC 572: 『TypeScript実力強化書』</a></li>
+<li><a href="./20261018T132132--kdoc-706-rubyのdate同士の引き算はrationalを返す__permanent.html">KDOC 706: RubyのDate同士の引き算はRationalを返す</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

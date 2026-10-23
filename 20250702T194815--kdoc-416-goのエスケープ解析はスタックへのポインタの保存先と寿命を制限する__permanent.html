@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:12 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 416: Goのエスケープ解析はスタックへのポインタの保存先と寿命を制限する</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 416: Goのエスケープ解析はスタックへのポインタの保存先と寿命を制限する</h1>
+<div id="outline-container-orgd5d8437" class="outline-2">
+<h2 id="orgd5d8437"><a href="#orgd5d8437">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgd5d8437">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-07-20 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2025-07-24 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org795da3e" class="outline-2">
+<h2 id="org795da3e"><a href="#org795da3e">概要</a></h2>
+<div class="outline-text-2" id="text-org795da3e">
+<p>
+Goのドキュメントにヒープエスケープの「不変条件」が書かれていたので、見る。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-git-permalink"><code>https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/cmd/compile/internal/escape/escape.go#L20-L29
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-go"><code>// Escape analysis.
+//
+// Here we analyze functions to determine which Go variables
+// (including implicit allocations such as calls to "new" or "make",
+// composite literals, etc.) can be allocated on the stack. The two
+// key invariants we have to ensure are: (1) pointers to stack objects
+// cannot be stored in the heap, and (2) pointers to a stack object
+// cannot outlive that object (e.g., because the declaring function
+// returned and destroyed the object's stack frame, or its space is
+// reused across loop iterations for logically distinct variables).
+</code></pre>
+</div>
+
+<p>
+2つの不変条件。
+</p>
+
+<ul class="org-ul">
+<li>(1)スタックオブジェクトへのポインタはヒープに保存できない</li>
+<li>(2)スタックオブジェクトへのポインタはそのオブジェクトより長生きできない
+<ul class="org-ul">
+<li>関数を抜けるとオブジェクトのスタックフレームは解放される。もしくは解放されたスペースがループ内で論理的に異なる変数として再利用される</li>
+</ul></li>
+</ul>
+
+<p>
+つまり、保存場所とポインタ先の関係、スタックオブジェクトとスタックオブジェクトのライフタイムの関係、に関する原則と解釈した。
+</p>
+
+<ul class="org-ul">
+<li>(1) 保存場所とポインタ先の問題(空間)
+<ul class="org-ul">
+<li>ルール: スタックオブジェクトへのポインタは、ヒープ領域に保存してはならない。</li>
+<li>理由: ヒープにあるデータは、関数呼び出しを超えて長生きする可能性がある。しかし、それが指し示す先のスタックオブジェクトは、関数を抜けると解放される。結果、ヒープ上には実体のないポインタ（ダングリングポインタ）が残る</li>
+<li>解決策: コンパイラは、ヒープに保存されるポインタが指す先のオブジェクトもヒープにエスケープさせる。これによってヒープからヒープを指す状態にする</li>
+</ul></li>
+<li>(2) ポインタ「寿命」の問題(時間)
+<ul class="org-ul">
+<li>ルール: スタックオブジェクトへのポインタは、そのオブジェクトのライフタイムを超えて存在してはならない</li>
+<li>理由: 関数を抜けるとスタックオブジェクトは消える。そのポインタが残るとダングリングポインタとなる</li>
+<li>解決策: コンパイラは、ポインタがオブジェクトのライフタイムを超えて使われる可能性を検知したら、そのオブジェクト自体を最初からヒープに確保する</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org75be91c" class="outline-2">
+<h2 id="org75be91c"><a href="#org75be91c">関連</a></h2>
+<div class="outline-text-2" id="text-org75be91c">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>寿命の短いものを、寿命の長いものから参照してはならない</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>前提: <a href="20240511T182850--kdoc-172-関数呼び出しで起きていることを見る__permanent.html#ID-20240511T182850">KDOC 172: 関数呼び出しで起きていることを見る</a>。不変条件の理由になる、関数を抜けるとスタックフレームが片付けられるしくみ</li>
+<li>同期: <a href="20250630T185540--kdoc-411-スタックはcpuレベルで扱い、ヒープはosや言語処理系が扱う__permanent.html#ID-20250630T185540">KDOC 411: スタックはCPUレベルで扱い、ヒープはOSや言語処理系が扱う</a>。調べるきっかけになった</li>
+<li>具体例: <a href="20250701T174437--kdoc-413-goではポインタを返すローカル変数がヒープに移される__permanent.html#ID-20250701T174437">KDOC 413: Goではポインタを返すローカル変数がヒープに移される</a>。エスケープする具体例</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

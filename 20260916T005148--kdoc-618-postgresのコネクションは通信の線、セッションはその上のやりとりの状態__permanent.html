@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:10 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 618: Postgresのコネクションは通信の線、セッションはその上のやりとりの状態</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 618: Postgresのコネクションは通信の線、セッションはその上のやりとりの状態</h1>
+<div id="outline-container-org74c67fd" class="outline-2">
+<h2 id="org74c67fd"><a href="#org74c67fd">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org74c67fd">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-17 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-09-17 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org52d4dff" class="outline-2">
+<h2 id="org52d4dff"><a href="#org52d4dff">概要</a></h2>
+<div class="outline-text-2" id="text-org52d4dff">
+<p>
+セッションとコネクションはWeb開発で頻出するキーワードだが、DBでの意味を調べた。
+</p>
+
+<blockquote>
+<p>
+Connection
+</p>
+
+<p>
+An established line of communication between a client process and a backend process, usually over a network, supporting a session. This term is sometimes used as a synonym for session.
+</p>
+
+<p>
+<a href="https://www.postgresql.org/docs/16/glossary.html">PostgreSQL: Documentation: 16: Appendix M. Glossary</a>
+</p>
+</blockquote>
+
+<p>
+同義語として扱われることがあると書かれている。
+</p>
+
+<p>
+コネクションはクライアントプロセスとバックエンドプロセスの間にあるコミュニケーションの線、セッションはコネクション上でやりとりを成立させる状態のことである。
+</p>
+
+<blockquote>
+<p>
+Session
+</p>
+
+<p>
+A state that allows a client and a backend to interact, communicating over a connection.
+</p>
+
+<p>
+<a href="https://www.postgresql.org/docs/16/glossary.html">PostgreSQL: Documentation: 16: Appendix M. Glossary</a>
+</p>
+</blockquote>
+</div>
+</div>
+<div id="outline-container-orgc9af06c" class="outline-2">
+<h2 id="orgc9af06c"><a href="#orgc9af06c">関連</a></h2>
+<div class="outline-text-2" id="text-orgc9af06c">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>通り道と、その上で成り立つやりとりの状態の区別</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>類推: <a href="20260915T210255--kdoc-616-prisma-は効率的なrlsをサポートしてない__permanent.html#ID-20260915T210255">KDOC 616: Prisma は効率的なRLSをサポートしてない</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org6eac1cb" class="outline-2">
+<h2 id="org6eac1cb"><a href="#org6eac1cb">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org6eac1cb">
+<ul class="org-ul">
+<li><a href="./20261017T095602--kdoc-668-中断して残ったmysqlのトランザクションはスレッドをkillして終わらせる__permanent.html">KDOC 668: 中断して残ったMySQLのトランザクションはスレッドをkillして終わらせる</a></li>
+<li><a href="./20261022T225730--kdoc-723-2つのものの違いを調べたメモをまとめる__draft_structure.html">KDOC 723: 2つのものの違いを調べたメモをまとめる</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

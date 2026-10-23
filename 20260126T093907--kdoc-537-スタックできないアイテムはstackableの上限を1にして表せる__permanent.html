@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 537: スタックできないアイテムはStackableの上限を1にして表せる</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 537: スタックできないアイテムはStackableの上限を1にして表せる</h1>
+<div id="outline-container-org388ae27" class="outline-2">
+<h2 id="org388ae27"><a href="#org388ae27">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org388ae27">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-03-15 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-03-15 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org25f01cb" class="outline-2">
+<h2 id="org25f01cb"><a href="#org25f01cb">概要</a></h2>
+<div class="outline-text-2" id="text-org25f01cb">
+<p>
+ECSを使ったゲーム開発において、アイテムをどう設計するか考える。
+</p>
+
+<p>
+要件はこうだ。
+</p>
+
+<ul class="org-ul">
+<li>武器や防具はスタック(個数をまとめる)できない。武器や防具は同じ種類のものでもそれぞれパラメータが異なる設定にしているため、まとめられない</li>
+<li>拾ったときに、スタック可能アイテムであれば自動的にまとめられて個数が増える</li>
+<li>アイテムの状態には、フィールド上に存在、インベントリ内があり、それぞれのアクション(拾う、捨てる、投げる、使う、売買する&hellip;)で変化する</li>
+</ul>
+
+<pre class="example" id="orgee7bb35">
+--インベントリ内--
+
+- 薬草 x4
+- 鉄の剣
+  - 品質: C
+  - 攻撃力: 4
+- 鉄の剣
+  - 品質: A
+  - 攻撃力: 6
+</pre>
+
+<p>
+最初、 <code>Stackable</code> のようなコンポーネントを定義して、スタックできるものだけに付与するのがきれいだと考えた。しかしそうするとアイテム関連の処理すべてで持っているか持ってないかで分岐を書かないといけないことに気づいた。なので、Stackableに上限を設定して、1つしか持てないアイテムには上限を1にした。これによって、条件分岐なく書いた。コンポーネントの名前と一致しなくなりリネームが必要だが、シンプルに書ける。
+</p>
+
+<p>
+スタックできるアイテムとできないアイテムのふるまいが変わることはほとんどない。単にインベントリでの表記の問題だった。
+</p>
+</div>
+</div>
+<div id="outline-container-org73ec7a0" class="outline-2">
+<h2 id="org73ec7a0"><a href="#org73ec7a0">関連</a></h2>
+<div class="outline-text-2" id="text-org73ec7a0">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>別扱いが要りそうに見えた2種類の違いが、見せ方の段階だけに閉じていた</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>前提: <a href="20231128T074518--kdoc-59-ecsを使ってrpgを作る__project.html#ID-20231128T074518">KDOC 59: ECSを使ってRPGを作る</a>。スタックできるアイテムを扱う同じゲーム</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>

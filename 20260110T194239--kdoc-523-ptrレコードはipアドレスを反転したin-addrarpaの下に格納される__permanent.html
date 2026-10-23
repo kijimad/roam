@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-10-24 土 01:11 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 523: PTRレコードはIPアドレスを反転したin-addr.arpaの下に格納される</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 523: PTRレコードはIPアドレスを反転したin-addr.arpaの下に格納される</h1>
+<div id="outline-container-orgf826ec8" class="outline-2">
+<h2 id="orgf826ec8"><a href="#orgf826ec8">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgf826ec8">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-01-10 貴島</li>
+</ul></li>
+<li>レビュー
+<ul class="org-ul">
+<li class="on"><input type='checkbox' checked='checked' /> 2026-02-01 貴島</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb9f548e" class="outline-2">
+<h2 id="orgb9f548e"><a href="#orgb9f548e">概要</a></h2>
+<div class="outline-text-2" id="text-orgb9f548e">
+<p>
+DNSのPTRレコードはIPアドレスからドメイン名の逆引きに使う。逆引きすることでメールの送信元が正当かを判断したりするのだという。
+</p>
+
+<blockquote>
+<p>
+DNSのAレコードは与えられたドメイン名の下に格納されますが、DNSのPTRレコードはIPアドレスの下に格納されます — 反転して、「.in-addr.arpa」が追加されます。たとえば、IPアドレス192.0.2.255のPTRレコードは、「255.2.0.192.in-addr.arpa」の下に格納されます。
+</p>
+
+<p>
+<a href="https://www.cloudflare.com/ja-jp/learning/dns/dns-records/dns-ptr-record/">DNS PTRレコードとは？ | Cloudflare</a>
+</p>
+</blockquote>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>-x は逆引き形式に変換する</label><pre class="src src-shell"><code>dig -x 8.8.8.8
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>
+; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; -x 8.8.8.8
+;; global options: +cmd
+;; Got answer:
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 60423
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;8.8.8.8.in-addr.arpa.		IN	PTR
+
+;; ANSWER SECTION:
+8.8.8.8.in-addr.arpa.	5273	IN	PTR	dns.google. 👈
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sat Jan 10 20:14:24 JST 2026
+;; MSG SIZE  rcvd: 73
+
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>オプションの説明</label><pre class="src src-shell"><code>dig -h | grep "\-x"
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>-x dot-notation     (shortcut for reverse lookups)
+-x dot-notation     (shortcut for reverse lookups)
++[no]identify       (ID responders in short answers)
++[no]short          (Display nothing except short
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>-x オプションを使わずに同じ意味で書く</label><pre class="src src-shell"><code>dig PTR 8.8.8.8.in-addr.arpa.
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"><code>
+; &lt;&lt;&gt;&gt; DiG 9.18.30-0ubuntu0.24.04.1-Ubuntu &lt;&lt;&gt;&gt; PTR 8.8.8.8.in-addr.arpa.
+;; global options: +cmd
+;; Got answer:
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 24668
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;8.8.8.8.in-addr.arpa.		IN	PTR
+
+;; ANSWER SECTION:
+8.8.8.8.in-addr.arpa.	6739	IN	PTR	dns.google. 👈
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
+;; WHEN: Sat Jan 10 19:49:58 JST 2026
+;; MSG SIZE  rcvd: 73
+
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgff69e69" class="outline-2">
+<h2 id="orgff69e69"><a href="#orgff69e69">関連</a></h2>
+<div class="outline-text-2" id="text-orgff69e69">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>逆方向に引くために、同じ対応関係を逆向きの名前で別に持つ</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>追加調査: PTRレコードはどうやって追加するのか</li>
+<li>追加調査: IPアドレスの所有はどうやって決まっているのか</li>
+<li>追加調査: in-addr.arpaはどうなっているのか。通常のドメインとは違うのか</li>
+<li>前提: <a href="20251222T090340--kdoc-517-dig-traceでルートからnsをたどりaレコードを得る様子が見られる__permanent.html#ID-20251222T090340">KDOC 517: dig +traceでルートからNSをたどりAレコードを得る様子が見られる</a>。DNSが階層的な分散システムであること</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
