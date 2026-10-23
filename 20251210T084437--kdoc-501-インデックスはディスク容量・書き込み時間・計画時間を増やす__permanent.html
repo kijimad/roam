@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-24 土 01:12 -->
+<!-- 2026-10-24 土 01:15 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 501: インデックスはディスク容量・書き込み時間・計画時間を増やす</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 501: インデックスはディスク容量・書き込み時間・計画時間を増やす</h1>
-<div id="outline-container-orgaae7212" class="outline-2">
-<h2 id="orgaae7212"><a href="#orgaae7212">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgaae7212">
+<div id="outline-container-org120e823" class="outline-2">
+<h2 id="org120e823"><a href="#org120e823">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org120e823">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,9 +37,9 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org4d18942" class="outline-2">
-<h2 id="org4d18942"><a href="#org4d18942">概要</a></h2>
-<div class="outline-text-2" id="text-org4d18942">
+<div id="outline-container-org26df967" class="outline-2">
+<h2 id="org26df967"><a href="#org26df967">概要</a></h2>
+<div class="outline-text-2" id="text-org26df967">
 <p>
 <a href="https://syu-m-5151.hatenablog.com/entry/2025/11/25/135220">「Postgres で試した？」と聞き返せるようになるまでもしくはなぜ私は雰囲気で技術を語るのか？ — Just use Postgres 読書感想文</a>のOver-Indexingを読んで、インデックスの具体的なオーバヘッドを知った。
 </p>
@@ -56,9 +56,9 @@
 これらをじっさいに試す。
 </p>
 </div>
-<div id="outline-container-org9bfb2f2" class="outline-3">
-<h3 id="org9bfb2f2"><a href="#org9bfb2f2">作成時のディスク容量</a></h3>
-<div class="outline-text-3" id="text-org9bfb2f2">
+<div id="outline-container-org5f85556" class="outline-3">
+<h3 id="org5f85556"><a href="#org5f85556">作成時のディスク容量</a></h3>
+<div class="outline-text-3" id="text-org5f85556">
 <p>
 レコードを作成して、インデックスのディスク容量を見る。
 </p>
@@ -125,9 +125,9 @@ SELECT pg_size_pretty(pg_relation_size('idx_users_name'));
 </p>
 </div>
 </div>
-<div id="outline-container-orgd8c4793" class="outline-3">
-<h3 id="orgd8c4793"><a href="#orgd8c4793">更新時のコスト</a></h3>
-<div class="outline-text-3" id="text-orgd8c4793">
+<div id="outline-container-org524eee8" class="outline-3">
+<h3 id="org524eee8"><a href="#org524eee8">更新時のコスト</a></h3>
+<div class="outline-text-3" id="text-org524eee8">
 <p>
 インデックスの有無を変えてレコードを更新したときの時間を見る。
 </p>
@@ -226,9 +226,9 @@ UPDATE users SET name = 'def';
 </p>
 </div>
 </div>
-<div id="outline-container-org336cb17" class="outline-3">
-<h3 id="org336cb17"><a href="#org336cb17">計画時間のコスト</a></h3>
-<div class="outline-text-3" id="text-org336cb17">
+<div id="outline-container-org63cc832" class="outline-3">
+<h3 id="org63cc832"><a href="#org63cc832">計画時間のコスト</a></h3>
+<div class="outline-text-3" id="text-org63cc832">
 <div class="org-src-container">
 <pre class="src src-sql"><code>CREATE TABLE users (
     name varchar(255)
@@ -320,9 +320,9 @@ SELECT * FROM users WHERE name = 'WITH_INDEX';
 </p>
 </div>
 </div>
-<div id="outline-container-org6ba7f9a" class="outline-3">
-<h3 id="org6ba7f9a"><a href="#org6ba7f9a">大量インデックスの計画コスト</a></h3>
-<div class="outline-text-3" id="text-org6ba7f9a">
+<div id="outline-container-org74c499d" class="outline-3">
+<h3 id="org74c499d"><a href="#org74c499d">大量インデックスの計画コスト</a></h3>
+<div class="outline-text-3" id="text-org74c499d">
 <p>
 インデックス増加による計画時間の増加を見る。
 </p>
@@ -523,9 +523,9 @@ SELECT name1 FROM users WHERE name1 = 'xx';
 </ul>
 </div>
 </div>
-<div id="outline-container-org29c0e6f" class="outline-3">
-<h3 id="org29c0e6f"><a href="#org29c0e6f">挿入時のコスト</a></h3>
-<div class="outline-text-3" id="text-org29c0e6f">
+<div id="outline-container-orgde9c7d0" class="outline-3">
+<h3 id="orgde9c7d0"><a href="#orgde9c7d0">挿入時のコスト</a></h3>
+<div class="outline-text-3" id="text-orgde9c7d0">
 <p>
 インデックスの有無を変えてレコードを挿入したときの時間を見る。
 </p>
@@ -625,9 +625,9 @@ Execution Time が 118.892 ms -&gt; 267.930 ms 。
 </div>
 </div>
 </div>
-<div id="outline-container-orgf16f6a2" class="outline-2">
-<h2 id="orgf16f6a2"><a href="#orgf16f6a2">関連</a></h2>
-<div class="outline-text-2" id="text-orgf16f6a2">
+<div id="outline-container-org850c54d" class="outline-2">
+<h2 id="org850c54d"><a href="#org850c54d">関連</a></h2>
+<div class="outline-text-2" id="text-org850c54d">
 <p>
 抽象。
 </p>
@@ -646,9 +646,9 @@ Execution Time が 118.892 ms -&gt; 267.930 ms 。
 </ul>
 </div>
 </div>
-<div id="outline-container-orge616e67" class="outline-2">
-<h2 id="orge616e67"><a href="#orge616e67">Backlinks</a></h2>
-<div class="outline-text-2" id="text-orge616e67">
+<div id="outline-container-org7759eb1" class="outline-2">
+<h2 id="org7759eb1"><a href="#org7759eb1">Backlinks</a></h2>
+<div class="outline-text-2" id="text-org7759eb1">
 <ul class="org-ul">
 <li><a href="./20251211T084518--kdoc-502-jsonbはjsonより読み出しが速く、この例では書き込みも速かった__permanent.html">KDOC 502: jsonbはjsonより読み出しが速く、この例では書き込みも速かった</a></li>
 <li><a href="./20260114T085151--kdoc-529-状態ごとのcomponentは読み込みに、1つにまとめると書き込みに有利__permanent.html">KDOC 529: 状態ごとのComponentは読み込みに、1つにまとめると書き込みに有利</a></li>
