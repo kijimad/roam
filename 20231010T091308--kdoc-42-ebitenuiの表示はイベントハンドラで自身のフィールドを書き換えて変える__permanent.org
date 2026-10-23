@@ -1,0 +1,35 @@
+:properties:
+:ID: 20231010T091308
+:mtime:    20241103084751
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 42: EbitenUIの表示はイベントハンドラで自身のフィールドを書き換えて変える
+#+date:       [2023-10-10 Tue 09:13]
+#+filetags:   :permanent:
+#+identifier: 20231010T091308
+
+EbitenUIはゲームエンジンEbitengineのUIライブラリである。クリックなどのイベントに応じて動的にラベルを切り替える方法がわからなかったので、コードを読んで把握した方法を書く。
+
+結論としては、UIのイベントハンドラに自身のフィールドを書き換える無名関数を登録すればよい。
+
+#+caption: ボタンをクリックするたびにラベルを現在時刻に変更する例
+#+begin_src go
+  makeLabel := func() string {
+          t := time.Now()
+          return t.Format("03:04:05")
+  }
+  button := newButton() // newButton()は *widget.Button を返す関数
+  button.ClickedEvent.AddHandler(func(args interface{}) {
+          button.Text().Label = makeLabel()
+  })
+#+end_src
+
+* 関連
+
+抽象。
+
+- イベント時に呼ばれる処理を登録し、その中で自分自身の状態を書き換えて表示を変える
+
+関連。
+
+- 類推: ほかに詰まったところ、調べてわからなかったことはないか

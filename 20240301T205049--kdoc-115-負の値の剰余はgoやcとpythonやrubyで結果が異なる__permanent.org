@@ -1,0 +1,92 @@
+:properties:
+:ID: 20240301T205049
+:mtime:    20241103085338
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 115: 負の値の剰余はGoやCとPythonやRubyで結果が異なる
+#+date:       [2024-03-01 Fri 20:50]
+#+filetags:   :permanent:
+#+identifier: 20240301T205049
+
+* この文書のステータス
+- 作成
+  - [X] 2024-03-01 貴島
+- レビュー
+  - [X] 2024-03-24 貴島
+
+* 言語によって異なる挙動
+
+負の値に対する剰余をしたときの値は、プログラミング言語によって異なる。軽く試したところ2パターンあった。
+
+Go言語。
+
+#+begin_src go :imports fmt
+  fmt.Println(-8 % 5)
+  fmt.Println(8 % -5)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+-3
+3
+#+end_src
+
+C言語。
+
+#+begin_src C :results raw
+  printf("%d\n", -8 % 5);
+  printf("%d\n", 8 % -5);
+#+end_src
+
+#+RESULTS:
+#+begin_src
+-3
+3
+#+end_src
+
+Emacs Lisp。
+
+#+begin_src emacs-lisp
+  (format "%s\n%s" (number-to-string (% -8 5)) (number-to-string (% 8 -5)))
+#+end_src
+
+#+RESULTS:
+#+begin_src
+-3
+3
+#+end_src
+
+Python。
+
+#+begin_src python :results output
+  print(-8 % 5)
+  print(8 % -5)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+2
+-2
+#+end_src
+
+Ruby。
+
+#+begin_src ruby
+  sprintf("%d\n%d", -8 % 5, 8 % -5)
+#+end_src
+
+#+RESULTS:
+#+begin_src
+2
+-2
+#+end_src
+
+* 関連
+
+抽象。
+
+- 同じ記号の演算が、境界的な入力で実装ごとに異なる結果を返す
+
+関連。
+
+- 疑問: 試した2パターン以外が存在するか

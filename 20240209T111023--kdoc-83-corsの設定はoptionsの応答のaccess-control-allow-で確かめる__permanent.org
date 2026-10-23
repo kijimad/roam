@@ -1,0 +1,71 @@
+:properties:
+:ID: 20240209T111023
+:mtime:    20241103085108
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 83: CORSの設定はOPTIONSの応答のAccess-Control-Allow-*で確かめる
+#+date:       [2024-02-09 Fri 11:10]
+#+filetags:   :permanent:
+#+identifier: 20240209T111023
+
+* この文書のステータス
+- 作成
+  - [X] 2024-02-10 貴島
+- レビュー
+  - [X] 2024-02-12 貴島
+* 概要
+CORSを理解しにくかったりミスをしがちな原因は、動作確認のやり方が一見わかりにくいからに見える。curlによるシンプルな動作確認方法を知っていれば、試行錯誤してすぐに理解できる。
+
+* コマンド
+サーバがCORSを設定してないとき(リソースを許可しない)、Access-Control-Allow-*がない。確認する例。
+
+#+caption: 設定できてない場合
+#+begin_src shell :results raw
+  curl -I -H "Origin: nandemoii.com" -H "Access-Control-Request-Method: GET" -X OPTIONS --verbose http://localhost
+#+end_src
+
+#+RESULTS:
+#+begin_src
+HTTP/1.1 200 OK
+Date: Fri, 09 Feb 2024 02:21:43 GMT
+Server: Apache
+Allow: GET,HEAD,POST,OPTIONS,TRACE
+Cache-Control: max-age=1
+Expires: Fri, 09 Feb 2024 02:21:44 GMT
+Content-Length: 0
+Content-Type: httpd/unix-directory
+
+#+end_src
+
+設定できているとAccess-Control-Allow-*がある。確認する例。
+
+#+caption: 設定できている場合(全許可)
+#+begin_src shell :results raw
+  curl -I -H "Origin: nandemoii.com" -H "Access-Control-Request-Method: GET" -X OPTIONS --verbose http://localhost
+#+end_src
+
+#+RESULTS:
+#+begin_src
+HTTP/1.1 200 OK
+Date: Fri, 09 Feb 2024 02:23:22 GMT
+Server: Apache
+Allow: GET,HEAD,POST,OPTIONS,TRACE
+Cache-Control: max-age=1
+Expires: Fri, 09 Feb 2024 02:23:23 GMT
+Access-Control-Allow-Headers: Content-Type 👈
+Access-Control-Allow-Origin: * 👈
+Content-Length: 0
+Content-Type: httpd/unix-directory
+
+#+end_src
+
+* 関連
+
+抽象。
+
+- 受け入れるかは受ける側が決め、事前の問い合わせへの応答に許可の印を載せて知らせる
+
+関連。
+
+- 具体例: [[id:20240207T092747][KDOC 77: 検証する方法があると理解が進む]]。HTTPにおける検証の具体例
+- 動機: [[id:20240208T215527][KDOC 81: iframeの制約を見る]]。でCORSのことを調べたのがきっかけ

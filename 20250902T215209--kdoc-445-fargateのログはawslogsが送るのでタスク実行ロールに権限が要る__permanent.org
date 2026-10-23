@@ -1,0 +1,62 @@
+:properties:
+:ID: 20250902T215209
+:mtime:    20251001081426
+:ctime:    20250902215220
+:end:
+#+title:      KDOC 445: Fargateのログはawslogsが送るのでタスク実行ロールに権限が要る
+#+date:       [2025-09-02 Tue 21:52]
+#+filetags:   :permanent:
+#+identifier: 20250902T215209
+
+* この文書のステータス
+- 作成
+  - [X] 2025-09-30 貴島
+- レビュー
+  - [X] 2025-10-06 貴島
+
+* 概要
+
+ECS には、タスクロールとタスク実行ロールの2つの IAM ロールがあり、よく混同する。どちらに権限を付けるかは、「その AWS の API を呼ぶのは誰か」で決まる。
+
+| ロール          | API を呼ぶもの               | 例                                                                       |
+|----------------+-----------------------------+--------------------------------------------------------------------------|
+| タスクロール     | タスクの中で動くアプリケーション | S3、DynamoDB、SQS                                                         |
+| タスク実行ロール | コンテナを動かす側             | Fargate での ECR からのイメージ取得、Fargate での CloudWatch Logs へのログ送信 |
+
+#+begin_quote
+The task execution role grants the Amazon ECS container and Fargate agents permission to make AWS API calls on your behalf.
+
+[[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html][Amazon ECS task execution IAM role]]
+#+end_quote
+
+#+begin_quote
+The permissions granted in the IAM role are vended to containers running in the task. This role allows your application code (running in the container) to use other AWS services.
+
+[[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html][Amazon ECS task IAM role]]
+#+end_quote
+
+タスクの標準出力を CloudWatch Logs に保存するときは、Fargate ではタスク実行ロールにログの権限が要る。アプリケーションは標準出力に書くだけで、CloudWatch Logs に送るのはコンテナを動かす側の ~awslogs~ ログドライバーだからである。
+
+一方、ECS Exec でコンテナに入るときは、タスクロールに権限が要る。ECS Exec はコンテナの中で SSM エージェントを動かし、それが SSM と通信するので、API を呼ぶのはタスクの中のプロセスになる。Exec で打ったコマンドのログを CloudWatch Logs に送る権限もタスクロールに付ける。同じ CloudWatch Logs でも、送るのが誰かで付けるロールが変わる。
+
+#+begin_quote
+The ECS Exec feature requires a task IAM role to grant containers the permissions needed for communication between the managed SSM agent (execute-command agent) and the SSM service.
+
+[[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html][Amazon ECS task IAM role]]
+#+end_quote
+
+#+begin_quote
+To enable logging, the Amazon ECS task role that's referenced in your task definition needs to have additional permissions.
+
+[[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html][Monitor Amazon ECS containers with ECS Exec]]
+#+end_quote
+
+* 関連
+
+抽象。
+
+- 誰が操作を実行するかで、権限を持たせる相手が決まる
+
+関連。
+
+- 類推: [[id:20240501T165757][KDOC 152: Dependabotが作ったPRでワークフローが失敗する理由を見る]]。誰の依頼として実行されるかで、与えられる権限が決まる例

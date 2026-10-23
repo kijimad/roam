@@ -1,0 +1,97 @@
+:properties:
+:ID: 20241109T134521
+:mtime:    20241114212628
+:ctime:    20241109134523
+:end:
+#+title:      KDOC 278: パイプはバッファがいっぱいになると処理をブロックする
+#+date:       [2024-11-09 Sat 13:45]
+#+filetags:   :permanent:
+#+identifier: 20241109T134521
+
+* この文書のステータス
+:LOGBOOK:
+CLOCK: [2024-11-09 Sat 14:48]--[2024-11-09 Sat 15:13] =>  0:25
+CLOCK: [2024-11-09 Sat 14:10]--[2024-11-09 Sat 14:35] =>  0:25
+:END:
+- 作成
+  - [X] 2024-11-09 貴島
+- レビュー
+  - [X] 2024-11-14 貴島
+
+* 再現する
+
+パイプにはバッファサイズがあり、いっぱいになると処理をブロックする。これを確かめる。
+
+#+caption: 10000バイトずつ転送する
+#+begin_src shell
+yes | pv -L 10000 | cat /dev/random > /dev/null
+#+end_src
+
+#+caption: 実行結果。7秒からは書き込み速度が0になっている
+#+begin_src
+9.77KiB 0:00:01 [9.02KiB/s]
+19.5KiB 0:00:02 [9.84KiB/s]
+29.3KiB 0:00:03 [9.84KiB/s]
+39.1KiB 0:00:04 [9.84KiB/s]
+48.8KiB 0:00:05 [9.84KiB/s]
+56.6KiB 0:00:06 [7.87KiB/s]
+56.6KiB 0:00:07 [0.00 B/s] # 👈 速度0
+56.6KiB 0:00:08 [0.00 B/s]
+56.6KiB 0:00:09 [0.00 B/s]
+56.6KiB 0:00:10 [0.00 B/s]
+#+end_src
+
+また、straceをyesプロセスに使うとパイプのバッファに空きができ次第、書き込んでいる様子が確認できる。
+
+#+caption: yesにstraceを仕込んでどのように動いているかを見る
+#+begin_src shell
+strace yes | pv -L 10000 | cat /dev/random > /dev/null
+#+end_src
+
+- yesプロセスとつながっているパイプは最初に一瞬でいっぱいになる。yesの書き込み速度は非常に早い
+- pvが動き出してyesプロセスとつながっているパイプのバッファを読み出し空きができると、都度yesプロセスが実行開始、またパイプに追加される
+- catコマンド側のパイプがいっぱいになると、pvもバッファを書き込めなくなるため停止する。結果、yesプロセスとpvプロセスがどちらもつながっているパイプの空き待ちのSleepになる
+
+#+begin_src
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192) = 8192
+(略...)
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192) = 8192
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192) = 8192
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192
+9.77KiB 0:00:01 [8.99KiB/s]
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192
+19.5KiB 0:00:02 [9.84KiB/s]
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192
+29.3KiB 0:00:03 [9.84KiB/s]
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192
+39.1KiB 0:00:04 [9.84KiB/s]
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192) = 8192
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192
+48.8KiB 0:00:05 [9.84KiB/s]
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 8192
+56.6KiB 0:00:06 [7.87KiB/s]  56.6KiB 0:00:10 [0.00 B/s] # 👈 速度0
+#+end_src
+
+file:./images/20241109-pipe.drawio.svg
+
+* メモ
+
+- strace は発行システムコールを表示するコマンド
+- pv はパイプのデータの流れを確認するコマンド。-Lで書き込み速度を制限できる。pvを使って制限しないと一瞬で終わってしまうため観察できない
+- cat /dev/random > /dev/null は何もせず待ち受けるためのコマンド。要件:
+  - 実行し続ける
+  - パイプのバッファを消費しない
+  - パイプを閉じない
+  - 出力を一切しない
+
+* 関連
+
+抽象。
+
+- 受け手が遅いと、間の置き場が埋まった時点で送り手も止まり、上流へ順に波及する
+
+関連。
+
+- 補足: [[id:20240225T174224][KDOC 109: 発行システムコールを調べる]]。straceで詳細に調べる方法
+- 動機: [[id:20241017T190613][KDOC 254: ジョブプロセスがSleepしていた理由を考える]]。調べたきっかけとなる事象
+- 補足: [[id:20241102T103338][KDOC 260: プロセスがSleepになるのを再現する]]。の、より的確な再現

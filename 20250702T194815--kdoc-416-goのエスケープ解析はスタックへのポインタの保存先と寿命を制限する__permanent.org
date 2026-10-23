@@ -1,0 +1,66 @@
+:properties:
+:ID: 20250702T194815
+:mtime:    20250724085319
+:ctime:    20250702194819
+:end:
+#+title:      KDOC 416: Goのエスケープ解析はスタックへのポインタの保存先と寿命を制限する
+#+date:       [2025-07-02 Wed 19:48]
+#+filetags:   :permanent:
+#+identifier: 20250702T194815
+
+* この文書のステータス
+- 作成
+  - [X] 2025-07-20 貴島
+- レビュー
+  - [X] 2025-07-24 貴島
+
+* 概要
+
+Goのドキュメントにヒープエスケープの「不変条件」が書かれていたので、見る。
+
+#+begin_src git-permalink :wrap src go
+https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/cmd/compile/internal/escape/escape.go#L20-L29
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// Escape analysis.
+//
+// Here we analyze functions to determine which Go variables
+// (including implicit allocations such as calls to "new" or "make",
+// composite literals, etc.) can be allocated on the stack. The two
+// key invariants we have to ensure are: (1) pointers to stack objects
+// cannot be stored in the heap, and (2) pointers to a stack object
+// cannot outlive that object (e.g., because the declaring function
+// returned and destroyed the object's stack frame, or its space is
+// reused across loop iterations for logically distinct variables).
+#+end_src
+
+2つの不変条件。
+
+- (1)スタックオブジェクトへのポインタはヒープに保存できない
+- (2)スタックオブジェクトへのポインタはそのオブジェクトより長生きできない
+  - 関数を抜けるとオブジェクトのスタックフレームは解放される。もしくは解放されたスペースがループ内で論理的に異なる変数として再利用される
+
+つまり、保存場所とポインタ先の関係、スタックオブジェクトとスタックオブジェクトのライフタイムの関係、に関する原則と解釈した。
+
+- (1) 保存場所とポインタ先の問題(空間)
+  - ルール: スタックオブジェクトへのポインタは、ヒープ領域に保存してはならない。
+  - 理由: ヒープにあるデータは、関数呼び出しを超えて長生きする可能性がある。しかし、それが指し示す先のスタックオブジェクトは、関数を抜けると解放される。結果、ヒープ上には実体のないポインタ（ダングリングポインタ）が残る
+  - 解決策: コンパイラは、ヒープに保存されるポインタが指す先のオブジェクトもヒープにエスケープさせる。これによってヒープからヒープを指す状態にする
+- (2) ポインタ「寿命」の問題(時間)
+  - ルール: スタックオブジェクトへのポインタは、そのオブジェクトのライフタイムを超えて存在してはならない
+  - 理由: 関数を抜けるとスタックオブジェクトは消える。そのポインタが残るとダングリングポインタとなる
+  - 解決策: コンパイラは、ポインタがオブジェクトのライフタイムを超えて使われる可能性を検知したら、そのオブジェクト自体を最初からヒープに確保する
+
+* 関連
+
+抽象。
+
+- 寿命の短いものを、寿命の長いものから参照してはならない
+
+関連。
+
+- 前提: [[id:20240511T182850][KDOC 172: 関数呼び出しで起きていることを見る]]。不変条件の理由になる、関数を抜けるとスタックフレームが片付けられるしくみ
+- 同期: [[id:20250630T185540][KDOC 411: スタックは積み重ねて取り出して解放する。ではヒープは?]]。調べるきっかけになった
+- 具体例: [[id:20250701T174437][KDOC 413: ローカル変数がヒープにエスケープされるのを見る]]。エスケープする具体例

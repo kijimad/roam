@@ -1,0 +1,52 @@
+:properties:
+:ID: 20250902T214644
+:mtime:    20250920085413
+:ctime:    20250902214655
+:end:
+#+title:      KDOC 442: Rat.SetFracはポインタと基底配列を比べてエイリアシングを検出する
+#+date:       [2025-09-02 Tue 21:46]
+#+filetags:   :permanent:
+#+identifier: 20250902T214644
+
+* この文書のステータス
+- 作成
+  - [X] 2025-09-22 貴島
+- レビュー
+  - [X] 2025-09-22 貴島
+
+* 概要
+
+メモリエイリアシングとは、異なる変数や参照が同じメモリ領域を指している状態を指す。メモリの効率使用に寄与するが、バグの原因になる可能性もある。
+
+[[https://github.com/golang/go/commit/c7cf56bec994c6888be89c7c8f8a1911fb266ca8][big: handle aliasing correctly for Rat.SetFrac. · golang/go@c7cf56b]]では、メモリエイリアシング検出と、検出した場合のコピーを実装している。
+
+#+begin_src diff
+ // SetFrac sets z to a/b and returns z.
+ func (z *Rat) SetFrac(a, b *Int) *Rat {
+-	z.a.Set(a)
+ 	z.a.neg = a.neg != b.neg
+-	z.b = z.b.set(b.abs)
++	babs := b.abs
++	if &z.a == b || alias(z.a.abs, babs) {
++		babs = nat(nil).set(babs) // make a copy
++	}
++	z.a.abs = z.a.abs.set(a.abs)
++	z.b = z.b.set(babs)
+ 	return z.norm()
+ }
+#+end_src
+
+- ~&z.a == b~ 直接ポインタを比較する
+- ~alias(z.a.abs, babs)~ 基底配列が同じでないか確認する
+
+* 関連
+
+抽象。
+
+- 同じ実体を複数の参照が指すと、書き換えが互いに干渉する
+- 重なりを検出したら複製して干渉を避ける
+
+関連。
+
+- 具体化: メモリエイリアシングが問題になる場合の具体例を出す
+- 類似: [[id:20240612T011737][KDOC 189: Goでスライスがどのように保存されているか調べる]]。軽い参照が裏の実体を共有する点が共通する

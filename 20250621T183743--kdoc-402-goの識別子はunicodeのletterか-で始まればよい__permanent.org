@@ -1,0 +1,136 @@
+:properties:
+:ID: 20250621T183743
+:mtime:    20250629200141
+:ctime:    20250621183747
+:end:
+#+title:      KDOC 402: Goの識別子はUnicodeのletterか_で始まればよい
+#+date:       [2025-06-21 Sat 18:37]
+#+filetags:   :permanent:
+#+identifier: 20250621T183743
+
+* この文書のステータス
+- 作成
+  - [X] 2025-06-21 貴島
+- レビュー
+  - [X] 2025-06-29 貴島
+
+* 概要
+
+多くの現代的なプログラミング言語では識別子にUnicodeの文字(コードポイント)を使えるということを知っていたが、ちゃんとGoの仕様を調べたことはなかった。確認する。
+
+最初に、何も調べずに実行してみて確かめてみる。違和感がすごいが、英語ネイティブが見ているのはこういう景色なのだろう。
+
+#+caption: すべて正しいシンタックス。ビルド、実行できる
+#+begin_src go
+  import "fmt"
+  func main() {
+          // 変数名に日本語が使える
+          あ := "a"
+          fmt.Println(あ)
+
+          // 関数名に日本語が使える
+          漢字()
+
+          // 型名に日本語が使える
+          type 地名 struct {}
+          var 江戸川橋 地名
+          fmt.Println(江戸川橋)
+  }
+
+  func 漢字() {}
+#+end_src
+
+#+RESULTS:
+#+begin_src
+a
+{}
+#+end_src
+
+調べてみる。
+
+[[https://go.dev/ref/spec#letter][言語仕様書]]によると、識別子(~identifier~)の定義はこうだ。出てきた ~letter~, ~unicode_letter~ も辿って調べた。
+
+#+caption: identifierの定義
+#+begin_src code
+  identifier = letter { letter | unicode_digit } .
+  letter     = unicode_letter | "_" .
+  unicode_letter = /* a Unicode code point categorized as "Letter" */ .
+#+end_src
+
+ここからわかること、考察。
+
+- Unicodeにはカテゴリという概念がある。letter(文字), mark(結合記号), number(数字), punctuation(句読点), ...
+  - 結合記号はアクセント記号のように、ほかの文字と組み合わせて使う記号のことである
+  - たとえば漢字はletterのサブカテゴリotherに属する
+- 識別子の先頭にletterカテゴリの文字があれば、あとはなんでもいい。逆にいえば、結合記号、数字、句読点、...から開始できない
+- アンダースコア ~_~ は句読点カテゴリの文字である。例外的にletterとして許容されている
+  - 自然に使っていて、全く意識してなかった
+
+以上から、無効なパターンを試した[fn:1]。
+
+#+caption: 結合記号、数字、句読点、...から開始できない
+#+begin_src shell :results output
+  tmpfile=$(mktemp /tmp/tmpgo.XXXXXX.go)
+
+  cat > $tmpfile <<EOF
+  package main
+
+  func main() {
+    // 先頭のアクセント記号は不可
+    ◌̀ := "あ"
+    print(◌̀)
+
+    // 先頭の数字は不可
+    ９ := "あ"
+    print(９)
+
+    // 先頭の漢数字はletter扱いなので問題ない
+    九 := "あ"
+    print(九)
+
+    // 先頭の句読点は不可
+    、 := "あ"
+    print(、)
+
+    // 先頭のシンボルは不可
+    👍 := "あ"
+    print(👍)
+  }
+  EOF
+
+  go run $tmpfile 2>&1
+  rm $tmpfile
+#+end_src
+
+#+RESULTS:
+#+begin_src
+/tmp/tmpgo.FO1KQz.go:5:3: invalid character U+25CC '◌' in identifier
+/tmp/tmpgo.FO1KQz.go:5:6: invalid character U+0300 '̀' in identifier
+/tmp/tmpgo.FO1KQz.go:6:9: invalid character U+25CC '◌' in identifier
+/tmp/tmpgo.FO1KQz.go:6:12: invalid character U+0300 '̀' in identifier
+/tmp/tmpgo.FO1KQz.go:9:3: identifier cannot begin with digit U+FF19 '９'
+/tmp/tmpgo.FO1KQz.go:10:9: identifier cannot begin with digit U+FF19 '９'
+/tmp/tmpgo.FO1KQz.go:17:3: invalid character U+3001 '、' in identifier
+/tmp/tmpgo.FO1KQz.go:18:9: invalid character U+3001 '、' in identifier
+/tmp/tmpgo.FO1KQz.go:21:3: invalid character U+1F44D '👍' in identifier
+/tmp/tmpgo.FO1KQz.go:22:9: invalid character U+1F44D '👍' in identifier
+/tmp/tmpgo.FO1KQz.go:22:9: too many errors
+#+end_src
+
+調べる前の認識は、正確ではなかったのがわかった。
+
+* 関連
+
+抽象。
+
+- 使える文字を、文字そのものでなく文字に付いた分類で決めている
+
+関連。
+
+- 類推: [[id:20250603T215002][KDOC 381: 識別子の先頭に数値が使えないのは区別がつかなくなるから]]。識別子制限の理由の1つ
+- 参照: [[https://en.wikipedia.org/wiki/Unicode_character_property][Unicode character property - Wikipedia]]。カテゴリ表を参考にした
+- 参照: [[https://go.dev/ref/spec#letter][The Go Programming Language Specification]]。Goの言語仕様書
+
+* Footnotes
+
+[fn:1] org-babelで標準エラーを出すためシェルスクリプトから実行している。

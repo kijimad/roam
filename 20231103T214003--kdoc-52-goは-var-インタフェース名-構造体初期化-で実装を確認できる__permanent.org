@@ -1,0 +1,53 @@
+:properties:
+:ID: 20231103T214003
+:mtime:    20241103084831
+:ctime:    20241028101410
+:end:
+#+title:      KDOC 52: Goは var _ インタフェース名 = 構造体初期化 で実装を確認できる
+#+date:       [2023-11-03 Fri 21:40]
+#+filetags:   :permanent:
+#+identifier: 20231103T214003
+
+Goで、構造体がインターフェースを実装しているか確認したいときがある。
+
+~var _ インタフェース名 = 構造体初期化~ とすればよい。
+
+#+caption: 確かめる実例
+#+begin_src git-permalink :wrap src go
+https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/cmd/compile/internal/syntax/syntax.go#L31
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+var _ error = Error{} // verify that Error implements error
+#+end_src
+
+解説。
+
+errorは組み込みのインターフェースである。小文字だから普通のローカル変数に見える。
+
+#+caption: builtin package
+#+begin_src git-permalink :wrap src go
+https://github.com/kd-collective/go/blob/2eca0b1e1663d826893b6b1fd8bd89da98e65d1e/src/builtin/builtin.go#L305-L309
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// The error built-in interface type is the conventional interface for
+// representing an error condition, with the nil value representing no error.
+type error interface {
+	Error() string
+}
+#+end_src
+
+指定シグネチャを備えていないと、インターフェースを満たせず代入できないためチェックできる。
+
+* 関連
+
+抽象。
+
+- 使わない値をあえて作り、本来は別用途の仕組みを検査として流用する
+
+関連。
+
+なし。

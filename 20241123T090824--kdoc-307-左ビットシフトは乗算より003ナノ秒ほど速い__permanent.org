@@ -1,0 +1,85 @@
+:properties:
+:ID: 20241123T090824
+:mtime:    20241130215252
+:ctime:    20241123090826
+:end:
+#+title:      KDOC 307: 左ビットシフトは乗算より0.03ナノ秒ほど速い
+#+date:       [2024-11-23 Sat 09:08]
+#+filetags:   :permanent:
+#+identifier: 20241123T090824
+
+* この文書のステータス
+- 作成
+  - [X] 2024-11-25 貴島
+- レビュー
+  - [X] 2024-11-30 貴島
+
+* 概要
+
+よく左ビットシフト命令に最適化するのを見るが、どれくらいの速度の違いがあるのだろうか。
+
+#+begin_export html
+<iframe width="800px" height="400px" src="https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,selection:(endColumn:20,endLineNumber:15,positionColumn:20,positionLineNumber:15,selectionStartColumn:20,selectionStartLineNumber:15,startColumn:20,startLineNumber:15),source:'//+Type+your+code+here,+or+load+an+example.%0A//+Your+function+name+should+start+with+a+capital+letter.%0Apackage+main%0A%0Afunc+main()+%7B%0A%09_+%3D+shl(42)%0A%09_+%3D+mul(42)%0A%7D%0A%0A//go:noinline%0Afunc+shl(a+int)+int+%7B%0A%09return+a+*+4%0A%7D%0A%0A//+%E3%82%B0%E3%83%AD%E3%83%BC%E3%83%90%E3%83%AB%E5%A4%89%E6%95%B0%E3%81%AB%E3%81%97%E3%81%A6%E6%9C%80%E9%81%A9%E5%8C%96%E3%82%92%E9%98%B2%E3%81%90%0Avar+num+%3D+4%0A%0A//go:noinline%0Afunc+mul(a+int)+int+%7B%0A%09return+a+*+num%0A%7D'),l:'5',n:'0',o:'Go+source+%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:gl1232,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'1',intel:'1',libraryCode:'0',trim:'0',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:go,libs:!(),options:'',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gc+1.23.2+(Editor+%231)',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4"></iframe>
+#+end_export
+
+計測するコードを書く。
+
+#+caption: bench_test.go
+#+begin_src go
+package main
+
+import "testing"
+
+func BenchmarkShl(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = shl(42)
+	}
+}
+
+func BenchmarkMultiply(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = mul(42)
+	}
+}
+
+//go:noinline
+func shl(a int) int {
+	return a * 4
+}
+
+// グローバル変数にしないと最適化される
+var num = 4
+
+//go:noinline
+func mul(a int) int {
+	return a * num
+}
+#+end_src
+
+[[id:20241123T012402][KDOC 305: 加算と左ビットシフトの実行速度を計測する]]と同様の方法で計測する。
+
+#+caption: 計測する
+#+begin_src shell
+  $ go test -bench . -benchmem -count 100 > exec.log
+  $ benchstat exec.log
+  (略)
+              │   exec.log   │
+              │    sec/op    │
+  Shl-16        0.4839n ± 0%
+  Multiply-16   0.5117n ± 1%
+  geomean       0.4976n
+  (略)
+#+end_src
+
+ということで、0.03ナノ秒ほど左ビットシフト演算のほうが早い。だから左ビットシフトに最適化するわけだ。
+
+* 関連
+
+抽象。
+
+- 同じ結果になる計算でも、手段によって速さが違い、速いほうへ置き換える最適化がある
+
+関連。
+
+- 前提: [[id:20240919T002306][KDOC 243: シフト演算命令に変換されるのを確かめる]]。速度を比べる前提となる、乗算をシフトに置き換える最適化
+- 動機: [[id:20241122T231155][KDOC 304: 加算と乗算どちらが早いか?]]。調べるきっかけとなった疑問

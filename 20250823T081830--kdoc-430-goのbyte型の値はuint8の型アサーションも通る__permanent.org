@@ -1,0 +1,75 @@
+:properties:
+:ID: 20250823T081830
+:mtime:    20250904212956
+:ctime:    20250823081928
+:end:
+#+title:      KDOC 430: Goのbyte型の値はuint8の型アサーションも通る
+#+date:       [2025-08-23 Sat 08:18]
+#+filetags:   :permanent:
+#+identifier: 20250823T081830
+
+* この文書のステータス
+- 作成
+  - [X] 2025-09-04 貴島
+- レビュー
+  - [X] 2025-09-04 貴島
+
+* 概要
+
+Go言語で、 ~byte~ 型は ~uint8~ のエイリアス型である。
+
+#+begin_src git-permalink :wrap src go
+https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/builtin/builtin.go#L87-L90
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// byte is an alias for uint8 and is equivalent to uint8 in all ways. It is
+// used, by convention, to distinguish byte values from 8-bit unsigned
+// integer values.
+type byte = uint8
+#+end_src
+
+したがって、 ~byte~ 型 を型アサーションすると、 ~uint8~ 型でも通過する。
+
+#+begin_src go
+  import "fmt"
+  func main() {
+          var x interface{}
+
+          x = byte(1)
+
+          // 1
+          {
+                  _, ok := x.(byte)
+                  if ok {
+                          fmt.Println("1 byteで型アサーション通過した")
+                  }
+          }
+
+          // 2
+          {
+                  _, ok := x.(uint8)
+                  if ok {
+                          fmt.Println("2 uint8で型アサーション通過した")
+                  }
+          }
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+1 byteで型アサーション通過した
+2 uint8で型アサーション通過した
+#+end_src
+
+* 関連
+
+抽象。
+
+- 別名は人が区別するための見た目だけで、判定では同じものとして扱われる
+
+関連。
+
+- 追加調査: 無害に見えるが、これが問題になるケースが存在するか。気をつけないといけないか、無視してよいものか
+- 追加調査: エイリアス型および型アサーションの仕様/実装がどうなっているか

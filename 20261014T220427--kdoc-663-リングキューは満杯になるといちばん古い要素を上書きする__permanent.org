@@ -1,0 +1,137 @@
+:properties:
+:ID: 20261014T220427
+:end:
+#+title:      KDOC 663: リングキューは満杯になるといちばん古い要素を上書きする
+#+date:       [2026-10-14 Wed 22:04]
+#+filetags:   :permanent:
+#+identifier: 20261014T220427
+
+* この文書のステータス
+- 作成
+  - [X] 2026-10-15 貴島
+- レビュー
+  - [X] 2026-10-15 貴島
+
+* 概要
+
+リングキューで実装しているのを見かけた。opentelemetry-go の sdk/log は、ログを溜めておくキューをリング上に作っている。
+
+#+begin_src git-permalink :wrap src go
+https://github.com/kijimad/opentelemetry-go/blob/f013f0ec436a436795beaa57a181ebecd34aad3d/sdk/log/batch.go#L331-L335
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// queue holds a queue of logging records.
+//
+// When the queue becomes full, the oldest records in the queue are
+// overwritten.
+type queue struct {
+#+end_src
+
+同じ仕組みを container/ring で素朴に書き、出し入れ操作して1手ごとの中身を見る。
+
+#+caption: 容量 3 のリングキューに5つ入れ、2つ取り出し、2つ入れる
+#+begin_src go :imports '("container/ring" "fmt")
+  // 容量 n の輪の上で、read(いちばん古い要素)と write(次に書く場所)の2つの位置を進める
+  type queue struct {
+  	head        *ring.Ring // 表示のための起点。動かさない
+  	read, write *ring.Ring
+  	cap, len    int
+  	dropped     int
+  }
+
+  func newQueue(n int) *queue {
+  	r := ring.New(n)
+  	return &queue{head: r, read: r, write: r, cap: n}
+  }
+
+  func (q *queue) Enqueue(v int) {
+  	q.write.Value = v
+  	q.write = q.write.Next()
+  	q.len++
+  	// 満杯なら、いちばん古い要素を上書きし、read も1つ進める
+  	if q.len > q.cap {
+  		q.len = q.cap
+  		q.read = q.read.Next()
+  		q.dropped++
+  	}
+  }
+
+  func (q *queue) Dequeue() (int, bool) {
+  	if q.len == 0 {
+  		return 0, false
+  	}
+  	v := q.read.Value.(int)
+  	q.read.Value = nil
+  	q.read = q.read.Next()
+  	q.len--
+  	return v, true
+  }
+
+  func (q *queue) String() string {
+  	slots := []string{}
+  	var read, write int
+  	p := q.head
+  	for i := 0; i < q.cap; i++ {
+  		if p == q.read {
+  			read = i
+  		}
+  		if p == q.write {
+  			write = i
+  		}
+  		if p.Value == nil {
+  			slots = append(slots, "_")
+  		} else {
+  			slots = append(slots, fmt.Sprint(p.Value))
+  		}
+  		p = p.Next()
+  	}
+  	return fmt.Sprintf("%v read=%d write=%d len=%d dropped=%d", slots, read, write, q.len, q.dropped)
+  }
+
+  func main() {
+  	q := newQueue(3)
+  	fmt.Println("初期         ", q)
+  	for i := 1; i <= 5; i++ {
+  		q.Enqueue(i)
+  		fmt.Printf("Enqueue(%d)    %v\n", i, q)
+  	}
+  	for range 2 {
+  		v, _ := q.Dequeue()
+  		fmt.Printf("Dequeue() = %d %v\n", v, q)
+  	}
+  	for i := 1; i <= 2; i++ {
+  		q.Enqueue(i)
+  		fmt.Printf("Enqueue(%d)    %v\n", i, q)
+  	}
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src
+初期          [_ _ _] read=0 write=0 len=0 dropped=0
+Enqueue(1)    [1 _ _] read=0 write=1 len=1 dropped=0
+Enqueue(2)    [1 2 _] read=0 write=2 len=2 dropped=0
+Enqueue(3)    [1 2 3] read=0 write=0 len=3 dropped=0
+Enqueue(4)    [4 2 3] read=1 write=1 len=3 dropped=1
+Enqueue(5)    [4 5 3] read=2 write=2 len=3 dropped=2
+Dequeue() = 3 [4 5 _] read=0 write=2 len=2 dropped=2
+Dequeue() = 4 [_ 5 _] read=1 write=2 len=1 dropped=2
+Enqueue(1)    [_ 5 1] read=1 write=0 len=2 dropped=2
+Enqueue(2)    [2 5 1] read=1 write=1 len=3 dropped=2
+#+end_src
+
+- Enqueue が満杯になったときの挙動が鍵に見える。write が一番古い要素を上書きして read も1つ進む
+
+* 関連
+
+抽象。
+
+- 固定長の領域を使い回し、満杯ならいちばん古いものを上書きする
+
+関連。
+
+- 具体例: 言語組み込みの機能や標準ライブラリで使われているリングキューはあるか。チャネルはどうか
+- 対比: [[id:20241128T230339][KDOC 316: Goのスライスは長さを保持している]]。固定長の領域が満杯になったときの扱いが逆の例。リングキューは古いものを上書きするが、Goのスライスは新しい領域を確保してコピーし伸ばす
+- 対比: [[id:20241109T135333][KDOC 279: パイプのバッファはいっぱいになるとwriteをブロックする]]。固定長の置き場が満杯になったときの扱いが逆の例。古いものを上書きせず、書き込む側を待たせる

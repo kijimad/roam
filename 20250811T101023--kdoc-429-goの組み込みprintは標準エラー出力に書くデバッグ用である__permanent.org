@@ -1,0 +1,58 @@
+:properties:
+:ID: 20250811T101023
+:mtime:    20250904205003
+:ctime:    20250811101030
+:end:
+#+title:      KDOC 429: Goの組み込みprintは標準エラー出力に書くデバッグ用である
+#+date:       [2025-08-11 Mon 10:10]
+#+filetags:   :permanent:
+#+identifier: 20250811T101023
+
+* この文書のステータス
+- 作成
+  - [ ] <署名>
+- レビュー
+  - [ ] <署名>
+
+* 概要
+
+Go言語には言語組み込みの ~print~ と、 ~fmt~ packageの ~Print~ がある。どのような違いがあるのだろうか。
+
+#+caption: builtin packageのprint
+#+begin_src git-permalink :wrap src go
+https://github.com/golang/go/blob/988a20c8c5e2c9eb49f8749e5ee94ce3c964fe59/src/builtin/builtin.go#L293-L297
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// The print built-in function formats its arguments in an
+// implementation-specific way and writes the result to standard error.
+// Print is useful for bootstrapping and debugging; it is not guaranteed
+// to stay in the language.
+func print(args ...Type)
+#+end_src
+
+書いてあるとおり、builtin packageの ~print~ はデバッグ用のようである。
+
+builtin package。
+
+- 標準エラー出力に書きこむ
+- 残り続ける保証なし
+- ~print~, ~println~ しか用意されていない(フォーマット指定はできない)
+
+fmt package。
+
+- 標準出力に書き込む
+- さまざまな亜種が用意されている
+
+* 関連
+
+抽象。
+
+- 何も読み込まずに使える最低限の版は、立ち上げやデバッグのためにあり、残り続ける保証がない
+
+関連。
+
+- 類推: ほかにも複数の似たAPIのものがないか
+- 追加調査: なぜ builtin print は残っているのか。Go自体の開発でimportせず使う必要のあるケースがあるのだろうか
+- 補足: [[id:20241119T005803][KDOC 297: builtin packageの定義はダミーである]]。builtin パッケージ自体の性格

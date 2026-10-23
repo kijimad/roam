@@ -1,0 +1,152 @@
+:properties:
+:ID: 20251207T091742
+:end:
+#+title:      KDOC 497: 複合インデックスは2番めの要素だけの条件では使われない
+#+date:       [2025-12-07 Sun 09:17]
+#+filetags:   :permanent:
+#+identifier: 20251207T091742
+
+* この文書のステータス
+- 作成
+  - [X] 2025-12-15 貴島
+- レビュー
+  - [X] 2025-12-15 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+複合インデックスによるスキャン方法の変化を実験した。
+
+#+caption: 複合インデックスを使う
+#+begin_src sql
+  CREATE TABLE users (
+      id serial PRIMARY KEY,
+      name varchar(255),
+      tel integer,
+      nonidx varchar(255)
+  );
+  CREATE INDEX idx_users_name ON users(name, tel);
+
+  -- レコードが空だと、すべてIndex Onlyになったため
+  INSERT INTO users (name, tel)
+  SELECT
+      'Name' || (i % 1000),
+      (i % 10000)
+  FROM generate_series(1, 100000) i;
+
+  -- 複合インデックスの両方の要素を使うと、インデックスが使われる
+  explain
+  select id from users where name = 'a' and tel = 1;
+
+  -- 複合インデックスの両方の要素を使ってインデックス要素だけだと、Index Only Scanになる
+  explain
+  select name from users where name = 'a' and tel = 1;
+
+  -- 複合インデックスの最初の要素を使うと、インデックスが使われる
+  explain
+  select id from users where name = 'a';
+
+  -- 複合インデックスの順番も入れ替えても、要素があっていればインデックスが使われる
+  explain
+  select id from users where tel = 1 and name = 'a';
+
+  -- 複合インデックスの最初の要素 + インデックス外だとインデックスが使われる
+  explain
+  select id from users where name = 'a' and nonidx = 'a';
+
+  -- 複合インデックスの2番めの要素を使うと、インデックスが使われない
+  explain
+  select id from users where tel = 1;
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                   |   |             |
+|-----------------------------------------------------------------------------------+---+-------------|
+| > CREATE TABLE users (                                                            |   |             |
+| >     id serial PRIMARY KEY,                                                      |   |             |
+| >     name varchar(255),                                                          |   |             |
+| >     tel integer,                                                                |   |             |
+| >     nonidx varchar(255)                                                         |   |             |
+| > );                                                                              |   |             |
+| CREATE TABLE                                                                      |   |             |
+|                                                                                   |   |             |
+| > CREATE INDEX idx_users_name ON users(name, tel);                                |   |             |
+| CREATE INDEX                                                                      |   |             |
+|                                                                                   |   |             |
+| > INSERT INTO users (name, tel)                                                   |   |             |
+| > SELECT                                                                          |   |             |
+| >     'Name'                                                                      |   | (i % 1000), |
+| >     (i % 10000)                                                                 |   |             |
+| > FROM generate_series(1, 100000) i;                                              |   |             |
+| INSERT 0 100000                                                                   |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where name = 'a' and tel = 1;                              |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4)        |   |             |
+| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select name from users where name = 'a' and tel = 1;                            |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Index Only Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=516) |   |             |
+| Index Cond: ((name = 'a'::text) AND (tel = 1))                                    |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where name = 'a';                                          |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Bitmap Heap Scan on users  (cost=4.43..69.98 rows=19 width=4)                     |   |             |
+| Recheck Cond: ((name)::text = 'a'::text)                                          |   |             |
+| ->  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0)        |   |             |
+| Index Cond: ((name)::text = 'a'::text)                                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where tel = 1 and name = 'a';                              |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Index Scan using idx_users_name on users  (cost=0.28..8.30 rows=1 width=4)        |   |             |
+| Index Cond: (((name)::text = 'a'::text) AND (tel = 1))                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where name = 'a' and nonidx = 'a';                         |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Bitmap Heap Scan on users  (cost=4.42..70.03 rows=1 width=4)                      |   |             |
+| Recheck Cond: ((name)::text = 'a'::text)                                          |   |             |
+| Filter: ((nonidx)::text = 'a'::text)                                              |   |             |
+| ->  Bitmap Index Scan on idx_users_name  (cost=0.00..4.42 rows=19 width=0)        |   |             |
+| Index Cond: ((name)::text = 'a'::text)                                            |   |             |
+|                                                                                   |   |             |
+| > explain                                                                         |   |             |
+| > select id from users where tel = 1;                                             |   |             |
+| QUERY PLAN                                                                        |   |             |
+| Seq Scan on users  (cost=0.00..588.34 rows=19 width=4)                            |   |             |
+| Filter: (tel = 1)                                                                 |   |             |
+#+end_src
+
+さまざまなスキャン方法があるのを知るのだった。
+
+- Seq Scan
+- Bitmap Index Scan
+- Bitmap Heap Scan
+- Index Only Scan
+
+* 関連
+
+抽象。
+
+- 索引を使うかどうかは、条件に使う項目の組み合わせで決まる
+
+関連。
+
+- 動機: [[id:20251206T213844][KDOC 496: Index (Only) Scanの様子を見る]]。インデックスを確かめているときに考えた
+- 追加調査: 複数のスキャン方法を試す
+- 疑問: 複合でないインデックスはなんというのか
+- 疑問: 似たインデックスが複数ある場合にどのように選ばれるか
+- 疑問: 複合インデックスは技術的にどうなっているのか

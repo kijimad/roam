@@ -1,0 +1,218 @@
+:properties:
+:ID: 20260511T090725
+:end:
+#+title:      KDOC 580: 複合インデックスは等価条件、範囲条件の順にすると速い
+#+date:       [2026-05-11 Mon 09:07]
+#+filetags:   :permanent:
+#+identifier: 20260511T090725
+
+* この文書のステータス
+- 作成
+  - [X] 2026-06-06 貴島
+- レビュー
+  - [X] 2026-06-21 貴島
+
+* 概要
+:PROPERTIES:
+  :header-args+: :results table
+  :header-args+: :database postgres
+  :header-args+: :dbhost localhost
+  :header-args+: :dbport 15432
+  :header-args+: :dbuser postgres
+  :header-args+: :engine postgresql
+:END:
+
+- 日付範囲、外部キーの2つのフィールドで検索する
+- その場合、複合インデックスにつけた順番がインデックス使用および速度に影響をもたらすか調べる
+
+#+caption: id、日付範囲の順でインデックスをつける
+#+begin_src sql
+  CREATE TABLE customers (
+    id   INT PRIMARY KEY,
+    name TEXT
+  );
+
+  CREATE TABLE orders (
+    id          SERIAL PRIMARY KEY,
+    customer_id INT NOT NULL REFERENCES customers(id),
+    ordered_at  DATE NOT NULL,
+    amount      INT NOT NULL
+  );
+
+  CREATE INDEX idx_cust_date ON orders (customer_id, ordered_at);
+
+  -- 顧客を1000人作成
+  INSERT INTO customers (id, name)
+  SELECT i, 'customer_' || i
+  FROM generate_series(1, 1000) AS i;
+
+  -- 注文を100万行作成（顧客1〜1000、日付は2024-01-01〜2026-05-11の範囲）
+  INSERT INTO orders (customer_id, ordered_at, amount)
+  SELECT
+    (random() * 999 + 1)::int,
+    '2024-01-01'::date + (random() * 860)::int,
+    (random() * 10000 + 100)::int
+  FROM generate_series(1, 1000000);
+
+  EXPLAIN ANALYZE
+  SELECT * FROM orders
+  WHERE customer_id = 3
+  AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                                                         |   |   |
+|-------------------------------------------------------------------------------------------------------------------------+---+---|
+| > CREATE TABLE customers (                                                                                              |   |   |
+| >   id   INT PRIMARY KEY,                                                                                               |   |   |
+| >   name TEXT                                                                                                           |   |   |
+| > );                                                                                                                    |   |   |
+| CREATE TABLE                                                                                                            |   |   |
+|                                                                                                                         |   |   |
+| > CREATE TABLE orders (                                                                                                 |   |   |
+| >   id          SERIAL PRIMARY KEY,                                                                                     |   |   |
+| >   customer_id INT NOT NULL REFERENCES customers(id),                                                                  |   |   |
+| >   ordered_at  DATE NOT NULL,                                                                                          |   |   |
+| >   amount      INT NOT NULL                                                                                            |   |   |
+| > );                                                                                                                    |   |   |
+| CREATE TABLE                                                                                                            |   |   |
+|                                                                                                                         |   |   |
+| > CREATE INDEX idx_cust_date ON orders (customer_id, ordered_at);                                                       |   |   |
+| CREATE INDEX                                                                                                            |   |   |
+|                                                                                                                         |   |   |
+| > INSERT INTO customers (id, name)                                                                                      |   |   |
+| > SELECT i, 'customer_'                                                                                                 |   | i |
+| > FROM generate_series(1, 1000) AS i;                                                                                   |   |   |
+| INSERT 0 1000                                                                                                           |   |   |
+|                                                                                                                         |   |   |
+| > INSERT INTO orders (customer_id, ordered_at, amount)                                                                  |   |   |
+| > SELECT                                                                                                                |   |   |
+| >   (random() * 999 + 1)::int,                                                                                          |   |   |
+| >   '2024-01-01'::date + (random() * 860)::int,                                                                         |   |   |
+| >   (random() * 10000 + 100)::int                                                                                       |   |   |
+| > FROM generate_series(1, 1000000);                                                                                     |   |   |
+| INSERT 0 1000000                                                                                                        |   |   |
+|                                                                                                                         |   |   |
+| > EXPLAIN ANALYZE                                                                                                       |   |   |
+| > SELECT * FROM orders                                                                                                  |   |   |
+| > WHERE customer_id = 3                                                                                                 |   |   |
+| > AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';                                                                 |   |   |
+| QUERY PLAN                                                                                                              |   |   |
+| Bitmap Heap Scan on orders  (cost=4.74..100.08 rows=25 width=16) (actual time=0.019..0.064 rows=86.00 loops=1)          |   |   |
+| Recheck Cond: ((customer_id = 3) AND (ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date))         |   |   |
+| Heap Blocks: exact=86                                                                                                   |   |   |
+| Buffers: shared hit=89                                                                                                  |   |   |
+| ->  Bitmap Index Scan on idx_cust_date  (cost=0.00..4.74 rows=25 width=0) (actual time=0.009..0.009 rows=86.00 loops=1) |   |   |
+| Index Cond: ((customer_id = 3) AND (ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date))           |   |   |
+| Index Searches: 1                                                                                                       |   |   |
+| Buffers: shared hit=3                                                                                                   |   |   |
+| Planning:                                                                                                               |   |   |
+| Buffers: shared hit=8                                                                                                   |   |   |
+| Planning Time: 0.055 ms                                                                                                 |   |   |
+| Execution Time: 0.070 ms                                                                                                |   |   |
+#+end_src
+
+#+caption: 日付範囲、idの順でインデックスをつける
+#+begin_src sql
+  CREATE TABLE customers (
+    id   INT PRIMARY KEY,
+    name TEXT
+  );
+
+  CREATE TABLE orders (
+    id          SERIAL PRIMARY KEY,
+    customer_id INT NOT NULL REFERENCES customers(id),
+    ordered_at  DATE NOT NULL,
+    amount      INT NOT NULL
+  );
+
+  CREATE INDEX idx_date_cust ON orders (ordered_at, customer_id);
+
+  -- 顧客を1000人作成
+  INSERT INTO customers (id, name)
+  SELECT i, 'customer_' || i
+  FROM generate_series(1, 1000) AS i;
+
+  -- 注文を100万行作成（顧客1〜1000、日付は2024-01-01〜2026-05-11の範囲）
+  INSERT INTO orders (customer_id, ordered_at, amount)
+  SELECT
+    (random() * 999 + 1)::int,
+    '2024-01-01'::date + (random() * 860)::int,
+    (random() * 10000 + 100)::int
+  FROM generate_series(1, 1000000);
+
+  EXPLAIN ANALYZE
+  SELECT * FROM orders
+  WHERE customer_id = 3
+  AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';
+#+end_src
+
+#+RESULTS:
+#+begin_src
+|                                                                                                                            |   |   |
+|----------------------------------------------------------------------------------------------------------------------------+---+---|
+| > CREATE TABLE customers (                                                                                                 |   |   |
+| >   id   INT PRIMARY KEY,                                                                                                  |   |   |
+| >   name TEXT                                                                                                              |   |   |
+| > );                                                                                                                       |   |   |
+| CREATE TABLE                                                                                                               |   |   |
+|                                                                                                                            |   |   |
+| > CREATE TABLE orders (                                                                                                    |   |   |
+| >   id          SERIAL PRIMARY KEY,                                                                                        |   |   |
+| >   customer_id INT NOT NULL REFERENCES customers(id),                                                                     |   |   |
+| >   ordered_at  DATE NOT NULL,                                                                                             |   |   |
+| >   amount      INT NOT NULL                                                                                               |   |   |
+| > );                                                                                                                       |   |   |
+| CREATE TABLE                                                                                                               |   |   |
+|                                                                                                                            |   |   |
+| > CREATE INDEX idx_date_cust ON orders (ordered_at, customer_id);                                                          |   |   |
+| CREATE INDEX                                                                                                               |   |   |
+|                                                                                                                            |   |   |
+| > INSERT INTO customers (id, name)                                                                                         |   |   |
+| > SELECT i, 'customer_'                                                                                                    |   | i |
+| > FROM generate_series(1, 1000) AS i;                                                                                      |   |   |
+| INSERT 0 1000                                                                                                              |   |   |
+|                                                                                                                            |   |   |
+| > INSERT INTO orders (customer_id, ordered_at, amount)                                                                     |   |   |
+| > SELECT                                                                                                                   |   |   |
+| >   (random() * 999 + 1)::int,                                                                                             |   |   |
+| >   '2024-01-01'::date + (random() * 860)::int,                                                                            |   |   |
+| >   (random() * 10000 + 100)::int                                                                                          |   |   |
+| > FROM generate_series(1, 1000000);                                                                                        |   |   |
+| INSERT 0 1000000                                                                                                           |   |   |
+|                                                                                                                            |   |   |
+| > EXPLAIN ANALYZE                                                                                                          |   |   |
+| > SELECT * FROM orders                                                                                                     |   |   |
+| > WHERE customer_id = 3                                                                                                    |   |   |
+| > AND ordered_at BETWEEN '2026-01-01' AND '2026-03-31';                                                                    |   |   |
+| QUERY PLAN                                                                                                                 |   |   |
+| Bitmap Heap Scan on orders  (cost=118.94..214.28 rows=25 width=16) (actual time=0.198..0.274 rows=120.00 loops=1)          |   |   |
+| Recheck Cond: ((ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date) AND (customer_id = 3))            |   |   |
+| Heap Blocks: exact=118                                                                                                     |   |   |
+| Buffers: shared hit=397                                                                                                    |   |   |
+| ->  Bitmap Index Scan on idx_date_cust  (cost=0.00..118.94 rows=25 width=0) (actual time=0.186..0.186 rows=120.00 loops=1) |   |   |
+| Index Cond: ((ordered_at >= '2026-01-01'::date) AND (ordered_at <= '2026-03-31'::date) AND (customer_id = 3))              |   |   |
+| Index Searches: 90                                                                                                         |   |   |
+| Buffers: shared hit=279                                                                                                    |   |   |
+| Planning:                                                                                                                  |   |   |
+| Buffers: shared hit=8                                                                                                      |   |   |
+| Planning Time: 0.055 ms                                                                                                    |   |   |
+| Execution Time: 0.281 ms                                                                                                   |   |   |
+#+end_src
+
+- 等価条件、範囲条件の順に複合インデックスを設定したほうが高速である
+- 顧客レコードの数が少なくして1顧客あたりの返却レコード数が多い場合、インデックスの効率差よりもヒープアクセスのほうが圧倒的に大きいので実行時間があまり変わらなかった
+
+* 関連
+
+抽象。
+
+- 複数の鍵で並べるとき、一致で絞る鍵を先に置くと、範囲で絞る対象が1か所にまとまる
+- 支配的なコストが別にあると、一部を改善しても全体の時間は変わらない
+
+関連。
+
+- 補足: [[id:20251206T213844][KDOC 496: Index (Only) Scanの様子を見る]]。本体を見に行くコスト
+- 前提: [[id:20251207T091742][KDOC 497: 複合インデックスの使用条件を試す]]。複合インデックスの条件でスキャン方法が変わること
+- 類推: [[id:20260505T111446][KDOC 576: 『ザ・ゴール』]]。全体の速さは支配的な部分で決まり、ほかを改善しても変わらない例

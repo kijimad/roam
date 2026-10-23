@@ -1,0 +1,1808 @@
+:properties:
+:ID: 20250913T214118
+:mtime:    20250914081937
+:ctime:    20250913214123
+:end:
+#+title:      KDOC 466: ディストロレスコンテナには共有ライブラリや設定ファイルはあるがツール類はない
+#+date:       [2025-09-13 Sat 21:41]
+#+filetags:   :permanent:
+#+identifier: 20250913T214118
+
+* この文書のステータス
+- 作成
+  - [X] 2025-09-14 貴島
+- レビュー
+  - [X] 2025-10-31 貴島
+
+* 概要
+
+Dockerのディストロレスイメージが安全な本番イメージとしてよく使われる。 ~scratch~ コンテナとの違いは何か。
+
+- [[https://github.com/GoogleContainerTools/distroless][GoogleContainerTools/distroless]]
+
+イメージタグを見る限り、 ~debian~ や ~node~ があるので、OSの依存関係や言語処理系は入っている、ということなのだろう。
+
+中身を見てみる。
+
+#+begin_src shell
+  # デフォルトのcommandはないので適当に指定してコンテナを起動する
+  docker create --name tmp-distroless gcr.io/distroless/base true
+  docker cp tmp-distroless:/ ./distroless-files
+  docker rm tmp-distroless
+#+end_src
+
+#+begin_src shell
+  du -sh ./distroless-files
+  tree ./distroless-files
+#+end_src
+
+#+RESULTS:
+#+begin_src
+24M	./distroless-files
+./distroless-files
+├── bin
+├── boot
+├── dev
+│   ├── console
+│   ├── pts
+│   └── shm
+├── etc
+│   ├── debian_version
+│   ├── default
+│   ├── dpkg
+│   │   └── origins
+│   │       └── debian
+│   ├── ethertypes
+│   ├── group
+│   ├── host.conf
+│   ├── hostname
+│   ├── hosts
+│   ├── issue
+│   ├── issue.net
+│   ├── ld.so.conf.d
+│   │   └── x86_64-linux-gnu.conf
+│   ├── mime.types
+│   ├── mtab -> /proc/mounts
+│   ├── nsswitch.conf
+│   ├── os-release -> ../usr/lib/os-release
+│   ├── passwd
+│   ├── profile.d
+│   ├── protocols
+│   ├── resolv.conf
+│   ├── rpc
+│   ├── services
+│   ├── skel
+│   ├── ssl
+│   │   └── certs
+│   │       └── ca-certificates.crt
+│   └── update-motd.d
+│       └── 10-uname
+├── home
+│   └── nonroot
+├── lib
+│   └── x86_64-linux-gnu
+│       ├── ld-linux-x86-64.so.2
+│       ├── libanl.so.1
+│       ├── libBrokenLocale.so.1
+│       ├── libc_malloc_debug.so.0
+│       ├── libc.so.6
+│       ├── libdl.so.2
+│       ├── libmemusage.so
+│       ├── libm.so.6
+│       ├── libmvec.so.1
+│       ├── libnsl.so.1
+│       ├── libnss_compat.so.2
+│       ├── libnss_dns.so.2
+│       ├── libnss_files.so.2
+│       ├── libnss_hesiod.so.2
+│       ├── libpcprofile.so
+│       ├── libpthread.so.0
+│       ├── libresolv.so.2
+│       ├── librt.so.1
+│       ├── libthread_db.so.1
+│       └── libutil.so.1
+├── lib64
+│   └── ld-linux-x86-64.so.2 -> /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+├── proc
+├── root
+├── run
+├── sbin
+├── sys
+├── tmp
+├── usr
+│   ├── bin
+│   ├── games
+│   ├── include
+│   ├── lib
+│   │   ├── os-release
+│   │   └── x86_64-linux-gnu
+│   │       ├── engines-3
+│   │       │   ├── afalg.so
+│   │       │   ├── loader_attic.so
+│   │       │   └── padlock.so
+│   │       ├── gconv
+│   │       │   ├── ANSI_X3.110.so
+│   │       │   ├── ARMSCII-8.so
+│   │       │   ├── ASMO_449.so
+│   │       │   ├── BIG5HKSCS.so
+│   │       │   ├── BIG5.so
+│   │       │   ├── BRF.so
+│   │       │   ├── CP10007.so
+│   │       │   ├── CP1125.so
+│   │       │   ├── CP1250.so
+│   │       │   ├── CP1251.so
+│   │       │   ├── CP1252.so
+│   │       │   ├── CP1253.so
+│   │       │   ├── CP1254.so
+│   │       │   ├── CP1255.so
+│   │       │   ├── CP1256.so
+│   │       │   ├── CP1257.so
+│   │       │   ├── CP1258.so
+│   │       │   ├── CP737.so
+│   │       │   ├── CP770.so
+│   │       │   ├── CP771.so
+│   │       │   ├── CP772.so
+│   │       │   ├── CP773.so
+│   │       │   ├── CP774.so
+│   │       │   ├── CP775.so
+│   │       │   ├── CP932.so
+│   │       │   ├── CSN_369103.so
+│   │       │   ├── CWI.so
+│   │       │   ├── DEC-MCS.so
+│   │       │   ├── EBCDIC-AT-DE-A.so
+│   │       │   ├── EBCDIC-AT-DE.so
+│   │       │   ├── EBCDIC-CA-FR.so
+│   │       │   ├── EBCDIC-DK-NO-A.so
+│   │       │   ├── EBCDIC-DK-NO.so
+│   │       │   ├── EBCDIC-ES-A.so
+│   │       │   ├── EBCDIC-ES.so
+│   │       │   ├── EBCDIC-ES-S.so
+│   │       │   ├── EBCDIC-FI-SE-A.so
+│   │       │   ├── EBCDIC-FI-SE.so
+│   │       │   ├── EBCDIC-FR.so
+│   │       │   ├── EBCDIC-IS-FRISS.so
+│   │       │   ├── EBCDIC-IT.so
+│   │       │   ├── EBCDIC-PT.so
+│   │       │   ├── EBCDIC-UK.so
+│   │       │   ├── EBCDIC-US.so
+│   │       │   ├── ECMA-CYRILLIC.so
+│   │       │   ├── EUC-CN.so
+│   │       │   ├── EUC-JISX0213.so
+│   │       │   ├── EUC-JP-MS.so
+│   │       │   ├── EUC-JP.so
+│   │       │   ├── EUC-KR.so
+│   │       │   ├── EUC-TW.so
+│   │       │   ├── GB18030.so
+│   │       │   ├── GBBIG5.so
+│   │       │   ├── GBGBK.so
+│   │       │   ├── GBK.so
+│   │       │   ├── gconv-modules
+│   │       │   ├── gconv-modules.cache
+│   │       │   ├── gconv-modules.d
+│   │       │   │   └── gconv-modules-extra.conf
+│   │       │   ├── GEORGIAN-ACADEMY.so
+│   │       │   ├── GEORGIAN-PS.so
+│   │       │   ├── GOST_19768-74.so
+│   │       │   ├── GREEK7-OLD.so
+│   │       │   ├── GREEK7.so
+│   │       │   ├── GREEK-CCITT.so
+│   │       │   ├── HP-GREEK8.so
+│   │       │   ├── HP-ROMAN8.so
+│   │       │   ├── HP-ROMAN9.so
+│   │       │   ├── HP-THAI8.so
+│   │       │   ├── HP-TURKISH8.so
+│   │       │   ├── IBM037.so
+│   │       │   ├── IBM038.so
+│   │       │   ├── IBM1004.so
+│   │       │   ├── IBM1008_420.so
+│   │       │   ├── IBM1008.so
+│   │       │   ├── IBM1025.so
+│   │       │   ├── IBM1026.so
+│   │       │   ├── IBM1046.so
+│   │       │   ├── IBM1047.so
+│   │       │   ├── IBM1097.so
+│   │       │   ├── IBM1112.so
+│   │       │   ├── IBM1122.so
+│   │       │   ├── IBM1123.so
+│   │       │   ├── IBM1124.so
+│   │       │   ├── IBM1129.so
+│   │       │   ├── IBM1130.so
+│   │       │   ├── IBM1132.so
+│   │       │   ├── IBM1133.so
+│   │       │   ├── IBM1137.so
+│   │       │   ├── IBM1140.so
+│   │       │   ├── IBM1141.so
+│   │       │   ├── IBM1142.so
+│   │       │   ├── IBM1143.so
+│   │       │   ├── IBM1144.so
+│   │       │   ├── IBM1145.so
+│   │       │   ├── IBM1146.so
+│   │       │   ├── IBM1147.so
+│   │       │   ├── IBM1148.so
+│   │       │   ├── IBM1149.so
+│   │       │   ├── IBM1153.so
+│   │       │   ├── IBM1154.so
+│   │       │   ├── IBM1155.so
+│   │       │   ├── IBM1156.so
+│   │       │   ├── IBM1157.so
+│   │       │   ├── IBM1158.so
+│   │       │   ├── IBM1160.so
+│   │       │   ├── IBM1161.so
+│   │       │   ├── IBM1162.so
+│   │       │   ├── IBM1163.so
+│   │       │   ├── IBM1164.so
+│   │       │   ├── IBM1166.so
+│   │       │   ├── IBM1167.so
+│   │       │   ├── IBM12712.so
+│   │       │   ├── IBM1364.so
+│   │       │   ├── IBM1371.so
+│   │       │   ├── IBM1388.so
+│   │       │   ├── IBM1390.so
+│   │       │   ├── IBM1399.so
+│   │       │   ├── IBM16804.so
+│   │       │   ├── IBM256.so
+│   │       │   ├── IBM273.so
+│   │       │   ├── IBM274.so
+│   │       │   ├── IBM275.so
+│   │       │   ├── IBM277.so
+│   │       │   ├── IBM278.so
+│   │       │   ├── IBM280.so
+│   │       │   ├── IBM281.so
+│   │       │   ├── IBM284.so
+│   │       │   ├── IBM285.so
+│   │       │   ├── IBM290.so
+│   │       │   ├── IBM297.so
+│   │       │   ├── IBM420.so
+│   │       │   ├── IBM423.so
+│   │       │   ├── IBM424.so
+│   │       │   ├── IBM437.so
+│   │       │   ├── IBM4517.so
+│   │       │   ├── IBM4899.so
+│   │       │   ├── IBM4909.so
+│   │       │   ├── IBM4971.so
+│   │       │   ├── IBM500.so
+│   │       │   ├── IBM5347.so
+│   │       │   ├── IBM803.so
+│   │       │   ├── IBM850.so
+│   │       │   ├── IBM851.so
+│   │       │   ├── IBM852.so
+│   │       │   ├── IBM855.so
+│   │       │   ├── IBM856.so
+│   │       │   ├── IBM857.so
+│   │       │   ├── IBM858.so
+│   │       │   ├── IBM860.so
+│   │       │   ├── IBM861.so
+│   │       │   ├── IBM862.so
+│   │       │   ├── IBM863.so
+│   │       │   ├── IBM864.so
+│   │       │   ├── IBM865.so
+│   │       │   ├── IBM866NAV.so
+│   │       │   ├── IBM866.so
+│   │       │   ├── IBM868.so
+│   │       │   ├── IBM869.so
+│   │       │   ├── IBM870.so
+│   │       │   ├── IBM871.so
+│   │       │   ├── IBM874.so
+│   │       │   ├── IBM875.so
+│   │       │   ├── IBM880.so
+│   │       │   ├── IBM891.so
+│   │       │   ├── IBM901.so
+│   │       │   ├── IBM902.so
+│   │       │   ├── IBM9030.so
+│   │       │   ├── IBM903.so
+│   │       │   ├── IBM904.so
+│   │       │   ├── IBM905.so
+│   │       │   ├── IBM9066.so
+│   │       │   ├── IBM918.so
+│   │       │   ├── IBM921.so
+│   │       │   ├── IBM922.so
+│   │       │   ├── IBM930.so
+│   │       │   ├── IBM932.so
+│   │       │   ├── IBM933.so
+│   │       │   ├── IBM935.so
+│   │       │   ├── IBM937.so
+│   │       │   ├── IBM939.so
+│   │       │   ├── IBM943.so
+│   │       │   ├── IBM9448.so
+│   │       │   ├── IEC_P27-1.so
+│   │       │   ├── INIS-8.so
+│   │       │   ├── INIS-CYRILLIC.so
+│   │       │   ├── INIS.so
+│   │       │   ├── ISIRI-3342.so
+│   │       │   ├── ISO_10367-BOX.so
+│   │       │   ├── ISO_11548-1.so
+│   │       │   ├── ISO-2022-CN-EXT.so
+│   │       │   ├── ISO-2022-CN.so
+│   │       │   ├── ISO-2022-JP-3.so
+│   │       │   ├── ISO-2022-JP.so
+│   │       │   ├── ISO-2022-KR.so
+│   │       │   ├── ISO_2033.so
+│   │       │   ├── ISO_5427-EXT.so
+│   │       │   ├── ISO_5427.so
+│   │       │   ├── ISO_5428.so
+│   │       │   ├── ISO646.so
+│   │       │   ├── ISO_6937-2.so
+│   │       │   ├── ISO_6937.so
+│   │       │   ├── ISO8859-10.so
+│   │       │   ├── ISO8859-11.so
+│   │       │   ├── ISO8859-13.so
+│   │       │   ├── ISO8859-14.so
+│   │       │   ├── ISO8859-15.so
+│   │       │   ├── ISO8859-16.so
+│   │       │   ├── ISO8859-1.so
+│   │       │   ├── ISO8859-2.so
+│   │       │   ├── ISO8859-3.so
+│   │       │   ├── ISO8859-4.so
+│   │       │   ├── ISO8859-5.so
+│   │       │   ├── ISO8859-6.so
+│   │       │   ├── ISO8859-7.so
+│   │       │   ├── ISO8859-8.so
+│   │       │   ├── ISO8859-9E.so
+│   │       │   ├── ISO8859-9.so
+│   │       │   ├── ISO-IR-197.so
+│   │       │   ├── ISO-IR-209.so
+│   │       │   ├── JOHAB.so
+│   │       │   ├── KOI8-R.so
+│   │       │   ├── KOI8-RU.so
+│   │       │   ├── KOI-8.so
+│   │       │   ├── KOI8-T.so
+│   │       │   ├── KOI8-U.so
+│   │       │   ├── LATIN-GREEK-1.so
+│   │       │   ├── LATIN-GREEK.so
+│   │       │   ├── libCNS.so
+│   │       │   ├── libGB.so
+│   │       │   ├── libISOIR165.so
+│   │       │   ├── libJIS.so
+│   │       │   ├── libJISX0213.so
+│   │       │   ├── libKSC.so
+│   │       │   ├── MAC-CENTRALEUROPE.so
+│   │       │   ├── MACINTOSH.so
+│   │       │   ├── MAC-IS.so
+│   │       │   ├── MAC-SAMI.so
+│   │       │   ├── MAC-UK.so
+│   │       │   ├── MIK.so
+│   │       │   ├── NATS-DANO.so
+│   │       │   ├── NATS-SEFI.so
+│   │       │   ├── PT154.so
+│   │       │   ├── RK1048.so
+│   │       │   ├── SAMI-WS2.so
+│   │       │   ├── SHIFT_JISX0213.so
+│   │       │   ├── SJIS.so
+│   │       │   ├── T.61.so
+│   │       │   ├── TCVN5712-1.so
+│   │       │   ├── TIS-620.so
+│   │       │   ├── TSCII.so
+│   │       │   ├── UHC.so
+│   │       │   ├── UNICODE.so
+│   │       │   ├── UTF-16.so
+│   │       │   ├── UTF-32.so
+│   │       │   ├── UTF-7.so
+│   │       │   └── VISCII.so
+│   │       ├── libcrypto.so.3
+│   │       ├── libssl.so.3
+│   │       └── ossl-modules
+│   │           └── legacy.so
+│   ├── sbin
+│   ├── share
+│   │   ├── base-files
+│   │   │   ├── dot.bashrc
+│   │   │   ├── dot.profile
+│   │   │   ├── dot.profile.md5sums
+│   │   │   ├── info.dir
+│   │   │   ├── motd
+│   │   │   ├── profile
+│   │   │   ├── profile.md5sums
+│   │   │   └── staff-group-for-usr-local
+│   │   ├── bug
+│   │   │   └── media-types
+│   │   │       └── presubj
+│   │   ├── common-licenses
+│   │   │   ├── Apache-2.0
+│   │   │   ├── Artistic
+│   │   │   ├── BSD
+│   │   │   ├── CC0-1.0
+│   │   │   ├── GFDL -> GFDL-1.3
+│   │   │   ├── GFDL-1.2
+│   │   │   ├── GFDL-1.3
+│   │   │   ├── GPL -> GPL-3
+│   │   │   ├── GPL-1
+│   │   │   ├── GPL-2
+│   │   │   ├── GPL-3
+│   │   │   ├── LGPL -> LGPL-3
+│   │   │   ├── LGPL-2
+│   │   │   ├── LGPL-2.1
+│   │   │   ├── LGPL-3
+│   │   │   ├── MPL-1.1
+│   │   │   └── MPL-2.0
+│   │   ├── dict
+│   │   ├── doc
+│   │   │   ├── base-files
+│   │   │   │   ├── changelog.gz
+│   │   │   │   ├── copyright
+│   │   │   │   ├── FAQ -> README
+│   │   │   │   ├── README
+│   │   │   │   └── README.FHS
+│   │   │   ├── ca-certificates
+│   │   │   │   └── copyright
+│   │   │   ├── libc6
+│   │   │   │   ├── changelog.Debian.gz
+│   │   │   │   ├── changelog.gz
+│   │   │   │   ├── copyright
+│   │   │   │   ├── NEWS.Debian.gz
+│   │   │   │   ├── NEWS.gz
+│   │   │   │   ├── README.Debian.gz
+│   │   │   │   └── README.hesiod.gz
+│   │   │   ├── libssl3
+│   │   │   │   ├── changelog.Debian.gz
+│   │   │   │   ├── changelog.gz
+│   │   │   │   └── copyright
+│   │   │   ├── media-types
+│   │   │   │   ├── changelog.gz
+│   │   │   │   └── copyright
+│   │   │   ├── netbase
+│   │   │   │   ├── changelog.gz
+│   │   │   │   └── copyright
+│   │   │   └── tzdata
+│   │   │       ├── changelog.Debian.gz
+│   │   │       ├── changelog.gz
+│   │   │       ├── copyright
+│   │   │       └── README.Debian
+│   │   ├── info
+│   │   ├── lintian
+│   │   │   └── overrides
+│   │   │       ├── base-files
+│   │   │       ├── libc6
+│   │   │       └── tzdata
+│   │   ├── man
+│   │   ├── misc
+│   │   └── zoneinfo
+│   │       ├── Africa
+│   │       │   ├── Abidjan
+│   │       │   ├── Accra
+│   │       │   ├── Addis_Ababa
+│   │       │   ├── Algiers
+│   │       │   ├── Asmara
+│   │       │   ├── Asmera -> Nairobi
+│   │       │   ├── Bamako
+│   │       │   ├── Bangui
+│   │       │   ├── Banjul
+│   │       │   ├── Bissau
+│   │       │   ├── Blantyre
+│   │       │   ├── Brazzaville
+│   │       │   ├── Bujumbura
+│   │       │   ├── Cairo
+│   │       │   ├── Casablanca
+│   │       │   ├── Ceuta
+│   │       │   ├── Conakry
+│   │       │   ├── Dakar
+│   │       │   ├── Dar_es_Salaam
+│   │       │   ├── Djibouti
+│   │       │   ├── Douala
+│   │       │   ├── El_Aaiun
+│   │       │   ├── Freetown
+│   │       │   ├── Gaborone
+│   │       │   ├── Harare
+│   │       │   ├── Johannesburg
+│   │       │   ├── Juba
+│   │       │   ├── Kampala
+│   │       │   ├── Khartoum
+│   │       │   ├── Kigali
+│   │       │   ├── Kinshasa
+│   │       │   ├── Lagos
+│   │       │   ├── Libreville
+│   │       │   ├── Lome
+│   │       │   ├── Luanda
+│   │       │   ├── Lubumbashi
+│   │       │   ├── Lusaka
+│   │       │   ├── Malabo
+│   │       │   ├── Maputo
+│   │       │   ├── Maseru
+│   │       │   ├── Mbabane
+│   │       │   ├── Mogadishu
+│   │       │   ├── Monrovia
+│   │       │   ├── Nairobi
+│   │       │   ├── Ndjamena
+│   │       │   ├── Niamey
+│   │       │   ├── Nouakchott
+│   │       │   ├── Ouagadougou
+│   │       │   ├── Porto-Novo
+│   │       │   ├── Sao_Tome
+│   │       │   ├── Timbuktu -> Abidjan
+│   │       │   ├── Tripoli
+│   │       │   ├── Tunis
+│   │       │   └── Windhoek
+│   │       ├── America
+│   │       │   ├── Adak
+│   │       │   ├── Anchorage
+│   │       │   ├── Anguilla
+│   │       │   ├── Antigua
+│   │       │   ├── Araguaina
+│   │       │   ├── Argentina
+│   │       │   │   ├── Buenos_Aires
+│   │       │   │   ├── Catamarca
+│   │       │   │   ├── ComodRivadavia -> Catamarca
+│   │       │   │   ├── Cordoba
+│   │       │   │   ├── Jujuy
+│   │       │   │   ├── La_Rioja
+│   │       │   │   ├── Mendoza
+│   │       │   │   ├── Rio_Gallegos
+│   │       │   │   ├── Salta
+│   │       │   │   ├── San_Juan
+│   │       │   │   ├── San_Luis
+│   │       │   │   ├── Tucuman
+│   │       │   │   └── Ushuaia
+│   │       │   ├── Aruba
+│   │       │   ├── Asuncion
+│   │       │   ├── Atikokan
+│   │       │   ├── Atka -> Adak
+│   │       │   ├── Bahia
+│   │       │   ├── Bahia_Banderas
+│   │       │   ├── Barbados
+│   │       │   ├── Belem
+│   │       │   ├── Belize
+│   │       │   ├── Blanc-Sablon
+│   │       │   ├── Boa_Vista
+│   │       │   ├── Bogota
+│   │       │   ├── Boise
+│   │       │   ├── Buenos_Aires -> Argentina/Buenos_Aires
+│   │       │   ├── Cambridge_Bay
+│   │       │   ├── Campo_Grande
+│   │       │   ├── Cancun
+│   │       │   ├── Caracas
+│   │       │   ├── Catamarca -> Argentina/Catamarca
+│   │       │   ├── Cayenne
+│   │       │   ├── Cayman
+│   │       │   ├── Chicago
+│   │       │   ├── Chihuahua
+│   │       │   ├── Ciudad_Juarez
+│   │       │   ├── Coral_Harbour -> Panama
+│   │       │   ├── Cordoba -> Argentina/Cordoba
+│   │       │   ├── Costa_Rica
+│   │       │   ├── Coyhaique
+│   │       │   ├── Creston
+│   │       │   ├── Cuiaba
+│   │       │   ├── Curacao
+│   │       │   ├── Danmarkshavn
+│   │       │   ├── Dawson
+│   │       │   ├── Dawson_Creek
+│   │       │   ├── Denver
+│   │       │   ├── Detroit
+│   │       │   ├── Dominica
+│   │       │   ├── Edmonton
+│   │       │   ├── Eirunepe
+│   │       │   ├── El_Salvador
+│   │       │   ├── Ensenada -> Tijuana
+│   │       │   ├── Fortaleza
+│   │       │   ├── Fort_Nelson
+│   │       │   ├── Fort_Wayne -> Indiana/Indianapolis
+│   │       │   ├── Glace_Bay
+│   │       │   ├── Godthab -> Nuuk
+│   │       │   ├── Goose_Bay
+│   │       │   ├── Grand_Turk
+│   │       │   ├── Grenada
+│   │       │   ├── Guadeloupe
+│   │       │   ├── Guatemala
+│   │       │   ├── Guayaquil
+│   │       │   ├── Guyana
+│   │       │   ├── Halifax
+│   │       │   ├── Havana
+│   │       │   ├── Hermosillo
+│   │       │   ├── Indiana
+│   │       │   │   ├── Indianapolis
+│   │       │   │   ├── Knox
+│   │       │   │   ├── Marengo
+│   │       │   │   ├── Petersburg
+│   │       │   │   ├── Tell_City
+│   │       │   │   ├── Vevay
+│   │       │   │   ├── Vincennes
+│   │       │   │   └── Winamac
+│   │       │   ├── Indianapolis -> Indiana/Indianapolis
+│   │       │   ├── Inuvik
+│   │       │   ├── Iqaluit
+│   │       │   ├── Jamaica
+│   │       │   ├── Jujuy -> Argentina/Jujuy
+│   │       │   ├── Juneau
+│   │       │   ├── Kentucky
+│   │       │   │   ├── Louisville
+│   │       │   │   └── Monticello
+│   │       │   ├── Knox_IN -> Indiana/Knox
+│   │       │   ├── Kralendijk -> Puerto_Rico
+│   │       │   ├── La_Paz
+│   │       │   ├── Lima
+│   │       │   ├── Los_Angeles
+│   │       │   ├── Louisville -> Kentucky/Louisville
+│   │       │   ├── Lower_Princes -> Puerto_Rico
+│   │       │   ├── Maceio
+│   │       │   ├── Managua
+│   │       │   ├── Manaus
+│   │       │   ├── Marigot -> Puerto_Rico
+│   │       │   ├── Martinique
+│   │       │   ├── Matamoros
+│   │       │   ├── Mazatlan
+│   │       │   ├── Mendoza -> Argentina/Mendoza
+│   │       │   ├── Menominee
+│   │       │   ├── Merida
+│   │       │   ├── Metlakatla
+│   │       │   ├── Mexico_City
+│   │       │   ├── Miquelon
+│   │       │   ├── Moncton
+│   │       │   ├── Monterrey
+│   │       │   ├── Montevideo
+│   │       │   ├── Montreal -> Toronto
+│   │       │   ├── Montserrat
+│   │       │   ├── Nassau
+│   │       │   ├── New_York
+│   │       │   ├── Nipigon -> Toronto
+│   │       │   ├── Nome
+│   │       │   ├── Noronha
+│   │       │   ├── North_Dakota
+│   │       │   │   ├── Beulah
+│   │       │   │   ├── Center
+│   │       │   │   └── New_Salem
+│   │       │   ├── Nuuk
+│   │       │   ├── Ojinaga
+│   │       │   ├── Panama
+│   │       │   ├── Pangnirtung -> Iqaluit
+│   │       │   ├── Paramaribo
+│   │       │   ├── Phoenix
+│   │       │   ├── Port-au-Prince
+│   │       │   ├── Porto_Acre -> Rio_Branco
+│   │       │   ├── Port_of_Spain
+│   │       │   ├── Porto_Velho
+│   │       │   ├── Puerto_Rico
+│   │       │   ├── Punta_Arenas
+│   │       │   ├── Rainy_River -> Winnipeg
+│   │       │   ├── Rankin_Inlet
+│   │       │   ├── Recife
+│   │       │   ├── Regina
+│   │       │   ├── Resolute
+│   │       │   ├── Rio_Branco
+│   │       │   ├── Rosario -> Argentina/Cordoba
+│   │       │   ├── Santa_Isabel -> Tijuana
+│   │       │   ├── Santarem
+│   │       │   ├── Santiago
+│   │       │   ├── Santo_Domingo
+│   │       │   ├── Sao_Paulo
+│   │       │   ├── Scoresbysund
+│   │       │   ├── Shiprock -> Denver
+│   │       │   ├── Sitka
+│   │       │   ├── St_Barthelemy -> Puerto_Rico
+│   │       │   ├── St_Johns
+│   │       │   ├── St_Kitts
+│   │       │   ├── St_Lucia
+│   │       │   ├── St_Thomas
+│   │       │   ├── St_Vincent
+│   │       │   ├── Swift_Current
+│   │       │   ├── Tegucigalpa
+│   │       │   ├── Thule
+│   │       │   ├── Thunder_Bay -> Toronto
+│   │       │   ├── Tijuana
+│   │       │   ├── Toronto
+│   │       │   ├── Tortola
+│   │       │   ├── Vancouver
+│   │       │   ├── Virgin -> Puerto_Rico
+│   │       │   ├── Whitehorse
+│   │       │   ├── Winnipeg
+│   │       │   ├── Yakutat
+│   │       │   └── Yellowknife -> Edmonton
+│   │       ├── Antarctica
+│   │       │   ├── Casey
+│   │       │   ├── Davis
+│   │       │   ├── DumontDUrville
+│   │       │   ├── Macquarie
+│   │       │   ├── Mawson
+│   │       │   ├── McMurdo
+│   │       │   ├── Palmer
+│   │       │   ├── Rothera
+│   │       │   ├── South_Pole -> ../Pacific/Auckland
+│   │       │   ├── Syowa
+│   │       │   ├── Troll
+│   │       │   └── Vostok
+│   │       ├── Arctic
+│   │       │   └── Longyearbyen -> ../Europe/Berlin
+│   │       ├── Asia
+│   │       │   ├── Aden
+│   │       │   ├── Almaty
+│   │       │   ├── Amman
+│   │       │   ├── Anadyr
+│   │       │   ├── Aqtau
+│   │       │   ├── Aqtobe
+│   │       │   ├── Ashgabat
+│   │       │   ├── Ashkhabad -> Ashgabat
+│   │       │   ├── Atyrau
+│   │       │   ├── Baghdad
+│   │       │   ├── Bahrain
+│   │       │   ├── Baku
+│   │       │   ├── Bangkok
+│   │       │   ├── Barnaul
+│   │       │   ├── Beirut
+│   │       │   ├── Bishkek
+│   │       │   ├── Brunei
+│   │       │   ├── Calcutta -> Kolkata
+│   │       │   ├── Chita
+│   │       │   ├── Choibalsan -> Ulaanbaatar
+│   │       │   ├── Chongqing -> Shanghai
+│   │       │   ├── Chungking -> Shanghai
+│   │       │   ├── Colombo
+│   │       │   ├── Dacca -> Dhaka
+│   │       │   ├── Damascus
+│   │       │   ├── Dhaka
+│   │       │   ├── Dili
+│   │       │   ├── Dubai
+│   │       │   ├── Dushanbe
+│   │       │   ├── Famagusta
+│   │       │   ├── Gaza
+│   │       │   ├── Harbin -> Shanghai
+│   │       │   ├── Hebron
+│   │       │   ├── Ho_Chi_Minh
+│   │       │   ├── Hong_Kong
+│   │       │   ├── Hovd
+│   │       │   ├── Irkutsk
+│   │       │   ├── Istanbul -> ../Europe/Istanbul
+│   │       │   ├── Jakarta
+│   │       │   ├── Jayapura
+│   │       │   ├── Jerusalem
+│   │       │   ├── Kabul
+│   │       │   ├── Kamchatka
+│   │       │   ├── Karachi
+│   │       │   ├── Kashgar -> Urumqi
+│   │       │   ├── Kathmandu
+│   │       │   ├── Katmandu -> Kathmandu
+│   │       │   ├── Khandyga
+│   │       │   ├── Kolkata
+│   │       │   ├── Krasnoyarsk
+│   │       │   ├── Kuala_Lumpur
+│   │       │   ├── Kuching
+│   │       │   ├── Kuwait
+│   │       │   ├── Macao -> Macau
+│   │       │   ├── Macau
+│   │       │   ├── Magadan
+│   │       │   ├── Makassar
+│   │       │   ├── Manila
+│   │       │   ├── Muscat
+│   │       │   ├── Nicosia
+│   │       │   ├── Novokuznetsk
+│   │       │   ├── Novosibirsk
+│   │       │   ├── Omsk
+│   │       │   ├── Oral
+│   │       │   ├── Phnom_Penh
+│   │       │   ├── Pontianak
+│   │       │   ├── Pyongyang
+│   │       │   ├── Qatar
+│   │       │   ├── Qostanay
+│   │       │   ├── Qyzylorda
+│   │       │   ├── Rangoon -> Yangon
+│   │       │   ├── Riyadh
+│   │       │   ├── Saigon -> Ho_Chi_Minh
+│   │       │   ├── Sakhalin
+│   │       │   ├── Samarkand
+│   │       │   ├── Seoul
+│   │       │   ├── Shanghai
+│   │       │   ├── Singapore
+│   │       │   ├── Srednekolymsk
+│   │       │   ├── Taipei
+│   │       │   ├── Tashkent
+│   │       │   ├── Tbilisi
+│   │       │   ├── Tehran
+│   │       │   ├── Tel_Aviv -> Jerusalem
+│   │       │   ├── Thimbu -> Thimphu
+│   │       │   ├── Thimphu
+│   │       │   ├── Tokyo
+│   │       │   ├── Tomsk
+│   │       │   ├── Ujung_Pandang -> Makassar
+│   │       │   ├── Ulaanbaatar
+│   │       │   ├── Ulan_Bator -> Ulaanbaatar
+│   │       │   ├── Urumqi
+│   │       │   ├── Ust-Nera
+│   │       │   ├── Vientiane
+│   │       │   ├── Vladivostok
+│   │       │   ├── Yakutsk
+│   │       │   ├── Yangon
+│   │       │   ├── Yekaterinburg
+│   │       │   └── Yerevan
+│   │       ├── Atlantic
+│   │       │   ├── Azores
+│   │       │   ├── Bermuda
+│   │       │   ├── Canary
+│   │       │   ├── Cape_Verde
+│   │       │   ├── Faeroe -> Faroe
+│   │       │   ├── Faroe
+│   │       │   ├── Jan_Mayen -> ../Europe/Berlin
+│   │       │   ├── Madeira
+│   │       │   ├── Reykjavik
+│   │       │   ├── South_Georgia
+│   │       │   ├── Stanley
+│   │       │   └── St_Helena
+│   │       ├── Australia
+│   │       │   ├── ACT -> Sydney
+│   │       │   ├── Adelaide
+│   │       │   ├── Brisbane
+│   │       │   ├── Broken_Hill
+│   │       │   ├── Canberra -> Sydney
+│   │       │   ├── Currie -> Hobart
+│   │       │   ├── Darwin
+│   │       │   ├── Eucla
+│   │       │   ├── Hobart
+│   │       │   ├── LHI -> Lord_Howe
+│   │       │   ├── Lindeman
+│   │       │   ├── Lord_Howe
+│   │       │   ├── Melbourne
+│   │       │   ├── North -> Darwin
+│   │       │   ├── NSW -> Sydney
+│   │       │   ├── Perth
+│   │       │   ├── Queensland -> Brisbane
+│   │       │   ├── South -> Adelaide
+│   │       │   ├── Sydney
+│   │       │   ├── Tasmania -> Hobart
+│   │       │   ├── Victoria -> Melbourne
+│   │       │   ├── West -> Perth
+│   │       │   └── Yancowinna -> Broken_Hill
+│   │       ├── Brazil
+│   │       │   ├── Acre -> ../America/Rio_Branco
+│   │       │   ├── DeNoronha -> ../America/Noronha
+│   │       │   ├── East -> ../America/Sao_Paulo
+│   │       │   └── West -> ../America/Manaus
+│   │       ├── Canada
+│   │       │   ├── Atlantic -> ../America/Halifax
+│   │       │   ├── Central -> ../America/Winnipeg
+│   │       │   ├── Eastern -> ../America/Toronto
+│   │       │   ├── Mountain -> ../America/Edmonton
+│   │       │   ├── Newfoundland -> ../America/St_Johns
+│   │       │   ├── Pacific -> ../America/Vancouver
+│   │       │   ├── Saskatchewan -> ../America/Regina
+│   │       │   └── Yukon -> ../America/Whitehorse
+│   │       ├── CET
+│   │       ├── Chile
+│   │       │   ├── Continental -> ../America/Santiago
+│   │       │   └── EasterIsland -> ../Pacific/Easter
+│   │       ├── CST6CDT
+│   │       ├── Cuba -> America/Havana
+│   │       ├── EET
+│   │       ├── Egypt -> Africa/Cairo
+│   │       ├── Eire -> Europe/Dublin
+│   │       ├── EST
+│   │       ├── EST5EDT
+│   │       ├── Etc
+│   │       │   ├── GMT
+│   │       │   ├── GMT+0 -> GMT
+│   │       │   ├── GMT-0 -> GMT
+│   │       │   ├── GMT0 -> GMT
+│   │       │   ├── GMT+1
+│   │       │   ├── GMT-1
+│   │       │   ├── GMT+10
+│   │       │   ├── GMT-10
+│   │       │   ├── GMT+11
+│   │       │   ├── GMT-11
+│   │       │   ├── GMT+12
+│   │       │   ├── GMT-12
+│   │       │   ├── GMT-13
+│   │       │   ├── GMT-14
+│   │       │   ├── GMT+2
+│   │       │   ├── GMT-2
+│   │       │   ├── GMT+3
+│   │       │   ├── GMT-3
+│   │       │   ├── GMT+4
+│   │       │   ├── GMT-4
+│   │       │   ├── GMT+5
+│   │       │   ├── GMT-5
+│   │       │   ├── GMT+6
+│   │       │   ├── GMT-6
+│   │       │   ├── GMT+7
+│   │       │   ├── GMT-7
+│   │       │   ├── GMT+8
+│   │       │   ├── GMT-8
+│   │       │   ├── GMT+9
+│   │       │   ├── GMT-9
+│   │       │   ├── Greenwich -> GMT
+│   │       │   ├── UCT -> UTC
+│   │       │   ├── Universal -> UTC
+│   │       │   ├── UTC
+│   │       │   └── Zulu -> UTC
+│   │       ├── Europe
+│   │       │   ├── Amsterdam
+│   │       │   ├── Andorra
+│   │       │   ├── Astrakhan
+│   │       │   ├── Athens
+│   │       │   ├── Belfast -> London
+│   │       │   ├── Belgrade
+│   │       │   ├── Berlin
+│   │       │   ├── Bratislava -> Prague
+│   │       │   ├── Brussels
+│   │       │   ├── Bucharest
+│   │       │   ├── Budapest
+│   │       │   ├── Busingen -> Zurich
+│   │       │   ├── Chisinau
+│   │       │   ├── Copenhagen
+│   │       │   ├── Dublin
+│   │       │   ├── Gibraltar
+│   │       │   ├── Guernsey
+│   │       │   ├── Helsinki
+│   │       │   ├── Isle_of_Man
+│   │       │   ├── Istanbul
+│   │       │   ├── Jersey
+│   │       │   ├── Kaliningrad
+│   │       │   ├── Kiev -> Kyiv
+│   │       │   ├── Kirov
+│   │       │   ├── Kyiv
+│   │       │   ├── Lisbon
+│   │       │   ├── Ljubljana
+│   │       │   ├── London
+│   │       │   ├── Luxembourg
+│   │       │   ├── Madrid
+│   │       │   ├── Malta
+│   │       │   ├── Mariehamn -> Helsinki
+│   │       │   ├── Minsk
+│   │       │   ├── Monaco
+│   │       │   ├── Moscow
+│   │       │   ├── Nicosia -> ../Asia/Nicosia
+│   │       │   ├── Oslo
+│   │       │   ├── Paris
+│   │       │   ├── Podgorica -> Belgrade
+│   │       │   ├── Prague
+│   │       │   ├── Riga
+│   │       │   ├── Rome
+│   │       │   ├── Samara
+│   │       │   ├── San_Marino -> Rome
+│   │       │   ├── Sarajevo
+│   │       │   ├── Saratov
+│   │       │   ├── Simferopol
+│   │       │   ├── Skopje
+│   │       │   ├── Sofia
+│   │       │   ├── Stockholm
+│   │       │   ├── Tallinn
+│   │       │   ├── Tirane
+│   │       │   ├── Tiraspol -> Chisinau
+│   │       │   ├── Ulyanovsk
+│   │       │   ├── Uzhgorod -> Kyiv
+│   │       │   ├── Vaduz
+│   │       │   ├── Vatican -> Rome
+│   │       │   ├── Vienna
+│   │       │   ├── Vilnius
+│   │       │   ├── Volgograd
+│   │       │   ├── Warsaw
+│   │       │   ├── Zagreb
+│   │       │   ├── Zaporozhye -> Kyiv
+│   │       │   └── Zurich
+│   │       ├── Factory
+│   │       ├── GB -> Europe/London
+│   │       ├── GB-Eire -> Europe/London
+│   │       ├── GMT -> Etc/GMT
+│   │       ├── GMT+0 -> Etc/GMT
+│   │       ├── GMT-0 -> Etc/GMT
+│   │       ├── GMT0 -> Etc/GMT
+│   │       ├── Greenwich -> Etc/GMT
+│   │       ├── Hongkong -> Asia/Hong_Kong
+│   │       ├── HST
+│   │       ├── Iceland -> Africa/Abidjan
+│   │       ├── Indian
+│   │       │   ├── Antananarivo
+│   │       │   ├── Chagos
+│   │       │   ├── Christmas
+│   │       │   ├── Cocos
+│   │       │   ├── Comoro
+│   │       │   ├── Kerguelen
+│   │       │   ├── Mahe
+│   │       │   ├── Maldives
+│   │       │   ├── Mauritius
+│   │       │   ├── Mayotte
+│   │       │   └── Reunion
+│   │       ├── Iran -> Asia/Tehran
+│   │       ├── iso3166.tab
+│   │       ├── Israel -> Asia/Jerusalem
+│   │       ├── Jamaica -> America/Jamaica
+│   │       ├── Japan -> Asia/Tokyo
+│   │       ├── Kwajalein -> Pacific/Kwajalein
+│   │       ├── leapseconds
+│   │       ├── leap-seconds.list
+│   │       ├── Libya -> Africa/Tripoli
+│   │       ├── localtime -> /etc/localtime
+│   │       ├── MET
+│   │       ├── Mexico
+│   │       │   ├── BajaNorte -> ../America/Tijuana
+│   │       │   ├── BajaSur -> ../America/Mazatlan
+│   │       │   └── General -> ../America/Mexico_City
+│   │       ├── MST
+│   │       ├── MST7MDT
+│   │       ├── Navajo -> America/Denver
+│   │       ├── NZ -> Pacific/Auckland
+│   │       ├── NZ-CHAT -> Pacific/Chatham
+│   │       ├── Pacific
+│   │       │   ├── Apia
+│   │       │   ├── Auckland
+│   │       │   ├── Bougainville
+│   │       │   ├── Chatham
+│   │       │   ├── Chuuk
+│   │       │   ├── Easter
+│   │       │   ├── Efate
+│   │       │   ├── Enderbury -> Kanton
+│   │       │   ├── Fakaofo
+│   │       │   ├── Fiji
+│   │       │   ├── Funafuti
+│   │       │   ├── Galapagos
+│   │       │   ├── Gambier
+│   │       │   ├── Guadalcanal
+│   │       │   ├── Guam
+│   │       │   ├── Honolulu
+│   │       │   ├── Johnston -> Honolulu
+│   │       │   ├── Kanton
+│   │       │   ├── Kiritimati
+│   │       │   ├── Kosrae
+│   │       │   ├── Kwajalein
+│   │       │   ├── Majuro
+│   │       │   ├── Marquesas
+│   │       │   ├── Midway
+│   │       │   ├── Nauru
+│   │       │   ├── Niue
+│   │       │   ├── Norfolk
+│   │       │   ├── Noumea
+│   │       │   ├── Pago_Pago
+│   │       │   ├── Palau
+│   │       │   ├── Pitcairn
+│   │       │   ├── Pohnpei
+│   │       │   ├── Ponape -> Guadalcanal
+│   │       │   ├── Port_Moresby
+│   │       │   ├── Rarotonga
+│   │       │   ├── Saipan
+│   │       │   ├── Samoa -> Pago_Pago
+│   │       │   ├── Tahiti
+│   │       │   ├── Tarawa
+│   │       │   ├── Tongatapu
+│   │       │   ├── Truk -> Port_Moresby
+│   │       │   ├── Wake
+│   │       │   ├── Wallis
+│   │       │   └── Yap -> Port_Moresby
+│   │       ├── Poland -> Europe/Warsaw
+│   │       ├── Portugal -> Europe/Lisbon
+│   │       ├── posix
+│   │       │   ├── Africa -> ../Africa
+│   │       │   ├── America -> ../America
+│   │       │   ├── Antarctica -> ../Antarctica
+│   │       │   ├── Arctic -> ../Arctic
+│   │       │   ├── Asia -> ../Asia
+│   │       │   ├── Atlantic -> ../Atlantic
+│   │       │   ├── Australia -> ../Australia
+│   │       │   ├── Brazil -> ../Brazil
+│   │       │   ├── Canada -> ../Canada
+│   │       │   ├── CET -> ../CET
+│   │       │   ├── Chile -> ../Chile
+│   │       │   ├── CST6CDT -> ../CST6CDT
+│   │       │   ├── Cuba -> ../America/Havana
+│   │       │   ├── EET -> ../EET
+│   │       │   ├── Egypt -> ../Africa/Cairo
+│   │       │   ├── Eire -> ../Europe/Dublin
+│   │       │   ├── EST -> ../EST
+│   │       │   ├── EST5EDT -> ../EST5EDT
+│   │       │   ├── Etc -> ../Etc
+│   │       │   ├── Europe -> ../Europe
+│   │       │   ├── Factory -> ../Factory
+│   │       │   ├── GB -> ../Europe/London
+│   │       │   ├── GB-Eire -> ../Europe/London
+│   │       │   ├── GMT -> ../Etc/GMT
+│   │       │   ├── GMT+0 -> ../Etc/GMT
+│   │       │   ├── GMT-0 -> ../Etc/GMT
+│   │       │   ├── GMT0 -> ../Etc/GMT
+│   │       │   ├── Greenwich -> ../Etc/GMT
+│   │       │   ├── Hongkong -> ../Asia/Hong_Kong
+│   │       │   ├── HST -> ../HST
+│   │       │   ├── Iceland -> ../Africa/Abidjan
+│   │       │   ├── Indian -> ../Indian
+│   │       │   ├── Iran -> ../Asia/Tehran
+│   │       │   ├── Israel -> ../Asia/Jerusalem
+│   │       │   ├── Jamaica -> ../America/Jamaica
+│   │       │   ├── Japan -> ../Asia/Tokyo
+│   │       │   ├── Kwajalein -> ../Pacific/Kwajalein
+│   │       │   ├── Libya -> ../Africa/Tripoli
+│   │       │   ├── MET -> ../MET
+│   │       │   ├── Mexico -> ../Mexico
+│   │       │   ├── MST -> ../MST
+│   │       │   ├── MST7MDT -> ../MST7MDT
+│   │       │   ├── Navajo -> ../America/Denver
+│   │       │   ├── NZ -> ../Pacific/Auckland
+│   │       │   ├── NZ-CHAT -> ../Pacific/Chatham
+│   │       │   ├── Pacific -> ../Pacific
+│   │       │   ├── Poland -> ../Europe/Warsaw
+│   │       │   ├── Portugal -> ../Europe/Lisbon
+│   │       │   ├── PRC -> ../Asia/Shanghai
+│   │       │   ├── PST8PDT -> ../PST8PDT
+│   │       │   ├── ROC -> ../Asia/Taipei
+│   │       │   ├── ROK -> ../Asia/Seoul
+│   │       │   ├── Singapore -> ../Asia/Singapore
+│   │       │   ├── Turkey -> ../Europe/Istanbul
+│   │       │   ├── UCT -> ../Etc/UTC
+│   │       │   ├── Universal -> ../Etc/UTC
+│   │       │   ├── US -> ../US
+│   │       │   ├── UTC -> ../Etc/UTC
+│   │       │   ├── WET -> ../WET
+│   │       │   ├── W-SU -> ../Europe/Moscow
+│   │       │   └── Zulu -> ../Etc/UTC
+│   │       ├── posixrules -> America/New_York
+│   │       ├── PRC -> Asia/Shanghai
+│   │       ├── PST8PDT
+│   │       ├── right
+│   │       │   ├── Africa
+│   │       │   │   ├── Abidjan
+│   │       │   │   ├── Accra
+│   │       │   │   ├── Addis_Ababa
+│   │       │   │   ├── Algiers
+│   │       │   │   ├── Asmara
+│   │       │   │   ├── Asmera -> Nairobi
+│   │       │   │   ├── Bamako
+│   │       │   │   ├── Bangui
+│   │       │   │   ├── Banjul
+│   │       │   │   ├── Bissau
+│   │       │   │   ├── Blantyre
+│   │       │   │   ├── Brazzaville
+│   │       │   │   ├── Bujumbura
+│   │       │   │   ├── Cairo
+│   │       │   │   ├── Casablanca
+│   │       │   │   ├── Ceuta
+│   │       │   │   ├── Conakry
+│   │       │   │   ├── Dakar
+│   │       │   │   ├── Dar_es_Salaam
+│   │       │   │   ├── Djibouti
+│   │       │   │   ├── Douala
+│   │       │   │   ├── El_Aaiun
+│   │       │   │   ├── Freetown
+│   │       │   │   ├── Gaborone
+│   │       │   │   ├── Harare
+│   │       │   │   ├── Johannesburg
+│   │       │   │   ├── Juba
+│   │       │   │   ├── Kampala
+│   │       │   │   ├── Khartoum
+│   │       │   │   ├── Kigali
+│   │       │   │   ├── Kinshasa
+│   │       │   │   ├── Lagos
+│   │       │   │   ├── Libreville
+│   │       │   │   ├── Lome
+│   │       │   │   ├── Luanda
+│   │       │   │   ├── Lubumbashi
+│   │       │   │   ├── Lusaka
+│   │       │   │   ├── Malabo
+│   │       │   │   ├── Maputo
+│   │       │   │   ├── Maseru
+│   │       │   │   ├── Mbabane
+│   │       │   │   ├── Mogadishu
+│   │       │   │   ├── Monrovia
+│   │       │   │   ├── Nairobi
+│   │       │   │   ├── Ndjamena
+│   │       │   │   ├── Niamey
+│   │       │   │   ├── Nouakchott
+│   │       │   │   ├── Ouagadougou
+│   │       │   │   ├── Porto-Novo
+│   │       │   │   ├── Sao_Tome
+│   │       │   │   ├── Timbuktu -> Abidjan
+│   │       │   │   ├── Tripoli
+│   │       │   │   ├── Tunis
+│   │       │   │   └── Windhoek
+│   │       │   ├── America
+│   │       │   │   ├── Adak
+│   │       │   │   ├── Anchorage
+│   │       │   │   ├── Anguilla
+│   │       │   │   ├── Antigua
+│   │       │   │   ├── Araguaina
+│   │       │   │   ├── Argentina
+│   │       │   │   │   ├── Buenos_Aires
+│   │       │   │   │   ├── Catamarca
+│   │       │   │   │   ├── ComodRivadavia -> Catamarca
+│   │       │   │   │   ├── Cordoba
+│   │       │   │   │   ├── Jujuy
+│   │       │   │   │   ├── La_Rioja
+│   │       │   │   │   ├── Mendoza
+│   │       │   │   │   ├── Rio_Gallegos
+│   │       │   │   │   ├── Salta
+│   │       │   │   │   ├── San_Juan
+│   │       │   │   │   ├── San_Luis
+│   │       │   │   │   ├── Tucuman
+│   │       │   │   │   └── Ushuaia
+│   │       │   │   ├── Aruba
+│   │       │   │   ├── Asuncion
+│   │       │   │   ├── Atikokan
+│   │       │   │   ├── Atka -> Adak
+│   │       │   │   ├── Bahia
+│   │       │   │   ├── Bahia_Banderas
+│   │       │   │   ├── Barbados
+│   │       │   │   ├── Belem
+│   │       │   │   ├── Belize
+│   │       │   │   ├── Blanc-Sablon
+│   │       │   │   ├── Boa_Vista
+│   │       │   │   ├── Bogota
+│   │       │   │   ├── Boise
+│   │       │   │   ├── Buenos_Aires -> Argentina/Buenos_Aires
+│   │       │   │   ├── Cambridge_Bay
+│   │       │   │   ├── Campo_Grande
+│   │       │   │   ├── Cancun
+│   │       │   │   ├── Caracas
+│   │       │   │   ├── Catamarca -> Argentina/Catamarca
+│   │       │   │   ├── Cayenne
+│   │       │   │   ├── Cayman
+│   │       │   │   ├── Chicago
+│   │       │   │   ├── Chihuahua
+│   │       │   │   ├── Ciudad_Juarez
+│   │       │   │   ├── Coral_Harbour -> Panama
+│   │       │   │   ├── Cordoba -> Argentina/Cordoba
+│   │       │   │   ├── Costa_Rica
+│   │       │   │   ├── Coyhaique
+│   │       │   │   ├── Creston
+│   │       │   │   ├── Cuiaba
+│   │       │   │   ├── Curacao
+│   │       │   │   ├── Danmarkshavn
+│   │       │   │   ├── Dawson
+│   │       │   │   ├── Dawson_Creek
+│   │       │   │   ├── Denver
+│   │       │   │   ├── Detroit
+│   │       │   │   ├── Dominica
+│   │       │   │   ├── Edmonton
+│   │       │   │   ├── Eirunepe
+│   │       │   │   ├── El_Salvador
+│   │       │   │   ├── Ensenada -> Tijuana
+│   │       │   │   ├── Fortaleza
+│   │       │   │   ├── Fort_Nelson
+│   │       │   │   ├── Fort_Wayne -> Indiana/Indianapolis
+│   │       │   │   ├── Glace_Bay
+│   │       │   │   ├── Godthab -> Nuuk
+│   │       │   │   ├── Goose_Bay
+│   │       │   │   ├── Grand_Turk
+│   │       │   │   ├── Grenada
+│   │       │   │   ├── Guadeloupe
+│   │       │   │   ├── Guatemala
+│   │       │   │   ├── Guayaquil
+│   │       │   │   ├── Guyana
+│   │       │   │   ├── Halifax
+│   │       │   │   ├── Havana
+│   │       │   │   ├── Hermosillo
+│   │       │   │   ├── Indiana
+│   │       │   │   │   ├── Indianapolis
+│   │       │   │   │   ├── Knox
+│   │       │   │   │   ├── Marengo
+│   │       │   │   │   ├── Petersburg
+│   │       │   │   │   ├── Tell_City
+│   │       │   │   │   ├── Vevay
+│   │       │   │   │   ├── Vincennes
+│   │       │   │   │   └── Winamac
+│   │       │   │   ├── Indianapolis -> Indiana/Indianapolis
+│   │       │   │   ├── Inuvik
+│   │       │   │   ├── Iqaluit
+│   │       │   │   ├── Jamaica
+│   │       │   │   ├── Jujuy -> Argentina/Jujuy
+│   │       │   │   ├── Juneau
+│   │       │   │   ├── Kentucky
+│   │       │   │   │   ├── Louisville
+│   │       │   │   │   └── Monticello
+│   │       │   │   ├── Knox_IN -> Indiana/Knox
+│   │       │   │   ├── Kralendijk -> Puerto_Rico
+│   │       │   │   ├── La_Paz
+│   │       │   │   ├── Lima
+│   │       │   │   ├── Los_Angeles
+│   │       │   │   ├── Louisville -> Kentucky/Louisville
+│   │       │   │   ├── Lower_Princes -> Puerto_Rico
+│   │       │   │   ├── Maceio
+│   │       │   │   ├── Managua
+│   │       │   │   ├── Manaus
+│   │       │   │   ├── Marigot -> Puerto_Rico
+│   │       │   │   ├── Martinique
+│   │       │   │   ├── Matamoros
+│   │       │   │   ├── Mazatlan
+│   │       │   │   ├── Mendoza -> Argentina/Mendoza
+│   │       │   │   ├── Menominee
+│   │       │   │   ├── Merida
+│   │       │   │   ├── Metlakatla
+│   │       │   │   ├── Mexico_City
+│   │       │   │   ├── Miquelon
+│   │       │   │   ├── Moncton
+│   │       │   │   ├── Monterrey
+│   │       │   │   ├── Montevideo
+│   │       │   │   ├── Montreal -> Toronto
+│   │       │   │   ├── Montserrat
+│   │       │   │   ├── Nassau
+│   │       │   │   ├── New_York
+│   │       │   │   ├── Nipigon -> Toronto
+│   │       │   │   ├── Nome
+│   │       │   │   ├── Noronha
+│   │       │   │   ├── North_Dakota
+│   │       │   │   │   ├── Beulah
+│   │       │   │   │   ├── Center
+│   │       │   │   │   └── New_Salem
+│   │       │   │   ├── Nuuk
+│   │       │   │   ├── Ojinaga
+│   │       │   │   ├── Panama
+│   │       │   │   ├── Pangnirtung -> Iqaluit
+│   │       │   │   ├── Paramaribo
+│   │       │   │   ├── Phoenix
+│   │       │   │   ├── Port-au-Prince
+│   │       │   │   ├── Porto_Acre -> Rio_Branco
+│   │       │   │   ├── Port_of_Spain
+│   │       │   │   ├── Porto_Velho
+│   │       │   │   ├── Puerto_Rico
+│   │       │   │   ├── Punta_Arenas
+│   │       │   │   ├── Rainy_River -> Winnipeg
+│   │       │   │   ├── Rankin_Inlet
+│   │       │   │   ├── Recife
+│   │       │   │   ├── Regina
+│   │       │   │   ├── Resolute
+│   │       │   │   ├── Rio_Branco
+│   │       │   │   ├── Rosario -> Argentina/Cordoba
+│   │       │   │   ├── Santa_Isabel -> Tijuana
+│   │       │   │   ├── Santarem
+│   │       │   │   ├── Santiago
+│   │       │   │   ├── Santo_Domingo
+│   │       │   │   ├── Sao_Paulo
+│   │       │   │   ├── Scoresbysund
+│   │       │   │   ├── Shiprock -> Denver
+│   │       │   │   ├── Sitka
+│   │       │   │   ├── St_Barthelemy -> Puerto_Rico
+│   │       │   │   ├── St_Johns
+│   │       │   │   ├── St_Kitts
+│   │       │   │   ├── St_Lucia
+│   │       │   │   ├── St_Thomas
+│   │       │   │   ├── St_Vincent
+│   │       │   │   ├── Swift_Current
+│   │       │   │   ├── Tegucigalpa
+│   │       │   │   ├── Thule
+│   │       │   │   ├── Thunder_Bay -> Toronto
+│   │       │   │   ├── Tijuana
+│   │       │   │   ├── Toronto
+│   │       │   │   ├── Tortola
+│   │       │   │   ├── Vancouver
+│   │       │   │   ├── Virgin -> Puerto_Rico
+│   │       │   │   ├── Whitehorse
+│   │       │   │   ├── Winnipeg
+│   │       │   │   ├── Yakutat
+│   │       │   │   └── Yellowknife -> Edmonton
+│   │       │   ├── Antarctica
+│   │       │   │   ├── Casey
+│   │       │   │   ├── Davis
+│   │       │   │   ├── DumontDUrville
+│   │       │   │   ├── Macquarie
+│   │       │   │   ├── Mawson
+│   │       │   │   ├── McMurdo
+│   │       │   │   ├── Palmer
+│   │       │   │   ├── Rothera
+│   │       │   │   ├── South_Pole -> ../Pacific/Auckland
+│   │       │   │   ├── Syowa
+│   │       │   │   ├── Troll
+│   │       │   │   └── Vostok
+│   │       │   ├── Arctic
+│   │       │   │   └── Longyearbyen -> ../Europe/Berlin
+│   │       │   ├── Asia
+│   │       │   │   ├── Aden
+│   │       │   │   ├── Almaty
+│   │       │   │   ├── Amman
+│   │       │   │   ├── Anadyr
+│   │       │   │   ├── Aqtau
+│   │       │   │   ├── Aqtobe
+│   │       │   │   ├── Ashgabat
+│   │       │   │   ├── Ashkhabad -> Ashgabat
+│   │       │   │   ├── Atyrau
+│   │       │   │   ├── Baghdad
+│   │       │   │   ├── Bahrain
+│   │       │   │   ├── Baku
+│   │       │   │   ├── Bangkok
+│   │       │   │   ├── Barnaul
+│   │       │   │   ├── Beirut
+│   │       │   │   ├── Bishkek
+│   │       │   │   ├── Brunei
+│   │       │   │   ├── Calcutta -> Kolkata
+│   │       │   │   ├── Chita
+│   │       │   │   ├── Choibalsan -> Ulaanbaatar
+│   │       │   │   ├── Chongqing -> Shanghai
+│   │       │   │   ├── Chungking -> Shanghai
+│   │       │   │   ├── Colombo
+│   │       │   │   ├── Dacca -> Dhaka
+│   │       │   │   ├── Damascus
+│   │       │   │   ├── Dhaka
+│   │       │   │   ├── Dili
+│   │       │   │   ├── Dubai
+│   │       │   │   ├── Dushanbe
+│   │       │   │   ├── Famagusta
+│   │       │   │   ├── Gaza
+│   │       │   │   ├── Harbin -> Shanghai
+│   │       │   │   ├── Hebron
+│   │       │   │   ├── Ho_Chi_Minh
+│   │       │   │   ├── Hong_Kong
+│   │       │   │   ├── Hovd
+│   │       │   │   ├── Irkutsk
+│   │       │   │   ├── Istanbul -> ../Europe/Istanbul
+│   │       │   │   ├── Jakarta
+│   │       │   │   ├── Jayapura
+│   │       │   │   ├── Jerusalem
+│   │       │   │   ├── Kabul
+│   │       │   │   ├── Kamchatka
+│   │       │   │   ├── Karachi
+│   │       │   │   ├── Kashgar -> Urumqi
+│   │       │   │   ├── Kathmandu
+│   │       │   │   ├── Katmandu -> Kathmandu
+│   │       │   │   ├── Khandyga
+│   │       │   │   ├── Kolkata
+│   │       │   │   ├── Krasnoyarsk
+│   │       │   │   ├── Kuala_Lumpur
+│   │       │   │   ├── Kuching
+│   │       │   │   ├── Kuwait
+│   │       │   │   ├── Macao -> Macau
+│   │       │   │   ├── Macau
+│   │       │   │   ├── Magadan
+│   │       │   │   ├── Makassar
+│   │       │   │   ├── Manila
+│   │       │   │   ├── Muscat
+│   │       │   │   ├── Nicosia
+│   │       │   │   ├── Novokuznetsk
+│   │       │   │   ├── Novosibirsk
+│   │       │   │   ├── Omsk
+│   │       │   │   ├── Oral
+│   │       │   │   ├── Phnom_Penh
+│   │       │   │   ├── Pontianak
+│   │       │   │   ├── Pyongyang
+│   │       │   │   ├── Qatar
+│   │       │   │   ├── Qostanay
+│   │       │   │   ├── Qyzylorda
+│   │       │   │   ├── Rangoon -> Yangon
+│   │       │   │   ├── Riyadh
+│   │       │   │   ├── Saigon -> Ho_Chi_Minh
+│   │       │   │   ├── Sakhalin
+│   │       │   │   ├── Samarkand
+│   │       │   │   ├── Seoul
+│   │       │   │   ├── Shanghai
+│   │       │   │   ├── Singapore
+│   │       │   │   ├── Srednekolymsk
+│   │       │   │   ├── Taipei
+│   │       │   │   ├── Tashkent
+│   │       │   │   ├── Tbilisi
+│   │       │   │   ├── Tehran
+│   │       │   │   ├── Tel_Aviv -> Jerusalem
+│   │       │   │   ├── Thimbu -> Thimphu
+│   │       │   │   ├── Thimphu
+│   │       │   │   ├── Tokyo
+│   │       │   │   ├── Tomsk
+│   │       │   │   ├── Ujung_Pandang -> Makassar
+│   │       │   │   ├── Ulaanbaatar
+│   │       │   │   ├── Ulan_Bator -> Ulaanbaatar
+│   │       │   │   ├── Urumqi
+│   │       │   │   ├── Ust-Nera
+│   │       │   │   ├── Vientiane
+│   │       │   │   ├── Vladivostok
+│   │       │   │   ├── Yakutsk
+│   │       │   │   ├── Yangon
+│   │       │   │   ├── Yekaterinburg
+│   │       │   │   └── Yerevan
+│   │       │   ├── Atlantic
+│   │       │   │   ├── Azores
+│   │       │   │   ├── Bermuda
+│   │       │   │   ├── Canary
+│   │       │   │   ├── Cape_Verde
+│   │       │   │   ├── Faeroe -> Faroe
+│   │       │   │   ├── Faroe
+│   │       │   │   ├── Jan_Mayen -> ../Europe/Berlin
+│   │       │   │   ├── Madeira
+│   │       │   │   ├── Reykjavik
+│   │       │   │   ├── South_Georgia
+│   │       │   │   ├── Stanley
+│   │       │   │   └── St_Helena
+│   │       │   ├── Australia
+│   │       │   │   ├── ACT -> Sydney
+│   │       │   │   ├── Adelaide
+│   │       │   │   ├── Brisbane
+│   │       │   │   ├── Broken_Hill
+│   │       │   │   ├── Canberra -> Sydney
+│   │       │   │   ├── Currie -> Hobart
+│   │       │   │   ├── Darwin
+│   │       │   │   ├── Eucla
+│   │       │   │   ├── Hobart
+│   │       │   │   ├── LHI -> Lord_Howe
+│   │       │   │   ├── Lindeman
+│   │       │   │   ├── Lord_Howe
+│   │       │   │   ├── Melbourne
+│   │       │   │   ├── North -> Darwin
+│   │       │   │   ├── NSW -> Sydney
+│   │       │   │   ├── Perth
+│   │       │   │   ├── Queensland -> Brisbane
+│   │       │   │   ├── South -> Adelaide
+│   │       │   │   ├── Sydney
+│   │       │   │   ├── Tasmania -> Hobart
+│   │       │   │   ├── Victoria -> Melbourne
+│   │       │   │   ├── West -> Perth
+│   │       │   │   └── Yancowinna -> Broken_Hill
+│   │       │   ├── Brazil
+│   │       │   │   ├── Acre -> ../America/Rio_Branco
+│   │       │   │   ├── DeNoronha -> ../America/Noronha
+│   │       │   │   ├── East -> ../America/Sao_Paulo
+│   │       │   │   └── West -> ../America/Manaus
+│   │       │   ├── Canada
+│   │       │   │   ├── Atlantic -> ../America/Halifax
+│   │       │   │   ├── Central -> ../America/Winnipeg
+│   │       │   │   ├── Eastern -> ../America/Toronto
+│   │       │   │   ├── Mountain -> ../America/Edmonton
+│   │       │   │   ├── Newfoundland -> ../America/St_Johns
+│   │       │   │   ├── Pacific -> ../America/Vancouver
+│   │       │   │   ├── Saskatchewan -> ../America/Regina
+│   │       │   │   └── Yukon -> ../America/Whitehorse
+│   │       │   ├── CET
+│   │       │   ├── Chile
+│   │       │   │   ├── Continental -> ../America/Santiago
+│   │       │   │   └── EasterIsland -> ../Pacific/Easter
+│   │       │   ├── CST6CDT
+│   │       │   ├── Cuba -> America/Havana
+│   │       │   ├── EET
+│   │       │   ├── Egypt -> Africa/Cairo
+│   │       │   ├── Eire -> Europe/Dublin
+│   │       │   ├── EST
+│   │       │   ├── EST5EDT
+│   │       │   ├── Etc
+│   │       │   │   ├── GMT
+│   │       │   │   ├── GMT+0 -> GMT
+│   │       │   │   ├── GMT-0 -> GMT
+│   │       │   │   ├── GMT0 -> GMT
+│   │       │   │   ├── GMT+1
+│   │       │   │   ├── GMT-1
+│   │       │   │   ├── GMT+10
+│   │       │   │   ├── GMT-10
+│   │       │   │   ├── GMT+11
+│   │       │   │   ├── GMT-11
+│   │       │   │   ├── GMT+12
+│   │       │   │   ├── GMT-12
+│   │       │   │   ├── GMT-13
+│   │       │   │   ├── GMT-14
+│   │       │   │   ├── GMT+2
+│   │       │   │   ├── GMT-2
+│   │       │   │   ├── GMT+3
+│   │       │   │   ├── GMT-3
+│   │       │   │   ├── GMT+4
+│   │       │   │   ├── GMT-4
+│   │       │   │   ├── GMT+5
+│   │       │   │   ├── GMT-5
+│   │       │   │   ├── GMT+6
+│   │       │   │   ├── GMT-6
+│   │       │   │   ├── GMT+7
+│   │       │   │   ├── GMT-7
+│   │       │   │   ├── GMT+8
+│   │       │   │   ├── GMT-8
+│   │       │   │   ├── GMT+9
+│   │       │   │   ├── GMT-9
+│   │       │   │   ├── Greenwich -> GMT
+│   │       │   │   ├── UCT -> UTC
+│   │       │   │   ├── Universal -> UTC
+│   │       │   │   ├── UTC
+│   │       │   │   └── Zulu -> UTC
+│   │       │   ├── Europe
+│   │       │   │   ├── Amsterdam
+│   │       │   │   ├── Andorra
+│   │       │   │   ├── Astrakhan
+│   │       │   │   ├── Athens
+│   │       │   │   ├── Belfast -> London
+│   │       │   │   ├── Belgrade
+│   │       │   │   ├── Berlin
+│   │       │   │   ├── Bratislava -> Prague
+│   │       │   │   ├── Brussels
+│   │       │   │   ├── Bucharest
+│   │       │   │   ├── Budapest
+│   │       │   │   ├── Busingen -> Zurich
+│   │       │   │   ├── Chisinau
+│   │       │   │   ├── Copenhagen
+│   │       │   │   ├── Dublin
+│   │       │   │   ├── Gibraltar
+│   │       │   │   ├── Guernsey
+│   │       │   │   ├── Helsinki
+│   │       │   │   ├── Isle_of_Man
+│   │       │   │   ├── Istanbul
+│   │       │   │   ├── Jersey
+│   │       │   │   ├── Kaliningrad
+│   │       │   │   ├── Kiev -> Kyiv
+│   │       │   │   ├── Kirov
+│   │       │   │   ├── Kyiv
+│   │       │   │   ├── Lisbon
+│   │       │   │   ├── Ljubljana
+│   │       │   │   ├── London
+│   │       │   │   ├── Luxembourg
+│   │       │   │   ├── Madrid
+│   │       │   │   ├── Malta
+│   │       │   │   ├── Mariehamn -> Helsinki
+│   │       │   │   ├── Minsk
+│   │       │   │   ├── Monaco
+│   │       │   │   ├── Moscow
+│   │       │   │   ├── Nicosia -> ../Asia/Nicosia
+│   │       │   │   ├── Oslo
+│   │       │   │   ├── Paris
+│   │       │   │   ├── Podgorica -> Belgrade
+│   │       │   │   ├── Prague
+│   │       │   │   ├── Riga
+│   │       │   │   ├── Rome
+│   │       │   │   ├── Samara
+│   │       │   │   ├── San_Marino -> Rome
+│   │       │   │   ├── Sarajevo
+│   │       │   │   ├── Saratov
+│   │       │   │   ├── Simferopol
+│   │       │   │   ├── Skopje
+│   │       │   │   ├── Sofia
+│   │       │   │   ├── Stockholm
+│   │       │   │   ├── Tallinn
+│   │       │   │   ├── Tirane
+│   │       │   │   ├── Tiraspol -> Chisinau
+│   │       │   │   ├── Ulyanovsk
+│   │       │   │   ├── Uzhgorod -> Kyiv
+│   │       │   │   ├── Vaduz
+│   │       │   │   ├── Vatican -> Rome
+│   │       │   │   ├── Vienna
+│   │       │   │   ├── Vilnius
+│   │       │   │   ├── Volgograd
+│   │       │   │   ├── Warsaw
+│   │       │   │   ├── Zagreb
+│   │       │   │   ├── Zaporozhye -> Kyiv
+│   │       │   │   └── Zurich
+│   │       │   ├── Factory
+│   │       │   ├── GB -> Europe/London
+│   │       │   ├── GB-Eire -> Europe/London
+│   │       │   ├── GMT -> Etc/GMT
+│   │       │   ├── GMT+0 -> Etc/GMT
+│   │       │   ├── GMT-0 -> Etc/GMT
+│   │       │   ├── GMT0 -> Etc/GMT
+│   │       │   ├── Greenwich -> Etc/GMT
+│   │       │   ├── Hongkong -> Asia/Hong_Kong
+│   │       │   ├── HST
+│   │       │   ├── Iceland -> Africa/Abidjan
+│   │       │   ├── Indian
+│   │       │   │   ├── Antananarivo
+│   │       │   │   ├── Chagos
+│   │       │   │   ├── Christmas
+│   │       │   │   ├── Cocos
+│   │       │   │   ├── Comoro
+│   │       │   │   ├── Kerguelen
+│   │       │   │   ├── Mahe
+│   │       │   │   ├── Maldives
+│   │       │   │   ├── Mauritius
+│   │       │   │   ├── Mayotte
+│   │       │   │   └── Reunion
+│   │       │   ├── Iran -> Asia/Tehran
+│   │       │   ├── Israel -> Asia/Jerusalem
+│   │       │   ├── Jamaica -> America/Jamaica
+│   │       │   ├── Japan -> Asia/Tokyo
+│   │       │   ├── Kwajalein -> Pacific/Kwajalein
+│   │       │   ├── Libya -> Africa/Tripoli
+│   │       │   ├── MET
+│   │       │   ├── Mexico
+│   │       │   │   ├── BajaNorte -> ../America/Tijuana
+│   │       │   │   ├── BajaSur -> ../America/Mazatlan
+│   │       │   │   └── General -> ../America/Mexico_City
+│   │       │   ├── MST
+│   │       │   ├── MST7MDT
+│   │       │   ├── Navajo -> America/Denver
+│   │       │   ├── NZ -> Pacific/Auckland
+│   │       │   ├── NZ-CHAT -> Pacific/Chatham
+│   │       │   ├── Pacific
+│   │       │   │   ├── Apia
+│   │       │   │   ├── Auckland
+│   │       │   │   ├── Bougainville
+│   │       │   │   ├── Chatham
+│   │       │   │   ├── Chuuk
+│   │       │   │   ├── Easter
+│   │       │   │   ├── Efate
+│   │       │   │   ├── Enderbury -> Kanton
+│   │       │   │   ├── Fakaofo
+│   │       │   │   ├── Fiji
+│   │       │   │   ├── Funafuti
+│   │       │   │   ├── Galapagos
+│   │       │   │   ├── Gambier
+│   │       │   │   ├── Guadalcanal
+│   │       │   │   ├── Guam
+│   │       │   │   ├── Honolulu
+│   │       │   │   ├── Johnston -> Honolulu
+│   │       │   │   ├── Kanton
+│   │       │   │   ├── Kiritimati
+│   │       │   │   ├── Kosrae
+│   │       │   │   ├── Kwajalein
+│   │       │   │   ├── Majuro
+│   │       │   │   ├── Marquesas
+│   │       │   │   ├── Midway
+│   │       │   │   ├── Nauru
+│   │       │   │   ├── Niue
+│   │       │   │   ├── Norfolk
+│   │       │   │   ├── Noumea
+│   │       │   │   ├── Pago_Pago
+│   │       │   │   ├── Palau
+│   │       │   │   ├── Pitcairn
+│   │       │   │   ├── Pohnpei
+│   │       │   │   ├── Ponape -> Guadalcanal
+│   │       │   │   ├── Port_Moresby
+│   │       │   │   ├── Rarotonga
+│   │       │   │   ├── Saipan
+│   │       │   │   ├── Samoa -> Pago_Pago
+│   │       │   │   ├── Tahiti
+│   │       │   │   ├── Tarawa
+│   │       │   │   ├── Tongatapu
+│   │       │   │   ├── Truk -> Port_Moresby
+│   │       │   │   ├── Wake
+│   │       │   │   ├── Wallis
+│   │       │   │   └── Yap -> Port_Moresby
+│   │       │   ├── Poland -> Europe/Warsaw
+│   │       │   ├── Portugal -> Europe/Lisbon
+│   │       │   ├── PRC -> Asia/Shanghai
+│   │       │   ├── PST8PDT
+│   │       │   ├── ROC -> Asia/Taipei
+│   │       │   ├── ROK -> Asia/Seoul
+│   │       │   ├── Singapore -> Asia/Singapore
+│   │       │   ├── Turkey -> Europe/Istanbul
+│   │       │   ├── UCT -> Etc/UTC
+│   │       │   ├── Universal -> Etc/UTC
+│   │       │   ├── US
+│   │       │   │   ├── Alaska -> ../America/Anchorage
+│   │       │   │   ├── Aleutian -> ../America/Adak
+│   │       │   │   ├── Arizona -> ../America/Phoenix
+│   │       │   │   ├── Central -> ../America/Chicago
+│   │       │   │   ├── Eastern -> ../America/New_York
+│   │       │   │   ├── East-Indiana -> ../America/Indiana/Indianapolis
+│   │       │   │   ├── Hawaii -> ../Pacific/Honolulu
+│   │       │   │   ├── Indiana-Starke -> ../America/Indiana/Knox
+│   │       │   │   ├── Michigan -> ../America/Detroit
+│   │       │   │   ├── Mountain -> ../America/Denver
+│   │       │   │   ├── Pacific -> ../America/Los_Angeles
+│   │       │   │   └── Samoa -> ../Pacific/Pago_Pago
+│   │       │   ├── UTC -> Etc/UTC
+│   │       │   ├── WET
+│   │       │   ├── W-SU -> Europe/Moscow
+│   │       │   └── Zulu -> Etc/UTC
+│   │       ├── ROC -> Asia/Taipei
+│   │       ├── ROK -> Asia/Seoul
+│   │       ├── Singapore -> Asia/Singapore
+│   │       ├── Turkey -> Europe/Istanbul
+│   │       ├── tzdata.zi
+│   │       ├── UCT -> Etc/UTC
+│   │       ├── Universal -> Etc/UTC
+│   │       ├── US
+│   │       │   ├── Alaska -> ../America/Anchorage
+│   │       │   ├── Aleutian -> ../America/Adak
+│   │       │   ├── Arizona -> ../America/Phoenix
+│   │       │   ├── Central -> ../America/Chicago
+│   │       │   ├── Eastern -> ../America/New_York
+│   │       │   ├── East-Indiana -> ../America/Indiana/Indianapolis
+│   │       │   ├── Hawaii -> ../Pacific/Honolulu
+│   │       │   ├── Indiana-Starke -> ../America/Indiana/Knox
+│   │       │   ├── Michigan -> ../America/Detroit
+│   │       │   ├── Mountain -> ../America/Denver
+│   │       │   ├── Pacific -> ../America/Los_Angeles
+│   │       │   └── Samoa -> ../Pacific/Pago_Pago
+│   │       ├── UTC -> Etc/UTC
+│   │       ├── WET
+│   │       ├── W-SU -> Europe/Moscow
+│   │       ├── zone1970.tab
+│   │       ├── zone.tab
+│   │       └── Zulu -> Etc/UTC
+│   └── src
+└── var
+    ├── backups
+    ├── cache
+    ├── lib
+    │   ├── dpkg
+    │   │   └── status.d
+    │   │       ├── base-files
+    │   │       ├── base-files.md5sums
+    │   │       ├── libc6
+    │   │       ├── libc6.md5sums
+    │   │       ├── libssl3
+    │   │       ├── libssl3.md5sums
+    │   │       ├── media-types
+    │   │       ├── media-types.md5sums
+    │   │       ├── netbase
+    │   │       ├── netbase.md5sums
+    │   │       ├── tzdata
+    │   │       └── tzdata.md5sums
+    │   └── misc
+    ├── local
+    ├── lock
+    ├── log
+    ├── run
+    ├── spool
+    └── tmp
+
+130 directories, 1620 files
+#+end_src
+
+- 共有ライブラリや設定ファイルがある
+- たしかにツール類の実行可能バイナリは入ってなさそうである
+
+* 関連
+
+抽象。
+
+- 余計な道具を除き、動かすのに必要な最小限だけを残す
+
+関連。
+
+- 対比: [[id:20240207T014102][KDOC 76: コンテナでLocaleを設定する]]。最小構成の環境では、普段あるものが入っていないことが問題になる側の例
+- 類似: [[id:20240605T205919][KDOC 185: コンテナの中身をホストマシンにダンプして理解する]]。コンテナイメージの中身を、外に取り出して観察する方法

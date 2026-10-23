@@ -1,0 +1,79 @@
+:properties:
+:ID: 20260924T105146
+:end:
+#+title:      KDOC 636: LimitReaderだけでは超過がわからないので続きの1バイトを読んで確かめる
+#+date:       [2026-09-24 Thu 10:51]
+#+filetags:   :permanent:
+#+identifier: 20260924T105146
+
+* この文書のステータス
+- 作成
+  - [X] 2026-09-27 貴島
+- レビュー
+  - [X] 2026-09-27 貴島
+
+* 概要
+
+ある大きさ以下のデータをネットワークから受け取るプログラムがあるとする。DOS 攻撃対策に、サイズを制限して読み込む必要がある。
+
+前提。
+
+io.Copy に生データを渡すと全部コピーするため目的を達成できない。長さを知るためには全部読み込む必要があって、不可能。HTTPヘッダも信用してはいけない。
+
+流れ。
+
+1. LimitReader でデータを限定して読み取り、 io.Copy に渡す
+2. 続きの1バイトを読み込んで存在確認する。読み込めれば超過で、エラーとする。LimitReader はサイズ超過時に特にエラーは出さないので、それだけでは続きがあったうえで強制的に切り出したのか、既定サイズより下できちんと取り出せたのか判定できないため
+
+#+begin_src git-permalink :wrap src go
+https://github.com/golang/go/blob/8fc7e76411ed6db7a351db1e4be762cdc5350de5/src/io/io.go#L463-L470
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+// A LimitedReader reads from R but limits the amount of
+// data returned to just N bytes. Each call to Read
+// updates N to reflect the new amount remaining.
+// Read returns EOF when N <= 0 or when the underlying R returns EOF.
+type LimitedReader struct {
+	R Reader // underlying reader
+	N int64  // max bytes remaining
+}
+#+end_src
+
+実際のコード。
+
+#+begin_src git-permalink :wrap src go
+https://github.com/kd-collective/opentelemetry-go/blob/40679e672e46abde92cea3f59ec6f66b38e4abc2/internal/shared/otlp/response.go.tmpl#L17-L31
+#+end_src
+
+#+RESULTS:
+#+begin_src go
+func CopyResponseBody(dst io.Writer, src io.Reader, maxSize int64) error {
+	if _, err := io.Copy(dst, io.LimitReader(src, maxSize)); err != nil {
+		return err
+	}
+
+	var extra [1]byte
+	_, err := io.ReadFull(src, extra[:])
+	if err == nil {
+		return fmt.Errorf("response body too large: exceeded %d bytes", maxSize)
+	}
+	if errors.Is(err, io.EOF) {
+		return nil
+	}
+	return err
+}
+#+end_src
+
+* 関連
+
+抽象。
+
+- 信用できない入力は、大きさを制限して受け取る
+- 上限で打ち切っただけでは、ちょうど収まったのか切られたのか区別できない
+
+関連。
+
+- 具体例: [[https://github.com/open-telemetry/opentelemetry-go/pull/8941][feat(otlphttp): configure maximum response size by pellared · Pull Request #8941 · open-telemetry/opentelemetry-go]]
+- 類似: [[id:20250902T215029][KDOC 444: デコード時の未知のキー混入を防ぐ]]。想定外の入力が黙って受け流されるので、自分で確かめる手順を足す例
