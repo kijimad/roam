@@ -39,14 +39,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.token }}
 
-      - name: Cache Docker layers
-        uses: actions/cache@v6
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ inputs.target }}-${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
       - name: Build release image
         uses: docker/build-push-action@v7
         with:
@@ -55,10 +47,5 @@ jobs:
           target: ${{ inputs.target }}
           push: true
           tags: ${{ inputs.image }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          cache-from: type=gha,scope=${{ inputs.target }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.target }}
