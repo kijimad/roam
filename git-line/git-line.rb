@@ -1,24 +1,18 @@
 require 'open3'
 
-BASE = './'.freeze
-REGEXP = '*.org'.freeze
+# コミットごとにチェックアウトせず、履歴の増減行数を積み上げて日ごとの行数を出す
+log, = Open3.capture2('git', 'log', '--first-parent', '--diff-merges=first-parent', '--reverse', '--date=short', '--format=C %cd',
+                      '--numstat', '--no-renames', '--', '*.org')
 
-Dir.chdir(BASE) do
-  begin
-    commits = Open3.capture2('git log --date=short --format="%H,%cd"').first
-    ret = commits.each_line.to_a.reverse.each_with_object({}) do |line, memo|
-      sha1_date = line.split(',')
-      sha1 = sha1_date.first
-
-      date = sha1_date.last.chomp
-      Open3.capture2("git checkout #{sha1}")
-      file_count = Open3.capture2("find . -name '#{REGEXP}' | xargs cat | wc -l").first.strip
-      memo[date] = file_count
-    end
-    print ret.map{ |e| e.join(',') }.join("\n"), "\n"
-  ensure
-    system('git checkout main >& /dev/null')
+lines = 0
+date = nil
+ret = {}
+log.each_line do |line|
+  case line
+  when /\AC (\S+)/ then date = Regexp.last_match(1)
+  when /\A(\d+)\t(\d+)\t/ then lines += Regexp.last_match(1).to_i - Regexp.last_match(2).to_i
   end
+  ret[date] = lines if date
 end
 
-system('git checkout main >& /dev/null')
+puts ret.map { |d, c| "#{d},#{c}" }

@@ -1,6 +1,5 @@
 # https://hugocisneros.com/blog/my-org-roam-notes-workflow/
 
-import itertools
 import json
 import sys
 
@@ -12,7 +11,6 @@ from networkx.readwrite import json_graph
 
 from roam_db_to_json import build_graph
 
-N_COM = 12  # Desired number of communities
 N_MISSING = 20  # Number of predicted missing links
 MAX_NODES = 10000  # Number of nodes in the final graph
 
@@ -31,14 +29,13 @@ def compute_centrality(dot_graph: nx.DiGraph) -> None:
         dot_graph.remove_node(n)
 
 
-def compute_communities(dot_graph: nx.DiGraph, n_com: int) -> None:
+def compute_communities(dot_graph: nx.DiGraph) -> None:
     """Add a `communityLabel` attribute to each node according to their
     computed community.
     """
     simp_graph = nx.Graph(dot_graph)
-    communities = com.girvan_newman(simp_graph)
-    labels = [tuple(sorted(c) for c in unities) for unities in
-              itertools.islice(communities, n_com - 1, n_com)][0]
+    # girvan_newman はエッジ数の2乗で遅くなるので、貪欲法のモジュラリティ最大化で分ける
+    labels = com.greedy_modularity_communities(simp_graph)
     label_dict = {l_key: i for i in range(len(labels)) for l_key in labels[i]}
     nx.set_node_attributes(dot_graph, label_dict, "communityLabel")
 
@@ -59,7 +56,7 @@ if __name__ == "__main__":
     # sys.stderr.write("Reading graph...")
     DOT_GRAPH = build_graph()
     compute_centrality(DOT_GRAPH)
-    compute_communities(DOT_GRAPH, N_COM)
+    compute_communities(DOT_GRAPH)
     add_missing_links(DOT_GRAPH, N_MISSING)
     # sys.stderr.write("Done\n")
     JS_GRAPH = json_graph.node_link_data(DOT_GRAPH)

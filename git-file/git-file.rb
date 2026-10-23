@@ -1,25 +1,19 @@
-# https://tbpgr.hatenablog.com/entry/2016/10/13/221511
 require 'open3'
 
-BASE = './'.freeze
-EXT = 'org'.freeze
+# コミットごとにチェックアウトせず、履歴の追加と削除を積み上げて日ごとのファイル数を出す
+log, = Open3.capture2('git', 'log', '--first-parent', '--diff-merges=first-parent', '--reverse', '--date=short', '--format=C %cd',
+                      '--name-status', '--no-renames', '--', '*.org')
 
-Dir.chdir(BASE) do
-  begin
-    commits = Open3.capture2('git log --date=short --format="%H,%cd"').first
-    ret = commits.each_line.to_a.reverse.each_with_object({}) do |line, memo|
-      sha1_date = line.split(',')
-      sha1 = sha1_date.first
-
-      date = sha1_date.last.chomp
-      Open3.capture2("git checkout #{sha1}")
-      file_count = Open3.capture2("git ls-files | grep #{EXT} | wc -l").first.strip
-      memo[date] = file_count
-    end
-    print ret.map{ |e| e.join(',') }.join("\n"), "\n"
-  ensure
-    system('git checkout main >& /dev/null')
+count = 0
+date = nil
+ret = {}
+log.each_line do |line|
+  case line
+  when /\AC (\S+)/ then date = Regexp.last_match(1)
+  when /\AA\t/ then count += 1
+  when /\AD\t/ then count -= 1
   end
+  ret[date] = count if date
 end
 
-system('git checkout main >& /dev/null')
+puts ret.map { |d, c| "#{d},#{c}" }
