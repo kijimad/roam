@@ -50,7 +50,7 @@ jobs:
         id: git-tag
         run: |
           GIT_TAG=$(git rev-parse --short HEAD)
-          echo "::set-output name=git-tag::$GIT_TAG"
+          echo "git-tag=$GIT_TAG" >> "$GITHUB_OUTPUT"
 
   release_image:
     if: github.ref == 'refs/heads/main'
@@ -95,7 +95,7 @@ jobs:
         run: |
           docker run --detach --name release ghcr.io/kijimad/roam_release:${{ needs.tag.outputs.git-tag }} sleep infinity && \
           docker cp release:/roam/public . && \
-          sudo chown -R $USER:$USER ./public
+          sudo chown -R "$USER:$USER" ./public
 
       - name: check
         run: |
