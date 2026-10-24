@@ -45,8 +45,6 @@ ENV PRODUCTION true
 
 WORKDIR /roam
 
-COPY publish.el ox-slimhtml.el ./
-COPY .git/ ./.git/
 COPY . /roam
 
 RUN ./scripts/deploy.sh
