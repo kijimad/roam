@@ -18,7 +18,8 @@
 
 ;; Set the package installation directory so that packages aren't stored in the
 ;; ~/.emacs.d/elpa path.
-(setq package-user-dir (expand-file-name "./.packages"))
+;; リポジトリの下に置くと、同梱の .org ファイルが org-publish の対象に入るので外に置く
+(setq package-user-dir (expand-file-name "roam/elpa" (or (getenv "XDG_CACHE_HOME") "~/.cache")))
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("elpa" . "https://elpa.gnu.org/packages/")
                          ("org" . "http://orgmode.org/elpa/")))
@@ -230,7 +231,6 @@
          :recursive t
          :base-extension "org"
          :base-directory "./"
-         :exclude "NEWS.org" ;; FIXME: can't specify .packages directory...
          :publishing-function kd/html-publish
          :publishing-directory "./public"
 
