@@ -39,6 +39,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.token }}
 
+      - name: Cache builder stage
+        # 同じ scope に並行して書かないよう、書き出すのは release のジョブだけにする
+        if: inputs.target == 'release'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          target: builder
+          # 毎回変わる build ステージの層まで書き出さないよう、キャッシュは builder ステージだけにする
+          cache-from: type=gha,scope=builder
+          cache-to: type=gha,mode=max,scope=builder
+
       - name: Build release image
         uses: docker/build-push-action@v7
         with:
@@ -47,5 +59,4 @@ jobs:
           target: ${{ inputs.target }}
           push: true
           tags: ${{ inputs.image }}
-          cache-from: type=gha,scope=${{ inputs.target }}
-          cache-to: type=gha,mode=max,scope=${{ inputs.target }}
+          cache-from: type=gha,scope=builder
