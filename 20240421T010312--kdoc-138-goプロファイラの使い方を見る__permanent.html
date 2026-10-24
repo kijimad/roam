@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-10-24 土 03:07 -->
+<!-- 2026-10-24 土 09:35 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KDOC 138: Goプロファイラの使い方を見る</title>
@@ -22,9 +22,9 @@
 </div>
 <div id="content" class="content">
 <h1 class="title">KDOC 138: Goプロファイラの使い方を見る</h1>
-<div id="outline-container-org164fac9" class="outline-2">
-<h2 id="org164fac9"><a href="#org164fac9">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org164fac9">
+<div id="outline-container-org4e6779d" class="outline-2">
+<h2 id="org4e6779d"><a href="#org4e6779d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org4e6779d">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
@@ -37,32 +37,32 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-orgf76c530" class="outline-2">
-<h2 id="orgf76c530"><a href="#orgf76c530">概要</a></h2>
-<div class="outline-text-2" id="text-orgf76c530">
+<div id="outline-container-orgc16fdbe" class="outline-2">
+<h2 id="orgc16fdbe"><a href="#orgc16fdbe">概要</a></h2>
+<div class="outline-text-2" id="text-orgc16fdbe">
 <p>
 Goのプロファイラ、 <code>pprof</code> を使う手順を書く。
 </p>
 </div>
 </div>
-<div id="outline-container-org92060c9" class="outline-2">
-<h2 id="org92060c9"><a href="#org92060c9">背景</a></h2>
-<div class="outline-text-2" id="text-org92060c9">
+<div id="outline-container-orgaebce49" class="outline-2">
+<h2 id="orgaebce49"><a href="#orgaebce49">背景</a></h2>
+<div class="outline-text-2" id="text-orgaebce49">
 <p>
 Goを使ってゲーム開発する過程で、いつのまにかメモリリークしていたのを発見した。原因を探るために、プロファイラを使って原因箇所を特定できた。強力な調査方法なので、いつでも使えるようにしておく。
 </p>
 </div>
 </div>
-<div id="outline-container-org428e367" class="outline-2">
-<h2 id="org428e367"><a href="#org428e367">手順</a></h2>
-<div class="outline-text-2" id="text-org428e367">
+<div id="outline-container-orgd76ff01" class="outline-2">
+<h2 id="orgd76ff01"><a href="#orgd76ff01">手順</a></h2>
+<div class="outline-text-2" id="text-orgd76ff01">
 <p>
 <code>pprof</code> の起動や取得方法にはいくつかの組み合わせがある。組み合わせる自由度が高いのはいいが、ややとっつきづらい。もっともシンプルに見える組み合わせだけを書く。
 </p>
 </div>
-<div id="outline-container-orga798d3c" class="outline-3">
-<h3 id="orga798d3c"><a href="#orga798d3c">1. コードにプロファイラを埋め込む</a></h3>
-<div class="outline-text-3" id="text-orga798d3c">
+<div id="outline-container-org6c3d4ea" class="outline-3">
+<h3 id="org6c3d4ea"><a href="#org6c3d4ea">1. コードにプロファイラを埋め込む</a></h3>
+<div class="outline-text-3" id="text-org6c3d4ea">
 <p>
 無名インポートすることで、デフォルトサーバにプロファイラのエンドポイントが追加される。
 </p>
@@ -78,9 +78,9 @@ func main() {
 </div>
 </div>
 </div>
-<div id="outline-container-orga0589be" class="outline-3">
-<h3 id="orga0589be"><a href="#orga0589be">2. 実行する</a></h3>
-<div class="outline-text-3" id="text-orga0589be">
+<div id="outline-container-org3212e06" class="outline-3">
+<h3 id="org3212e06"><a href="#org3212e06">2. 実行する</a></h3>
+<div class="outline-text-3" id="text-org3212e06">
 <p>
 埋め込んだコードをコンパイルして実行すると、↓のようなパスにアクセスしてプロファイルを取得できるようになる。
 </p>
@@ -120,9 +120,9 @@ http://localhost:6060/debug/pprof/threadcreate?debug=1
 </div>
 </div>
 </div>
-<div id="outline-container-org087e19c" class="outline-3">
-<h3 id="org087e19c"><a href="#org087e19c">3. プロファイルを収集する</a></h3>
-<div class="outline-text-3" id="text-org087e19c">
+<div id="outline-container-orgc80c4cc" class="outline-3">
+<h3 id="orgc80c4cc"><a href="#orgc80c4cc">3. プロファイルを収集する</a></h3>
+<div class="outline-text-3" id="text-orgc80c4cc">
 <p>
 生のプロファイルは人が見るものではない。 <code>pprof</code> の収集コマンドを実行して可視化する。よくわからないポイントだが、起動中のコマンドと同じバイナリが必要。このバイナリからコード位置などの情報を取得しているのだろうか。
 </p>
@@ -157,9 +157,9 @@ Entering interactive mode (type "help" for commands, "o" for options)
 </p>
 </div>
 </div>
-<div id="outline-container-org5b4b6ac" class="outline-3">
-<h3 id="org5b4b6ac"><a href="#org5b4b6ac">4. プロファイルを見る</a></h3>
-<div class="outline-text-3" id="text-org5b4b6ac">
+<div id="outline-container-org448dc1b" class="outline-3">
+<h3 id="org448dc1b"><a href="#org448dc1b">4. プロファイルを見る</a></h3>
+<div class="outline-text-3" id="text-org448dc1b">
 <p>
 <code>pprof</code> プロンプトが出ている状態で、コマンドを実行して結果を得る。
 </p>
@@ -188,9 +188,9 @@ Showing top 10 nodes out of 236
 </div>
 </div>
 </div>
-<div id="outline-container-orgdd351e4" class="outline-2">
-<h2 id="orgdd351e4"><a href="#orgdd351e4">関連</a></h2>
-<div class="outline-text-2" id="text-orgdd351e4">
+<div id="outline-container-org1945552" class="outline-2">
+<h2 id="org1945552"><a href="#org1945552">関連</a></h2>
+<div class="outline-text-2" id="text-org1945552">
 <p>
 抽象。
 </p>
