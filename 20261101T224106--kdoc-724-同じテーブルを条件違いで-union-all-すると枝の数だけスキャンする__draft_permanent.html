@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2026-11-02 月 00:26 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KDOC 724: 同じテーブルを条件違いで UNION ALL すると枝の数だけスキャンする</title>
+<meta name="author" content="kijimaD" />
+<meta name="generator" content="Org Mode" />
+<link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
+  if (!window.hljs) return;
+  hljs.configure({languageDetectRe: /\bsrc-([\w-]+)\b/i});
+  hljs.unregisterLanguage('shell');
+  hljs.registerAliases(['shell', 'sh'], {languageName: 'bash'});
+  hljs.registerAliases(['emacs-lisp', 'elisp'], {languageName: 'lisp'});
+  hljs.highlightAll();
+});</script><link rel='stylesheet' href='https://kijimad.github.io/roam/css/site.css' /><link rel='stylesheet' href='https://kijimad.github.io/roam/css/code.css' />
+</head>
+<body>
+<div id="preamble" class="status">
+<div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
+</div>
+<div id="content" class="content">
+<h1 class="title">KDOC 724: 同じテーブルを条件違いで UNION ALL すると枝の数だけスキャンする</h1>
+<div id="outline-container-orgebfd823" class="outline-2">
+<h2 id="orgebfd823"><a href="#orgebfd823">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-orgebfd823">
+<ul class="org-ul">
+<li>作成
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+
+<ul class="org-ul">
+<li>レビュー
+<ul class="org-ul">
+<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org32b6ad5" class="outline-2">
+<h2 id="org32b6ad5"><a href="#org32b6ad5">概要</a></h2>
+<div class="outline-text-2" id="text-org32b6ad5">
+<p>
+AWS Athena のクエリで、同じテーブルから一部のパラメータだけが異なる SELECT を UNION ALL で結合していた。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><code>SELECT ... WHERE user.id = 'A'
+  UNION ALL SELECT ... WHERE user.id = 'B'
+  UNION ALL SELECT ... WHERE user.id = 'C'
+</code></pre>
+</div>
+
+<p>
+これは問題なく動いていたが、ある日クエリ実行がタイムアウトした。UNION ALL の SELECT はそれぞれ別に実行されるので、同じテーブルを SELECT ごとに読み直していた。3つの SELECT なら3回スキャンすることになる。
+</p>
+
+<p>
+条件を IN にまとめると、テーブルを1回読むだけで済む。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql"><code>SELECT ... WHERE user.id IN ('A', 'B', 'C')
+</code></pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org4bb4b5c" class="outline-2">
+<h2 id="org4bb4b5c"><a href="#org4bb4b5c">関連</a></h2>
+<div class="outline-text-2" id="text-org4bb4b5c">
+<p>
+抽象。
+</p>
+
+<ul class="org-ul">
+<li>同じ意味でも書き方でスキャン量が変わる</li>
+</ul>
+
+<p>
+関連。
+</p>
+
+<ul class="org-ul">
+<li>対比: <a href="20260320T222157--kdoc-557-unionはselectしたフィールドでないとorder-byできない__permanent.html#ID-20260320T222157">KDOC 557: UNIONはSELECTしたフィールドでないとORDER BYできない</a>。同じ UNION の話だが、あちらは書き方の制約、こちらは実行コスト</li>
+<li>対比: <a href="20261012T154743--kdoc-658-集計や並べ替えの後ろにある-limit-は読む行を減らさない__permanent.html#ID-20261012T154743">KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさない</a>。結果の形ではなく読む量でコストが決まる点で共通する。あちらは読む量の減らない書き方、こちらは減る書き換え</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer class="footer py-3"><div class="container"><div class="row "><div class="col-md-4"></div><div class="col-sm col-md"><nav class="navbar"><a class="nav-link text-secondary small px-0" href="./index.html">Insomnia</a><a class="nav-link text-secondary small px-0" href="./sitemap.html">Sitemap</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD/roam">Repository</a><a class="nav-link text-secondary small px-0" href="https://github.com/kijimaD">@kijimaD</a></nav></div><div class="col-md-4"></div></div></div></footer>
+</div>
+</body>
+</html>
