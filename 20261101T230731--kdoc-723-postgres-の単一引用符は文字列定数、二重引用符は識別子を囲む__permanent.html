@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-11-02 月 00:26 -->
+<!-- 2026-11-02 月 09:23 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>KDOC 725: Postgres の引用符の使い分け</title>
+<title>KDOC 723: Postgres の単一引用符は文字列定数、二重引用符は識別子を囲む</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
 <link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
@@ -21,28 +21,25 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<h1 class="title">KDOC 725: Postgres の引用符の使い分け</h1>
-<div id="outline-container-org5b8e903" class="outline-2">
-<h2 id="org5b8e903"><a href="#org5b8e903">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-org5b8e903">
+<h1 class="title">KDOC 723: Postgres の単一引用符は文字列定数、二重引用符は識別子を囲む</h1>
+<div id="outline-container-org99d62c4" class="outline-2">
+<h2 id="org99d62c4"><a href="#org99d62c4">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org99d62c4">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-11-02 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-11-02 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org8e51d74" class="outline-2">
-<h2 id="org8e51d74"><a href="#org8e51d74">概要</a></h2>
-<div class="outline-text-2" id="text-org8e51d74">
+<div id="outline-container-org82e953d" class="outline-2">
+<h2 id="org82e953d"><a href="#org82e953d">概要</a></h2>
+<div class="outline-text-2" id="text-org82e953d">
 <p>
 PostgreSQL では、単一引用符と二重引用符の使い分けがある。すぐ忘れるので、定義を見る。
 </p>
@@ -68,16 +65,16 @@ SQLにおける文字列定数は、単一引用符（&rsquo;）で括られた�
 </blockquote>
 
 <p>
-二重引用符で囲んだ名前は、キーワードではなく常に識別子として扱われる。また、大文字と小文字が区別される。引用符のない名前は小文字に読み替えられる。そのため <code>FOO</code> と <code>foo</code> は <code>"foo"</code> と同じ名前で、 <code>"Foo"</code> はそれらと別の名前になる。
+二重引用符で囲んだ名前は、キーワードではなく常に識別子として扱われる。引用符のない名前は小文字に読み替えられるが、二重引用符で囲んだ名前は大文字と小文字が区別される。
 </p>
 
 <blockquote>
 <p>
-区切り識別子あるいは引用符付き識別子です。 任意の文字の連なりを二重引用符（"）で囲んだものです。 区切り識別子は常に識別子であって、キーワードではありません。
+識別子には副次的な種類もあります。 区切り識別子あるいは引用符付き識別子です。 任意の文字の連なりを二重引用符（"）で囲んだものです。 区切り識別子は常に識別子であって、キーワードではありません。
 </p>
 
 <p>
-引用符が付かない名前は常に小文字に解釈されますが、識別子を引用符で囲むことによって大文字と小文字が区別されます。 例えば、識別子FOO、foo、&ldquo;foo&rdquo;はPostgreSQLによれば同じものとして解釈されますが、&ldquo;Foo&rdquo;と&ldquo;FOO&rdquo;は、これら3つとも、またお互いに違ったものとして解釈されます。
+引用符が付かない名前は常に小文字に解釈されますが、識別子を引用符で囲むことによって大文字と小文字が区別されます。
 </p>
 
 <p>
@@ -86,15 +83,15 @@ SQLにおける文字列定数は、単一引用符（&rsquo;）で括られた�
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orge818d17" class="outline-2">
-<h2 id="orge818d17"><a href="#orge818d17">関連</a></h2>
-<div class="outline-text-2" id="text-orge818d17">
+<div id="outline-container-org7fb2318" class="outline-2">
+<h2 id="org7fb2318"><a href="#org7fb2318">関連</a></h2>
+<div class="outline-text-2" id="text-org7fb2318">
 <p>
 抽象。
 </p>
 
 <ul class="org-ul">
-<li>なし</li>
+<li>囲む記号の種類で、中身を値として読むか名前として読むかが決まる</li>
 </ul>
 
 <p>

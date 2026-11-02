@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-11-02 月 00:26 -->
+<!-- 2026-11-02 月 09:23 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>KDOC 724: 同じテーブルを条件違いで UNION ALL すると枝の数だけスキャンする</title>
+<title>KDOC 722: 同じテーブルを条件違いで UNION ALL すると枝の数だけスキャンする</title>
 <meta name="author" content="kijimaD" />
 <meta name="generator" content="Org Mode" />
 <link rel='shortcut icon' type='image/x-icon' href='https://kijimad.github.io/roam/favicon.ico' /><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' media='print' onload='this.media="all"' /><link rel='preload' href='https://kijimad.github.io/roam/css/fonts/izumi16.woff2' as='font' type='font/woff2' crossorigin /><link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/base16/gruvbox-dark-medium.min.css' /><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/haskell.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/clojure.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/scala.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/lisp.min.js'></script><script defer src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/dockerfile.min.js'></script><script>addEventListener('DOMContentLoaded', () => {
@@ -21,28 +21,25 @@
 <div><div class="header"><div class="container"><div class="row"><div class="col-sm-12 col-md-12"><nav class="navbar navbar-light"/></div></div></div></div></div>
 </div>
 <div id="content" class="content">
-<h1 class="title">KDOC 724: 同じテーブルを条件違いで UNION ALL すると枝の数だけスキャンする</h1>
-<div id="outline-container-orgebfd823" class="outline-2">
-<h2 id="orgebfd823"><a href="#orgebfd823">この文書のステータス</a></h2>
-<div class="outline-text-2" id="text-orgebfd823">
+<h1 class="title">KDOC 722: 同じテーブルを条件違いで UNION ALL すると枝の数だけスキャンする</h1>
+<div id="outline-container-org00d801d" class="outline-2">
+<h2 id="org00d801d"><a href="#org00d801d">この文書のステータス</a></h2>
+<div class="outline-text-2" id="text-org00d801d">
 <ul class="org-ul">
 <li>作成
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-11-02 貴島</li>
 </ul></li>
-</ul>
-
-<ul class="org-ul">
 <li>レビュー
 <ul class="org-ul">
-<li class="off"><input type='checkbox' /> &lt;署名&gt;</li>
+<li class="on"><input type='checkbox' checked='checked' /> 2026-11-02 貴島</li>
 </ul></li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org32b6ad5" class="outline-2">
-<h2 id="org32b6ad5"><a href="#org32b6ad5">概要</a></h2>
-<div class="outline-text-2" id="text-org32b6ad5">
+<div id="outline-container-orgb3f2410" class="outline-2">
+<h2 id="orgb3f2410"><a href="#orgb3f2410">概要</a></h2>
+<div class="outline-text-2" id="text-orgb3f2410">
 <p>
 AWS Athena のクエリで、同じテーブルから一部のパラメータだけが異なる SELECT を UNION ALL で結合していた。
 </p>
@@ -55,7 +52,7 @@ AWS Athena のクエリで、同じテーブルから一部のパラメータだ
 </div>
 
 <p>
-これは問題なく動いていたが、ある日クエリ実行がタイムアウトした。UNION ALL の SELECT はそれぞれ別に実行されるので、同じテーブルを SELECT ごとに読み直していた。3つの SELECT なら3回スキャンすることになる。
+これは問題なく動いていたが、ある日クエリ実行がタイムアウトした。UNION ALL の SELECT はそれぞれ別に実行されるので、同じテーブルを SELECT ごとに読み直していた。3つの SELECT なら3回スキャンすることになる。効率がよくない。
 </p>
 
 <p>
@@ -68,9 +65,9 @@ AWS Athena のクエリで、同じテーブルから一部のパラメータだ
 </div>
 </div>
 </div>
-<div id="outline-container-org4bb4b5c" class="outline-2">
-<h2 id="org4bb4b5c"><a href="#org4bb4b5c">関連</a></h2>
-<div class="outline-text-2" id="text-org4bb4b5c">
+<div id="outline-container-org3dd4693" class="outline-2">
+<h2 id="org3dd4693"><a href="#org3dd4693">関連</a></h2>
+<div class="outline-text-2" id="text-org3dd4693">
 <p>
 抽象。
 </p>
