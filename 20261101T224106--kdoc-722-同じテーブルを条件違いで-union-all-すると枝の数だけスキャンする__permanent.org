@@ -1,0 +1,42 @@
+:properties:
+:ID: 20261101T224106
+:end:
+#+title:      KDOC 722: 同じテーブルを条件違いで UNION ALL すると枝の数だけスキャンする
+#+date:       [2026-11-01 Sun 22:41]
+#+filetags:   :permanent:
+#+identifier: 20261101T224106
+
+* この文書のステータス
+- 作成
+  - [X] 2026-11-02 貴島
+- レビュー
+  - [X] 2026-11-02 貴島
+
+* 概要
+
+AWS Athena のクエリで、同じテーブルから一部のパラメータだけが異なる SELECT を UNION ALL で結合していた。
+
+#+begin_src sql
+  SELECT ... WHERE user.id = 'A'
+    UNION ALL SELECT ... WHERE user.id = 'B'
+    UNION ALL SELECT ... WHERE user.id = 'C'
+#+end_src
+
+これは問題なく動いていたが、ある日クエリ実行がタイムアウトした。UNION ALL の SELECT はそれぞれ別に実行されるので、同じテーブルを SELECT ごとに読み直していた。3つの SELECT なら3回スキャンすることになる。効率がよくない。
+
+条件を IN にまとめると、テーブルを1回読むだけで済む。
+
+#+begin_src sql
+  SELECT ... WHERE user.id IN ('A', 'B', 'C')
+#+end_src
+
+* 関連
+
+抽象。
+
+- 同じ意味でも書き方でスキャン量が変わる
+
+関連。
+
+- 対比: [[id:20260320T222157][KDOC 557: UNIONはSELECTしたフィールドでないとORDER BYできない]]。同じ UNION の話だが、あちらは書き方の制約、こちらは実行コスト
+- 対比: [[id:20261012T154743][KDOC 658: 集計や並べ替えの後ろにある LIMIT は読む行を減らさない]]。結果の形ではなく読む量でコストが決まる点で共通する。あちらは読む量の減らない書き方、こちらは減る書き換え
