@@ -1,0 +1,151 @@
+/* 履歴書ページだけで読み込み、site.css の黒背景の見た目を打ち消す */
+
+:root {
+  --ink-strong: #111;
+  --ink: #222;
+  --ink-soft: #444;
+  --ink-muted: #666;
+  --line: #bbb;
+}
+
+html {
+  background: #fff;
+}
+
+body {
+  color: var(--ink);
+  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  letter-spacing: 0;
+}
+
+*, code, kbd, pre, samp {
+  font-family: inherit;
+}
+
+body *, b, strong, dt {
+  text-shadow: none;
+}
+
+body::before, body::after {
+  content: none;
+}
+
+div#content {
+  width: min(760px, calc(100% - 32px));
+  padding: 64px 0;
+  transform: none;
+}
+
+#content img, #content svg, #content iframe, #content video {
+  transform: none;
+}
+
+h1 {
+  margin: 0 0 32px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ink-strong);
+  font-weight: 700;
+}
+
+h2 {
+  margin: 48px 0 16px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+h3 {
+  margin: 32px 0 12px;
+  padding-left: 8px;
+  border-left: 4px solid var(--ink-strong);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+b, strong, dt {
+  font-weight: 700;
+}
+
+ul > li {
+  list-style-type: disc;
+}
+
+ul ul > li {
+  list-style-type: circle;
+}
+
+a, a[href^="http"] {
+  color: #0b57d0;
+  border-bottom: 0;
+}
+
+a:hover {
+  color: #0b57d0;
+  text-decoration: underline;
+}
+
+h1 a, h2 a, h3 a {
+  color: inherit;
+}
+
+code {
+  color: inherit;
+}
+
+.outline-3 {
+  padding-bottom: 0;
+}
+
+/* Bootstrap は後から非同期に読まれるので、詳細度で勝つ */
+#content .table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--ink);
+  --bs-border-color: var(--line);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+#content .table th, #content .table td {
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+}
+
+#content .table th {
+  background: #f3f3f3;
+}
+
+.header, footer.footer {
+  display: none;
+}
+
+@page {
+  size: A4;
+  margin: 15mm;
+}
+
+@media print {
+  body {
+    font-size: 10.5pt;
+  }
+
+  div#content {
+    width: auto;
+    padding: 0;
+  }
+
+  h2, h3 {
+    break-after: avoid;
+  }
+
+  #content .table, li {
+    break-inside: avoid;
+  }
+
+  a, a[href^="http"] {
+    color: inherit;
+  }
+}
